@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.qy.implatform.mapper.GroupMsgReadPositionMapper">
+
+    <insert id="batchSaveOrUpdate">
+        insert into im_group_msg_read_position(group_id, user_id, group_msg_id, create_time, update_time)
+        values
+        <foreach collection="list" index="index" item="item" separator=",">
+            (#{item.groupId},
+            #{item.userId},
+            #{item.groupMsgId},
+            #{item.createTime},
+            #{item.updateTime})
+        </foreach>
+        on duplicate key update
+        group_id = values(group_id),
+        user_id = values(user_id),
+        group_msg_id = values(group_msg_id),
+        create_time = values(create_time),
+        update_time = values(update_time)
+    </insert>
+
+</mapper> 

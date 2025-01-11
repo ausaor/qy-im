@@ -1,0 +1,136 @@
+#配置项目的数据源
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      maxFileSize: 50MB
+      maxRequestSize: 50MB
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/qy-im?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 1
+    password: 123456
+
+  mail:
+    host: smtp.126.com
+    username:
+    password:
+    default-encoding: UTF-8
+    port: 465
+    properties:
+      mail:
+        smtp:
+          auth: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+          starttls:
+            enable: true
+    protocol: smtps
+#防止redission启动报错
+management:
+  health:
+    redis:
+      enabled: false
+
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: assign_id
+  configuration:
+    # 是否开启自动驼峰命名规则（camel case）映射，即从经典数据库列名 A_COLUMN（下划线命名） 到经典 Java 属性名 aColumn（驼峰命名） 的类似映射
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # mapper
+  mapper-locations:
+    # *.xml的具体路径
+    - classpath*:mapper/*.xml
+
+
+minio:
+  endpoint: http://127.0.0.1:9001 #内网地址
+  public: http://127.0.0.1:9001  #外网访问地址
+  accessKey: admin
+  secretKey: 12345678
+  bucketName: qy-im
+  imagePath: image
+  filePath: file
+
+webrtc:
+  max-channel: 9 # 多人通话最大通道数量，最大不能超过16,建议值:4,9,16
+  iceServers:
+    - urls: stun:stun.l.google.com:19302
+
+jwt:
+  accessToken:
+    expireIn: 1800  #半个小时
+    secret: MIIBIjANBgkq
+  refreshToken:
+    expireIn: 604800 #7天
+    secret: IKDiqVmn0VFU
+
+# 上传模式 可选 oss或local或qiniu  （http://和最后的/一定不能去！！！）
+upload:
+  mode: local
+  local:
+    # nginx映射本地文件路径
+    url: http://127.0.0.1:8300/
+    # 本地文件存储路径
+    path: F:/upload/qy-im/
+  oss:
+    url: http://Bucket域名/
+    endpoint: OSS配置endpoint
+    accessKeyId: OSS配置accessKeyId
+    accessKeySecret: OSS配置accessKeySecret
+    bucketName: OSS配置bucketName
+  qiniu:
+    # 域名/路径
+    domain:
+    # 公钥
+    accessKey:
+    # 私钥
+    secretKey:
+    # 存储空间名
+    bucket:
+
+#第三方配置信息
+qq:
+  app-id: appid
+  check-token-url: https://graph.qq.com/oauth2.0/me?access_token={access_token}
+  user-info-url: https://graph.qq.com/user/get_user_info?openid={openid}&access_token={access_token}&oauth_consumer_key={oauth_consumer_key}
+
+#腾讯位置服务密钥
+tencent:
+  location:
+    key:
+    sk:
+
+#高德地图应用
+gaode:
+  map:
+    key: 1bc5f8751ed618024e7c88bf9f91850b
+    url: https://restapi.amap.com/v3/geocode/geo?
+
+
+#天地图应用
+tianditu:
+  map:
+    key: 07ef921ce0795ea7db49fe649ca39526
+    url: http://api.tianditu.gov.cn/geocoder?ds={"keyWord":%s}&tk=%s
+
+image:
+  detect:
+    mode: baidu #
+
+    baidu:
+      ak:
+      sk:
+      detect-url: https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined?access_token=
+      access-token-url: https://aip.baidubce.com/oauth/2.0/token?client_id=${image.detect.baidu.ak}&client_secret=${image.detect.baidu.sk}&grant_type=client_credentials
+

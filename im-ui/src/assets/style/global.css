@@ -1,0 +1,80 @@
+@charset "UTF-8";
+
+:root {
+  --theme-color: LawnGreen;
+  --header-color: LightSeaGreen;
+  --line-color: SpringGreen;
+  --active-color: #F0FFF0;
+  --choose-hover-color: #BBFFFF;
+  --bg-color: #fafafa;
+  --border-color: #F0FFF0;
+  --online-color: SpringGreen;
+  --unline-color: gray;
+  --permanent-color: LightSeaGreen;
+  --temporary-color: orange;
+}
+
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
+@font-face {
+  font-family: 'font';
+  src: url('../font/2.woff2');
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-family: "font";
+}
+
+section {
+	  height: 100%;
+}
+
+/deep/ input[aria-hidden="true"] {
+  display: none !important;
+}
+
+/deep/.el-radio:focus:not(.is-focus):not(:active):not(.is-disabled) .el-radio__inner {
+  box-shadow: none !important;
+}
+
+.el-dialog__body{
+	padding: 10px 15px !important;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 1px;
+}
+
+::-webkit-scrollbar-thumb {
+  /*滚动条里面小方块*/
+  border-radius: 2px;
+  -webkit-box-shadow: inset 0 0 5px rgb(46, 108, 13);
+  background: #335328;
+}
+
+::-webkit-scrollbar-track {
+  /*滚动条里面轨道*/
+  -webkit-box-shadow: inset 0 0 5px transparent;
+  border-radius: 2px;
+  background: #ededed;
+}
+
+/*# sourceMappingURL=v-im.cssss.map */
+.svg-icon {
+  /* 通过设置 font-size 来改变图标大小 */
+  width: 1em;
+  /* 图标和文字相邻时，垂直对齐 */
+  vertical-align: -0.15em;
+  /* 通过设置 color 来改变 SVG 的颜色/fill */
+  fill: currentColor;
+  /* path 和 stroke 溢出 viewBox 部分在 IE 下会显示
+      normalize.css 中也包含这行 */
+  overflow: hidden;
+}

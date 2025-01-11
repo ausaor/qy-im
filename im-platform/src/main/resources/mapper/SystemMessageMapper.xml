@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.qy.implatform.mapper.SystemMessageMapper">
+
+    <select id="pullOfflineSystemMessage" resultType="xyz.qy.implatform.vo.SystemMessageVO">
+        select t.seq_no,t.pusher_id,t.recv_range,t.title,t.send_time,t.`status`,s.id, s.cover_url, s.intro, s.extern_link,s.type,
+        case
+        when type = 9 then ''
+        else s.content
+        end as content
+        from im_push_task t
+        join im_system_message s on t.sys_msg_id = s.id
+        where t.recv_range = 'all' and t.push_status = 1 and t.`status` != 2
+        and t.seq_no <![CDATA[ > ]]> #{minSeqNo} and t.send_time <![CDATA[ > ]]> #{startTime, jdbcType=TIMESTAMP}
+        UNION ALL
+        select t.seq_no,t.pusher_id,t.recv_range,t.title,t.send_time,t.`status`, s.id, s.cover_url, s.intro, s.extern_link,s.type,
+        case
+        when type = 9 then ''
+        else s.content
+        end as content
+        from im_push_task t
+        join im_system_message s on t.sys_msg_id = s.id
+        join im_push_task_receiver r on r.seq_no = t.seq_no and r.user_id = #{userId}
+        where t.recv_range = 'part' and t.push_status = 1 and t.`status` != 2
+        and t.seq_no <![CDATA[ > ]]> #{minSeqNo}
+        ORDER BY seq_no ASC LIMIT 1000
+    </select>
+
+    <select id="selectLastReadedSeqNo" resultType="integer">
+        select t.seq_no
+        from im_push_task t join im_system_message s on t.sys_msg_id = s.id
+        where t.recv_range = 'all' and t.pusher_id = #{pusherId} and t.push_status = 1 and t.`status` != 2
+        UNION ALL
+        select t.seq_no
+        from im_push_task t
+        join im_system_message s on t.sys_msg_id = s.id
+        join im_push_task_receiver r on r.seq_no = t.seq_no and r.user_id = #{userId}
+        where t.recv_range = 'part' and t.pusher_id = #{pusherId} and t.push_status = 1 and t.`status` != 2
+        ORDER BY seq_no desc LIMIT 1
+    </select>
+
+</mapper> 
