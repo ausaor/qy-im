@@ -96,6 +96,11 @@
                     <use xlink:href="#icon-shipin"></use>
                   </svg>
                 </div>
+                <div title="角色台词" ref="characterWord" v-show="chat.type == 'GROUP' && myGroupMemberInfo.isTemplate" @click.stop="showWordBox()">
+                  <svg class="icon svg-icon" aria-hidden="true">
+                    <use xlink:href="#icon-minganci"></use>
+                  </svg>
+                </div>
                 <div title="聊天记录" @click="showHistoryBox()">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-lishijilu"></use>
@@ -122,6 +127,7 @@
         </el-container>
       </el-main>
       <emotion ref="emoBox" @emotion="onEmotion"></Emotion>
+      <word ref="wordBox" :words="words"></word>
       <chat-record :visible="showRecord" @close="closeRecordBox" @send="onSendRecord"></chat-record>
       <group-member-selector ref="rtcSel" :groupId="group.id" @complete="onInviteOk"></group-member-selector>
       <rtc-group-join ref="rtcJoin" :groupId="group.id"></rtc-group-join>
@@ -141,6 +147,7 @@
   import ChatInput from "./ChatInput";
   import GroupMemberSelector from "../group/GroupMemberSelector.vue"
   import RtcGroupJoin from "../rtc/RtcGroupJoin.vue"
+  import Word from "@/components/common/Word";
 
 	export default {
 		name: "chatPrivate",
@@ -155,6 +162,7 @@
       ChatInput,
       GroupMemberSelector,
       RtcGroupJoin,
+      Word,
 		},
 		props: {
 			chat: {
@@ -178,7 +186,8 @@
         showMinIdx: 0, // 下标低于showMinIdx的消息不显示，否则页面会很卡
         friends: [],
         reqQueue: [],
-        isSending: false
+        isSending: false,
+        words: [],
 			}
 		},
     created() {
@@ -192,6 +201,7 @@
       closeRefBox() {
         //this.$refs.emoBox.close();
         // this.$refs.atBox.close();
+        this.$refs.wordBox.close();
       },
       onCall(type){
         if(type == this.$enums.MESSAGE_TYPE.ACT_RT_VOICE){
@@ -430,6 +440,35 @@
           x: left + width / 2,
           y: top
         })
+
+      },
+      showWordBox() {
+        this.getCharacterWord().then((data) => {
+          this.words = data;
+          let width = this.$refs.characterWord.offsetWidth;
+          let left = this.$elm.fixLeft(this.$refs.characterWord);
+          let top = this.$elm.fixTop(this.$refs.characterWord);
+          this.$refs.wordBox.open({
+            x: left + width / 2,
+            y: top
+          })
+        });
+      },
+      getCharacterWord() {
+        return new Promise((resolve, reject) => {
+          this.$http({
+            url: `/character/word/publishedWord?characterId=${this.myGroupMemberInfo.templateCharacterId}`,
+            method: "get",
+          }).then((data) => {
+            resolve(data)
+          })
+          // let regionGroup = this.$store.state.regionGroupStore.regionGroups.find((g) => g.id == id);
+          // if (regionGroup) {
+          //   resolve(regionGroup);
+          // } else {
+          //
+          // }
+        });
 
       },
       onEmotion(emoText) {

@@ -6,6 +6,27 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "8574999",
+      "name": "已收藏",
+      "font_class": "aixin",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
+      "icon_id": "19692044",
+      "name": "GIF",
+      "font_class": "GIF",
+      "unicode": "eb95",
+      "unicode_decimal": 60309
+    },
+    {
+      "icon_id": "37684156",
+      "name": "敏感词",
+      "font_class": "minganci",
+      "unicode": "e62b",
+      "unicode_decimal": 58923
+    },
+    {
       "icon_id": "9244705",
       "name": "音频",
       "font_class": "yinpin",

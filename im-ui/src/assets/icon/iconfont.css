@@ -1,11 +1,11 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4728505 */
-  src: url('iconfont.eot?t=1735997484976'); /* IE9 */
-  src: url('iconfont.eot?t=1735997484976#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1735997484976') format('woff2'),
-       url('iconfont.woff?t=1735997484976') format('woff'),
-       url('iconfont.ttf?t=1735997484976') format('truetype'),
-       url('iconfont.svg?t=1735997484976#iconfont') format('svg');
+  src: url('iconfont.eot?t=1736681044912'); /* IE9 */
+  src: url('iconfont.eot?t=1736681044912#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1736681044912') format('woff2'),
+       url('iconfont.woff?t=1736681044912') format('woff'),
+       url('iconfont.ttf?t=1736681044912') format('truetype'),
+       url('iconfont.svg?t=1736681044912#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,6 +14,18 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-aixin:before {
+  content: "\e611";
+}
+
+.icon-GIF:before {
+  content: "\eb95";
+}
+
+.icon-minganci:before {
+  content: "\e62b";
 }
 
 .icon-yinpin:before {

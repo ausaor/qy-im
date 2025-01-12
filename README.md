@@ -29,13 +29,8 @@
 
 ### 开发环境
 
-后端：jdk1.8				前端：nodejs-12
-
-
-
-
-### 在线体验
-体验地址：https://im.timemory.xyz
+后端：jdk1.8				
+前端：nodejs-12
 
 
 
