@@ -17,6 +17,7 @@
             <el-tag class="tag" v-if="group.groupType===1" effect="dark" size="medium" type="warning">模板群聊</el-tag>
             <el-tag class="tag" v-if="group.groupType===2" effect="dark" size="medium" type="warning">多元角色群聊</el-tag>
             <el-tag class="tag" v-if="group.groupType===3" effect="dark" size="medium" type="warning">角色群聊</el-tag>
+            <el-tag class="tag" v-if="group.groupType===4" effect="dark" size="medium" type="warning">模板多元角色群聊</el-tag>
           </div>
           <div class="btn">
             <el-button icon="el-icon-search" circle @click="viewGroup(group)" title="查看"></el-button>
@@ -67,6 +68,13 @@
                   </span>
     </el-dialog>
     <template-character-choose :visible="characterChooseVisible" @close="characterChooseVisible = false" @confirm="switchCharacterEvent" :append-to-body="true"></template-character-choose>
+    <group-template-character-choose
+      :visible="groupTemplateCharacterChooseVisible"
+      :append-to-body="true"
+      :template-group-id="curChooseGroup.templateGroupId"
+      @close="() => {this.groupTemplateCharacterChooseVisible = false}"
+      @choose="chooseCharacterOK">
+    </group-template-character-choose>
     <el-dialog
         width="25%"
         title="群聊成员信息"
@@ -87,6 +95,7 @@ import HeadImage from '../common/HeadImage.vue'
 import TemplateCharacterItem from "@/components/group/TemplateCharacterItem";
 import TemplateGroupMember from "@/components/group/TemplateGroupMember";
 import TemplateCharacterChoose from "@/components/template/TemplateCharacterChoose";
+import GroupTemplateCharacterChoose from "@/components/template/GroupTemplateCharacterChoose";
 
 export default {
   name: "JoinGroup",
@@ -94,7 +103,8 @@ export default {
     HeadImage,
     TemplateCharacterItem,
     TemplateGroupMember,
-    TemplateCharacterChoose
+    TemplateCharacterChoose,
+    GroupTemplateCharacterChoose
   },
   data() {
     return {
@@ -106,11 +116,12 @@ export default {
       total: 0,
       selectTemplateCharacterVisible: false,
       characterChooseVisible: false,
+      groupTemplateCharacterChooseVisible: false,
       selectableCharacters: [], // 可以选择的模板人物
       characterSearchText: '',
       characterActiveIndex: -1,
       curChooseCharacter: null, // 当前选择的模板人物
-      curChooseGroup: null, // 当前选择的群聊
+      curChooseGroup: {}, // 当前选择的群聊
       groupMemberVisible: false,
       groupMembers: [],
       friends: [],
@@ -166,6 +177,9 @@ export default {
       } else if (group.groupType === 2 || group.groupType === 3) {
         this.curChooseGroup = group;
         this.characterChooseVisible = true;
+      } else if (group.groupType === 4) {
+        this.curChooseGroup = group;
+        this.groupTemplateCharacterChooseVisible = true;
       }
     },
     doJoinGroup(groupJoinVo) {
@@ -185,7 +199,7 @@ export default {
       this.characterActiveIndex = -1;
       this.selectTemplateCharacterVisible = false;
       this.characterChooseVisible = false;
-      this.curChooseGroup = null;
+      this.curChooseGroup = {};
       this.curChooseCharacter = null;
     },
     chooseTemplateCharacter(templateCharacter, index) {
@@ -255,6 +269,20 @@ export default {
         templateCharacterId: data.templateCharacter.id,
         templateCharacterAvatar: data.templateCharacter.avatar,
         templateCharacterName: data.templateCharacter.name
+      }
+      this.doJoinGroup(groupJoinVo);
+    },
+    chooseCharacterOK(character) {
+      this.groupTemplateCharacterChooseVisible = false;
+      console.log("character", character)
+      let groupJoinVo = {
+        groupId: this.curChooseGroup.id,
+        isTemplate: true,
+        groupType: this.curChooseGroup.groupType,
+        templateGroupId: this.curChooseGroup.templateGroupId,
+        templateCharacterId: character.id,
+        templateCharacterAvatar: character.avatar,
+        templateCharacterName: character.name
       }
       this.doJoinGroup(groupJoinVo);
     }
