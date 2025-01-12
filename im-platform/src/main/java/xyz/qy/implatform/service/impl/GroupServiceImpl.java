@@ -588,7 +588,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
 
             // 是角色群聊计算用户角色序号
-            if (GroupTypeEnum.CHARTERS.getCode().equals(group.getGroupType()) && !vo.getQuit()) {
+            if ((GroupTypeEnum.CHARTERS.getCode().equals(group.getGroupType())
+                    || GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(group.getGroupType()))
+                    && !vo.getQuit()) {
                 List<Long> userIdList = characterUserMap.getOrDefault(vo.getTemplateCharacterId(), new ArrayList<>());
                 userIdList.add(vo.getUserId());
                 vo.setCharacterNum(userIdList.size());
