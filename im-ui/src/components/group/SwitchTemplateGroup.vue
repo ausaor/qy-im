@@ -158,6 +158,8 @@ export default {
         url = "/group/switchMultCharacterGroup";
       } else if (this.toGroupType === 3) {
         url = "/group/switchMoreCharactersGroup"
+      } else if (this.toGroupType === 4) {
+        url = "/group/switchTemplateMultCharactersGroup"
       }
       this.$http({
         url: url,
@@ -206,10 +208,10 @@ export default {
         method: 'get'
       }).then((data) => {
         this.templateCharacterList = data;
-        if (this.toGroupType === 1) {
+        if (this.toGroupType === 1 || this.toGroupType === 4) {
           let index = 0;
           for (let i=0; i<this.groupMembers.length; i++) {
-            if (!this.groupMembers[i].quit) {
+            if (!this.groupMembers[i].quit && index < data.length) {
               this.groupMembers[i].templateCharacterAvatar = this.templateCharacterList[index].avatar
               this.groupMembers[i].templateCharacterId = this.templateCharacterList[index].id
               this.groupMembers[i].templateCharacterName = this.templateCharacterList[index].name

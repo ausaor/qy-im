@@ -58,6 +58,8 @@ public interface IGroupService extends IService<Group> {
 
     GroupVO switchMoreCharactersGroup(MultCharacterGroupVO vo);
 
+    GroupVO switchTemplateMultCharactersGroup(SwitchTemplateGroupVO vo);
+
     /**
      * 将用户加入公共群聊
      *

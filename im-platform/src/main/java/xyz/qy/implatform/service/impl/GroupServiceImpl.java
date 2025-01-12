@@ -935,6 +935,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         return groupVO;
     }
 
+    @CacheEvict(key = "#vo.getGroupId()")
+    @Lock(prefix = "im:group:member:modify", key = "#vo.getGroupId()")
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public GroupVO switchMoreCharactersGroup(MultCharacterGroupVO vo) {
         // 判断是否群主
@@ -1018,6 +1021,95 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         messageSendUtil.sendTipMessage(group.getId(),
                 session.getUserId(), session.getNickName(), Collections.emptyList(),
                 "群主将群聊类型切换到角色群聊【" + group.getName() + "】", GroupChangeTypeEnum.GROUP_TYPE_CHANGE.getCode());
+        return groupVO;
+    }
+
+    @CacheEvict(key = "#vo.getGroupId()")
+    @Lock(prefix = "im:group:member:modify", key = "#vo.getGroupId()")
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public GroupVO switchTemplateMultCharactersGroup(SwitchTemplateGroupVO vo) {
+        // 判断是否群主
+        UserSession session = SessionContext.getSession();
+        User user = userService.getById(session.getUserId());
+        Group group = baseMapper.selectById(vo.getGroupId());
+        if (GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(group.getGroupType())) {
+            throw new GlobalException("当前群聊已是模板多元角色群聊");
+        }
+        if (!user.getId().equals(group.getOwnerId())) {
+            throw new GlobalException("您不是群主");
+        }
+        // 判断上次切换时间与当前时间间隔
+        Date switchTime = group.getSwitchTime();
+        if (switchTime != null) {
+            long interval = (new Date().getTime() - switchTime.getTime()) / 1000;
+            if (interval < Constant.SWITCH_INTERVAL) {
+                throw new GlobalException("距离上次切换群聊类型未超过30分钟");
+            }
+        }
+
+        Map<Long, List<GroupMemberVO>> characterMap = vo.getGroupMembers().stream().collect(Collectors.groupingBy(GroupMemberVO::getTemplateCharacterId));
+        if (MapUtils.isEmpty(characterMap)) {
+            throw new GlobalException("用户未分配角色");
+        }
+        // 判断每种角色人数是否超过10
+        characterMap.forEach((key, value) -> {
+            if (value.size() > Constant.MAX_CHARACTER_NUM) {
+                throw new GlobalException("每个角色的人数不能超过" + Constant.MAX_CHARACTER_NUM);
+            }
+        });
+
+        List<GroupMemberVO> groupMembers = vo.getGroupMembers().stream()
+                .filter(item -> !item.getQuit()).collect(Collectors.toList());
+
+        Set<Long> characterIds = characterMap.keySet();
+
+        TemplateGroup templateGroup = templateGroupService.findPublishedById(vo.getTemplateGroupId());
+        if (ObjectUtil.isNull(templateGroup) || templateGroup.getDeleted()) {
+            throw new GlobalException("当前群聊模板已被删除");
+        }
+        // 判断模板角色是否存在当前模板群聊
+        List<TemplateCharacter> templateCharacters = templateCharacterService.findPublishedByTemplateGroupIdAndCharacterIds(vo.getTemplateGroupId(), new ArrayList<>(characterIds));
+        if (templateCharacters.size() != characterIds.size()) {
+            throw new GlobalException("部分模板角色不存在当前群聊模板");
+        }
+        Map<Long, TemplateCharacter> templateCharacterMap = templateCharacters.stream().collect(Collectors.toMap(TemplateCharacter::getId, Function.identity()));
+        group.setGroupType(GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode());
+        group.setTemplateGroupId(templateGroup.getId());
+        group.setName(templateGroup.getGroupName());
+        group.setHeadImage(templateGroup.getAvatar());
+        group.setHeadImageThumb(templateGroup.getAvatar());
+        group.setIsTemplate(true);
+        group.setSwitchTime(new Date());
+        group.setRemark(templateGroup.getGroupName());
+
+        Map<Long, GroupMemberVO> groupMemberMap = groupMembers.stream().collect(Collectors.toMap(GroupMemberVO::getUserId, Function.identity()));
+
+        List<GroupMember> noQuitGroupMembers = groupMemberService.findNoQuitGroupMembers(vo.getGroupId());
+        for (GroupMember groupMember : noQuitGroupMembers) {
+            if (!groupMemberMap.containsKey(groupMember.getUserId())) {
+                throw new GlobalException("有群聊成员未配置模板人物");
+            }
+            GroupMemberVO groupMemberVO = groupMemberMap.get(groupMember.getUserId());
+            groupMember.setTemplateCharacterId(groupMemberVO.getTemplateCharacterId());
+            if (!templateCharacterMap.containsKey(groupMemberVO.getTemplateCharacterId())) {
+                throw new GlobalException("数据异常");
+            }
+            groupMember.setAliasName(templateCharacterMap.get(groupMemberVO.getTemplateCharacterId()).getName());
+            groupMember.setHeadImage(templateCharacterMap.get(groupMemberVO.getTemplateCharacterId()).getAvatar());
+            groupMember.setRemark(group.getName());
+            groupMember.setIsTemplate(true);
+            groupMember.setCharacterAvatarId(null);
+            groupMember.setAvatarAlias(null);
+        }
+        baseMapper.updateById(group);
+        groupMemberService.saveOrUpdateBatch(group.getId(), noQuitGroupMembers);
+        GroupVO groupVO = BeanUtils.copyProperties(group, GroupVO.class);
+        groupVO.setAliasName(groupMemberMap.get(user.getId()).getTemplateCharacterName());
+
+        messageSendUtil.sendTipMessage(group.getId(),
+                session.getUserId(), session.getNickName(), Collections.emptyList(),
+                "群主将群聊类型切换到模板多元角色群聊【" + group.getName() + "】", GroupChangeTypeEnum.GROUP_TYPE_CHANGE.getCode());
         return groupVO;
     }
 

@@ -61,6 +61,7 @@
                 <el-button type="danger" v-show="!isOwner" @click="onQuit()">退出群聊</el-button>
                 <el-button type="danger" v-show="isOwner" @click="onDissolve()">解散群聊</el-button>
                 <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(1)">切换模板群聊</el-button>
+                <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(4)">切换模板多元角色群聊</el-button>
                 <el-button type="warning" v-show="isOwner && activeGroup.groupType !== 2" @click="popupSwitchTemplateGroup(2)">切换多元角色群聊</el-button>
                 <el-button type="info" v-show="isOwner && activeGroup.groupType !== 3" @click="popupSwitchTemplateGroup(3)">切换角色群聊</el-button>
                 <el-button v-show="isOwner && activeGroup.groupType !== 0" @click="popupSwitchCommonGroup()">切换普通群聊</el-button>
