@@ -8,6 +8,7 @@
         <el-tag size="mini" effect="dark" color="rgb(0,47,167)"  v-if="group.groupType===1">模板群聊</el-tag>
         <el-tag size="mini" effect="dark" color="rgb(105,149,114)" v-if="group.groupType===2">多元角色群聊</el-tag>
         <el-tag size="mini" effect="dark" color="rgb(144,0,33)" v-if="group.groupType===3">角色群聊</el-tag>
+        <el-tag size="mini" effect="dark" color="rgb(176,89,35)" v-if="group.groupType===4">模板多元角色群聊</el-tag>
       </div>
 			<div class="group-name">{{group.remark}}</div>
 		</div>

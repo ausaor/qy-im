@@ -89,7 +89,7 @@ export default {
     handleOk() {
       let _this = this;
       if (this.templateGroup.id === null || this.templateGroup.id === undefined) {
-        this.$message.warning("请选择一个模板群聊");
+        this.$message.warning("请选择一个群聊模板");
         return;
       }
       if (this.templateCharacter.id === null || this.templateCharacter.id === undefined) {

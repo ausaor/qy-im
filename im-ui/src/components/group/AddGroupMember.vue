@@ -104,6 +104,13 @@
 			<el-button type="primary" @click="handleOk()">确 定</el-button>
 		</span>
     </el-dialog>
+    <group-template-character-choose
+        :visible="groupTemplateCharacterVisible"
+        :template-group-id="templateGroupId"
+        :append-to-body="true"
+        @close="() => {this.groupTemplateCharacterVisible=false}"
+        @choose="chooseCharacterOK">
+    </group-template-character-choose>
   </el-dialog>
 </template>
 
@@ -112,6 +119,7 @@
   import TemplateCharacterItem from "@/components/group/TemplateCharacterItem";
   import HeadImage from '../common/HeadImage.vue';
   import TemplateGroupItem from "@/components/group/TemplateGroupItem";
+  import GroupTemplateCharacterChoose from "@/components/template/GroupTemplateCharacterChoose";
 
 	export default {
 		name: "addGroupMember",
@@ -120,6 +128,7 @@
       TemplateCharacterItem,
       HeadImage,
       TemplateGroupItem,
+      GroupTemplateCharacterChoose,
 		},
 		data() {
 			return {
@@ -128,6 +137,7 @@
 				friends: [],
         selectTemplateCharacterVisible: false,
         selectCharactersVisible: false,
+        groupTemplateCharacterVisible: false,
         characterActiveIndex: -1,
         activeTemplateCharacter: {},  // 当前选中的模板人物
         curSelectedFriend: {},
@@ -268,6 +278,8 @@
         } else if (this.groupType === 2 || this.groupType === 3) {
           this.queryTemplateGroup();
           this.selectCharactersVisible = true;
+        } else if (this.groupType === 4) {
+          this.groupTemplateCharacterVisible = true;
         }
         this.selectedFriendIndex = index;
         this.curSelectedFriend = friend;
@@ -365,7 +377,14 @@
         this.characterActiveIndex = -1;
         this.activeTemplateCharacter = {};
         this.handleClose();
-      }
+      },
+      chooseCharacterOK(character) {
+        let friendIndex = this.selectedFriendIndex;
+        this.friends[friendIndex].templateCharacterId = character.id;
+        this.friends[friendIndex].templateCharacterAvatar = character.avatar;
+        this.friends[friendIndex].templateCharacterName = character.name;
+        this.groupTemplateCharacterVisible = false;
+      },
 		},
 		computed: {
 			checkCount() {

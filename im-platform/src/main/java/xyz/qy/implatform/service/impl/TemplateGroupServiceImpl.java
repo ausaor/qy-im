@@ -108,6 +108,9 @@ public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, T
         if (StringUtils.isNotBlank(templateGroupVO.getGroupName())) {
             queryWrapper.like(TemplateGroup::getGroupName, templateGroupVO.getGroupName());
         }
+        if (ObjectUtil.isNotNull(templateGroupVO.getId())) {
+            queryWrapper.eq(TemplateGroup::getId, templateGroupVO.getId());
+        }
         queryWrapper.eq(TemplateGroup::getDeleted, false);
         queryWrapper.eq(TemplateGroup::getStatus, ReviewEnum.REVIEWED.getCode());
         List<TemplateGroup> templateGroupList = this.list(queryWrapper);

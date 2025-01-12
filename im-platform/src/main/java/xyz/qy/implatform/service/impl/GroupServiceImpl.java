@@ -109,7 +109,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     private GroupMessageMapper groupMessageMapper;
 
     /**
-     * 创建新群聊
+     * 创建普通群聊
      *
      * @Param vo 群聊信息
      * @return 群聊信息
@@ -126,6 +126,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         Group group = BeanUtils.copyProperties(vo, Group.class);
         assert group != null;
         group.setOwnerId(user.getId());
+        group.setGroupType(GroupTypeEnum.COMMON.getCode());
+        group.setIsTemplate(false);
         this.save(group);
         // 把群主加入群
         GroupMember groupMember = new GroupMember();
@@ -452,7 +454,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "当前群聊已存在角色人物是" + templateCharacters.stream()
                         .map(TemplateCharacter::getName).collect(Collectors.joining(",")) + "的用户");
             }
-        } else if (GroupTypeEnum.CHARTERS.getCode().equals(vo.getGroupType())) {
+        } else if (GroupTypeEnum.CHARTERS.getCode().equals(vo.getGroupType())
+            || GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(vo.getGroupType())) {
             // 判断参数中每个角色的数量加已存在成员的对应角色数量是否超过10
             List<TemplateCharacterInviteVO> characterInviteVOList = vo.getCharacterInviteVOList();
             Map<Long, List<TemplateCharacterInviteVO>> characterUserMap = characterInviteVOList.stream().collect(Collectors.groupingBy(TemplateCharacterInviteVO::getTemplateCharacterId));
@@ -463,6 +466,15 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             if (templateCharacterList.size() != characterIds.size()) {
                 throw new GlobalException("部分模板角色不存在");
             }
+
+            // 若是模板多元角色群聊，判断当前群聊模板是否包含所选模板人物
+            if (GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(vo.getGroupType())) {
+                templateCharacterList = templateCharacterService.findPublishedByTemplateGroupIdAndCharacterIds(group.getTemplateGroupId(), new ArrayList<>(characterIds));
+                if (templateCharacterList.size() != characterIds.size()) {
+                    throw new GlobalException("部分模板角色不存在当前群聊模板");
+                }
+            }
+
 
             // 校验所选角色用户数量是否超过10个
             characterUserMap.forEach((key, value) ->{
@@ -616,7 +628,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         GroupMember groupMember = new GroupMember();
         TemplateCharacter templateCharacter = null;
         // 判断是否模板群聊
-        if (GroupTypeEnum.TEMPLATE.getCode().equals(templateGroupCreateVO.getGroupType())) {
+        if (GroupTypeEnum.TEMPLATE.getCode().equals(templateGroupCreateVO.getGroupType())
+                || GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(templateGroupCreateVO.getGroupType())) {
             if (ObjectUtil.isNull(templateGroupCreateVO.getTemplateGroupId())) {
                 throw new GlobalException("群聊模板id为空");
             }
@@ -1187,22 +1200,43 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             member.setCharacterAvatarId(null);
             member.setAvatarAlias(null);
             groupMemberService.saveOrUpdateBatch(group.getId(), Collections.singletonList(member));
-        } else if (GroupTypeEnum.CHARTERS.getCode().equals(vo.getGroupType())) {
+        } else if (GroupTypeEnum.CHARTERS.getCode().equals(vo.getGroupType())
+            || GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(vo.getGroupType())) {
             if (ObjectUtil.isNull(vo.getTemplateCharacterId())) {
                 throw new GlobalException("参数异常");
             }
-
             Long templateCharacterId = vo.getTemplateCharacterId();
+            // 判断当前模板角色是否存在
+            TemplateCharacter templateCharacter = null;
+
+            if (GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(vo.getGroupType())) {
+                if (ObjectUtil.isNull(vo.getTemplateGroupId())) {
+                    throw new GlobalException("参数异常");
+                }
+                Long templateGroupId = vo.getTemplateGroupId();
+                if (!group.getTemplateGroupId().equals(templateGroupId)) {
+                    throw new GlobalException("群聊类型已改变，请重新操作");
+                }
+                // 判断群聊模板的是否存在所选模板角色
+                List<TemplateCharacter> templateCharacters = templateCharacterService.findPublishedByTemplateGroupIdAndCharacterIds(templateGroupId, Collections.singletonList(templateCharacterId));
+                if (CollectionUtils.isEmpty(templateCharacters)) {
+                    throw new GlobalException("所选模板角色不存在");
+                }
+                templateCharacter = templateCharacters.get(0);
+            } else {
+                templateCharacter = templateCharacterService.findPublishedById(templateCharacterId);
+                if (ObjectUtil.isNull(templateCharacter)) {
+                    throw new GlobalException("所选模板角色不存在");
+                }
+            }
+
+
             // 判断用户选择的模板人物在当前群聊用户数量是否超过10个
             long count = members.stream().filter(m -> Objects.equals(m.getTemplateCharacterId(), templateCharacterId) && !m.getQuit()).count();
             if (count >= Constant.MAX_CHARACTER_NUM) {
                 throw new GlobalException("所选角色在当前群聊的用户数量已超过" + Constant.MAX_CHARACTER_NUM + "个");
             }
-            // 判断当前模板人物是否存在
-            TemplateCharacter templateCharacter = templateCharacterService.findPublishedById(templateCharacterId);
-            if (ObjectUtil.isNull(templateCharacter)) {
-                throw new GlobalException("所选模板角色不存在");
-            }
+
             member = optional.orElseGet(GroupMember::new);
             member.setGroupId(vo.getGroupId());
             member.setUserId(userId);

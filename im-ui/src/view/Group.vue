@@ -187,10 +187,11 @@
     <el-dialog
         title="请选择群聊模式"
         :visible.sync="dialogVisible"
-        width="35%">
+        width="40%">
       <el-radio-group v-model="radio">
         <el-radio label="1">普通群聊</el-radio>
         <el-radio label="2">模板群聊</el-radio>
+        <el-radio label="6">模板多元角色群聊</el-radio>
         <el-radio label="3">多元角色群聊</el-radio>
         <el-radio label="4">角色群聊</el-radio>
         <el-radio label="5">搜索群聊</el-radio>
@@ -322,6 +323,9 @@
         } else if (this.radio === '2') {
 		      this.groupType = 1;
           this.showCreateTemplateGroup = true;
+        } else if (this.radio === '6') {
+          this.groupType = 4;
+          this.showCreateTemplateGroup = true;
         } else if (this.radio === '3') {
           console.log("多元角色群聊")
           this.groupType = 2;
@@ -376,7 +380,7 @@
         }
 			},
       onInviteMember() {
-        if (this.activeGroup.isTemplate) {
+        if (this.activeGroup.groupType===1) {
           this.querySelectableTemplateCharacter();
         }
 				this.showAddGroupMember = true;

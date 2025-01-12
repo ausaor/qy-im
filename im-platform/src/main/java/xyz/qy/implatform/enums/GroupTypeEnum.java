@@ -25,6 +25,12 @@ public enum GroupTypeEnum {
      * 角色群聊
      */
     CHARTERS(3),
+
+    /**
+     * 模板多元角色群聊
+     */
+    TEMPLATE_MULT_CHARTER(4),
+
     ;
     private final Integer code;
 }
