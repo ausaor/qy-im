@@ -49,6 +49,8 @@ export default {
       this.show = true;
     },
     close() {
+      this.activeIndex = -1;
+      this.activeWord = null;
       this.show = false;
     },
     chooseWord(item, index) {
@@ -64,7 +66,9 @@ export default {
       if (!this.activeWord) {
         return
       }
-      this.$emit('send', this.activeWord)
+      this.$emit('send', this.activeWord);
+      this.activeIndex = -1;
+      this.activeWord = null;
     }
   },
   computed: {

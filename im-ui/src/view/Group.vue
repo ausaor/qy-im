@@ -134,6 +134,12 @@
                   </span>
                 </el-dialog>
                 <template-character-choose :visible="characterSwitchVisible" @close="characterSwitchVisible = false" @confirm="switchCharacterEvent"></template-character-choose>
+                <group-template-character-choose
+                    :visible="groupTemplateCharacterVisible"
+                    :template-group-id="activeGroup.templateGroupId"
+                    @close="() => {this.groupTemplateCharacterVisible=false}"
+                    @choose="chooseCharacterOK">
+                </group-template-character-choose>
               </div>
               <div class="switch-character-avatar" v-show="activeGroup.groupType !== 0">
                 <div class="switch-character-avatar-btn" title="切换模板人物头像" @click="switchCharacterAvatar()">
@@ -249,6 +255,7 @@
   import JoinGroup from "@/components/group/JoinGroup";
   import HeadImage from '../components/common/HeadImage.vue';
   import TemplateCharacterChoose from "@/components/template/TemplateCharacterChoose";
+  import GroupTemplateCharacterChoose from "@/components/template/GroupTemplateCharacterChoose";
 
 	export default {
 		name: "group",
@@ -265,6 +272,7 @@
       JoinGroup,
       HeadImage,
       TemplateCharacterChoose,
+      GroupTemplateCharacterChoose,
 		},
 		data() {
 			return {
@@ -293,6 +301,7 @@
         characterAvatars: [],
         isTemplateGroup: false,
         selectTemplateCharacterVisible: false,
+        groupTemplateCharacterVisible: false,
         selectCharacterAvatarVisible: false,
         groupMemberVisible: false,
         characterActiveIndex: -1,
@@ -528,6 +537,8 @@
 		      this.selectTemplateCharacterVisible = true;
         } else if (this.activeGroup.groupType === 2 || this.activeGroup.groupType === 3) {
           this.characterSwitchVisible = true;
+        } else if (this.activeGroup.groupType === 4){
+          this.groupTemplateCharacterVisible = true;
         }
       },
       switchCharacterAvatar() {
@@ -669,6 +680,27 @@
           templateCharacterId: data.templateCharacter.id,
           templateCharacterName: data.templateCharacter.name,
           templateCharacterAvatar: data.templateCharacter.avatar,
+          groupType: this.activeGroup.groupType,
+        }
+        this.$http({
+          url: "/group/member/switchTemplateCharacter",
+          method: 'post',
+          data: groupMemberVO
+        }).then(() => {
+          this.$message.success("修改成功");
+        }).finally(() =>{
+          this.loadGroupMembers();
+          this.loadGroup(this.activeGroup.id);
+        })
+      },
+      chooseCharacterOK(character) {
+        this.groupTemplateCharacterVisible = false;
+        let groupMemberVO = {
+          groupId: this.activeGroup.id,
+          templateGroupId: this.activeGroup.templateGroupId,
+          templateCharacterId: character.id,
+          templateCharacterName: character.name,
+          templateCharacterAvatar: character.avatar,
           groupType: this.activeGroup.groupType,
         }
         this.$http({

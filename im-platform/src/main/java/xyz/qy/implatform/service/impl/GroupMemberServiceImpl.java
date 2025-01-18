@@ -300,7 +300,8 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
 
         TemplateCharacter templateCharacter = null;
         // 当前群聊是模板群聊
-        if (GroupTypeEnum.TEMPLATE.getCode().equals(group.getGroupType())) {
+        if (GroupTypeEnum.TEMPLATE.getCode().equals(group.getGroupType())
+            || GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(group.getGroupType())) {
             if (!group.getTemplateGroupId().equals(groupMemberVO.getTemplateGroupId())) {
                 throw new GlobalException("群聊模板已切换，请重新选择");
             }
@@ -331,7 +332,8 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
             if (CollectionUtils.isNotEmpty(groupMemberList)) {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "当前模板角色已有用户选择");
             }
-        } else if (GroupTypeEnum.CHARTERS.getCode().equals(group.getGroupType())) {
+        } else if (GroupTypeEnum.CHARTERS.getCode().equals(group.getGroupType())
+            || GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(group.getGroupType())) {
             // 判断新的模板角色在群聊中的用户是否超过10
             if (groupMemberList.size() >= Constant.MAX_CHARACTER_NUM) {
                 throw new GlobalException("所选模板角色在当前群聊已被" + Constant.MAX_CHARACTER_NUM + "位用户选择，请重新选择其他角色");
