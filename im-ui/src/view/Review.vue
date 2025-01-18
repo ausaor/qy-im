@@ -5,8 +5,8 @@
     </div>
     <div class="tab-box">
       <el-tabs v-model="activeTab" type="card" @tab-click="handleTabClick">
-        <el-tab-pane label="模板群聊" name="templateGroup"></el-tab-pane>
-        <el-tab-pane label="模板头像" name="characterAvatar"></el-tab-pane>
+        <el-tab-pane label="群聊模板" name="templateGroup"></el-tab-pane>
+        <el-tab-pane label="角色头像" name="characterAvatar"></el-tab-pane>
       </el-tabs>
     </div>
     <div class="template-group-list" v-if="activeTab === 'templateGroup'">
@@ -15,7 +15,7 @@
           <span>{{ templateGroup.groupName }}</span>
           <el-button class="review-button" @click="reviewTemplateGroup(templateGroup)" type="primary" size="small" >审核<i class="el-icon-edit el-icon--right"></i></el-button>
         </div>
-        <div>
+        <div class="template-group-info">
           <head-image class="head-image" :url="templateGroup.avatar" :size="80"></head-image>
           <div class="info">
             <el-descriptions title="群聊信息" :column="2">
@@ -43,16 +43,18 @@
           <el-button class="review-button" @click="submitAvatarAuditConclusion(templateCharacter, 'noPass')" type="danger" size="small" >
             不通过<i class="el-icon-close el-icon--right"></i></el-button>
         </div>
-        <div class="head-image-box">
-          <head-image class="head-image" :url="templateCharacter.avatar" :size="80"></head-image>
-        </div>
-        <div class="character-avatar-box">
-          <div class="character-avatar-item" v-for="(characterAvatar) in templateCharacter.characterAvatarVOList" :key="characterAvatar.id">
-            <div class="avatar-box">
-              <head-image class="avatar-uploader" :size="45" :url="characterAvatar.avatar"></head-image>
-              <span class="character-name">
-                {{characterAvatar.name}}
-              </span>
+        <div class="character-info">
+          <div class="head-image-box">
+            <head-image class="head-image" :url="templateCharacter.avatar" :size="80"></head-image>
+          </div>
+          <div class="character-avatar-box">
+            <div class="character-avatar-item" v-for="(characterAvatar) in templateCharacter.characterAvatarVOList" :key="characterAvatar.id">
+              <div class="avatar-box">
+                <head-image class="avatar-uploader" :size="45" :url="characterAvatar.avatar"></head-image>
+                <div class="character-name">
+                  {{characterAvatar.name}}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -63,9 +65,9 @@
                :visible.sync="showTemplateCharacterDialog"
                width="400px"
                :before-close="handleTemplateCharacterClose">
-      <div class="template-group-avatar">
+<!--      <div class="template-group-avatar">
         <head-image class="head-image" :url="curTemplateGroup.avatar" :size="80"></head-image>
-      </div>
+      </div>-->
       <div class="template-character-box">
         <el-scrollbar style="height:360px;">
           <div class="template-character-item" v-for="(templateCharacter) in templateCharacters" :key="templateCharacter.id">
@@ -206,12 +208,13 @@ export default {
 }
 
 .template-group-list {
-  clear: both;
+  /* grid布局 两端对齐,最后一行左对齐*/
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 10px;
 
   .box-card {
-    margin: 10px 10px;
-    width: 48%;
-    float: left;
+    width: 100%;
 
     .header {
 
@@ -224,26 +227,30 @@ export default {
       }
     }
 
-    .head-image {
-      float: left;
-      display: inline-block;
-      margin-right: 20px;
-    }
+    .template-group-info {
+      display: flex;
 
-    .info {
-      float: left;
-      display: inline-block;
-      width: 240px;
+      .head-image {
+        display: inline-block;
+        margin-right: 20px;
+      }
+
+      .info {
+        display: inline-block;
+        width: 240px;
+      }
     }
   }
 }
 
 .character-avatar-list {
+  /* grid布局 两端对齐,最后一行左对齐*/
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 10px;
+
   .box-card {
-    margin: 10px 10px;
-    width: 48%;
-    height: 360px;
-    float: left;
+    width: 100%;
 
     .header {
       .review-button {
@@ -255,27 +262,41 @@ export default {
       }
     }
 
-    .head-image-box {
-      float: left;
-      display: inline-block;
-      margin-right: 20px;
+    .character-info {
+      display: flex;
 
-      .head-image {
-
-      }
-    }
-
-    .character-avatar-box {
-      height: 180px;
-
-      .character-avatar-item {
-        width: 14%;
-        border: 1px #6CC6CB solid;
+      .head-image-box {
         float: left;
-        margin-top: 5px;
-        margin-left: 10px;
+        display: inline-block;
+        margin-right: 20px;
+
+        .head-image {
+
+        }
+      }
+
+      .character-avatar-box {
+        /* grid布局 两端对齐,最后一行左对齐*/
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 5px;
+
+        .character-avatar-item {
+          min-width: 100px;
+          display: flex;
+          margin-top: 5px;
+          margin-left: 10px;
+          align-items: center;
+
+          .avatar-box {
+            display: flex;
+            align-items: center;
+          }
+        }
       }
     }
+
+
 
     .buttons {
       text-align: right;
@@ -293,6 +314,7 @@ export default {
       display: flex;
       position: relative;
       padding-left: 15px;
+      justify-content: space-between;
       align-items: center;
       padding-right: 5px;
       background-color: var(--bg-color);
@@ -301,7 +323,7 @@ export default {
 
       .avatar-box {
         display: flex;
-        justify-content: center;
+        justify-content: left;
         align-items: center;
         width: 45px;
         height: 45px;

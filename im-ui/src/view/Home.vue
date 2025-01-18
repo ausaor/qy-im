@@ -306,7 +306,8 @@
             id: msg.id,
             groupId: msg.groupId,
             readedCount: msg.readedCount,
-            receiptOk: msg.receiptOk
+            receiptOk: msg.receiptOk,
+            chatType: 'GROUP'
           };
           this.$store.commit("updateMessage", msgInfo)
           return;
@@ -579,7 +580,6 @@
 .navi-bar {
   background: white;
   padding: 10px;
-  padding-top: 50px;
 
   .user-head-image{
     /*转为flex弹性盒布局*/

@@ -1,5 +1,8 @@
 package xyz.qy.implatform.controller;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
+import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.ITemplateGroupService;
@@ -65,14 +68,22 @@ public class TemplateGroupController {
 
     @ApiOperation(value = "模板群聊提交审批",notes="模板群聊提交审批")
     @PostMapping("/submitForApproval")
-    public Result submitForApproval(@NotNull(message = "模板群聊id不能为空") @RequestBody Long id) {
+    public Result submitForApproval(@RequestBody JSONObject object) {
+        Long id = object.getLong("id");
+        if (ObjectUtil.isNull(id)) {
+            throw new GlobalException("参数异常");
+        }
         templateGroupService.submitForApproval(id);
         return ResultUtils.success();
     }
 
     @ApiOperation(value = "模板群聊撤回审批",notes="模板群聊撤回审批")
     @PostMapping("/withdrawalOfApproval")
-    public Result withdrawalOfApproval(@NotNull(message = "模板群聊id不能为空") @RequestBody Long id) {
+    public Result withdrawalOfApproval(@RequestBody JSONObject object) {
+        Long id = object.getLong("id");
+        if (ObjectUtil.isNull(id)) {
+            throw new GlobalException("参数异常");
+        }
         templateGroupService.withdrawalOfApproval(id);
         return ResultUtils.success();
     }

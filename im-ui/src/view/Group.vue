@@ -22,7 +22,7 @@
 			<el-scrollbar class="group-container">
 				<div v-show="activeGroup.id">
 					<div class="group-info">
-						<div>
+						<div class="avatar-box">
 							<file-upload v-show="isOwner" class="avatar-uploader" :action="imageAction" :disabled="!isOwner || activeGroup.isTemplate"
                  :showLoading="true" :maxSize="maxSize" @success="onUploadSuccess"
                  :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp']">
@@ -35,7 +35,7 @@
               </head-image>
 							<el-button class="send-btn" @click="onSendMessage()">发送消息</el-button>
 						</div>
-            <div>
+            <div class="group-form-box">
               <el-form class="group-form" label-width="130px" :model="activeGroup" :rules="rules" ref="groupForm">
                 <el-form-item label="群聊名称" prop="name">
                   <el-input v-model="activeGroup.name" :disabled="!isOwner || activeGroup.isTemplate" maxlength="20"></el-input>
@@ -57,14 +57,18 @@
                 </el-form-item>
               </el-form>
               <div class="buttons-box">
-                <el-button type="success" @click="onSaveGroup()">提交</el-button>
-                <el-button type="danger" v-show="!isOwner" @click="onQuit()">退出群聊</el-button>
-                <el-button type="danger" v-show="isOwner" @click="onDissolve()">解散群聊</el-button>
-                <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(1)">切换模板群聊</el-button>
-                <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(4)">切换模板多元角色群聊</el-button>
-                <el-button type="warning" v-show="isOwner && activeGroup.groupType !== 2" @click="popupSwitchTemplateGroup(2)">切换多元角色群聊</el-button>
-                <el-button type="info" v-show="isOwner && activeGroup.groupType !== 3" @click="popupSwitchTemplateGroup(3)">切换角色群聊</el-button>
-                <el-button v-show="isOwner && activeGroup.groupType !== 0" @click="popupSwitchCommonGroup()">切换普通群聊</el-button>
+                <div class="buttons">
+                  <el-button type="success" @click="onSaveGroup()">提交</el-button>
+                  <el-button type="danger" v-show="!isOwner" @click="onQuit()">退出群聊</el-button>
+                  <el-button type="danger" v-show="isOwner" @click="onDissolve()">解散群聊</el-button>
+                  <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(1)">切换模板群聊</el-button>
+                </div>
+                <div class="buttons">
+                  <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(4)">切换模板多元角色群聊</el-button>
+                  <el-button type="warning" v-show="isOwner && activeGroup.groupType !== 2" @click="popupSwitchTemplateGroup(2)">切换多元角色群聊</el-button>
+                  <el-button type="info" v-show="isOwner && activeGroup.groupType !== 3" @click="popupSwitchTemplateGroup(3)">切换角色群聊</el-button>
+                  <el-button v-show="isOwner && activeGroup.groupType !== 0" @click="popupSwitchCommonGroup()">切换普通群聊</el-button>
+                </div>
               </div>
             </div>
 					</div>
@@ -792,49 +796,61 @@
 					display: flex;
 					padding: 5px 20px;
 
-          .avatar {
+          .avatar-box {
+
+            .avatar-uploader {
+              text-align: left;
+
+              .el-upload {
+                border: 1px dashed #d9d9d9 !important;
+                border-radius: 6px;
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+              }
+
+              .el-upload:hover {
+                border-color: #409EFF;
+              }
+
+              .avatar-uploader-icon {
+                font-size: 28px;
+                color: #8c939d;
+                width: 200px;
+                height: 200px;
+                line-height: 200px;
+                text-align: center;
+              }
+
+              .avatar {
+                width: 200px;
+                height: 200px;
+                display: block;
+              }
+            }
+
+            .send-btn {
+              margin-top: 20px;
+            }
           }
 
-					.group-form {
-						flex: 1;
-						padding-left: 40px;
-						min-width: 700px;
-					}
+          .group-form-box{
 
-					.avatar-uploader {
-						text-align: left;
+            .group-form {
+              flex: 1;
+              padding-left: 40px;
+              min-width: 700px;
+            }
 
-						.el-upload {
-							border: 1px dashed #d9d9d9 !important;
-							border-radius: 6px;
-							cursor: pointer;
-							position: relative;
-							overflow: hidden;
-						}
+            .buttons-box {
 
-						.el-upload:hover {
-							border-color: #409EFF;
-						}
-
-						.avatar-uploader-icon {
-							font-size: 28px;
-							color: #8c939d;
-							width: 200px;
-							height: 200px;
-							line-height: 200px;
-							text-align: center;
-						}
-
-						.avatar {
-							width: 200px;
-							height: 200px;
-							display: block;
-						}
-					}
-
-					.send-btn {
-						margin-top: 20px;
-					}
+              .buttons {
+                display: flex;
+                justify-content: right;
+                margin-bottom: 10px;
+              }
+            }
+          }
 				}
 
 				.group-member-list {

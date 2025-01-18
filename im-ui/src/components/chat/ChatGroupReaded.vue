@@ -121,7 +121,8 @@ export default {
           this.$store.commit("updateMessage", {
             id: this.msgInfo.id,
             groupId: this.msgInfo.groupId,
-            readedCount: this.readedMembers.length
+            readedCount: this.readedMembers.length,
+            chatType: 'GROUP'
           })
         } else if (type === 'REGION-GROUP') {
           this.$store.commit("updateRegionMessage", {

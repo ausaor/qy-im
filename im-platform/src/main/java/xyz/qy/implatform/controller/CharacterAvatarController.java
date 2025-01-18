@@ -1,5 +1,7 @@
 package xyz.qy.implatform.controller;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.ICharacterAvatarService;
@@ -55,14 +58,22 @@ public class CharacterAvatarController {
 
     @ApiOperation(value = "模板人物头像提交审核", notes = "模板人物头像提交审核")
     @PostMapping("/submitForApproval")
-    public Result submitForApproval(@NotNull(message = "模板人物id不能为空") @RequestBody Long templateCharacterId) {
+    public Result submitForApproval(@RequestBody JSONObject jsonObject) {
+        Long templateCharacterId = jsonObject.getLong("id");
+        if (ObjectUtil.isNull(templateCharacterId)) {
+            throw new GlobalException("参数异常");
+        }
         characterAvatarService.submitForApproval(templateCharacterId);
         return ResultUtils.success();
     }
 
     @ApiOperation(value = "撤回审核", notes = "撤回审核")
     @PostMapping("/withdrawalOfApproval")
-    public Result withdrawalOfApproval(@NotNull(message = "模板人物id不能为空") @RequestBody Long templateCharacterId) {
+    public Result withdrawalOfApproval(@NotNull(message = "模板人物id不能为空") @RequestBody JSONObject jsonObject) {
+        Long templateCharacterId = jsonObject.getLong("id");
+        if (ObjectUtil.isNull(templateCharacterId)) {
+            throw new GlobalException("参数异常");
+        }
         characterAvatarService.withdrawalOfApproval(templateCharacterId);
         return ResultUtils.success();
     }

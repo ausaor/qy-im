@@ -6,9 +6,9 @@
     </div>
     <div class="tab-box">
       <el-tabs type="card" @tab-click="handleTabClick">
-        <el-tab-pane label="我的模板群聊" name="templateGroup">
+        <el-tab-pane label="我的群聊模板" name="templateGroup">
         </el-tab-pane>
-        <el-tab-pane label="全部模板群聊" name="allTemplateGroup">
+        <el-tab-pane label="全部群聊模板" name="allTemplateGroup">
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -44,14 +44,14 @@
           </div>
         </div>
       </el-card>
-      <div class="page-box" v-show="activeTab === 'allTemplateGroup'">
-        <el-button class="previous"
-                   type="success" icon="el-icon-arrow-left" circle
-                   @click="prePageTemplateGroup"></el-button>
-        <el-button class="next"
-                   type="success" icon="el-icon-arrow-right" circle
-                   @click="nextPageTemplateGroup"></el-button>
-      </div>
+    </div>
+    <div class="page-box" v-show="activeTab === 'allTemplateGroup'">
+      <el-button class="previous"
+                 type="success" icon="el-icon-arrow-left" circle
+                 @click="prePageTemplateGroup"></el-button>
+      <el-button class="next"
+                 type="success" icon="el-icon-arrow-right" circle
+                 @click="nextPageTemplateGroup"></el-button>
     </div>
     <el-dialog class="edit-template-group"
                :title="title"
@@ -417,7 +417,7 @@ export default {
       this.$http({
         url: "/templateGroup/submitForApproval",
         method: 'post',
-        data: this.curTemplateGroup.id
+        data: {id: this.curTemplateGroup.id}
       }).then((data) => {
         this.$message.success("操作成功");
         this.handleClose();
@@ -433,7 +433,7 @@ export default {
       this.$http({
         url: "/templateGroup/withdrawalOfApproval",
         method: 'post',
-        data: this.curTemplateGroup.id
+        data: {id: this.curTemplateGroup.id}
       }).then((data) => {
         this.$message.success("操作成功");
         this.handleClose();
@@ -519,7 +519,7 @@ export default {
       this.$http({
         url: "/characterAvatar/submitForApproval",
         method: 'post',
-        data: this.curTemplateCharacter.id
+        data: {id: this.curTemplateCharacter.id}
       }).then((data) => {
         this.$message.success("操作成功");
         this.handleEditCharacterAvatarClose();
@@ -539,7 +539,7 @@ export default {
       this.$http({
         url: "/characterAvatar/withdrawalOfApproval",
         method: 'post',
-        data: this.curTemplateCharacter.id
+        data: {id: this.curTemplateCharacter.id}
       }).then((data) => {
         this.$message.success("操作成功");
         this.handleEditCharacterAvatarClose();
@@ -590,10 +590,12 @@ export default {
 }
 
 .template-group-list {
+  /* grid布局 两端对齐,最后一行左对齐*/
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 10px;
+
   .box-card {
-    margin: 10px 10px;
-    width: 48%;
-    float: left;
 
     .header {
 
@@ -621,7 +623,10 @@ export default {
 }
 
 .page-box {
-  clear: both;
+  margin-top: 10px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .edit-template-group {

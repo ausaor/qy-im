@@ -1,12 +1,12 @@
 <template>
   <el-container class="im-box-square">
     <el-aside width="14%" class="l-square-box">
-      <el-scrollbar class="l-square-list">
+      <div class="l-square-list">
         <div v-for="(community,index) in communityList" :key="index">
           <community-item :community="community" :active="index === activeIndex"
                           @click.native="handleActiveItem(community,index)"></community-item>
         </div>
-      </el-scrollbar>
+      </div>
     </el-aside>
     <el-main class="community-box">
       <router-view></router-view>
@@ -25,7 +25,7 @@ export default {
   data() {
     return {
       communityList: [
-        {name: "模板群聊", sort: 1, route: '/home/square/templateGroup', iconId: '#icon-qiqiaoban'},
+        {name: "群聊模板", sort: 1, route: '/home/square/templateGroup', iconId: '#icon-qiqiaoban'},
         {name: "空间动态", sort: 2, route: '/home/square/friendActivity', iconId: '#icon-shejiaotubiao-40'}
       ],
       activeIndex: -1,
@@ -48,6 +48,7 @@ export default {
     flex-direction: column;
     border-right: var(--line-color) solid 1px;
     background: white;
+    overflow: hidden;
   }
 
   .community-box {
