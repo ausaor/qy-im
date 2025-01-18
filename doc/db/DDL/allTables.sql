@@ -524,4 +524,75 @@ create index idx_seq_no on im_push_task_receiver (seq_no);
 create index idx_user_id on im_push_task_receiver (user_id);
 
 
+create table im_character_word
+(
+    id                bigint auto_increment comment 'id'
+        primary key,
+    template_group_id bigint        null comment '群聊模板id',
+    character_id      bigint        not null comment '角色id',
+    character_name    varchar(50)   null comment '角色名称',
+    word              varchar(100)  null comment '台词',
+    voice             varchar(1000) null comment '语音',
+    status            varchar(2)    null comment '状态：0-待审批；1-审核中；2-已发布；3-未通过',
+    create_time       datetime      null comment '创建时间',
+    update_time       datetime      null comment '更新时间',
+    create_by         bigint        null comment '创建人',
+    update_by         bigint        null comment '更新人',
+    deleted           tinyint(1)    null comment '是否删除：0-否；1-是'
+)
+    comment '角色台词表';
+
+create index idx_1 on im_character_word (character_id);
+
+
+create table t_hero_info
+(
+    id               int auto_increment comment 'id'
+        primary key,
+    hero_name        varchar(50)          not null comment '英雄名称',
+    hero_detail_url  varchar(1500)        null comment '英雄详情链接',
+    hero_profile_url varchar(1500)        null comment '英雄头像链接',
+    hero_id          varchar(50)          null comment '英雄id',
+    is_crawl         tinyint(1) default 0 not null comment '是否爬取',
+    category         varchar(50)          not null comment '类别',
+    create_time      datetime             null comment '创建时间',
+    update_time      datetime             null comment '更新时间'
+)
+    comment '英雄信息表';
+
+
+create table t_hero_skin
+(
+    id               int auto_increment
+        primary key,
+    hero_id          varchar(50)          not null comment '英雄id',
+    hero_name        varchar(50)          not null comment '英雄名称',
+    skin_name        varchar(50)          not null comment '皮肤名称',
+    skin_url         varchar(1500)        null comment '皮肤图片链接',
+    skin_profile_url varchar(1500)        null comment '皮肤头像链接',
+    category         varchar(50)          not null comment '类别',
+    is_crawl         tinyint(1) default 0 not null comment '是否爬取',
+    create_time      datetime             null comment '创建时间',
+    update_time      datetime             null comment '更新时间',
+    constraint idx_1
+        unique (hero_id, category, skin_name)
+)
+    comment '英雄皮肤数据表';
+
+
+create table t_hero_word
+(
+    id          int auto_increment comment 'id'
+        primary key,
+    hero_id     varchar(50)          not null comment '英雄id',
+    hero_name   varchar(50)          not null comment '英雄名称',
+    category    varchar(20)          not null comment '类别',
+    word        varchar(200)         null comment '台词',
+    voice_url   varchar(1500)        null comment '台词语音',
+    is_crawl    tinyint(1) default 0 not null comment '是否爬取',
+    create_time datetime             null comment '创建时间',
+    update_time datetime             null comment '更新时间'
+)
+    comment '英雄台词表';
+
 
