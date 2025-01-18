@@ -21,6 +21,7 @@ public enum MessageType {
     FILE(2, "文件消息"),
     AUDIO(3, "语音消息"),
     VIDEO(4, "视频消息"),
+    WORD_VOICE(5, "台词语音消息"),
     RECALL(10, "撤回"),
     READED(11, "已读"),
     RECEIPT(12, "消息已读回执"),

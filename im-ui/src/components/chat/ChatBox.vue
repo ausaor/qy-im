@@ -127,7 +127,7 @@
         </el-container>
       </el-main>
       <emotion ref="emoBox" @emotion="onEmotion"></Emotion>
-      <word ref="wordBox" :words="words"></word>
+      <word ref="wordBox" :words="words" @send="sendWordVoice"></word>
       <chat-record :visible="showRecord" @close="closeRecordBox" @send="onSendRecord"></chat-record>
       <group-member-selector ref="rtcSel" :groupId="group.id" @complete="onInviteOk"></group-member-selector>
       <rtc-group-join ref="rtcJoin" :groupId="group.id"></rtc-group-join>
@@ -201,7 +201,7 @@
       closeRefBox() {
         //this.$refs.emoBox.close();
         // this.$refs.atBox.close();
-        this.$refs.wordBox.close();
+        //this.$refs.wordBox.close();
       },
       onCall(type){
         if(type == this.$enums.MESSAGE_TYPE.ACT_RT_VOICE){
@@ -524,6 +524,36 @@
 			closeHistoryBox() {
 				this.showHistory = false;
 			},
+      sendWordVoice(data) {
+        let content = {
+          id: data.id,
+          templateGroupId: data.templateGroupId,
+          characterId: data.characterId,
+          characterName: data.characterName,
+          word: data.word,
+          voice: data.voice
+        }
+        let msgInfo = {
+          content: JSON.stringify(content),
+          type: 5,
+          receipt: this.isReceipt
+        }
+        // 填充对方id
+        this.fillTargetId(msgInfo, this.chat.targetId);
+        this.sendMessageRequest(msgInfo).then((m) => {
+          m.selfSend = true;
+          m.chatType = this.chat.type;
+          this.$store.commit("insertMessage", m);
+          // 会话置顶
+          this.moveChatToTop();
+          // 保持输入框焦点
+          this.$refs.chatInputEditor.focus();
+          // 滚动到底部
+          this.scrollToBottom();
+          this.isReceipt = false;
+          this.refreshPlaceHolder();
+        })
+      },
       onSendRecord(data) {
         let msgInfo = {
           content: JSON.stringify(data),

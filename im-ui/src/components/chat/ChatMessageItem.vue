@@ -65,6 +65,14 @@
 <!--              <audio controls :src="JSON.parse(msgInfo.content).url"></audio>-->
               <mini-audio :audio-source="JSON.parse(msgInfo.content).url"></mini-audio>
             </div>
+            <div class="chat-msg-word-voice" v-if="msgInfo.type==$enums.MESSAGE_TYPE.WORD_VOICE">
+              <span class="word" :title="JSON.parse(msgInfo.content).word">{{JSON.parse(msgInfo.content).word}}</span>
+              <span class="voice" @click="playVoice(JSON.parse(msgInfo.content).voice)">
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-xitongxiaoxi"></use>
+                </svg>
+              </span>
+            </div>
             <div class="chat-action chat-msg-text" v-if="isAction">
               <span v-if="msgInfo.type==$enums.MESSAGE_TYPE.ACT_RT_VOICE" title="重新呼叫" @click="$emit('call')"
                     class="iconfont icon-chat-voice"></span>
@@ -210,6 +218,11 @@
         let rect = this.$refs.chatMsgBox.getBoundingClientRect();
         this.$refs.chatGroupReadedBox.open(rect);
       },
+      playVoice(url) {
+        let audio = new Audio();
+        audio.src = url;
+        audio.play();
+      }
 		},
 		computed: {
 			loading() {
@@ -451,6 +464,52 @@
 						}
 					}
 
+          .chat-msg-word-voice {
+            display: block;
+            position: relative;
+            line-height: 26px;
+            margin-top: 3px;
+            padding: 7px;
+            background-color: white;
+            border-radius: 10px;
+            color: black;
+            font-size: 14px;
+            text-align: left;
+            white-space: pre-wrap;
+            word-break: break-all;
+            box-shadow: 1px 1px 1px #c0c0f0;
+
+            &:after {
+              content: "";
+              position: absolute;
+              left: -10px;
+              top: 13px;
+              z-index: -1;
+              width: 0;
+              height: 0;
+              border-style: solid dashed dashed;
+              border-color: white transparent transparent;
+              overflow: hidden;
+              border-width: 10px;
+            }
+
+            .word {
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+              width: 260px;
+              height: 20px;
+            }
+            .voice {
+              cursor: pointer;
+            }
+
+            .icon {
+              font-size: 20px;
+              height: 20px;
+            }
+          }
+
           .chat-action {
             display: flex;
             align-items: center;
@@ -542,6 +601,20 @@
                 border-top-color: rgb(88, 127, 240);
 							}
 						}
+
+            .chat-msg-word-voice {
+              margin-left: 10px;
+              background-color: rgb(88, 127, 240);
+              color: #fff;
+              vertical-align: top;
+              box-shadow: 1px 1px 1px #ccc;
+
+              &:after {
+                left: auto;
+                right: -10px;
+                border-top-color: rgb(88, 127, 240);
+              }
+            }
 
 						.chat-msg-image {
 							flex-direction: row-reverse;

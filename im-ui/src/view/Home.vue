@@ -337,7 +337,7 @@
         // 插入消息
         this.$store.commit("insertMessage", msg);
         // 播放提示音
-        if (!msg.selfSend && msg.type <= this.$enums.MESSAGE_TYPE.VIDEO &&
+        if (!msg.selfSend && msg.type <= this.$enums.MESSAGE_TYPE.WORD_VOICE &&
             msg.status != this.$enums.MESSAGE_STATUS.READED) {
           this.playAudioTip();
         }
