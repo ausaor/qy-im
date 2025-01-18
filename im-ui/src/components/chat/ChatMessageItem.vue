@@ -291,7 +291,7 @@
 		.chat-msg-normal {
 			position: relative;
 			font-size: 0;
-			padding-left: 60px;
+			padding-left: 50px;
       min-height: 50px;
       margin-top: 10px;
 
@@ -335,7 +335,7 @@
             line-height: 26px;
             margin-top: 3px;
             padding: 7px;
-            background-color: white;
+            background-color: #daf3fd;
             border-radius: 10px;
             color: black;
             font-size: 14px;
@@ -470,7 +470,7 @@
             line-height: 26px;
             margin-top: 3px;
             padding: 7px;
-            background-color: white;
+            background-color: #daf3fd;
             border-radius: 10px;
             color: black;
             font-size: 14px;
@@ -565,7 +565,7 @@
 			&.chat-msg-mine {
 				text-align: right;
 				padding-left: 0;
-				padding-right: 60px;
+				padding-right: 50px;
 
 				.head-image {
 					left: auto;
