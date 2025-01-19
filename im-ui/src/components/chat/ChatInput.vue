@@ -63,7 +63,8 @@
 							let imagePush = {
 								fileId: this.generateId(),
 								file: file,
-								url: URL.createObjectURL(file)
+								url: URL.createObjectURL(file),
+                exists: false,
 							};
 							this.imageList[imagePush.fileId] = (imagePush);
 							let line = this.newLine();
@@ -277,6 +278,24 @@
 				this.updateRange();
 				this.isEmpty = false;
 			},
+      insertImage(obj) {
+        let imagePush = {
+          fileId: this.generateId(),
+          url: obj.url,
+          imgObj: obj,
+          exists: true,
+        };
+        this.imageList[imagePush.fileId] = (imagePush);
+        let line = this.newLine();
+        let imageElement = document.createElement('img');
+        imageElement.className = 'chat-image no-text';
+        imageElement.src = imagePush.url;
+        imageElement.dataset.imgId = imagePush.fileId;
+        line.appendChild(imageElement);
+        let after = document.createTextNode('\u00A0');
+        line.appendChild(after);
+        this.selectElement(after, 1);
+      },
 			generateId() {
 				return this.currentId++;
 			},

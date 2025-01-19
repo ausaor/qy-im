@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
-public class CharacterWordVO {
+public class CharacterEmoVO {
     private Long id;
 
     private Long templateGroupId;
@@ -15,9 +16,9 @@ public class CharacterWordVO {
 
     private String characterName;
 
-    private String word;
+    private String name;
 
-    private String voice;
+    private String url;
 
     /**
      * 是否删除

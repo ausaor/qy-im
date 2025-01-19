@@ -32,7 +32,7 @@
             <div class="chat-msg-image" v-if="msgInfo.type==$enums.MESSAGE_TYPE.IMAGE">
               <div class="img-load-box" v-loading="loading" element-loading-text="上传中.."
                    element-loading-background="rgba(0, 0, 0, 0.4)">
-                <img class="send-image" :src="JSON.parse(msgInfo.content).thumbUrl"
+                <img class="send-image" :src="JSON.parse(msgInfo.content).originUrl"
                      @click="showFullImageBox()" />
               </div>
               <span title="发送失败" v-show="loadFail" @click="onSendFail"

@@ -101,6 +101,11 @@
                     <use xlink:href="#icon-minganci"></use>
                   </svg>
                 </div>
+                <div title="角色表情包" ref="characterEmo" v-show="chat.type == 'GROUP' && myGroupMemberInfo.isTemplate" @click.stop="showCharacterEmoBox()">
+                  <svg class="icon svg-icon" aria-hidden="true">
+                    <use xlink:href="#icon-biaoqing"></use>
+                  </svg>
+                </div>
                 <div title="聊天记录" @click="showHistoryBox()">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-lishijilu"></use>
@@ -127,6 +132,7 @@
         </el-container>
       </el-main>
       <emotion ref="emoBox" @emotion="onEmotion"></Emotion>
+      <character-emotion ref="characterEmoBox" :emos="emos" @emotion="onCharacterEmotion"></character-emotion>
       <word ref="wordBox" :words="words" @send="sendWordVoice"></word>
       <chat-record :visible="showRecord" @close="closeRecordBox" @send="onSendRecord"></chat-record>
       <group-member-selector ref="rtcSel" :groupId="group.id" @complete="onInviteOk"></group-member-selector>
@@ -148,6 +154,7 @@
   import GroupMemberSelector from "../group/GroupMemberSelector.vue"
   import RtcGroupJoin from "../rtc/RtcGroupJoin.vue"
   import Word from "@/components/common/Word";
+  import CharacterEmotion from "@/components/common/CharacterEmotion";
 
 	export default {
 		name: "chatPrivate",
@@ -163,6 +170,7 @@
       GroupMemberSelector,
       RtcGroupJoin,
       Word,
+      CharacterEmotion,
 		},
 		props: {
 			chat: {
@@ -188,6 +196,10 @@
         reqQueue: [],
         isSending: false,
         words: [],
+        emos: {
+				  group: [],
+          character: []
+        },
 			}
 		},
     created() {
@@ -454,6 +466,19 @@
           })
         });
       },
+      showCharacterEmoBox() {
+        this.getCharacterEmo().then((data) => {
+          this.emos.group = data.group;
+          this.emos.character = data.character;
+          let width = this.$refs.characterEmo.offsetWidth;
+          let left = this.$elm.fixLeft(this.$refs.characterEmo);
+          let top = this.$elm.fixTop(this.$refs.characterEmo);
+          this.$refs.characterEmoBox.open({
+            x: left + width / 2,
+            y: top
+          })
+        })
+      },
       getCharacterWord() {
         return new Promise((resolve, reject) => {
           this.$http({
@@ -471,8 +496,21 @@
         });
 
       },
+      getCharacterEmo() {
+        return new Promise((resolve, reject) => {
+          this.$http({
+            url: `/character/emo/publishedEmo?templateGroupId=${this.group.templateGroupId}&characterId=${this.myGroupMemberInfo.templateCharacterId}`,
+            method: "get",
+          }).then((data) => {
+            resolve(data)
+          })
+        });
+      },
       onEmotion(emoText) {
         this.$refs.chatInputEditor.insertEmoji(emoText);
+      },
+      onCharacterEmotion(emo) {
+        this.$refs.chatInputEditor.insertImage(emo);
       },
       showRecordBox() {
 				this.showRecord = true;
@@ -554,6 +592,41 @@
           this.refreshPlaceHolder();
         })
       },
+      sendExistsImage(obj) {
+        return new Promise((resolve,reject)=>{
+          let data = obj.imgObj
+          let content = {
+            id: data.id,
+            templateGroupId: data.templateGroupId,
+            characterId: data.characterId,
+            characterName: data.characterName,
+            name: data.name,
+            originUrl: data.url
+          }
+          let msgInfo = {
+            content: JSON.stringify(content),
+            type: 1,
+            receipt: this.isReceipt
+          }
+          // 填充对方id
+          this.fillTargetId(msgInfo, this.chat.targetId);
+          this.sendMessageRequest(msgInfo).then((m) => {
+            m.selfSend = true;
+            m.chatType = this.chat.type;
+            this.$store.commit("insertMessage", m);
+            // 会话置顶
+            this.moveChatToTop();
+            // 保持输入框焦点
+            this.$refs.chatInputEditor.focus();
+          }).finally(() => {
+            // 解除锁定
+            this.scrollToBottom();
+            this.isReceipt = false;
+            this.refreshPlaceHolder();
+            resolve();
+          })
+        });
+      },
       onSendRecord(data) {
         let msgInfo = {
           content: JSON.stringify(data),
@@ -600,7 +673,11 @@
               await this.sendTextMessage(sendText + msg.content,msg.atUserIds);
               break;
             case "image":
-              await this.sendImageMessage(msg.content.file);
+              if (msg.content.exists) {
+                await this.sendExistsImage(msg.content);
+              } else {
+                await this.sendImageMessage(msg.content.file);
+              }
               break;
             case "file":
               await this.sendFileMessage(msg.content.file);
