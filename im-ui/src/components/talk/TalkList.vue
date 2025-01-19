@@ -68,7 +68,7 @@
                 </el-popconfirm>
 
               </span>
-              <span class="editBtn" v-if="item.isOwner" @click="editTalk(item)">
+              <span class="editBtn" v-if="item.isOwner && item.category === category" @click="editTalk(item)">
                 <i class="el-icon-edit"></i>
               </span>
               <span class="fgx"></span>

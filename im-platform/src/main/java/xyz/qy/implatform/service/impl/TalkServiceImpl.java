@@ -142,6 +142,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 throw new GlobalException("角色不存在");
             }
         }
+        if (!talk.getCategory().equals(talkUpdateDTO.getCategory())) {
+            throw new GlobalException("数据异常");
+        }
         BeanUtils.copyProperties(talkUpdateDTO, talk);
         talk.setAddress(user.getProvince());
         talk.setUpdateBy(userId);
