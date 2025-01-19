@@ -176,6 +176,8 @@ export default {
 				chat.lastContent = "[语音]";
 			} else if (msgInfo.type == MESSAGE_TYPE.VIDEO) {
 				chat.lastContent = "[视频]";
+			} else if (msgInfo.type == MESSAGE_TYPE.WORD_VOICE) {
+				chat.lastContent = JSON.parse(msgInfo.content).word;
 			} else if (msgInfo.type == MESSAGE_TYPE.ACT_RT_VOICE) {
 				chat.lastContent = "[语音通话]";
 			} else if (msgInfo.type == MESSAGE_TYPE.ACT_RT_VIDEO) {
