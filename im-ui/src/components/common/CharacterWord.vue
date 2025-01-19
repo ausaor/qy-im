@@ -106,11 +106,11 @@ export default {
 <style lang="scss" scoped>
 .word-box {
   position: fixed;
-  min-width: 300px;
+  width: 300px;
   box-sizing: border-box;
   border: 1px solid #b4b4b4;
   border-radius: 5px;
-  background-color: #f5f5f5;
+  background-color: white;
   box-shadow: 0 0 10px #ccc;
   text-align: left;
 
@@ -190,9 +190,10 @@ export default {
   .word-bottom {
     position: absolute;
     bottom: 0;
-    background: #f5f5f5;
+    background: white;
     display: flex;
     width: 100%;
+    height: 25px;
     padding: 5px;
     justify-content: space-between;
     align-items: center;
@@ -204,6 +205,7 @@ export default {
 
       .group-item {
         cursor: pointer;
+        height: 25px;
       }
     }
 

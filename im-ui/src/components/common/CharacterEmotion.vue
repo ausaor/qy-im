@@ -80,7 +80,7 @@ export default {
   box-sizing: border-box;
   border: 1px solid #b4b4b4;
   border-radius: 5px;
-  background-color: #f5f5f5;
+  background-color: white;
   box-shadow: 0 0 10px #ccc;
 
   .emotion-item-list {
@@ -120,8 +120,9 @@ export default {
   .emotion-bottom {
     position: absolute;
     bottom: 0;
-    background: #f5f5f5;
+    background: white;
     display: flex;
+    height: 35px;
     width: 100%;
 
     .emo-items {
