@@ -1,5 +1,6 @@
 package xyz.qy.implatform.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.qy.implatform.entity.CharacterWord;
 import xyz.qy.implatform.vo.CharacterWordVO;
@@ -13,5 +14,5 @@ public interface ICharacterWordService extends IService<CharacterWord> {
      * @param characterId 角色id
      * @return 角色台词
      */
-    List<CharacterWordVO> findPublishedWordByCharacterId(Long characterId);
+    JSONObject findPublishedWordByCharacterId(Long characterId);
 }

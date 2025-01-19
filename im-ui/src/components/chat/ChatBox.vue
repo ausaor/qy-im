@@ -133,7 +133,7 @@
       </el-main>
       <emotion ref="emoBox" @emotion="onEmotion"></Emotion>
       <character-emotion ref="characterEmoBox" :emos="emos" @emotion="onCharacterEmotion"></character-emotion>
-      <word ref="wordBox" :words="words" @send="sendWordVoice"></word>
+      <character-word ref="wordBox" :words="words" @send="sendWordVoice"></character-word>
       <chat-record :visible="showRecord" @close="closeRecordBox" @send="onSendRecord"></chat-record>
       <group-member-selector ref="rtcSel" :groupId="group.id" @complete="onInviteOk"></group-member-selector>
       <rtc-group-join ref="rtcJoin" :groupId="group.id"></rtc-group-join>
@@ -153,7 +153,7 @@
   import ChatInput from "./ChatInput";
   import GroupMemberSelector from "../group/GroupMemberSelector.vue"
   import RtcGroupJoin from "../rtc/RtcGroupJoin.vue"
-  import Word from "@/components/common/Word";
+  import CharacterWord from "@/components/common/CharacterWord";
   import CharacterEmotion from "@/components/common/CharacterEmotion";
 
 	export default {
@@ -169,7 +169,7 @@
       ChatInput,
       GroupMemberSelector,
       RtcGroupJoin,
-      Word,
+      CharacterWord,
       CharacterEmotion,
 		},
 		props: {
@@ -195,7 +195,10 @@
         friends: [],
         reqQueue: [],
         isSending: false,
-        words: [],
+        words: {
+          group: [],
+          character: []
+        },
         emos: {
 				  group: [],
           character: []
@@ -456,7 +459,8 @@
       },
       showWordBox() {
         this.getCharacterWord().then((data) => {
-          this.words = data;
+          this.words.group = data.group;
+          this.words.character = data.character;
           let width = this.$refs.characterWord.offsetWidth;
           let left = this.$elm.fixLeft(this.$refs.characterWord);
           let top = this.$elm.fixTop(this.$refs.characterWord);
@@ -499,7 +503,7 @@
       getCharacterEmo() {
         return new Promise((resolve, reject) => {
           this.$http({
-            url: `/character/emo/publishedEmo?templateGroupId=${this.group.templateGroupId}&characterId=${this.myGroupMemberInfo.templateCharacterId}`,
+            url: `/character/emo/publishedEmo?characterId=${this.myGroupMemberInfo.templateCharacterId}`,
             method: "get",
           }).then((data) => {
             resolve(data)
