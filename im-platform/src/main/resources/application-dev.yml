@@ -114,14 +114,14 @@ tencent:
 #高德地图应用
 gaode:
   map:
-    key: 1bc5f8751ed618024e7c88bf9f91850b
+    key:
     url: https://restapi.amap.com/v3/geocode/geo?
 
 
 #天地图应用
 tianditu:
   map:
-    key: 07ef921ce0795ea7db49fe649ca39526
+    key:
     url: http://api.tianditu.gov.cn/geocoder?ds={"keyWord":%s}&tk=%s
 
 image:

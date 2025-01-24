@@ -64,7 +64,7 @@
                   <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(1)">切换模板群聊</el-button>
                 </div>
                 <div class="buttons">
-                  <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(4)">切换模板多元角色群聊</el-button>
+                  <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(4)">切换模板角色群聊</el-button>
                   <el-button type="warning" v-show="isOwner && activeGroup.groupType !== 2" @click="popupSwitchTemplateGroup(2)">切换多元角色群聊</el-button>
                   <el-button type="info" v-show="isOwner && activeGroup.groupType !== 3" @click="popupSwitchTemplateGroup(3)">切换角色群聊</el-button>
                   <el-button v-show="isOwner && activeGroup.groupType !== 0" @click="popupSwitchCommonGroup()">切换普通群聊</el-button>
@@ -202,7 +202,7 @@
       <el-radio-group v-model="radio">
         <el-radio label="1">普通群聊</el-radio>
         <el-radio label="2">模板群聊</el-radio>
-        <el-radio label="6">模板多元角色群聊</el-radio>
+        <el-radio label="6">模板角色群聊</el-radio>
         <el-radio label="3">多元角色群聊</el-radio>
         <el-radio label="4">角色群聊</el-radio>
         <el-radio label="5">搜索群聊</el-radio>

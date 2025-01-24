@@ -27,7 +27,7 @@ public enum GroupTypeEnum {
     CHARTERS(3),
 
     /**
-     * 模板多元角色群聊
+     * 模板角色群聊
      */
     TEMPLATE_MULT_CHARTER(4),
 

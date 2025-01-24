@@ -146,6 +146,26 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     }
 
     /**
+     * 更新好友关于我的信息，主要是头像
+     *
+     * @param vo 好友vo
+     */
+    @Override
+    public void updateMyInfoToFriend(FriendVO vo) {
+        long userId = SessionContext.getSession().getUserId();
+        QueryWrapper<Friend> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(Friend::getUserId, vo.getId())
+                .eq(Friend::getFriendId, userId);
+        Friend f = this.getOne(queryWrapper);
+        if (f == null) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "对方不是您的好友");
+        }
+        f.setFriendHeadImage(vo.getHeadImage());
+        this.updateById(f);
+    }
+
+    /**
      * 单向绑定好友关系
      *
      * @param userId   用户id

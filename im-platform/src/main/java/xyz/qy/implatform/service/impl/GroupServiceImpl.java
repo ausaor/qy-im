@@ -467,7 +467,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 throw new GlobalException("部分模板角色不存在");
             }
 
-            // 若是模板多元角色群聊，判断当前群聊模板是否包含所选模板人物
+            // 若是模板角色群聊，判断当前群聊模板是否包含所选模板人物
             if (GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(vo.getGroupType())) {
                 templateCharacterList = templateCharacterService.findPublishedByTemplateGroupIdAndCharacterIds(group.getTemplateGroupId(), new ArrayList<>(characterIds));
                 if (templateCharacterList.size() != characterIds.size()) {
@@ -1036,7 +1036,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         User user = userService.getById(session.getUserId());
         Group group = baseMapper.selectById(vo.getGroupId());
         if (GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(group.getGroupType())) {
-            throw new GlobalException("当前群聊已是模板多元角色群聊");
+            throw new GlobalException("当前群聊已是模板角色群聊");
         }
         if (!user.getId().equals(group.getOwnerId())) {
             throw new GlobalException("您不是群主");
@@ -1111,7 +1111,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
         messageSendUtil.sendTipMessage(group.getId(),
                 session.getUserId(), session.getNickName(), Collections.emptyList(),
-                "群主将群聊类型切换到模板多元角色群聊【" + group.getName() + "】", GroupChangeTypeEnum.GROUP_TYPE_CHANGE.getCode());
+                "群主将群聊类型切换到模板角色群聊【" + group.getName() + "】", GroupChangeTypeEnum.GROUP_TYPE_CHANGE.getCode());
         return groupVO;
     }
 

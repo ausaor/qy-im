@@ -126,14 +126,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     private void recordLoginInfo(User user) {
-        String ipAddress = IpUtils.getIpAddress(request);
-        String ipSource = IpUtils.getIpSource(ipAddress);
+        String ipAddress = IpUtils.getIp(request);
+        String ipSource = IpUtils.getIp2region(ipAddress);
         user.setIpAddress(ipAddress);
         user.setIpSource(ipSource);
         user.setLoginType(LoginTypeEnum.USERNAME.getType());
-        IpGeoInfoVO ipGeoInfo = locationServicesUtil.getIpGeoInfoByTencentApi(ipAddress);
+        IpGeoInfoVO ipGeoInfo = locationServicesUtil.getIpGeoInfoByIp2Region(ipAddress);
         if (ObjectUtil.isNotNull(ipGeoInfo)) {
-            user.setProvince(StringUtils.isBlank(ipGeoInfo.getPro()) ? ipSource : ipGeoInfo.getPro());
+            user.setProvince(ipGeoInfo.getPro());
             user.setCity(ipGeoInfo.getCity());
         }
         user.setLastLoginTime(LocalDateTime.now());
@@ -201,13 +201,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //            log.error("get avatar error:{}", e.getMessage());
 //        }
 
-        String ipAddress = IpUtils.getIpAddress(request);
-        String ipSource = IpUtils.getIpSource(ipAddress);
+        String ipAddress = IpUtils.getIp(request);
+        String ipSource = IpUtils.getIp2region(ipAddress);
         user.setIpAddress(ipAddress);
         user.setIpSource(ipSource);
-        IpGeoInfoVO ipGeoInfo = locationServicesUtil.getIpGeoInfoByTencentApi(ipAddress);
+        IpGeoInfoVO ipGeoInfo = locationServicesUtil.getIpGeoInfoByIp2Region(ipAddress);
         if (ObjectUtil.isNotNull(ipGeoInfo)) {
-            user.setProvince(StringUtils.isBlank(ipGeoInfo.getPro()) ? ipSource : ipGeoInfo.getPro());
+            user.setProvince(ipGeoInfo.getPro());
             user.setCity(ipGeoInfo.getCity());
         }
         user.setNickName(SensitiveUtil.filter(user.getNickName()));
@@ -315,6 +315,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (friend != null) {
             vo.setFriendRemark(friend.getFriendRemark());
         }
+        Friend myInfoToFriend = findMyInfoToFriend(id);
+        if (myInfoToFriend != null) {
+            vo.setMyHeadImageToFriend(myInfoToFriend.getFriendHeadImage());
+        }
         vo.setOnline(imClient.isOnline(id));
         return vo;
     }
@@ -328,6 +332,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         wrapper.lambda()
                 .eq(Friend::getUserId, session.getUserId())
                 .eq(Friend::getFriendId, friendId);
+        return friendService.getOne(wrapper);
+    }
+
+    private Friend findMyInfoToFriend(Long friendId) {
+        UserSession session = SessionContext.getSession();
+        if (session.getUserId().equals(friendId)) {
+            return null;
+        }
+        QueryWrapper<Friend> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .eq(Friend::getUserId, friendId)
+                .eq(Friend::getFriendId, session.getUserId());
         return friendService.getOne(wrapper);
     }
 

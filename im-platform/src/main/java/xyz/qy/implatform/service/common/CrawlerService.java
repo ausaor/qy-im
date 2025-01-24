@@ -13,6 +13,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.implatform.entity.HeroInfo;
 import xyz.qy.implatform.entity.HeroSkin;
 import xyz.qy.implatform.entity.HeroWord;
@@ -285,6 +286,101 @@ public class CrawlerService {
                 heroInfo.setHeroProfileUrl(src);
                 heroId++;
                 heroInfoList.add(heroInfo);
+            }
+            heroInfoService.saveBatch(heroInfoList, 50);
+        } catch (Exception e) {
+            log.error("error", e);
+        }
+    }
+
+    /**
+     * 解析原神角色数据html
+     */
+    public void parseYuanShenCharactersHtml() {
+        try {
+            Document document = Jsoup.parse(new File("G:/idea_workspace/data/YuanShen/heros.html"), "utf8");
+            Elements lis = document.getElementsByTag("li");
+            List<HeroInfo> heroInfoList = new ArrayList<>();
+            int heroId = 1;
+            for (Element liEle : lis) {
+                Element img = liEle.getElementsByTag("img").first();
+                String src = img.attr("src");
+                Element p = liEle.getElementsByTag("p").first();
+                String heroName = p.text();
+                log.info("src:{}", src);
+                log.info("heroName:{}", heroName);
+                HeroInfo heroInfo = new HeroInfo();
+                heroInfo.setCategory("原神");
+                heroInfo.setHeroId(String.valueOf(heroId));
+                heroInfo.setHeroName(heroName);
+                heroInfo.setHeroProfileUrl(src);
+                heroId++;
+                heroInfoList.add(heroInfo);
+            }
+            heroInfoService.saveBatch(heroInfoList, 50);
+        } catch (Exception e) {
+            log.error("error", e);
+        }
+    }
+
+    /**
+     * 解析决战巅峰英雄数据html
+     * https://m.ali213.net/jsdf/yxtj/
+     */
+    public void parseBattleAtThePeakHeroHtml() {
+        try {
+            Document document = Jsoup.parse(new File("G:/idea_workspace/data/BattleAtThePeak/heros.html"), "utf8");
+            Elements aEles = document.getElementsByTag("a");
+            List<HeroInfo> heroInfoList = new ArrayList<>();
+            int heroId = 1;
+            for (Element aEle : aEles) {
+                Element img = aEle.getElementsByTag("img").first();
+                String src = "https:" + img.attr("src");
+                Element span = aEle.getElementsByTag("span").first();
+                String heroName = span.text();
+                log.info("src:{}", src);
+                log.info("heroName:{}", heroName);
+                HeroInfo heroInfo = new HeroInfo();
+                heroInfo.setCategory("决战巅峰");
+                heroInfo.setHeroId(String.valueOf(heroId));
+                heroInfo.setHeroName(heroName);
+                heroInfo.setHeroProfileUrl(src);
+                heroId++;
+                heroInfoList.add(heroInfo);
+            }
+            heroInfoService.saveBatch(heroInfoList, 50);
+        } catch (Exception e) {
+            log.error("error", e);
+        }
+    }
+
+    /**
+     * 解析非人学院英雄数据html
+     */
+    @Transactional
+    public void parseInhumanCollegeHeroHtml() {
+        try {
+            Document document = Jsoup.parse(new File("G:/idea_workspace/data/InhumanCollege/heros.html"), "utf8");
+            Elements uls = document.getElementsByTag("ul");
+            List<HeroInfo> heroInfoList = new ArrayList<>();
+            int heroId = 1;
+            for (Element ul : uls) {
+                Elements lis = ul.getElementsByTag("li");
+                for (Element li : lis) {
+                    Element img = li.getElementsByTag("img").first();
+                    String src = img.attr("src");
+                    Elements p = li.getElementsByTag("p");
+                    String heroName = p.text();
+                    log.info("src:{}", src);
+                    log.info("heroName:{}", heroName);
+                    HeroInfo heroInfo = new HeroInfo();
+                    heroInfo.setHeroId(String.valueOf(heroId));
+                    heroInfo.setCategory("非人学院");
+                    heroInfo.setHeroName(heroName);
+                    heroInfo.setHeroProfileUrl(src);
+                    heroId++;
+                    heroInfoList.add(heroInfo);
+                }
             }
             heroInfoService.saveBatch(heroInfoList, 50);
         } catch (Exception e) {

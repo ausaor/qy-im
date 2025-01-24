@@ -23,5 +23,7 @@ public interface IFriendService extends IService<Friend> {
 
     void update(FriendVO vo);
 
+    void updateMyInfoToFriend(FriendVO vo);
+
     FriendVO findFriend(Long friendId);
 }

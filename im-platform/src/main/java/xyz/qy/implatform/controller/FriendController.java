@@ -74,5 +74,12 @@ public class FriendController {
         friendService.update(vo);
         return ResultUtils.success();
     }
+
+    @PutMapping("/updateMyInfoToFriend")
+    @ApiOperation(value = "更新好友关于我的信息", notes = "更新好友关于我的信息")
+    public Result updateMyInfoToFriend(@Valid @RequestBody FriendVO vo) {
+        friendService.updateMyInfoToFriend(vo);
+        return ResultUtils.success();
+    }
 }
 

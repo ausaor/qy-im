@@ -57,8 +57,8 @@ public abstract class AbstractSocialLoginStrategyImpl implements SocialLoginStra
         // 判断是否已注册
         User user = getUser(socialToken);
         // 获取用户ip信息
-        String ipAddress = IpUtils.getIpAddress(request);
-        String ipSource = IpUtils.getIpSource(ipAddress);
+        String ipAddress = IpUtils.getIp(request);
+        String ipSource = IpUtils.getIp2region(ipAddress);
         if (ObjectUtil.isNull(user)) {
             user = saveUser(socialToken, ipAddress, ipSource);
         } else {
@@ -112,9 +112,9 @@ public abstract class AbstractSocialLoginStrategyImpl implements SocialLoginStra
             user.setQqOpenId(socialToken.getOpenId());
             user.setQqAccessToken(socialToken.getAccessToken());
         }
-        IpGeoInfoVO ipGeoInfo = locationServicesUtil.getIpGeoInfoByTencentApi(ipAddress);
+        IpGeoInfoVO ipGeoInfo = locationServicesUtil.getIpGeoInfoByIp2Region(ipAddress);
         if (ObjectUtil.isNotNull(ipGeoInfo)) {
-            user.setProvince(StringUtils.isBlank(ipGeoInfo.getPro()) ? ipSource : ipGeoInfo.getPro());
+            user.setProvince(ipGeoInfo.getPro());
             user.setCity(ipGeoInfo.getCity());
         }
         user.setLastLoginTime(LocalDateTime.now());
@@ -126,9 +126,9 @@ public abstract class AbstractSocialLoginStrategyImpl implements SocialLoginStra
     private User updateUser(User user, String ipAddress, String ipSource) {
         user.setIpAddress(ipAddress);
         user.setIpSource(ipSource);
-        IpGeoInfoVO ipGeoInfo = locationServicesUtil.getIpGeoInfoByTencentApi(ipAddress);
+        IpGeoInfoVO ipGeoInfo = locationServicesUtil.getIpGeoInfoByIp2Region(ipAddress);
         if (ObjectUtil.isNotNull(ipGeoInfo)) {
-            user.setProvince(StringUtils.isBlank(ipGeoInfo.getPro()) ? ipSource : ipGeoInfo.getPro());
+            user.setProvince(ipGeoInfo.getPro());
             user.setCity(ipGeoInfo.getCity());
         }
         user.setLastLoginTime(LocalDateTime.now());

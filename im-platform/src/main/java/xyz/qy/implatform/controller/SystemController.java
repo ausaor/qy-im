@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import xyz.qy.implatform.config.WebrtcConfig;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
+import xyz.qy.implatform.service.impl.SystemService;
 import xyz.qy.implatform.vo.SystemConfigVO;
 
 @Api(tags = "系统相关")
@@ -14,13 +15,12 @@ import xyz.qy.implatform.vo.SystemConfigVO;
 @RequestMapping("/system")
 @RequiredArgsConstructor
 public class SystemController {
-
-    private final WebrtcConfig webrtcConfig;
+    private final SystemService systemService;
 
     @GetMapping("/config")
     @ApiOperation(value = "加载系统配置", notes = "加载系统配置")
     public Result<SystemConfigVO> loadConfig() {
-        return ResultUtils.success(new SystemConfigVO(webrtcConfig));
+        return ResultUtils.success(systemService.getSystemConfig());
     }
 }
 

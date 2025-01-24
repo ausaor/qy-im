@@ -93,4 +93,6 @@ public final class RedisKey {
     public static final String IM_REGION_GROUP_LEADER_TRANSFER = IM_CACHE + "region-group:leader-transfer:";
 
     public static final String IM_REGION_GROUP_LEADER_LOCK = IM_LOCK + "region-group:leader-user-lock:";
+
+    public static final String REGION_ACTIVITY_RANGE = IM_CACHE + "region:activity-range";
 }

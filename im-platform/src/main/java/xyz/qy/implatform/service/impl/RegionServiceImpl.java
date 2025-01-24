@@ -66,7 +66,7 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
 
     private void findParentRegion(List<Region> parentRegionList, String parentCode) {
         Region region = this.findRegionByCode(parentCode);
-        if (ObjectUtil.isNull(region)) {
+        if (ObjectUtil.isNull(region) || region.getLevel().equals(0)) {
             return;
         }
         parentRegionList.add(region);

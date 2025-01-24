@@ -17,7 +17,7 @@
             <el-tag class="tag" v-if="group.groupType===1" effect="dark" size="medium" type="warning">模板群聊</el-tag>
             <el-tag class="tag" v-if="group.groupType===2" effect="dark" size="medium" type="warning">多元角色群聊</el-tag>
             <el-tag class="tag" v-if="group.groupType===3" effect="dark" size="medium" type="warning">角色群聊</el-tag>
-            <el-tag class="tag" v-if="group.groupType===4" effect="dark" size="medium" type="warning">模板多元角色群聊</el-tag>
+            <el-tag class="tag" v-if="group.groupType===4" effect="dark" size="medium" type="warning">模板角色群聊</el-tag>
           </div>
           <div class="btn">
             <el-button icon="el-icon-search" circle @click="viewGroup(group)" title="查看"></el-button>

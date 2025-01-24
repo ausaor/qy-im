@@ -2,11 +2,13 @@ import http from '../api/httpRequest.js'
 
 export default {
 	state: {
-		webrtc: {}
+		webrtc: {},
+		gaoDeMapKey: '',
 	},
 	mutations: {
 		setConfig(state, config) {
-			state.webrtc = config.webrtc; 
+			state.webrtc = config.webrtc;
+			state.gaoDeMapKey = config.gaoDeMapKey;
 		},
 		clear(state){
 			state.webrtc = {};

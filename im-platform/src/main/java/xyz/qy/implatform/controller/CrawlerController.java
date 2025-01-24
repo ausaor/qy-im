@@ -152,4 +152,22 @@ public class CrawlerController {
         crawlerService.parseSpaceTimeCallHerosHtml();
         return ResultUtils.success();
     }
+
+    @GetMapping("/parseYuanShenCharactersHtml")
+    public Result parseYuanShenCharactersHtml() {
+        crawlerService.parseYuanShenCharactersHtml();
+        return ResultUtils.success();
+    }
+
+    @GetMapping("/parseBattleAtThePeakHeroHtml")
+    public Result parseBattleAtThePeakHeroHtml() {
+        crawlerService.parseBattleAtThePeakHeroHtml();
+        return ResultUtils.success();
+    }
+
+    @GetMapping("/parseInhumanCollegeHeroHtml")
+    public Result parseInhumanCollegeHeroHtml() {
+        crawlerService.parseInhumanCollegeHeroHtml();
+        return ResultUtils.success();
+    }
 }

@@ -44,7 +44,6 @@ import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.GroupMessageVO;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -58,16 +57,16 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, GroupMessage> implements IGroupMessageService {
-    @Autowired
+    @Resource
     private IGroupService groupService;
 
-    @Autowired
+    @Resource
     private IGroupMemberService groupMemberService;
 
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
-    @Autowired
+    @Resource
     private IMClient imClient;
 
     @Resource

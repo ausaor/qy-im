@@ -106,6 +106,37 @@ public class LocationServicesUtil {
         return DigestUtils.md5DigestAsHex(String.format(ENCRYPTION_PATH, ip, key, sk).getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * 查询IP属地信息
+     *
+     * @param ipAddress IP地址
+     * @return IpGeoInfoVO
+     */
+    public IpGeoInfoVO getIpGeoInfoByIp2Region(String ipAddress) {
+        IpGeoInfoVO ipGeoInfoVO = null;
+        try {
+            String ip2region = IpUtils.getIp2region(ipAddress);
+            if (StringUtils.isBlank(ip2region)) {
+                return null;
+            }
+            String[] arr = ip2region.split("\\|");
+            ipGeoInfoVO = new IpGeoInfoVO();
+            if (arr.length > 0) {
+                ipGeoInfoVO.setNation(arr[0]);
+            }
+            if (arr.length > 1) {
+                ipGeoInfoVO.setPro(arr[1]);
+            }
+            if (arr.length > 2) {
+                ipGeoInfoVO.setCity(arr[2]);
+            }
+
+        } catch (Exception e) {
+            log.error("getIpGeoInfoByIp2Region error", e);
+        }
+        return ipGeoInfoVO;
+    }
+
     public Map<String, String> getLngAndLatByAddr(String address) {
         //return getLngAndLatWithAddrByTianDiTu(address);
         return getLngAndLatWithAddrByGaoDeApi(address);

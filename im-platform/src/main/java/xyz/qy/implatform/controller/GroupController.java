@@ -119,7 +119,7 @@ public class GroupController {
         return ResultUtils.success(groupService.switchMoreCharactersGroup(vo));
     }
 
-    @ApiOperation(value = "切换模板多元角色群聊", notes = "切换模板多元角色群聊")
+    @ApiOperation(value = "切换模板角色群聊", notes = "切换模板角色群聊")
     @PostMapping("/switchTemplateMultCharactersGroup")
     public Result switchTemplateMultCharactersGroup(@Valid @RequestBody SwitchTemplateGroupVO vo) {
         return ResultUtils.success(groupService.switchTemplateMultCharactersGroup(vo));

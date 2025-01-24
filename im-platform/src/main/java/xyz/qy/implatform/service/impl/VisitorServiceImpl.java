@@ -47,7 +47,7 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
     @Override
     public void report() {
         // 获取ip
-        String ipAddress = IpUtils.getIpAddress(request);
+        String ipAddress = IpUtils.getIp(request);
         if (StringUtils.isBlank(ipAddress)) {
             log.info("获取到空IP {}", LocalDateTime.now());
             return;
@@ -73,7 +73,7 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
                 visitor = new Visitor();
             }
             visitor.setIp(ipAddress);
-            visitor.setAddr(IpUtils.getIpSource(ipAddress));
+            visitor.setAddr(IpUtils.getIp2region(ipAddress));
             visitor.setBrowser(browser.getName());
             visitor.setDomain(serverName);
             visitor.setOperatingSystem(operatingSystem.getName());
@@ -84,7 +84,7 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
     }
 
     private Visitor getVisitorInfoByIp(String ip) {
-        IpGeoInfoVO ipGeoInfoVO = locationServicesUtil.getIpGeoInfoByTencentApi(ip);
+        IpGeoInfoVO ipGeoInfoVO = locationServicesUtil.getIpGeoInfoByIp2Region(ip);
         Visitor visitor = null;
         try {
             if (ipGeoInfoVO != null) {

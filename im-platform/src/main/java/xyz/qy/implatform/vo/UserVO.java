@@ -52,4 +52,7 @@ public class UserVO {
 
     @ApiModelProperty(value = "好友备注")
     private String friendRemark;
+
+    @ApiModelProperty(value = "与好友聊天头像")
+    private String myHeadImageToFriend;
 }

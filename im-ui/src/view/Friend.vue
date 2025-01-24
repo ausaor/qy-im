@@ -175,7 +175,6 @@ export default {
     updateFriendInfo(friend, user, index) {
       // store的数据不能直接修改，深拷贝一份store的数据
       friend = JSON.parse(JSON.stringify(friend));
-      friend.headImage = user.headImage;
       friend.nickName = user.nickName;
       this.$http({
         url: "/friend/update",
@@ -193,8 +192,7 @@ export default {
       }).then((user) => {
         this.userInfo = user;
         // 如果发现好友的头像和昵称改了，进行更新
-        if (user.headImage != friend.headImage ||
-            user.nickName != friend.nickName) {
+        if (user.nickName != friend.nickName) {
           this.updateFriendInfo(friend, user, index)
         }
       })
@@ -205,7 +203,6 @@ export default {
         this.$message.warning('不能输入空内容');
         return;
       }
-      friend.headImage = this.userInfo.headImage;
       friend.nickName = this.userInfo.nickName;
       friend.friendRemark = this.userInfo.friendRemark;
       this.$http({

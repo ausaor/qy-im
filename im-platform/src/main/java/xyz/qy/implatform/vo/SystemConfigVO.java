@@ -8,10 +8,12 @@ import xyz.qy.implatform.config.WebrtcConfig;
 
 @Data
 @ApiModel("系统配置VO")
-@AllArgsConstructor
 public class SystemConfigVO {
 
     @ApiModelProperty(value = "webrtc配置")
     private WebrtcConfig webrtc;
+
+    @ApiModelProperty(value = "高德地图key")
+    private String gaoDeMapKey;
 }
 

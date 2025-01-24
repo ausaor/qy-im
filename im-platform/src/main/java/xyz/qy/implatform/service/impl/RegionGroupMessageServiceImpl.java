@@ -87,6 +87,7 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
 
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
+
     @Override
     public RegionGroupMessageVO sendMessage(RegionGroupMessageDTO dto) {
         UserSession session = SessionContext.getSession();
@@ -154,6 +155,9 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         sendMessage.setSendResult(false);
         sendMessage.setData(msgInfo);
         imClient.sendRegionGroupMessage(sendMessage);
+
+        // 地区群聊每发送一条消息，地区活跃度值增加1
+        redisCache.recordKeyValueScore(RedisKey.REGION_ACTIVITY_RANGE, regionGroup.getCode(), 1.0);
         log.info("发送群聊消息，发送id:{},群聊id:{},内容:{}", session.getUserId(), dto.getRegionGroupId(), dto.getContent());
         return msgInfo;
     }
