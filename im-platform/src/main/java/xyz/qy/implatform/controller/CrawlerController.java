@@ -170,4 +170,10 @@ public class CrawlerController {
         crawlerService.parseInhumanCollegeHeroHtml();
         return ResultUtils.success();
     }
+
+    @GetMapping("/parse300FightHeroHtml")
+    public Result parse300FightHeroHtml() {
+        crawlerService.parse300FightHeroHtml();
+        return ResultUtils.success();
+    }
 }

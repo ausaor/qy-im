@@ -357,7 +357,6 @@ public class CrawlerService {
     /**
      * 解析非人学院英雄数据html
      */
-    @Transactional
     public void parseInhumanCollegeHeroHtml() {
         try {
             Document document = Jsoup.parse(new File("G:/idea_workspace/data/InhumanCollege/heros.html"), "utf8");
@@ -381,6 +380,36 @@ public class CrawlerService {
                     heroId++;
                     heroInfoList.add(heroInfo);
                 }
+            }
+            heroInfoService.saveBatch(heroInfoList, 50);
+        } catch (Exception e) {
+            log.error("error", e);
+        }
+    }
+
+    /**
+     * 计息300大作战英雄数据html
+     */
+    public void parse300FightHeroHtml() {
+        try {
+            Document document = Jsoup.parse(new File("G:/idea_workspace/data/300Fight/heros.html"), "utf8");
+            Elements lis = document.getElementsByTag("li");
+            List<HeroInfo> heroInfoList = new ArrayList<>();
+            int heroId = 1;
+            for (Element liEle : lis) {
+                Element img = liEle.getElementsByTag("img").first();
+                String src = img.attr("src");
+                Element p = liEle.getElementsByTag("p").first();
+                String heroName = p.text();
+                log.info("src:{}", src);
+                log.info("heroName:{}", heroName);
+                HeroInfo heroInfo = new HeroInfo();
+                heroInfo.setCategory("300大作战");
+                heroInfo.setHeroId(String.valueOf(heroId));
+                heroInfo.setHeroName(heroName);
+                heroInfo.setHeroProfileUrl(src);
+                heroId++;
+                heroInfoList.add(heroInfo);
             }
             heroInfoService.saveBatch(heroInfoList, 50);
         } catch (Exception e) {
