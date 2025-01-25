@@ -14,6 +14,11 @@ export default {
 			state.webrtc = {};
 		}
 	},
+	getters: {
+		getGaoDeMapKey: (state) => () => {
+			return state.gaoDeMapKey
+		},
+	},
 	actions:{
 		loadConfig(context){
 			return new Promise((resolve, reject) => {

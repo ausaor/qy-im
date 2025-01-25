@@ -12,7 +12,7 @@ public class SystemService {
 
     private final WebrtcConfig webrtcConfig;
 
-    @Value("${gaode.map.key}")
+    @Value("${gaode.map.web-key}")
     private String gaoDeMapKey;
 
     public SystemConfigVO getSystemConfig() {
