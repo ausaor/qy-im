@@ -25,7 +25,7 @@
 						<div class="avatar-box">
 							<file-upload v-show="isOwner" class="avatar-uploader" :action="imageAction" :disabled="!isOwner || activeGroup.isTemplate"
                  :showLoading="true" :maxSize="maxSize" @success="onUploadSuccess"
-                 :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp']">
+                 :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
 								<img v-if="activeGroup.headImage" :src="activeGroup.headImage" class="avatar">
 								<i v-else class="el-icon-plus avatar-uploader-icon"></i>
 							</file-upload>
@@ -83,7 +83,7 @@
                 <div class="member-avatar-btn" title="上传我的群聊头像">
                   <file-upload class="avatar-uploader" :action="imageAction"
                                :showLoading="true" :maxSize="maxSize" @success="onUploadMemberAvatarSuccess"
-                               :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp']">
+                               :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
                     <img v-if="myGroupMemberInfo.headImage" :src="myGroupMemberInfo.headImage" class="member-avatar">
                     <i v-else class="el-icon-upload"></i>
                   </file-upload>
@@ -226,7 +226,7 @@
         :before-close="closeSwitchCommonGroup">
         <div>
           <file-upload class="avatar-uploader-group" :action="imageAction" :showLoading="true"
-                       :maxSize="maxSize" @success="doneUploadSuccess" :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp']">
+                       :maxSize="maxSize" @success="doneUploadSuccess" :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
             <img v-if="commonGroup.headImage" :src="commonGroup.headImage" class="avatar">
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </file-upload>

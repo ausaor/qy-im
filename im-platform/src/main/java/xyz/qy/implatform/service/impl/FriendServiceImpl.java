@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -139,10 +140,12 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "对方不是您的好友");
         }
 
-        f.setFriendHeadImage(vo.getHeadImage());
         f.setFriendNickName(vo.getNickName());
         f.setFriendRemark(vo.getFriendRemark());
         this.updateById(f);
+        if (StringUtils.isNotBlank(vo.getMyHeadImageToFriend())) {
+            updateMyInfoToFriend(vo);
+        }
     }
 
     /**
@@ -161,7 +164,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         if (f == null) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "对方不是您的好友");
         }
-        f.setFriendHeadImage(vo.getHeadImage());
+        f.setFriendHeadImage(vo.getMyHeadImageToFriend());
         this.updateById(f);
     }
 

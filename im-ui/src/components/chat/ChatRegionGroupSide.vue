@@ -39,7 +39,7 @@
             v-model="myGroupMemberInfo.aliasName"/>
         <file-upload class="avatar-uploader" :action="imageAction"
                      :showLoading="true" :maxSize="maxSize" @success="onUploadMemberAvatarSuccess"
-                     :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp']">
+                     :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
             <img v-if="myGroupMemberInfo.headImage" :src="myGroupMemberInfo.headImage" class="member-avatar">
             <i v-else class="el-icon-upload"></i>
         </file-upload>

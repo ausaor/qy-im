@@ -313,6 +313,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         UserVO vo = BeanUtils.copyProperties(user, UserVO.class);
         Friend friend = findFriend(id);
         if (friend != null) {
+            vo.setHeadImage(friend.getFriendHeadImage());
             vo.setFriendRemark(friend.getFriendRemark());
         }
         Friend myInfoToFriend = findMyInfoToFriend(id);

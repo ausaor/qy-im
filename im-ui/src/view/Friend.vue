@@ -46,6 +46,14 @@
                     <el-descriptions-item label="备注名">
                       <el-input v-model="userInfo.friendRemark" size="small" maxlength="15" placeholder="好友备注"></el-input>
                     </el-descriptions-item>
+                    <el-descriptions-item label="聊天头像">
+                      <file-upload class="avatar-uploader" :action="imageAction"
+                                   :showLoading="true" :maxSize="maxSize" @success="onUploadAvatarSuccess"
+                                   :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
+                        <img v-if="userInfo.myHeadImageToFriend" :src="userInfo.myHeadImageToFriend" class="my-avatar">
+                        <i v-else class="el-icon-upload"></i>
+                      </file-upload>
+                    </el-descriptions-item>
                     <el-descriptions-item label="动态">
                       <div class="friend-space" @click="openFriendSpace">
                         <svg class="icon svg-icon" aria-hidden="true">
@@ -90,6 +98,7 @@ import HeadImage from "../components/common/HeadImage.vue";
 import TalkList from "@/components/talk/TalkList";
 import Drawer from "@/components/common/Drawer";
 import SpaceCover from "@/components/common/SpaceCover";
+import FileUpload from "@/components/common/FileUpload";
 
 export default {
   name: "friend",
@@ -100,6 +109,7 @@ export default {
     TalkList,
     Drawer,
     SpaceCover,
+    FileUpload,
   },
   data() {
     return {
@@ -108,6 +118,7 @@ export default {
       userInfo: {},
       activeIdx: -1,
       friendSpaceVisible: false,
+      maxSize: 2 * 1024 * 1024,
     }
   },
   methods: {
@@ -205,6 +216,7 @@ export default {
       }
       friend.nickName = this.userInfo.nickName;
       friend.friendRemark = this.userInfo.friendRemark;
+      friend.myHeadImageToFriend = this.userInfo.myHeadImageToFriend;
       this.$http({
         url: "/friend/update",
         method: "put",
@@ -224,6 +236,9 @@ export default {
     refreshTalkList() {
       this.$refs.talkListRef.refreshTalkList();
     },
+    onUploadAvatarSuccess(data) {
+      this.userInfo.myHeadImageToFriend = data.originUrl;
+    },
   },
   computed: {
     friendStore() {
@@ -234,7 +249,10 @@ export default {
     },
     curFriend() {
       return this.friendStore.activeFriend;
-    }
+    },
+    imageAction(){
+      return `/image/upload`;
+    },
   },
   mounted() {
 
@@ -299,6 +317,18 @@ export default {
       .info-item {
         margin-left: 20px;
         background-color: #ffffff;
+
+        .avatar-uploader {
+          width: 32px;
+          height: 32px;
+          line-height: 32px;
+
+          .my-avatar {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+          }
+        }
 
         .friend-space {
           display: flex;
