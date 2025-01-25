@@ -1,7 +1,7 @@
 <template>
   <div class="template-group-item">
     <div class="avatar">
-      <head-image :url="templateGroup.avatar"> </head-image>
+      <head-image :url="templateGroup.avatar" :name="templateGroup.groupName"> </head-image>
     </div>
     <div class="text">
       <div>{{ templateGroup.groupName}}</div>

@@ -1,7 +1,7 @@
 <template>
   <div class="character-avatar-item">
     <div class="avatar">
-      <head-image :url="characterAvatar.avatar"> </head-image>
+      <head-image :url="characterAvatar.avatar" :name="characterAvatar.name"> </head-image>
     </div>
     <div class="text">
       <div>{{ characterAvatar.name}}</div>

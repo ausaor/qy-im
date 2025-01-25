@@ -1,7 +1,7 @@
 <template>
 	<div class="template-group-member">
     <div class="avatar">
-      <head-image :url="member.userAvatar"></head-image>
+      <head-image :url="member.userAvatar" :name="member.nickName"></head-image>
     </div>
     <div class="text">
       <div>{{member.nickName}}</div>
@@ -13,7 +13,7 @@
       <div>{{member.aliasName}}</div>
     </div>
     <div v-if="member.isTemplate" class="avatar">
-      <head-image :url="member.headImage"></head-image>
+      <head-image :url="member.headImage" :name="member.aliasName"></head-image>
     </div>
 	</div>
 </template>
