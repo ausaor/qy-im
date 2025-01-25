@@ -71,8 +71,14 @@ public class GroupMember extends Model<GroupMember> {
     /**
      *  头像
      */
-    @TableField("head_image")
+    @TableField(value = "head_image", fill = FieldFill.UPDATE)
     private String headImage;
+
+    /**
+     *  自定义头像
+     */
+    @TableField("head_image_def")
+    private String headImageDef;
 
     /**
      * 是否模板人物

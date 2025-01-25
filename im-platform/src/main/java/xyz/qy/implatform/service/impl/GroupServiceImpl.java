@@ -180,6 +180,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
             member.setAliasName(StringUtils.isEmpty(vo.getAliasName()) ? session.getNickName() : vo.getAliasName());
             member.setHeadImage(vo.getMemberHeadImage());
+            member.setHeadImageDef(vo.getMemberHeadImage());
         }
         groupMemberService.updateById(member);
         log.info("修改群聊，群聊id:{},群聊名称:{}", group.getId(), group.getName());
@@ -814,7 +815,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             groupMember.setShowNickName(false);
             if (userMap.containsKey(groupMember.getUserId())) {
                 User userInfo = userMap.get(groupMember.getUserId());
-                groupMember.setHeadImage(userInfo.getHeadImage());
+                if (StringUtils.isNotBlank(groupMember.getHeadImageDef())) {
+                    groupMember.setHeadImage(groupMember.getHeadImageDef());
+                } else {
+                    groupMember.setHeadImage(userInfo.getHeadImage());
+                }
                 groupMember.setAliasName(userInfo.getNickName());
             }
         }
