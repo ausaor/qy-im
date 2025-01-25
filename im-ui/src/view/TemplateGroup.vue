@@ -180,7 +180,7 @@
                 :disabled="!curTemplateCharacter.isOwner"
                 show-word-limit
             />
-            <el-select class="select-item" v-model="characterAvatar.level" placeholder="请选择"
+<!--            <el-select class="select-item" v-model="characterAvatar.level" placeholder="请选择"
                        :disabled="!curTemplateCharacter.isOwner">
               <el-option
                   v-for="item in levelOptions"
@@ -188,7 +188,8 @@
                   :label="item.label"
                   :value="item.value">
               </el-option>
-            </el-select>
+            </el-select>-->
+            <el-input-number style="width: 80px;margin-left: 20px;" controls-position="right" v-model="characterAvatar.level" :min="0" :max="10"></el-input-number>
             <div class="status-tag">
               <el-tag class="tag" v-if="characterAvatar.status==='3'" effect="dark" size="small" type="danger">未通过
               </el-tag>

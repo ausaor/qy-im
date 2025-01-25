@@ -410,7 +410,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
 
         groupMember.setCharacterAvatarId(characterAvatar.getId());
         groupMember.setHeadImage(characterAvatar.getAvatar());
-        if (characterAvatar.getLevel() == 1) {
+        if (characterAvatar.getLevel() != 0) {
             groupMember.setAliasName(characterAvatar.getName());
         } else {
             groupMember.setAliasName(characterAvatar.getTemplateCharacterName());

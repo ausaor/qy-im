@@ -60,7 +60,8 @@ public class CharacterAvatarServiceImpl extends ServiceImpl<CharacterAvatarMappe
     public List<CharacterAvatarVO> queryAllCharacterAvatarByCharacterId(Long templateCharacterId) {
         LambdaQueryWrapper<CharacterAvatar> queryWrapper = new LambdaQueryWrapper<CharacterAvatar>()
                 .eq(CharacterAvatar::getTemplateCharacterId, templateCharacterId)
-                .eq(CharacterAvatar::getDeleted, false);
+                .eq(CharacterAvatar::getDeleted, false)
+                .orderByAsc(CharacterAvatar::getLevel);
         List<CharacterAvatar> characterAvatars = baseMapper.selectList(queryWrapper);
         return BeanUtils.copyProperties(characterAvatars, CharacterAvatarVO.class);
     }

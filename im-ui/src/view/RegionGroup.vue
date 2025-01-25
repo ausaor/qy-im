@@ -2,7 +2,7 @@
   <el-container class="chat-page">
     <el-aside width="14%" class="region-list-box">
       <div class="region-list-header" @click="chooseRegion">
-        地区选择
+        {{mapVisible ? '关闭' : '选择地区'}}
       </div>
       <el-scrollbar class="group-list-items">
         <div v-for="(regionGroup,index) in regionGroupStore.regionGroups" :key="index">
