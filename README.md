@@ -5,6 +5,14 @@
 
 
 
+### 源码地址
+
+Gitee：https://gitee.com/auraor/qy-im
+
+GitHub：https://github.com/ausaor/qy-im
+
+
+
 ### 支持功能
 
 1、私聊（支持好友备注，与好友聊天头像配置）
@@ -166,7 +174,7 @@
 
 <p style="clear:both;"></p>
 
-### 群聊模板
+#### 群聊模板
 
 <img src="img/image-20250126145531206.png" alt="image-20250126145531206" style="zoom:33%;float:left;" />
 
