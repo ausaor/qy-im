@@ -166,9 +166,20 @@
 
 <p style="clear:both;"></p>
 
+### 群聊模板
+
+<img src="img/image-20250126145531206.png" alt="image-20250126145531206" style="zoom:33%;float:left;" />
+
+<p style="clear:both;"></p>
+
+<img src="img/image-20250126145628794.png" alt="image-20250126145628794" style="zoom:33%;float:left;" />
+
+<p style="clear:both;"></p>
+
 
 
 ### 联系方式
+
 QQ: 2181557255
 
 邮箱：2181557255@qq.com
