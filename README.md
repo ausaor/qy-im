@@ -61,6 +61,14 @@
 
 
 
+### 项目数据
+
+群聊模板相关图片：https://share.weiyun.com/1UgHOyll
+
+地区&角色台词数据：https://share.weiyun.com/TOJa1qYv
+
+
+
 ### 演示视频
 
 
@@ -97,24 +105,39 @@
 模板角色群聊
 
 <img src="img/image-20250125211913562.png" alt="image-20250125211913562" style="zoom:33%;float:left;" />
+
 <p style="clear:both;"></p>
 
 
 多元角色群聊
 
 <img src="img/image-20250125212012095.png" alt="image-20250125212012095" style="zoom:33%;float:left;" />
+
 <p style="clear:both;"></p>
 
 
 角色群聊
 
 <img src="img/image-20250125212055589.png" alt="image-20250125212055589" style="zoom:33%;float:left;" />
+
 <p style="clear:both;"></p>
+
+系统类消息
+
+<img src="img/image-20250126135849320.png" alt="image-20250126135849320" style="zoom:33%;float:left;" />
+
+<p style="clear:both;"></p>
+
+<img src="img/image-20250126140014025.png" alt="image-20250126140014025" style="zoom:33%;float:left;" />
+
+<p style="clear:both;"></p>
+
 
 
 好友列表
 
 <img src="img/image-20250125212204491.png" alt="image-20250125212204491" style="zoom:33%;float:left;" />
+
 <p style="clear:both;"></p>
 
 
@@ -127,8 +150,10 @@
 地区群聊
 
 <img src="img/image-20250125212613512.png" alt="image-20250125212613512" style="zoom:33%;float:left;" />
+
 <p style="clear:both;"></p>
 <img src="img/image-20250125212447616.png" alt="image-20250125212447616" style="zoom:33%;float:left;" />
+
 <p style="clear:both;"></p>
 
 
@@ -154,7 +179,7 @@ QQ: 2181557255
 
 ### 交流群
 
-
+QQ群号：157414719
 
 
 
@@ -169,6 +194,7 @@ QQ: 2181557255
 如果您喜欢这个项目，请作者喝杯可乐也可以的哦
 
 <img src="img/image-20250125213832882.png" alt="image-20250125213832882" style="zoom:50%;float:left;" />
+
 <p style="clear:both;"></p>
 
 
