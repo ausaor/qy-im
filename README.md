@@ -13,6 +13,12 @@ GitHub：https://github.com/ausaor/qy-im
 
 
 
+### 演示视频
+
+https://www.bilibili.com/video/BV1LzfzYdEuk/?vd_source=2578ac860d7d3e326b54e4fa654bdb04
+
+
+
 ### 支持功能
 
 1、私聊（支持好友备注，与好友聊天头像配置）
