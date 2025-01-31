@@ -100,21 +100,21 @@
                       {{ comment.userNickname }}：
                   </span>
 
-                  <span v-else>
+                  <div v-else style="display: flex;align-items: flex-end;">
                     <span class="username" @click="showUserInfo($event, comment.userId)">{{
                         comment.userNickname
                       }}</span>
-                      回复
+                      <span style="margin-left: 5px; margin-right: 5px;">回复</span>
 <!--                    <avatar :url="comment.replyUserAvatar" :userId="comment.replyUserId" :size="'small'"
                             class="comment-avatar"></avatar>-->
                     <head-image class="comment-avatar" :url="comment.replyUserAvatar" :id="comment.replyUserId" :name="comment.replyUserNickname" :size="32"/>
                     <span class="username"
                           @click="showUserInfo($event, comment.replyUserId)">{{ comment.replyUserNickname }}：</span>
-                  </span>
+                  </div>
                   <span class="content point" v-html="$emo.transform(comment.content)"
                         @click="handleShowCommentBox(comment, item.id, index)">
                   </span>
-                  <span class="del-btn" v-if="comment.isOwner">
+                  <div class="del-btn" v-if="comment.isOwner">
                     <el-popconfirm
                         confirm-button-text='确认'
                         cancel-button-text='取消'
@@ -126,7 +126,7 @@
                       <el-button slot="reference" icon="el-icon-delete-solid" size="mini" type="danger" circle
                                  @click.stop></el-button>
                     </el-popconfirm>
-                  </span>
+                  </div>
                 </div>
               </div>
 
@@ -959,9 +959,11 @@ export default {
             .commentItem {
               text-align: left;
               margin-bottom: 5px;
+              position: relative;
 
               .comment-content {
-
+                display: flex;
+                align-items: flex-end;
               }
 
               span {
@@ -988,7 +990,8 @@ export default {
               .del-btn {
                 color: #d42e07;
                 font-size: 12px;
-                float: right;
+                position: absolute;
+                right: 5px;
               }
             }
 
