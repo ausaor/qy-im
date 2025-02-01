@@ -74,4 +74,7 @@ public class GroupVO {
 
     @ApiModelProperty(value = "群成员头像")
     private String memberHeadImage;
+
+    @ApiModelProperty(value = "是否禁言")
+    private Boolean isBanned;
 }

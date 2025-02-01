@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.dto.GroupBanDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IGroupService;
@@ -141,6 +142,20 @@ public class GroupController {
     @PostMapping("/joinGroup")
     public Result joinGroup(@Valid @RequestBody GroupJoinVO vo) {
         return ResultUtils.success(groupService.joinGroup(vo));
+    }
+
+    @ApiOperation(value = "群聊禁言", notes = "群聊禁言")
+    @PostMapping("/banMsg")
+    public Result banMsg(@Valid @RequestBody GroupBanDTO dto) {
+        groupService.banMsg(dto);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "解除群聊禁言", notes = "解除群聊禁言")
+    @PostMapping("/unBanMsg")
+    public Result unBanMsg(@Valid @RequestBody GroupBanDTO dto) {
+        groupService.unBanMsg(dto);
+        return ResultUtils.success();
     }
 }
 

@@ -815,7 +815,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
 
             messageSendUtil.sendRegionGroupTipMsg(regionGroup.getId(), session.getUserId(), session.getNickName(), null, content);
         } else {
-            if (ObjectUtil.isNull(dto.getUserId()) || ObjectUtil.isNull(dto.getJoinType())) {
+            if (ObjectUtil.isNull(dto.getUserId())) {
                 throw new GlobalException("未选择要禁言的用户");
             }
             // 常驻成员禁言

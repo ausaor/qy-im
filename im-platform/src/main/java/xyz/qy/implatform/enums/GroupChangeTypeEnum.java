@@ -21,6 +21,8 @@ public enum GroupChangeTypeEnum {
     DELETE_GROUP(4, "群聊解散"),
 
     TEMPLATE_CHARACTER_CHANGE(5, "模板角色改变"),
+
+    GROUP_BANNED_MSG(6, "群聊禁言"),
     ;
 
     private final Integer code;

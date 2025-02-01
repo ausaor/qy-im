@@ -1,6 +1,7 @@
 package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import xyz.qy.implatform.dto.GroupBanDTO;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.User;
@@ -81,4 +82,18 @@ public interface IGroupService extends IService<Group> {
      * @param vo 群聊信息vo
      */
     GroupVO joinGroup(GroupJoinVO vo);
+
+    /**
+     * 禁言操作
+     *
+     * @param dto 入参
+     */
+    void banMsg(GroupBanDTO dto);
+
+    /**
+     * 解除禁言
+     *
+     * @param dto 入参
+     */
+    void unBanMsg(GroupBanDTO dto);
 }

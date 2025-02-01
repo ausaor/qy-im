@@ -87,6 +87,20 @@
               :disabled="!editing">
           </el-switch>
         </el-form-item>
+        <el-form-item label="全局禁言" v-if="isOwner">
+          <el-switch
+              style="display: block"
+              v-model="group.isBanned"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-text="开启"
+              inactive-text="关闭"
+              @change="doAllBanned"
+              :disabled="!editing">
+          </el-switch>
+          <el-input-number size="mini" v-model="bannedTime" :min="1" :max="60000" :disabled="!editing"></el-input-number>
+          <span>（分钟）</span>
+        </el-form-item>
 
 				<div v-show="!group.quit" class="btn-group">
 					<el-button v-show="editing" type="success" @click="onSaveGroup()">提交</el-button>
@@ -136,6 +150,7 @@
         groupMemberVisible: false,
         showNickName: false,
         groupSpaceVisible: false,
+        bannedTime: 1,
 			}
 		},
 		props: {
@@ -204,6 +219,9 @@
         if (group.templateGroupId === undefined || group.templateGroupId === null) {
           return false
         }
+        if (group.groupType !== 1) {
+          return false;
+        }
         let paramVO = {
           groupId: group.id,
           templateGroupId: group.templateGroupId
@@ -239,6 +257,30 @@
       refreshTalkList() {
         this.$refs.talkListRef.refreshTalkList();
       },
+      doAllBanned(value) {
+        let paramVO = {
+          id: this.group.id,
+          allBanned: value,
+          banDuration: this.bannedTime,
+          banType: 'master'
+        }
+        let url = "";
+        if (value) {
+          url = '/group/banMsg';
+        } else {
+          url = '/group/unBanMsg'
+        }
+        this.$http({
+          url: url,
+          method: 'post',
+          data: paramVO
+        }).then(() => {
+          this.group.isBanned = value;
+          this.$message.success("操作成功");
+        }).catch((e) => {
+          this.group.isBanned = !value;
+        })
+      }
 		},
 		computed: {
 			ownerName() {
@@ -246,11 +288,17 @@
 				return member && member.aliasName;
 			},
 			isOwner() {
-			  this.querySelectableTemplateCharacter(this.group);
 				return this.group.ownerId == this.$store.state.userStore.userInfo.id;
 			}
 		},
     watch: {
+		  group: {
+        handler(newGroup, oldGroup) {
+          if ((newGroup && !oldGroup) || (newGroup && newGroup.id !== oldGroup.id)) {
+            this.querySelectableTemplateCharacter(newGroup);
+          }
+        }
+      },
       groupMembers: {
         handler(newGroupMembers, oldGroupMembers) {
           newGroupMembers.forEach((item, index) => {
@@ -387,6 +435,11 @@
 				.el-textarea__inner {
 					min-height: 100px !important;
 				}
+
+        .el-input-number--mini {
+          width: 100px;
+          margin-right: 10px;
+        }
 			}
 
 			.btn-group {
