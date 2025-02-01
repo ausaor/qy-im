@@ -10,6 +10,7 @@ import xyz.qy.imcommon.enums.IMTerminalType;
 import xyz.qy.imcommon.model.IMGroupMessage;
 import xyz.qy.imcommon.model.IMRegionGroupMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
+import xyz.qy.imcommon.util.CommaTextUtils;
 import xyz.qy.implatform.entity.GroupMessage;
 import xyz.qy.implatform.entity.RegionGroup;
 import xyz.qy.implatform.entity.RegionGroupMessage;
@@ -22,12 +23,9 @@ import xyz.qy.implatform.service.IRegionGroupMemberService;
 import xyz.qy.implatform.service.IRegionGroupService;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.vo.GroupMessageVO;
-import xyz.qy.implatform.vo.RegionGroupMemberVO;
 import xyz.qy.implatform.vo.RegionGroupMessageVO;
-import xyz.qy.implatform.vo.UserVO;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -72,6 +70,9 @@ public class MessageSendUtil {
         message.setSendNickName(sendNickName);
         message.setGroupId(groupId);
         message.setSendId(sendId);
+        if (CollUtil.isNotEmpty(recvIds)) {
+            message.setRecvIds(CommaTextUtils.asText(recvIds));
+        }
 
         groupMessageMapper.insert(message);
         // 推送

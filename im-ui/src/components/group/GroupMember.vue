@@ -1,21 +1,35 @@
 <template>
-	<div class="group-member">
+	<div class="group-member" @contextmenu.prevent="showRightMenu($event)">
     <head-image :id="member.userId" :name="member.aliasName"
                 :url="member.headImage" :size="50"
                 :online="member.online" >
     </head-image>
     <div  v-if="showDel" @click.stop="onDelete()" class="btn-kick el-icon-error"></div>
     <div class="member-name" :title="member.aliasName">{{member.aliasName}}</div>
+    <right-menu v-show="rightMenu.show" :pos="rightMenu.pos" :items="rightMenuItems" @close="rightMenu.show=false"
+                @select="onSelectMenu"></right-menu>
 	</div>
 </template>
 
 <script>
 	import HeadImage from "../common/HeadImage.vue";
+  import RightMenu from '../common/RightMenu.vue';
 	export default{
 		name: "groupMember",
-		components:{HeadImage},
+		components:{
+		  HeadImage,
+      RightMenu,
+    },
 		data(){
-			return {};
+			return {
+        rightMenu: {
+          show: false,
+          pos: {
+            x: 0,
+            y: 0
+          }
+        }
+      };
 		},
 		props:{
 			member:{
@@ -25,12 +39,33 @@
 			showDel:{
 				type: Boolean,
 				default: false
-			}
+			},
+      rightMenuVisible: {
+			  type: Boolean,
+        default: false,
+      },
+      rightMenuItems: {
+			  type: Array,
+        default: []
+      }
 		},
 		methods:{
       onDelete(){
 				this.$emit("del",this.member);
-			}
+			},
+      showRightMenu(e) {
+        if (!this.rightMenuVisible) {
+          return
+        }
+        this.rightMenu.pos = {
+          x: e.x,
+          y: e.y
+        };
+        this.rightMenu.show = "true";
+      },
+      onSelectMenu(item) {
+        this.$emit(item.key.toLowerCase(), this.member);
+      }
 		}
 	}
 </script>

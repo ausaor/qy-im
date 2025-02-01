@@ -72,4 +72,7 @@ public class GroupMemberVO {
 
     @ApiModelProperty(value = "角色序号")
     private Integer characterNum;
+
+    @ApiModelProperty(value = "是否禁言")
+    private Boolean isBanned;
 }

@@ -584,13 +584,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<User> userList = userService.listByIds(userIds);
         List<Long> onlineUserIds = imClient.getOnlineUser(userIds);
         Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, Function.identity()));
-
+        Date now = new Date();
         Map<Long, List<Long>> characterUserMap = new HashMap<>();
         return members.stream().map(m -> {
             GroupMemberVO vo = BeanUtils.copyProperties(m, GroupMemberVO.class);
             User user = userMap.get(vo.getUserId());
             if (user.getId().equals(group.getOwnerId())) {
                 vo.setIsAdmin(true);
+            }
+
+            if (m.getIsBanned() && now.after(m.getBanExpireTime())) {
+                vo.setIsBanned(false);
             }
 
             // 是角色群聊计算用户角色序号
@@ -1441,6 +1445,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         } else {
             if (ObjectUtil.isNull(dto.getUserId())) {
                 throw new GlobalException("未选择群成员");
+            }
+            if (session.getUserId().equals(dto.getUserId())) {
+                throw new GlobalException("不能禁言自己");
             }
             // 查询群成员
             GroupMember groupMember = groupMemberService.findByGroupAndUserId(group.getId(), dto.getUserId());

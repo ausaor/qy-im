@@ -77,7 +77,9 @@
 						<div class="group-member-list">
 							<div v-for="(member) in groupMembers" :key="member.id">
 								<group-member v-show="!member.quit" class="group-member" :member="member" :showDel="isOwner&&member.userId!=activeGroup.ownerId"
-								 @del="onKick"></group-member>
+								 @del="onKick" :right-menu-items="member.isBanned ? [rightMenuItems[1]] : [rightMenuItems[0]]" :right-menu-visible="myGroupMemberInfo.isAdmin"
+                              @ban="banMemberMsg" @unban="unBanMemberMsg">
+                </group-member>
 							</div>
               <div class="member-avatar-upload" v-show="!myGroupMemberInfo.isTemplate">
                 <div class="member-avatar-btn" title="上传我的群聊头像">
@@ -321,6 +323,16 @@
         showJoinGroup: false,
         friends: [],
         groupMemberCount: 0,
+        rightMenuItems: [{
+          key: 'BAN',
+          name: '禁言',
+          icon: 'el-icon-turn-off-microphone'
+        }, {
+          key: 'UNBAN',
+          name: '解除禁言',
+          icon: 'el-icon-remove-outline'
+        }],
+        bannedTime: 1,
 			};
 		},
     mounted() {
@@ -716,6 +728,52 @@
         }).finally(() =>{
           this.loadGroupMembers();
           this.loadGroup(this.activeGroup.id);
+        })
+      },
+      banMemberMsg(member) {
+        if (member.userId === this.myGroupMemberInfo.userId) {
+          this.$message.warning('不能禁言自己');
+          return
+        }
+
+        this.$prompt('请输入禁言时长（分钟）', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /^([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|60000)$/,
+          inputErrorMessage: '只能输入正整数(1~60000)'
+        }).then(({ value }) => {
+          let paramVO = {
+            id: this.activeGroup.id,
+            userId: member.userId,
+            banDuration: value,
+            banType: 'master'
+          }
+          this.$http({
+            url: '/group/banMsg',
+            method: 'post',
+            data: paramVO
+          }).then(() => {
+            member.isBanned = true;
+            this.$message.success("操作成功");
+          }).catch((e) => {
+          })
+        })
+      },
+      unBanMemberMsg(member) {
+        let paramVO = {
+          id: this.activeGroup.id,
+          userId: member.userId,
+          banDuration: this.bannedTime,
+          banType: 'master'
+        }
+        this.$http({
+          url: '/group/unBanMsg',
+          method: 'post',
+          data: paramVO
+        }).then(() => {
+          member.isBanned = false;
+          this.$message.success("操作成功");
+        }).catch((e) => {
         })
       }
 		},
