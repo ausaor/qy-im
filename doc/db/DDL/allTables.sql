@@ -49,7 +49,7 @@ create table im_group
     notice            varchar(1024) default ''                  null comment '群公告',
     remark            varchar(255)  default ''                  null comment '群备注',
     is_banned         smallint(1)   default 0                   not null comment '禁止发言（1：是；0否）',
-    ban_type          varchar(50)                               null comment '被禁止发言类型（admin：管理员禁止；master：群主禁止）',
+    ban_type          varchar(50)                               null comment '被禁止发言类型（sys：管理员禁止；master：群主禁止）',
     ban_expire_time   datetime                                  null comment '禁止发言失效时间',
     deleted           tinyint(1)    default 0                   not null comment '是否已删除',
     created_time      datetime      default current_timestamp() null comment '创建时间',
@@ -79,7 +79,7 @@ create table im_group_member
     quit_time             datetime                                  null comment '退出时间',
     show_nickname         tinyint(1)    default 0                   not null comment '是否展示群成员昵称（0：否；1：是）',
     is_banned             smallint(1)   default 0                   not null comment '禁止发言（1：是；0否）',
-    ban_type              varchar(50)                               null comment '被禁止发言类型（admin：管理员禁止；master：群主禁止）',
+    ban_type              varchar(50)                               null comment '被禁止发言类型（sys：管理员禁止；master：群主禁止）',
     ban_expire_time       datetime                                  null comment '禁止发言失效时间',
     created_time          datetime      default current_timestamp() null comment '创建时间',
     switch_time           datetime                                  null comment '模板人物切换时间',
@@ -384,14 +384,14 @@ create table im_region
     code             varchar(100)         not null comment '地区编码'
         primary key,
     parent_code      varchar(100)         not null comment '上级地区编码',
-    level            tinyint(1)           not null comment '地区级别',
+    level            tinyint(1)           not null comment '地区级别(0：地球；1：国家；2：省；3：市；4：县/区；5：镇/乡；6：村)',
     name             varchar(200)         not null comment '地区名称',
     leader_call_name varchar(50)          null comment '地区领导称呼',
     latitude         varchar(100)         null comment '纬度',
     longitude        varchar(100)         null comment '经度',
     deleted          tinyint(1) default 0 not null comment '是否删除',
-    ban_msg          tinyint(1) default 0 not null comment '是否被禁止发言',
-    ban_msg_type     varchar(50)          null comment '被禁止发言类型（admin：管理员禁止）',
+    is_banned        tinyint(1) default 0 not null comment '是否被禁止发言',
+    ban_type         varchar(50)          null comment '被禁止发言类型（admin：管理员禁止）',
     ban_expire_time  datetime             null comment '禁止发言失效时间',
     create_by        bigint               null comment '创建人用户id',
     create_time      datetime             null comment '创建时间',
@@ -416,7 +416,7 @@ create table im_region_group
     expiration_time   datetime             null comment '群主失效时间',
     deleted           tinyint(1) default 0 not null comment '是否删除',
     is_banned           tinyint(1) default 0 not null comment '是否被禁止发言',
-    ban_type          varchar(50)          null comment '被禁止发言类型（admin：管理员禁止）',
+    ban_type          varchar(50)          null comment '被禁止发言类型（sys：管理员禁止；master：群主禁止）',
     ban_expire_time   datetime             null comment '禁止发言失效时间',
     remark            varchar(200)         null comment '备注',
     create_by         bigint               null comment '创建人用户id',
@@ -440,7 +440,7 @@ create table im_region_group_member
     quit            tinyint(1)           null comment '是否退出',
     quit_time       datetime             null comment '退出时间',
     is_banned       tinyint(1) default 0 not null comment '是否被禁止发言',
-    ban_type        varchar(50)          null comment '被禁止发言类型（admin：管理员禁止）',
+    ban_type        varchar(50)          null comment '被禁止发言类型（sys：管理员禁止；master：管理员禁止）',
     ban_expire_time datetime             null comment '禁止发言失效时间',
     remark          varchar(200)         null comment '备注',
     create_by       bigint               null comment '创建人用户id',
@@ -460,11 +460,12 @@ create table im_region_group_message
     region_group_id bigint                                   not null comment '地区群聊id',
     send_id         bigint                                   not null comment '发送用户id',
     send_nick_name  varchar(200) default ''                  null comment '发送用户昵称',
+    recv_ids        varchar(1000)                            null comment '接收用户id,逗号分隔，为空表示发给所有成员',
     content         text                                     null comment '发送内容',
     at_user_ids     varchar(1000)                            null comment '@的用户id列表',
-    type            tinyint(1)                               not null comment '消息类型 0:文字 1:图片 2:文件 3:音频 10:系统提示',
     receipt         tinyint      default 0                   not null comment '是否回执消息',
     receipt_ok      tinyint      default 0                   not null comment '回执消息是否完成',
+    type            tinyint(1)                               not null comment '消息类型 0:文字 1:图片 2:文件 3:语音 10:系统提示',
     status          tinyint(1)   default 0                   null comment '状态 0:正常  2:撤回',
     send_time       datetime     default current_timestamp() null comment '发送时间'
 )
@@ -490,6 +491,21 @@ create table im_system_message
     deleted     tinyint(1) default 0 not null comment '是否删除'
 )
     comment '系统消息表';
+
+
+create table im_pusher
+(
+    id          bigint auto_increment comment 'id'
+        primary key,
+    name        varchar(50)          not null comment '推送主体名称',
+    head_image  varchar(1000)        not null comment '推送主体头像',
+    create_by   bigint               not null comment '创建人',
+    create_time datetime             not null comment '创建时间',
+    update_by   bigint               null comment '更新人',
+    update_time datetime             null comment '更新时间',
+    deleted     tinyint(1) default 0 not null comment '是否删除'
+)
+    comment '推送主体表';
 
 
 create table im_push_task
@@ -545,6 +561,27 @@ create table im_character_word
     comment '角色台词表';
 
 create index idx_1 on im_character_word (character_id);
+
+create table im_character_emo
+(
+    id                bigint auto_increment comment 'id'
+        primary key,
+    template_group_id bigint        null comment '群聊模板id',
+    character_id      bigint        not null comment '角色id',
+    character_name    varchar(50)   null comment '角色名称',
+    name              varchar(100)  null comment '名称',
+    url               varchar(1500) null comment '表情包图片链接',
+    status            varchar(2)    null comment '状态：0-待审批；1-审核中；2-已发布；3-未通过',
+    create_time       datetime      null comment '创建时间',
+    update_time       datetime      null comment '更新时间',
+    create_by         bigint        null comment '创建人',
+    update_by         bigint        null comment '更新人',
+    deleted           tinyint(1)    null comment '是否删除：0-否；1-是'
+)
+    comment '角色表情包表';
+
+create index idx_1
+    on im_character_emo (character_id);
 
 
 create table t_hero_info
