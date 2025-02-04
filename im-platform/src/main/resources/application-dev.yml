@@ -54,13 +54,15 @@ mybatis-plus:
 
 
 minio:
-  endpoint: http://127.0.0.1:9001 #内网地址
-  public: http://127.0.0.1:9001  #外网访问地址
+  endpoint: http://127.0.0.1:9000 #内网地址
+  domain: http://127.0.0.1:9000  #外网访问地址
   accessKey: admin
   secretKey: 12345678
   bucketName: qy-im
   imagePath: image
   filePath: file
+  videoPath: video
+  audioPath: audio
 
 webrtc:
   max-channel: 9 # 多人通话最大通道数量，最大不能超过16,建议值:4,9,16
@@ -75,9 +77,9 @@ jwt:
     expireIn: 604800 #7天
     secret: IKDiqVmn0VFU
 
-# 上传模式 可选 oss或local或qiniu  （http://和最后的/一定不能去！！！）
+# 上传模式 可选 oss或local或qiniu或minio  （http://和最后的/一定不能去！！！）
 upload:
-  mode: local
+  mode: minio
   local:
     # nginx映射本地文件路径
     url: http://127.0.0.1:8300/

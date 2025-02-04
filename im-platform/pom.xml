@@ -81,21 +81,11 @@
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
         <!--minio-->
-        <!--<dependency>
+        <dependency>
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
             <version>8.4.3</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.squareup.okhttp3</groupId>
-                    <artifactId>okhttp</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jetbrains.kotlin</groupId>
-                    <artifactId>kotlin-stdlib</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
+        </dependency>
         <!-- 七牛云oss -->
         <dependency>
             <groupId>com.qiniu</groupId>

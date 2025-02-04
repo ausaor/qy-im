@@ -23,7 +23,13 @@ public enum UploadImageModeEnum {
     /**
      * 七牛云
      */
-    QINIU("qiniu", "qiNiuUploadStrategyImpl");
+    QINIU("qiniu", "qiNiuUploadStrategyImpl"),
+
+
+    /**
+     * minio
+     */
+    MINIO("minio", "minioUploadStrategyImpl");
 
     /**
      * 模式
