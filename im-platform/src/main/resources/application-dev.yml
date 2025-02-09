@@ -79,7 +79,7 @@ jwt:
 
 # 上传模式 可选 oss或local或qiniu或minio  （http://和最后的/一定不能去！！！）
 upload:
-  mode: minio
+  mode: local
   local:
     # nginx映射本地文件路径
     url: http://127.0.0.1:8300/

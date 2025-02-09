@@ -25,6 +25,10 @@
           <el-button class="operate-button"
                      icon="el-icon-user-solid" circle
                      @click="editTemplateCharacter(templateGroup)"></el-button>
+          <el-button class="operate-button" circle
+                     @click="openCharacterWordDialog({templateGroup: templateGroup})">
+            词
+          </el-button>
         </div>
         <div>
           <head-image class="head-image" :url="templateGroup.avatar" :size="80"></head-image>
@@ -129,6 +133,8 @@
             </div>
             <el-button class="edit-character-avatar" type="warning" icon="el-icon-orange" circle
                        @click="openCharacterAvatarDialog(templateCharacter)"></el-button>
+            <el-button style="margin-left: 8px;" type="primary" circle
+                       @click="openCharacterWordDialog({templateGroup: curTemplateGroup, character: templateCharacter})">词</el-button>
             <el-button v-if="curTemplateGroup.isOwner" class="delete-button"
                        type="danger" icon="el-icon-delete" circle
                        @click="deleteTemplateCharacter(templateCharacter, index)"></el-button>
@@ -216,6 +222,47 @@
                    @click="handleAvatarsSubmitForApproval()">提交审批</el-button>
 		  </span>
     </el-dialog>
+    <el-dialog class="edit-character-word"
+               :title="wordTitle"
+               :visible.sync="showEditWordDialog"
+               width="600px"
+               :before-close="handleWordDialogClose">
+      <el-scrollbar style="height:500px;">
+        <el-form :model="dynamicValidateForm" ref="dynamicValidateForm" label-width="70px" class="character-word">
+          <el-form-item
+              v-for="(item, index) in dynamicValidateForm.words"
+              :label="'台词' + (index + 1)"
+              :prop="'words.' + index + '.word'"
+              :key="item.id || item.tempId"
+              :rules="{required: true, message: '台词不能为空', trigger: 'blur'}"
+          >
+            <el-input v-model="item.word" :minlength="1" :maxlength="50" :show-word-limit="true" :clearable="true" :disabled="!curTemplateGroup.isOwner"></el-input>
+            <el-button class="voice" v-if="item.voice" icon="el-icon-mic" circle style="color: orange;margin-left: 8px;position: relative;" @click="playWordVoice(item.voice)">
+              <i v-if="curTemplateGroup.isOwner" @click.stop="onDeleteVoice(index)" class="btn-remove el-icon-error"></i>
+            </el-button>
+            <file-upload v-else class="voice-uploader" :action="audioAction"
+                         :showLoading="true" :maxSize="maxSize" @success="onUploadVoiceSuccess"
+                         :fileTypes="['audio/mpeg', 'audio/mp3', 'audio/ape', 'audio/wav', 'audio/flac','audio/m4a', 'audio/kgm', 'audio/ncm', 'audio/mgg']">
+              <i class="el-icon-upload"></i>
+            </file-upload>
+            <div style="margin-left: 8px;">
+              <el-tag v-if="item.status==='3'" effect="dark" size="small" type="danger">未通过</el-tag>
+              <el-tag v-if="item.status==='2'" effect="dark" size="small" type="success">已发布</el-tag>
+              <el-tag v-if="item.status==='1'" effect="dark" size="small" type="warning">审核中</el-tag>
+              <el-tag v-if="item.status==='0'" effect="dark" size="small" type="info">待发布</el-tag>
+            </div>
+            <el-button v-if="curTemplateGroup.isOwner" :type="activeWordIndex === index ? 'success' : ''" icon="el-icon-check" circle
+                       style="margin-left: 8px;" @click="chooseWord(index)"></el-button>
+          </el-form-item>
+        </el-form>
+      </el-scrollbar>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="danger"  @click.prevent="removeWord" v-if="curTemplateGroup.isOwner">删除</el-button>
+        <el-button type="primary" @click="submitWordForm('dynamicValidateForm')" v-if="curTemplateGroup.isOwner">提交</el-button>
+        <el-button type="success" @click="publishWord" v-if="curTemplateGroup.isOwner">发布</el-button>
+        <el-button @click="addWord" v-if="curTemplateGroup.isOwner">新增</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -256,7 +303,13 @@ export default {
         pageNo: 1,
         pageSize: 10,
       },
-      activeTab: 'templateGroup'
+      activeTab: 'templateGroup',
+      dynamicValidateForm: {
+        words: [],
+      },
+      wordTitle: '',
+      showEditWordDialog: false,
+      activeWordIndex: -1,
     }
   },
   created() {
@@ -566,11 +619,135 @@ export default {
     nextPageTemplateGroup() {
       this.page.pageNo = this.page.pageNo + 1;
       this.queryAllTemplateGroups();
+    },
+    openCharacterWordDialog({templateGroup, character} = {}) {
+      this.curTemplateGroup = templateGroup;
+      this.curTemplateCharacter = character ? character : {};
+      if (character) {
+        this.wordTitle = character.name
+      } else {
+        this.wordTitle = templateGroup.groupName;
+      }
+      let param = {
+        templateGroupId: templateGroup.id,
+        characterId: character?.id,
+      }
+      this.queryCharacterWord(param);
+    },
+    queryCharacterWord(param) {
+      this.$http({
+        url: "/character/word/findCharacterWords",
+        method: 'post',
+        data: param
+      }).then((data) => {
+        this.dynamicValidateForm.words = data;
+        this.showEditWordDialog = true;
+      })
+    },
+    handleWordDialogClose() {
+      this.activeWordIndex = -1;
+      this.showEditWordDialog = false;
+    },
+    submitWordForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          let param = {
+            templateGroupId: this.curTemplateGroup.id,
+            characterId: this.curTemplateCharacter.id,
+            words: this.dynamicValidateForm.words
+          }
+          this.$http({
+            url: "/character/word/save",
+            method: 'post',
+            data: param
+          }).then((data) => {
+            let param2 = {
+              templateGroupId: this.curTemplateGroup.id,
+              characterId: this.curTemplateCharacter.id,
+            }
+            this.queryCharacterWord(param2)
+            this.$message.success('保存成功');
+          })
+        } else {
+          return false;
+        }
+      });
+    },
+    addWord() {
+      this.dynamicValidateForm.words.push({
+        word: '',
+        voice: '',
+        templateGroupId: this.curTemplateGroup.id,
+        characterName: this.curTemplateGroup.groupName,
+        status: '0',
+        tempId: Date.now(),
+      });
+    },
+    removeWord() {
+      if (this.activeWordIndex === -1) {
+        this.$message.warning('请先选择语音台词');
+        return;
+      }
+
+      if (!this.dynamicValidateForm.words[this.activeWordIndex].id) {
+        this.dynamicValidateForm.words.splice(this.activeWordIndex, 1)
+      } else {
+        this.$confirm(`请确认是否删除当前语音台词【${this.dynamicValidateForm.words[this.activeWordIndex].word}】？`, {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: `/character/word/delete/${this.dynamicValidateForm.words[this.activeWordIndex].id}`,
+            method: 'delete',
+          }).then(() => {
+            this.dynamicValidateForm.words.splice(this.activeWordIndex, 1)
+            this.$message.success("删除成功");
+          });
+        })
+      }
+
+    },
+    playWordVoice(url) {
+      let audio = new Audio();
+      audio.src = url;
+      audio.play();
+    },
+    onUploadVoiceSuccess(data) {
+      if (this.activeWordIndex === -1) {
+        this.$message.warning('请先选中一句台词');
+        return
+      }
+      this.dynamicValidateForm.words[this.activeWordIndex].voice = data.url;
+      this.dynamicValidateForm.words[this.activeWordIndex].word = data.originalName;
+    },
+    chooseWord(index) {
+      this.activeWordIndex = index;
+    },
+    onDeleteVoice(index) {
+      this.dynamicValidateForm.words[index].voice = '';
+    },
+    publishWord() {
+      let param = {
+        templateGroupId: this.curTemplateGroup.id,
+        characterId: this.curTemplateCharacter.id,
+      }
+      this.$http({
+        url: `/character/word/publish`,
+        method: 'post',
+        data: param
+      }).then(() => {
+        this.queryCharacterWord(param);
+        this.$message.success("发布成功");
+      });
     }
   },
   computed: {
     imageAction() {
       return `/image/upload`;
+    },
+    audioAction(){
+      return `/audio/upload`;
     },
     isAdmin() {
       return this.$store.state.userStore.userInfo.id === 1;
@@ -716,11 +893,11 @@ export default {
       }
 
       .edit-character-avatar {
-        margin-left: 20px;
+        margin-left: 8px;
       }
 
       .delete-button {
-        margin-left: 20px;
+        margin-left: 8px;
       }
     }
 
@@ -790,6 +967,41 @@ export default {
       .delete-button {
         margin-left: 20px;
       }
+    }
+  }
+}
+
+.edit-character-word {
+  .character-word {
+
+    .el-form-item__content {
+      display: flex;
+      justify-content: left;
+
+      .el-input {
+        width: 65%;
+      }
+    }
+
+    .btn-remove {
+      display: none;
+      position: absolute;
+      right: -10px;
+      top: -10px;
+      color: darkred;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .voice:hover .btn-remove {
+      display: block;
+      color: #ce1818;
+    }
+
+    .voice-uploader {
+      width: 40px;
+      height: 40px;
+      margin-left: 8px;
     }
   }
 }

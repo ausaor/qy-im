@@ -32,7 +32,7 @@ public class CharacterWordVO {
     /**
      * 创建者
      */
-    private String createBy;
+    private Long createBy;
 
     /**
      * 创建时间
@@ -43,11 +43,13 @@ public class CharacterWordVO {
     /**
      * 更新者
      */
-    private String updateBy;
+    private Long updateBy;
 
     /**
      * 更新时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
+
+    private Boolean isOwner = false;
 }
