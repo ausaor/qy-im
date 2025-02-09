@@ -678,7 +678,6 @@ export default {
         word: '',
         voice: '',
         templateGroupId: this.curTemplateGroup.id,
-        characterName: this.curTemplateGroup.groupName,
         status: '0',
         tempId: Date.now(),
       });

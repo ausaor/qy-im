@@ -115,9 +115,9 @@ public class CharacterWordServiceImpl extends ServiceImpl<CharacterWordMapper, C
             throw new GlobalException("您不是群聊模板创建人");
         }
 
+        String characterName;
         // 判断角色是否存在
         if (ObjectUtil.isNotNull(dto.getCharacterId())) {
-
             TemplateCharacter templateCharacter = templateCharacterService.lambdaQuery()
                     .eq(TemplateCharacter::getTemplateGroupId, dto.getTemplateGroupId())
                     .eq(TemplateCharacter::getId, dto.getCharacterId())
@@ -130,6 +130,9 @@ public class CharacterWordServiceImpl extends ServiceImpl<CharacterWordMapper, C
             if (!userId.toString().equals(templateCharacter.getCreateBy())) {
                 throw new GlobalException("您不是角色创建人");
             }
+            characterName = templateCharacter.getName();
+        } else {
+            characterName = templateGroup.getGroupName();
         }
 
 
@@ -140,6 +143,7 @@ public class CharacterWordServiceImpl extends ServiceImpl<CharacterWordMapper, C
         List<CharacterWord> characterWords = BeanUtils.copyPropertiesList(wordDTOList, CharacterWord.class);
 
         characterWords.forEach(item -> {
+            item.setCharacterName(characterName);
             item.setCharacterId(characterId);
             item.setTemplateGroupId(dto.getTemplateGroupId());
             item.setStatus(ReviewEnum.TO_BE_REVIEW.getCode());
