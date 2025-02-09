@@ -19,6 +19,7 @@ import xyz.qy.implatform.service.ICharacterWordService;
 import xyz.qy.implatform.vo.CharacterWordVO;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class CharacterWordController {
 
     @ApiOperation(value = "查询角色台词", notes = "查询角色台词")
     @PostMapping("/findCharacterWords")
-    public Result<List<CharacterWordVO>> findCharacterWords(@RequestBody CharacterWordDTO dto) {
+    public Result<List<CharacterWordVO>> findCharacterWords(@Valid @RequestBody CharacterWordDTO dto) {
         return ResultUtils.success(characterWordService.findCharacterWords(dto));
     }
 

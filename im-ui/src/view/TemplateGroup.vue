@@ -29,6 +29,9 @@
                      @click="openCharacterWordDialog({templateGroup: templateGroup})">
             词
           </el-button>
+          <el-button class="operate-button" circle icon="icon iconfont icon-biaoqing"
+                     @click="openCharacterEmoDialog({templateGroup: templateGroup})">
+          </el-button>
         </div>
         <div>
           <head-image class="head-image" :url="templateGroup.avatar" :size="80"></head-image>
@@ -89,7 +92,7 @@
     <el-dialog class="edit-template-character"
                :title="curTemplateGroup.groupName"
                :visible.sync="showEditTemplateCharacterDialog"
-               width="500px"
+               width="510px"
                :before-close="handleEditTemplateCharacterClose">
       <div class="template-group-avatar">
         <head-image class="head-image" :url="curTemplateGroup.avatar" :size="80"></head-image>
@@ -135,6 +138,8 @@
                        @click="openCharacterAvatarDialog(templateCharacter)"></el-button>
             <el-button style="margin-left: 8px;" type="primary" circle
                        @click="openCharacterWordDialog({templateGroup: curTemplateGroup, character: templateCharacter})">词</el-button>
+            <el-button style="margin-left: 8px;" icon="icon iconfont icon-biaoqing" circle
+                       @click="openCharacterEmoDialog({templateGroup: curTemplateGroup, character: templateCharacter})"></el-button>
             <el-button v-if="curTemplateGroup.isOwner" class="delete-button"
                        type="danger" icon="el-icon-delete" circle
                        @click="deleteTemplateCharacter(templateCharacter, index)"></el-button>
@@ -263,6 +268,32 @@
         <el-button @click="addWord" v-if="curTemplateGroup.isOwner">新增</el-button>
       </div>
     </el-dialog>
+    <el-dialog class="edit-character-emo"
+               :title="wordTitle"
+               :visible.sync="showEditEmoDialog"
+               width="600px"
+               :before-close="handleEmoDialogClose">
+      <div style="height:500px;" class="character-emo-box">
+        <div v-if="curTemplateGroup.isOwner" class="upload-emo">
+          <batch-file-upload class="emo-uploader"
+                             :action="imageAction"
+                             :showLoading="true"
+                             :maxSize="maxSize"
+                             @success="handleUploadCharacterEmoSuccess"
+                             :uploadList="uploadEmoList"
+                             :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
+            <i class="el-icon-plus avatar-uploader-icon"></i>
+          </batch-file-upload>
+        </div>
+        <div v-for="(item, index) in characterEmos" :key="index" class="character-emo-item">
+          <img :src="item.url" class="emo-image">
+          <i v-if="curTemplateGroup.isOwner" @click.stop="onDeleteEmo(index)" class="btn-remove el-icon-error"></i>
+        </div>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="saveEmo" v-if="curTemplateGroup.isOwner">保存</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -285,6 +316,7 @@ export default {
       templateGroups: [],
       templateCharacters: [],
       characterAvatars: [],
+      characterEmos: [],
       showEditTemplateGroupDialog: false,
       showEditTemplateCharacterDialog: false,
       showEditCharacterAvatarDialog: false,
@@ -298,6 +330,7 @@ export default {
       maxSize: 5 * 1024 * 1024,
       title: "编辑模板群聊",
       uploadList: [],
+      uploadEmoList: [],
       levelOptions: [{value: 0, label: '0级'}, {value: 1, label: '1级'}],
       page: {
         pageNo: 1,
@@ -309,6 +342,7 @@ export default {
       },
       wordTitle: '',
       showEditWordDialog: false,
+      showEditEmoDialog: false,
       activeWordIndex: -1,
     }
   },
@@ -459,9 +493,16 @@ export default {
     },
     handleUploadNewAvatarSuccess(data) {
       this.characterAvatars.push({
-        avatar: data.originUrl, templateCharacterName: this.curTemplateCharacter.name,
+        avatar: data.originUrl,
+        templateCharacterName: this.curTemplateCharacter.name,
         name: data.name, status: '0', level: 0
       });
+    },
+    handleUploadCharacterEmoSuccess(data) {
+      this.characterEmos.push({
+        url: data.originUrl,
+        name: data.name,
+      })
     },
     handleSubmitForApproval() {
       if (this.curTemplateGroup.status === '1') {
@@ -634,6 +675,20 @@ export default {
       }
       this.queryCharacterWord(param);
     },
+    openCharacterEmoDialog({templateGroup, character} = {}) {
+      this.curTemplateGroup = templateGroup;
+      this.curTemplateCharacter = character ? character : {};
+      if (character) {
+        this.wordTitle = character.name
+      } else {
+        this.wordTitle = templateGroup.groupName;
+      }
+      let param = {
+        templateGroupId: templateGroup.id,
+        characterId: character?.id,
+      }
+      this.queryCharacterEmo(param);
+    },
     queryCharacterWord(param) {
       this.$http({
         url: "/character/word/findCharacterWords",
@@ -644,9 +699,22 @@ export default {
         this.showEditWordDialog = true;
       })
     },
+    queryCharacterEmo(param) {
+      this.$http({
+        url: "/character/emo/findCharacterEmos",
+        method: 'post',
+        data: param
+      }).then((data) => {
+        this.characterEmos = data;
+        this.showEditEmoDialog = true;
+      })
+    },
     handleWordDialogClose() {
       this.activeWordIndex = -1;
       this.showEditWordDialog = false;
+    },
+    handleEmoDialogClose() {
+      this.showEditEmoDialog = false;
     },
     submitWordForm(formName) {
       this.$refs[formName].validate((valid) => {
@@ -705,7 +773,6 @@ export default {
           });
         })
       }
-
     },
     playWordVoice(url) {
       let audio = new Audio();
@@ -739,6 +806,44 @@ export default {
         this.queryCharacterWord(param);
         this.$message.success("发布成功");
       });
+    },
+    saveEmo() {
+      let param = {
+        templateGroupId: this.curTemplateGroup.id,
+        characterId: this.curTemplateCharacter.id,
+        emos: this.characterEmos
+      }
+      this.$http({
+        url: "/character/emo/save",
+        method: 'post',
+        data: param
+      }).then((data) => {
+        let param2 = {
+          templateGroupId: this.curTemplateGroup.id,
+          characterId: this.curTemplateCharacter.id,
+        }
+        this.queryCharacterEmo(param2)
+        this.$message.success('保存成功');
+      })
+    },
+    onDeleteEmo(index) {
+      if (!this.characterEmos[index].id) {
+        this.characterEmos.splice(index, 1)
+      } else {
+        this.$confirm(`请确认是否删除角色当前表情？`, {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http({
+            url: `/character/emo/delete/${this.characterEmos[index].id}`,
+            method: 'delete',
+          }).then(() => {
+            this.characterEmos.splice(index, 1);
+            this.$message.success("删除成功");
+          });
+        })
+      }
     }
   },
   computed: {
@@ -1004,4 +1109,56 @@ export default {
     }
   }
 }
+
+.edit-character-emo {
+
+  .character-emo-box {
+    padding-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: min-content; /* 设置自动生成行的高度为内容的最小高度 */
+    gap: 15px;
+    overflow: scroll;
+
+    .upload-emo {
+      width: 60px;
+      height: 60px;
+      line-height: 60px;
+      border: #cccccc solid 1px;
+      font-size: 25px;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .character-emo-item {
+      width: 60px;
+      height: 60px;
+      line-height: 60px;
+      border: #cccccc solid 1px;
+      position: relative;
+
+      .emo-image {
+        width: 60px;
+        height: 60px;
+      }
+
+      .btn-remove {
+        display: none;
+        position: absolute;
+        right: -10px;
+        top: -10px;
+        color: darkred;
+        font-size: 20px;
+        cursor: pointer;
+      }
+    }
+
+    .character-emo-item:hover .btn-remove {
+      display: block;
+      color: #ce1818;
+    }
+
+  }
+}
+
 </style>
