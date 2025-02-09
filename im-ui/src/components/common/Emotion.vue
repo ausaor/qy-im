@@ -82,6 +82,9 @@ export default {
     /* grid布局 两端对齐,最后一行左对齐*/
     display: grid;
     grid-template-columns: repeat(10,1fr);
+    grid-auto-rows: min-content; /* 设置自动生成行的高度为内容的最小高度 */
+    /* 为所有网格项设置内容居中 */
+    place-items: center;
     gap: 5px;
     margin-bottom: 35px;
     overflow-x: hidden;
@@ -89,7 +92,11 @@ export default {
     .emotion-item {
       text-align: center;
       cursor: pointer;
-      padding: 5px;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
   }

@@ -1117,6 +1117,8 @@ export default {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     grid-auto-rows: min-content; /* 设置自动生成行的高度为内容的最小高度 */
+    /* 为所有网格项设置内容居中 */
+    place-items: center;
     gap: 15px;
     overflow: scroll;
 
