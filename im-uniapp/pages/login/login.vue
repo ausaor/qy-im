@@ -8,6 +8,10 @@
 			<uni-forms-item name="password">
 				<uni-easyinput type="password" v-model="loginForm.password" prefix-icon="locked" placeholder="密码" />
 			</uni-forms-item>
+      <uni-forms-item name="code">
+        <uni-easyinput type="text" v-model="loginForm.code" placeholder="请输入验证码" />
+        <u-image :src="codeUrl" width="100px" height="35px" @click="getCode"></u-image>
+      </uni-forms-item>
 			<button class="btn-submit" @click="submit" type="primary">登录</button>
 		</uni-forms>
 		<navigator class="nav-register" url="/pages/register/register">
@@ -17,13 +21,19 @@
 </template>
 
 <script>
+import UImage from "../../uni_modules/uview-plus/components/u--image/u--image.vue";
+
 export default {
+  components: {UImage},
 	data() {
 		return {
+      codeUrl: '',
 			loginForm: {
 				terminal: 1, // APP终端
 				userName: '',
-				password: ''
+				password: '',
+        code: '',
+        uuid: '',
 			},
 			rules: {
 				userName: {
@@ -37,7 +47,13 @@ export default {
 						required: true,
 						errorMessage: '请输入密码',
 					}]
-				}
+				},
+        code: {
+          rules: [{
+            required: true,
+            errorMessage: '请输入验证码',
+          }]
+        },
 			}
 		}
 	},
@@ -59,10 +75,20 @@ export default {
 					url: "/pages/chat/chat"
 				})
 			})
-		}
+		},
+    getCode() {
+      this.$http({
+        url: "/captchaImage",
+        method: "get"
+      }).then((result) => {
+        this.codeUrl = "data:image/gif;base64," + result['img'];
+        this.loginForm.uuid = result['uuid'];
+      })
+    }
 	},
 
 	onLoad() {
+    this.getCode();
 		this.loginForm.userName = uni.getStorageSync("userName");
 		this.loginForm.password = uni.getStorageSync("password");
 	}
