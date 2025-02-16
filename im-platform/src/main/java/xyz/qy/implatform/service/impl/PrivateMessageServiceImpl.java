@@ -83,29 +83,6 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         return msgInfo;
     }
 
-    @Override
-    public void sendPrivateMessage(PrivateMessageDTO dto, Long sendUserId) {
-        Boolean isFriends = friendService.isFriend(sendUserId, dto.getRecvId());
-        if (!isFriends) {
-            throw new GlobalException(ResultCode.PROGRAM_ERROR, "您已不是对方好友，无法发送消息");
-        }
-        // 保存消息
-        PrivateMessage msg = BeanUtils.copyProperties(dto, PrivateMessage.class);
-        msg.setSendId(sendUserId);
-        msg.setStatus(MessageStatus.UNSEND.code());
-        msg.setSendTime(new Date());
-        this.save(msg);
-        // 推送消息
-        PrivateMessageVO msgInfo = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
-        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
-        sendMessage.setSender(new IMUserInfo(sendUserId, IMTerminalType.WEB.code()));
-        sendMessage.setRecvId(msgInfo.getRecvId());
-        sendMessage.setSendToSelf(true);
-        sendMessage.setData(msgInfo);
-        imClient.sendPrivateMessage(sendMessage);
-        log.info("发送私聊消息，发送id:{},接收id:{}，内容:{}", sendUserId, dto.getRecvId(), dto.getContent());
-    }
-
     /**
      * 撤回消息
      *

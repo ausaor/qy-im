@@ -12,8 +12,6 @@ public interface IPrivateMessageService extends IService<PrivateMessage> {
 
     PrivateMessageVO sendMessage(PrivateMessageDTO dto);
 
-    void sendPrivateMessage(PrivateMessageDTO dto, Long sendUserId);
-
     void recallMessage(Long id);
 
     List<PrivateMessageVO> findHistoryMessage(Long friendId, Long page,Long size);

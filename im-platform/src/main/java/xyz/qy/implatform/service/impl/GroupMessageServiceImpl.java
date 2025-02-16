@@ -128,6 +128,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
 
     @Override
     public void sendGroupMessage(GroupMessageDTO dto, Long sendUserId) {
+        UserSession session = SessionContext.getSession();
         Group group = groupService.getById(dto.getGroupId());
         if (group == null) {
             return;
@@ -153,7 +154,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         // 群发
         GroupMessageVO msgInfo = BeanUtils.copyProperties(msg, GroupMessageVO.class);
         IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
-        sendMessage.setSender(new IMUserInfo(sendUserId, IMTerminalType.WEB.code()));
+        sendMessage.setSender(new IMUserInfo(sendUserId, session.getTerminal()));
         sendMessage.setRecvIds(userIds);
         sendMessage.setData(msgInfo);
         imClient.sendGroupMessage(sendMessage);
