@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.annotation.RepeatSubmit;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -47,6 +48,7 @@ public class FriendController {
         return ResultUtils.success(vos);
     }
 
+    @RepeatSubmit
     @PostMapping("/add")
     @ApiOperation(value = "添加好友", notes = "双方建立好友关系")
     public Result addFriend(@NotEmpty(message = "好友id不可为空") @RequestParam("friendId") Long friendId) {

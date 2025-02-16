@@ -95,4 +95,9 @@ public final class RedisKey {
     public static final String IM_REGION_GROUP_LEADER_LOCK = IM_LOCK + "region-group:leader-user-lock:";
 
     public static final String REGION_ACTIVITY_RANGE = IM_CACHE + "region:activity-range";
+
+    /**
+     * 重复提交
+     */
+    public static final String IM_REPEAT_SUBMIT = "im:repeat:submit";
 }

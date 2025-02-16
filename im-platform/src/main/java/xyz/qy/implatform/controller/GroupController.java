@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.annotation.RepeatSubmit;
 import xyz.qy.implatform.dto.GroupBanDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -37,6 +38,7 @@ public class GroupController {
     @Autowired
     private IGroupService groupService;
 
+    @RepeatSubmit
     @ApiOperation(value = "创建群聊", notes = "创建群聊")
     @PostMapping("/create")
     public Result<GroupVO> createGroup(@Valid  @RequestBody GroupVO vo) {
