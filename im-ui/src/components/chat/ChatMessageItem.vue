@@ -28,7 +28,7 @@
 				<div class="chat-msg-bottom" @contextmenu.prevent="showRightMenu($event)">
           <div ref="chatMsgBox">
             <span class="chat-msg-text" v-if="msgInfo.type==$enums.MESSAGE_TYPE.TEXT"
-                  v-html="$emo.transform(msgInfo.content)"></span>
+                  v-html="htmlText"></span>
             <div class="chat-msg-image" v-if="msgInfo.type==$enums.MESSAGE_TYPE.IMAGE">
               <div class="img-load-box" v-loading="loading" element-loading-text="上传中.."
                    element-loading-background="rgba(0, 0, 0, 0.4)">
@@ -266,6 +266,11 @@
       isNormal() {
         const type = this.msgInfo.type;
         return this.$msgType.isNormal(type) || this.$msgType.isAction(type)
+      },
+      htmlText() {
+        let color = this.msgInfo.selfSend ? 'white' : '';
+        let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.content, color)
+        return this.$emo.transform(text)
       },
       nameColorStyle() {
         let index = 0;

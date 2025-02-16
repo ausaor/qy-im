@@ -12,6 +12,7 @@ import * as socketApi from './api/wssocket';
 import * as messageType from './api/messageType';
 import common from './api/common.js';
 import emotion from './api/emotion.js';
+import url from './api/url.js';
 import element from './api/element.js';
 import store from './store';
 import config from "./assets/js/config";
@@ -32,6 +33,7 @@ Vue.prototype.$date = date;
 Vue.prototype.$commonUtil = common;
 Vue.prototype.$http = httpRequest // http请求方法
 Vue.prototype.$emo = emotion; // emo表情
+Vue.prototype.$url = url; // url转换
 Vue.prototype.$elm = element; // 元素操作
 Vue.prototype.$enums = enums; // 枚举
 Vue.prototype.$eventBus = new Vue(); // 全局事件
