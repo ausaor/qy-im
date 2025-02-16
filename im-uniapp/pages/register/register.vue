@@ -14,6 +14,10 @@
 			<uni-forms-item name="corfirmPassword" label="确认密码">
 				<uni-easyinput type="password" v-model="dataForm.corfirmPassword" placeholder="确认密码" />
 			</uni-forms-item>
+      <uni-forms-item name="code" label="验证码">
+        <uni-easyinput type="text" v-model="dataForm.code" placeholder="请输入验证码" />
+        <u-image :src="codeUrl" width="100px" height="35px" @click="getCode"></u-image>
+      </uni-forms-item>
 			<button class="btn-submit" @click="submit" type="primary">注册并登录</button>
 		</uni-forms>
 		<navigator class="nav-login" url="/pages/login/login">
@@ -23,14 +27,20 @@
 </template>
 
 <script>
+import UImage from "../../uni_modules/uview-plus/components/u--image/u--image.vue";
+
 export default {
+  components: {UImage},
 	data() {
 		return {
+      codeUrl: '',
 			dataForm: {
 				userName: '',
 				nickName: '',
 				password: '',
-				corfirmPassword: ''
+				corfirmPassword: '',
+        code: '',
+        uuid: '',
 			},
 			rules: {
 				userName: {
@@ -64,10 +74,19 @@ export default {
 							return true;
 						}
 					}]
-				}
+				},
+        code: {
+          rules: [{
+            required: true,
+            errorMessage: '请输入验证码',
+          }]
+        },
 			}
 		}
 	},
+  onLoad(options) {
+    this.getCode();
+  },
 	methods: {
 		submit() {
 			this.$refs.form.validate().then(() => {
@@ -77,36 +96,21 @@ export default {
 					method: 'POST'
 				}).then(() => {
 					uni.showToast({
-						title: "注册成功,您已成为盒子IM的用户",
+						title: "注册成功",
 						icon: 'none'
 					})
-					this.login();
 				})
 			})
 		},
-		login() {
-			const loginForm = {
-				terminal: this.$enums.TERMINAL_TYPE.APP,
-				userName: this.dataForm.userName,
-				password: this.dataForm.password
-			}
-			this.$http({
-				url: '/login',
-				data: loginForm,
-				method: 'POST'
-			}).then((loginInfo) => {
-				console.log("登录成功,自动跳转到聊天页面...")
-				uni.setStorageSync("userName", loginForm.userName);
-				uni.setStorageSync("password", loginForm.password);
-				uni.setStorageSync("loginInfo", loginInfo);
-				// 调用App.vue的初始化方法
-				getApp().init()
-				// 跳转到聊天页面   
-				uni.switchTab({
-					url: "/pages/chat/chat"
-				})
-			})
-		}
+    getCode() {
+      this.$http({
+        url: "/captchaImage",
+        method: "get"
+      }).then((result) => {
+        this.codeUrl = "data:image/gif;base64," + result['img'];
+        this.dataForm.uuid = result['uuid'];
+      })
+    }
 	}
 }
 </script>

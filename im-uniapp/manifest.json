@@ -1,5 +1,5 @@
 {
-    "name" : "盒子IM",
+    "name" : "輕語",
     "appid" : "__UNI__69DD57A",
     "description" : "",
     "versionName" : "3.1.0",
@@ -124,7 +124,7 @@
     },
     "vueVersion" : "3",
     "h5" : {
-        "title" : "盒子IM",
+        "title" : "輕語",
         "router" : {
             "base" : "/h5/"
         }
