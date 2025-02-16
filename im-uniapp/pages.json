@@ -1,0 +1,106 @@
+{
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^u--(.*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue",
+			"^up-(.*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue",
+			"^u-([^-].*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue"
+		}
+	},
+	"pages": [{
+			"path": "pages/chat/chat"
+		}, {
+			"path": "pages/login/login"
+		},
+		{
+			"path": "pages/register/register"
+		},
+		{
+			"path": "pages/friend/friend"
+		},
+		{
+			"path": "pages/group/group"
+		},
+		{
+			"path": "pages/mine/mine"
+		},
+		{
+			"path": "pages/common/user-info"
+		},
+		{
+			"path": "pages/chat/chat-box",
+			"style": {
+				"navigationStyle": "custom",
+				"app-plus": {
+					// adjustPan窗体高度不变，但窗体上推、adjustResize屏幕高度=webview窗体高度+软键盘高度
+					"softinputMode": "adjustResize"
+				}
+			}
+		},
+		{
+			"path": "pages/chat/chat-private-video"
+		},
+		{
+			"path": "pages/chat/chat-group-video"
+		},
+		{
+			"path": "pages/friend/friend-add"
+		},
+		{
+			"path": "pages/group/group-info"
+		},
+		{
+			"path": "pages/group/group-edit"
+		},
+		{
+			"path": "pages/group/group-invite"
+		},
+		{
+			"path": "pages/group/group-member"
+		},
+		{
+			"path": "pages/mine/mine-edit"
+		},
+		{
+			"path": "pages/mine/mine-password"
+		}
+	],
+	"globalStyle": {
+		"navigationBarTitleText": "盒子IM",
+		"navigationStyle": "custom",
+		"navigationBarBackgroundColor": "#f7f7f7",
+		"backgroundColor": "#f7f7f7"
+	},
+	"tabBar": {
+		"color": "#000000",
+		"selectedColor": "#587ff0",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"list": [{
+				"pagePath": "pages/chat/chat",
+				"iconPath": "static/tarbar/chat.png",
+				"selectedIconPath": "static/tarbar/chat_active.png",
+				"text": "消息"
+			},
+			{
+				"pagePath": "pages/friend/friend",
+				"iconPath": "static/tarbar/friend.png",
+				"selectedIconPath": "static/tarbar/friend_active.png",
+				"text": "好友"
+			},
+			{
+				"pagePath": "pages/group/group",
+				"iconPath": "static/tarbar/group.png",
+				"selectedIconPath": "static/tarbar/group_active.png",
+				"text": "群聊"
+			},
+			{
+				"pagePath": "pages/mine/mine",
+				"iconPath": "static/tarbar/mine.png",
+				"selectedIconPath": "static/tarbar/mine_active.png",
+				"text": "我的"
+			}
+		]
+	},
+	"uniIdRouter": {}
+}

@@ -1,0 +1,10 @@
+{
+	"name": "boxim",
+	"uni-app": {
+		"scripts": {}
+	},
+	"dependencies": {
+		"pinyin-pro": "^3.23.1",
+		"vconsole": "^3.15.1"
+	}
+}
