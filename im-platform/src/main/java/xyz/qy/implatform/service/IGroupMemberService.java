@@ -44,8 +44,6 @@ public interface IGroupMemberService extends IService<GroupMember> {
 
     void switchCharacterAvatar(SwitchCharacterAvatarVO avatarVO);
 
-    void newRegisteredUserHandle(User user);
-
     /**
      * 用户用户是否在群中
      *

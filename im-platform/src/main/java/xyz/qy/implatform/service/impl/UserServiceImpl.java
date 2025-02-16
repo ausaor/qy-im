@@ -214,7 +214,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         this.save(user);
         redisCache.deleteObject(RedisKey.CAPTCHA_CODE_KEY + vo.getUuid());
 
-        groupMemberService.newRegisteredUserHandle(user);
         log.info("注册用户，用户id:{},用户名:{},昵称:{}", user.getId(), vo.getUserName(), vo.getNickName());
     }
 

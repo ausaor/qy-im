@@ -425,46 +425,6 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
     }
 
     @Override
-    public void newRegisteredUserHandle(User user) {
-        try {
-            LambdaQueryWrapper<DictData> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(DictData::getDictType, "new_register_user");
-            DictData dictData1 = dictDataMapper.selectOne(lambdaQueryWrapper);
-            if (ObjectUtil.isNull(dictData1) || "NO".equals(dictData1.getDictValue())) {
-                return;
-            }
-
-            LambdaQueryWrapper<DictData> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(DictData::getDictType, "common_group");
-            DictData dictData = dictDataMapper.selectOne(queryWrapper);
-
-            GroupMember groupMember = groupService.addToCommonGroup(user, Long.parseLong(dictData.getDictValue()));
-            if (ObjectUtil.isNotNull(groupMember)) {
-                GroupMessageDTO groupMessageVO = CommonUtils.buildGroupMessageVO(groupMember.getGroupId(), CommonUtils.buildWelcomeMessage(user, groupMember), MessageType.TEXT.code());
-                groupMessageVO.setAtUserIds(Collections.singletonList(user.getId()));
-
-                String content = null;
-                if (groupMember.getIsTemplate()) {
-                    content = "用户" + user.getNickName() + "【" + groupMember.getAliasName() + "】" + "加入了群聊";
-                } else {
-                    content = "用户" + user.getNickName() + "加入了群聊";
-                }
-                messageSendUtil.sendTipMessage(groupMember.getGroupId(),
-                        Constant.ADMIN_USER_ID, "管理员", Collections.emptyList(),
-                        content, GroupChangeTypeEnum.NEW_USER_JOIN.getCode());
-                groupMessageService.sendGroupMessage(groupMessageVO, Constant.ADMIN_USER_ID);
-            }
-            if (!user.getId().equals(Constant.ADMIN_USER_ID)) {
-                friendService.addFriend(user.getId(), Constant.ADMIN_USER_ID);
-                PrivateMessageDTO privateMessageVO = CommonUtils.buildPrivateMessageVO(user.getId(), Constant.ADMIN_WELCOME_MSG, MessageType.TEXT.code());
-                privateMessageService.sendPrivateMessage(privateMessageVO, Constant.ADMIN_USER_ID);
-            }
-        } catch (Exception e) {
-            log.error("error:{}", e.getMessage());
-        }
-    }
-
-    @Override
     public Boolean isInGroup(Long groupId, List<Long> userIds) {
         if (CollectionUtils.isEmpty(userIds)) {
             return true;

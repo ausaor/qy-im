@@ -119,7 +119,6 @@ public abstract class AbstractSocialLoginStrategyImpl implements SocialLoginStra
         }
         user.setLastLoginTime(LocalDateTime.now());
         userMapper.insert(user);
-        groupMemberService.newRegisteredUserHandle(user);
         return user;
     }
 
