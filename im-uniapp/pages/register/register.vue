@@ -99,6 +99,15 @@ export default {
 						title: "注册成功",
 						icon: 'none'
 					})
+          uni.navigateTo({
+            url: '/pages/login/login',
+            success: function () {
+              console.log('跳转成功');
+            },
+            fail: function (err) {
+              console.log('跳转失败', err);
+            }
+          });
 				})
 			})
 		},
