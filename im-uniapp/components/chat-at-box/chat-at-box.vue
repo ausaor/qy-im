@@ -10,7 +10,7 @@
 			<scroll-view v-show="atUserIds.length > 0" scroll-x="true" scroll-left="120">
 				<view class="at-user-items">
 					<view v-for="m in showMembers" v-show="m.checked" class="at-user-item" :key="m.userId">
-						<head-image :name="m.showNickName" :url="m.headImage" size="mini"></head-image>
+						<head-image :name="m.aliasName" :url="m.headImage" size="mini"></head-image>
 					</view>
 				</view>
 			</scroll-view>
@@ -19,11 +19,11 @@
 			</view>
 			<view class="member-items">
 				<scroll-view class="scroll-bar" scroll-with-animation="true" scroll-y="true">
-					<view v-for="m in showMembers" v-show="m.showNickName.includes(searchText)" :key="m.userId">
+					<view v-for="m in showMembers" v-show="m.aliasName.includes(searchText)" :key="m.userId">
 						<view class="member-item" :class="{ checked: m.checked }" @click="onSwitchChecked(m)">
-							<head-image :name="m.showNickName" :online="m.online" :url="m.headImage"
+							<head-image :name="m.aliasName" :online="m.online" :url="m.headImage"
 								size="small"></head-image>
-							<view class="member-name">{{ m.showNickName }}</view>
+							<view class="member-name">{{ m.aliasName }}</view>
 							<!--							<view class="member-checked">-->
 							<!--								<radio :checked="m.checked" @click.stop="onSwitchChecked(m)" />-->
 							<!--							</view>-->
@@ -59,7 +59,7 @@ export default {
 			if (this.ownerId == userId) {
 				this.showMembers.push({
 					userId: -1,
-					showNickName: "全体成员"
+          aliasName: "全体成员"
 				})
 			}
 			this.members.forEach((m) => {

@@ -5,10 +5,10 @@
 			<view class="member-items">
 				<view v-for="(member, idx) in groupMembers" :key="idx">
 					<view class="member-item" v-if="idx < 9">
-						<head-image :id="member.userId" :name="member.showNickName" :url="member.headImage" size="small"
+						<head-image :id="member.userId" :name="member.aliasName" :url="member.headImage" size="small"
 							:online="member.online"></head-image>
 						<view class="member-name">
-							<text>{{ member.showNickName }}</text>
+							<text>{{ member.aliasName }}</text>
 						</view>
 					</view>
 				</view>
@@ -29,11 +29,11 @@
 			</view>
 			<view class="form-item">
 				<view class="label">群名备注</view>
-				<view class="value">{{group.remarkGroupName}}</view>
+				<view class="value">{{group.remark}}</view>
 			</view>
 			<view class="form-item">
 				<view class="label">我在本群的昵称</view>
-				<view class="value">{{group.showNickName}}</view>
+				<view class="value">{{group.aliasName}}</view>
 			</view>
 			<view v-if="group.notice" class="form-item" >
 				<view class="label">群公告</view>
@@ -179,7 +179,7 @@ export default {
 	computed: {
 		ownerName() {
 			let member = this.groupMembers.find((m) => m.userId == this.group.ownerId);
-			return member && member.showNickName;
+			return member && member.aliasName;
 		},
 		isOwner() {
 			return this.group.ownerId == this.userStore.userInfo.id;

@@ -259,8 +259,8 @@ export default {
 			let chatInfo = {
 				type: 'GROUP',
 				targetId: group.id,
-				showName: group.showGroupName,
-				headImage: group.headImageThumb
+				showName: group.remark,
+				headImage: group.headImage
 			};
 			// 打开会话
 			this.chatStore.openChat(chatInfo);

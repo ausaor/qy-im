@@ -10,11 +10,11 @@
 		<view class="member-items">
 			<scroll-view class="scroll-bar" scroll-with-animation="true" scroll-y="true">
 				<view v-for="(member, idx) in groupMembers"
-					v-show="!searchText || member.showNickName.includes(searchText)" :key="idx">
+					v-show="!searchText || member.aliasName.includes(searchText)" :key="idx">
 					<view class="member-item" @click="onShowUserInfo(member.userId)">
-						<head-image :name="member.showNickName" :online="member.online"
+						<head-image :name="member.aliasName" :online="member.online"
 							:url="member.headImage"></head-image>
-						<view class="member-name">{{ member.showNickName }}
+						<view class="member-name">{{ member.aliasName }}
 							<uni-tag v-if="member.userId == group.ownerId" text="群主" size="small" circle type="error">
 							</uni-tag>
 							<uni-tag v-if="member.userId == userStore.userInfo.id" text="我" size="small" circle></uni-tag>
@@ -49,7 +49,7 @@ export default {
 		onKickOut(member, idx) {
 			uni.showModal({
 				title: '确认移出?',
-				content: `确定将成员'${member.showNickName}'移出群聊吗？`,
+				content: `确定将成员'${member.aliasName}'移出群聊吗？`,
 				success: (res) => {
 					if (res.cancel)
 						return;
@@ -58,7 +58,7 @@ export default {
 						method: 'DELETE'
 					}).then(() => {
 						uni.showToast({
-							title: `已将${member.showNickName}移出群聊`,
+							title: `已将${member.aliasName}移出群聊`,
 							icon: 'none'
 						})
 						this.groupMembers.splice(idx, 1);

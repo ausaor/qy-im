@@ -21,7 +21,7 @@
 				<scroll-view v-if="atUserIds.length > 0" class="chat-at-scroll-box" scroll-x="true" scroll-left="120">
 					<view class="chat-at-items">
 						<view v-for="m in atUserItems" class="chat-at-item" :key="m.userId">
-							<head-image :name="m.showNickName" :url="m.headImage" size="minier"></head-image>
+							<head-image :name="m.aliasName" :url="m.headImage" size="minier"></head-image>
 						</view>
 					</view>
 				</scroll-view>
@@ -210,7 +210,7 @@ export default {
 				// 只取部分字段,压缩url长度
 				users.push({
 					id: m.userId,
-					nickName: m.showNickName,
+					nickName: m.aliasName,
 					headImage: m.headImage,
 					isCamera: false,
 					isMicroPhone: true
@@ -254,7 +254,7 @@ export default {
 		showName(msgInfo) {
 			if (this.chat.type == 'GROUP') {
 				let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
-				return member ? member.showNickName : "";
+				return member ? member.aliasName : "";
 			} else {
 				return msgInfo.selfSend ? this.mine.nickName : this.chat.showName
 			}
@@ -319,7 +319,7 @@ export default {
 				} else {
 					let member = this.groupMembers.find((m) => m.userId == id);
 					if (member) {
-						atText += ` @${member.showNickName}`;
+						atText += ` @${member.aliasName}`;
 					}
 				}
 			})
@@ -859,7 +859,7 @@ export default {
 				if (id == -1) {
 					atUsers.push({
 						id: -1,
-						showNickName: "全体成员"
+            aliasName: "全体成员"
 					})
 					return;
 				}
