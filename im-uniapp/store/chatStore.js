@@ -260,10 +260,10 @@ export default defineStore('chatStore', {
 		},
 		updateChatFromFriend(friend) {
 			let chat = this.findChatByFriend(friend.id)
-			if (chat && (chat.headImage != friend.headImageThumb ||
+			if (chat && (chat.headImage != friend.headImage ||
 					chat.showName != friend.nickName)) {
 				// 更新会话中的群名和头像
-				chat.headImage = friend.headImageThumb;
+				chat.headImage = friend.headImage;
 				chat.showName = friend.nickName;
 				chat.stored = false;
 				this.saveToStorage();
@@ -271,10 +271,10 @@ export default defineStore('chatStore', {
 		},
 		updateChatFromGroup(group) {
 			let chat = this.findChatByGroup(group.id);
-			if (chat && (chat.headImage != group.headImageThumb ||
+			if (chat && (chat.headImage != group.headImage ||
 					chat.showName != group.showGroupName)) {
 				// 更新会话中的群名称和头像
-				chat.headImage = group.headImageThumb;
+				chat.headImage = group.headImage;
 				chat.showName = group.showGroupName;
 				chat.stored = false;
 				this.saveToStorage();

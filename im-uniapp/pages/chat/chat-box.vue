@@ -248,7 +248,7 @@ export default {
 				let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
 				return member ? member.headImage : "";
 			} else {
-				return msgInfo.selfSend ? this.mine.headImageThumb : this.chat.headImage
+				return msgInfo.selfSend ? this.mine.headImage : this.chat.headImage
 			}
 		},
 		showName(msgInfo) {

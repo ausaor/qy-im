@@ -5,7 +5,7 @@
 			<view class="form-item">
 				<view class="label">头像</view>
 				<image-upload class="value" :onSuccess="onUnloadImageSuccess">
-					<image :src="userInfo.headImageThumb" class="head-image"></image>
+					<image :src="userInfo.headImage" class="head-image"></image>
 				</image-upload>
 			</view>
 			<view class="form-item">
@@ -48,7 +48,7 @@ export default {
 		},
 		onUnloadImageSuccess(file, res) {
 			this.userInfo.headImage = res.data.originUrl;
-			this.userInfo.headImageThumb = res.data.thumbUrl;
+			this.userInfo.headImage = res.data.thumbUrl;
 		},
 		onSubmit() {
 			this.$http({

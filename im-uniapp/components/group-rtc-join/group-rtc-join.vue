@@ -46,7 +46,7 @@ export default {
 				users.push({
 					id: mine.id,
 					nickName: mine.nickName,
-					headImage: mine.headImageThumb,
+					headImage: mine.headImage,
 					isCamera: false,
 					isMicroPhone: true
 				})

@@ -3,7 +3,7 @@
 		<nav-bar back>用户信息</nav-bar>
 		<uni-card :is-shadow="false" is-full :border="false">
 			<view class="content">
-				<head-image :name="userInfo.nickName" :url="userInfo.headImageThumb" :size="160"
+				<head-image :name="userInfo.nickName" :url="userInfo.headImage" :size="160"
 					@click="onShowFullImage()"></head-image>
 
 				<view class="info-item">
@@ -81,7 +81,7 @@ export default {
 				let friend = {
 					id: this.userInfo.id,
 					nickName: this.userInfo.nickName,
-					headImage: this.userInfo.headImageThumb,
+					headImage: this.userInfo.headImage,
 					online: this.userInfo.online
 				}
 				this.friendStore.addFriend(friend);
@@ -115,7 +115,7 @@ export default {
 		updateFriendInfo() {
 			// store的数据不能直接修改，深拷贝一份store的数据
 			let friend = JSON.parse(JSON.stringify(this.friendInfo));
-			friend.headImage = this.userInfo.headImageThumb;
+			friend.headImage = this.userInfo.headImage;
 			friend.nickName = this.userInfo.nickName;
 			this.$http({
 				url: "/friend/update",
@@ -135,7 +135,7 @@ export default {
 			}).then((user) => {
 				this.userInfo = user;
 				// 如果发现好友的头像和昵称改了，进行更新
-				if (this.isFriend && (this.userInfo.headImageThumb != this.friendInfo.headImage ||
+				if (this.isFriend && (this.userInfo.headImage != this.friendInfo.headImage ||
 					this.userInfo.nickName != this.friendInfo.nickName)) {
 					this.updateFriendInfo()
 				}

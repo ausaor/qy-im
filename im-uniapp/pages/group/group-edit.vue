@@ -6,9 +6,9 @@
 				<view class="label">群聊头像</view>
 				<view class="value"></view>
 				<image-upload v-if="isOwner" :onSuccess="onUnloadImageSuccess">
-					<image :src="group.headImageThumb" class="group-image"></image>
+					<image :src="group.headImage" class="group-image"></image>
 				</image-upload>
-				<head-image v-else class="group-image" :name="group.showGroupName" :url="group.headImageThumb"
+				<head-image v-else class="group-image" :name="group.showGroupName" :url="group.headImage"
 					:size="120"></head-image>
 			</view>
 			<view class="form-item">
@@ -59,7 +59,7 @@ export default {
 		},
 		onUnloadImageSuccess(file, res) {
 			this.group.headImage = res.data.originUrl;
-			this.group.headImageThumb = res.data.thumbUrl;
+			this.group.headImage = res.data.thumbUrl;
 		},
 		modifyGroup() {
 			this.$http({
@@ -119,7 +119,7 @@ export default {
 			this.group = {
 				name: `${userInfo.userName}创建的群聊`,
 				headImage: userInfo.headImage,
-				headImageThumb: userInfo.headImageThumb,
+				headImage: userInfo.headImage,
 				ownerId: this.userStore.userInfo.id
 			}
 		}
