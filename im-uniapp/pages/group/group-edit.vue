@@ -8,7 +8,7 @@
 				<image-upload v-if="isOwner" :onSuccess="onUnloadImageSuccess">
 					<image :src="group.headImage" class="group-image"></image>
 				</image-upload>
-				<head-image v-else class="group-image" :name="group.showGroupName" :url="group.headImage"
+				<head-image v-else class="group-image" :name="group.remark" :url="group.headImage"
 					:size="120"></head-image>
 			</view>
 			<view class="form-item">

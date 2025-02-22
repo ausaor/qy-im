@@ -13,7 +13,7 @@
 		<view class="group-items" v-else>
 			<scroll-view class="scroll-bar" scroll-with-animation="true" scroll-y="true">
 				<view v-for="group in groupStore.groups" :key="group.id">
-					<group-item v-if="!group.quit && group.showGroupName.includes(searchText)"
+					<group-item v-if="!group.quit && group.remark.includes(searchText)"
 						:group="group"></group-item>
 				</view>
 			</scroll-view>

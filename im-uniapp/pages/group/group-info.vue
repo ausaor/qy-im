@@ -83,7 +83,7 @@ export default {
 			let chat = {
 				type: 'GROUP',
 				targetId: this.group.id,
-				showName: this.group.showGroupName,
+				showName: this.group.remark,
 				headImage: this.group.headImage,
 			};
 			this.chatStore.openChat(chat);

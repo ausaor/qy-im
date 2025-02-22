@@ -8,7 +8,7 @@ const emoTextList = ['emo憨笑', 'emo媚眼', 'emo开心', 'emo坏笑', 'emo可
 
 
 let transform = (content, extClass) => {
-	return content.replace(/\#[\u4E00-\u9FA5]{1,3}\;/gi, (emoText)=>{
+	return content.replace(/\#[a-z\u4E00-\u9FA5]{1,6}\;/gi, (emoText)=>{
 		// 将匹配结果替换表情图片
 		let word = emoText.replace(/\#|\;/gi, '');
 		let idx = emoTextList.indexOf(word);

@@ -272,10 +272,10 @@ export default defineStore('chatStore', {
 		updateChatFromGroup(group) {
 			let chat = this.findChatByGroup(group.id);
 			if (chat && (chat.headImage != group.headImage ||
-					chat.showName != group.showGroupName)) {
+					chat.showName != group.remark)) {
 				// 更新会话中的群名称和头像
 				chat.headImage = group.headImage;
-				chat.showName = group.showGroupName;
+				chat.showName = group.remark;
 				chat.stored = false;
 				this.saveToStorage();
 			}
