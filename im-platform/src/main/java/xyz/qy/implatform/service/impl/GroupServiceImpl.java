@@ -681,6 +681,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         groupMember.setUserId(user.getId());
         groupMember.setRemark(group.getName());
         groupMember.setAliasName(templateCharacter.getName());
+        groupMember.setAliasNamePrefix(templateGroupCreateVO.getAliasNamePrefix());
+        groupMember.setAliasNameSuffix(templateGroupCreateVO.getAliasNameSuffix());
         groupMember.setHeadImage(templateCharacter.getAvatar());
         groupMember.setTemplateCharacterId(templateCharacter.getId());
         groupMember.setIsTemplate(true);

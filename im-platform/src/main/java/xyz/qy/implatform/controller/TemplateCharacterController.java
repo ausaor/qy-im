@@ -33,10 +33,16 @@ public class TemplateCharacterController {
     @Autowired
     private ITemplateCharacterService templateCharacterService;
 
-    @ApiOperation(value = "查询群聊成员", notes = "查询群聊成员")
+    @ApiOperation(value = "查询模板角色", notes = "查询模板角色")
     @GetMapping("/list/{templateGroupId}")
     public Result<List<TemplateCharacterVO>> findTemplateCharactersByGroupId(@NotNull(message = "模板群聊id不能为空") @PathVariable Long templateGroupId) {
         return ResultUtils.success(templateCharacterService.findTemplateCharactersByGroupId(templateGroupId));
+    }
+
+    @ApiOperation(value = "查询已发布模板角色", notes = "查询已发布模板角色")
+    @GetMapping("/list-published/{templateGroupId}")
+    public Result<List<TemplateCharacterVO>> findPublishedByGroupId(@NotNull(message = "模板群聊id不能为空") @PathVariable Long templateGroupId) {
+        return ResultUtils.success(templateCharacterService.findPublishedByGroupId(templateGroupId));
     }
 
     @ApiOperation(value = "查询模板群聊可选择的模板人物", notes = "查询模板群聊可选择的模板人物")

@@ -49,6 +49,14 @@ public interface ITemplateCharacterService extends IService<TemplateCharacter> {
     /**
      * 查询已发布的模板角色
      *
+     * @param templateGroupId 群聊模板id
+     * @return 已发布的模板角色
+     */
+    List<TemplateCharacterVO> findPublishedByGroupId(Long templateGroupId);
+
+    /**
+     * 查询已发布的模板角色
+     *
      * @param id id
      * @return 模板角色
      */

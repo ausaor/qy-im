@@ -189,6 +189,25 @@ public class TemplateCharacterServiceImpl extends ServiceImpl<TemplateCharacterM
     }
 
     @Override
+    public List<TemplateCharacterVO> findPublishedByGroupId(Long templateGroupId) {
+        LambdaQueryWrapper<TemplateCharacter> queryWrapper = new LambdaQueryWrapper<>();
+        if (ObjectUtil.isNull(templateGroupId)) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "模板群聊id为空");
+        }
+
+        queryWrapper.eq(TemplateCharacter::getTemplateGroupId, templateGroupId);
+        queryWrapper.eq(TemplateCharacter::getDeleted, false);
+        queryWrapper.eq(TemplateCharacter::getStatus, ReviewEnum.REVIEWED.getCode());
+
+        List<TemplateCharacter> templateCharacterList = this.list(queryWrapper);
+        if (CollectionUtils.isEmpty(templateCharacterList)) {
+            return Collections.emptyList();
+        }
+
+        return BeanUtils.copyProperties(templateCharacterList, TemplateCharacterVO.class);
+    }
+
+    @Override
     public TemplateCharacter findPublishedById(Long id) {
         return this.lambdaQuery().eq(TemplateCharacter::getId, id)
                 .eq(TemplateCharacter::getDeleted, false)
