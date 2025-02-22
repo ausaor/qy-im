@@ -17,11 +17,11 @@
 			</view>
 			<view class="form-item">
 				<view class="label">群聊备注</view>
-				<input class="input" maxlength="20"  v-model="group.remarkGroupName"  :placeholder="group.name"/>
+				<input class="input" maxlength="20"  v-model="group.remark"  :placeholder="group.name"/>
 			</view>
 			<view class="form-item">
 				<view class="label">我在本群的昵称</view>
-				<input class="input" maxlength="20"  v-model="group.remarkNickName"  :placeholder="userStore.userInfo.nickName"/>
+				<input class="input" maxlength="20"  v-model="group.aliasName"  :placeholder="userStore.userInfo.nickName"/>
 			</view>
 			<view class="form-item">
 				<view class="label">群公告</view>
@@ -119,8 +119,8 @@ export default {
 			this.group = {
 				name: `${userInfo.userName}创建的群聊`,
 				headImage: userInfo.headImage,
-				headImage: userInfo.headImage,
-				ownerId: this.userStore.userInfo.id
+				ownerId: this.userStore.userInfo.id,
+        groupType: 0,
 			}
 		}
 	},
