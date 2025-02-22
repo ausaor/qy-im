@@ -30,6 +30,7 @@ export default {
 		return {
 			groupId: null,
 			searchText: "",
+      group: {},
 			groupMembers: [],
 			friendItems: []
 		}
@@ -38,7 +39,8 @@ export default {
 		onInviteFriends() {
 			let inviteVo = {
 				groupId: this.groupId,
-				friendIds: []
+				friendIds: [],
+        groupType: this.group.groupType,
 			}
 			this.friendItems.forEach((f) => {
 				if (f.checked && !f.disabled) {
@@ -91,6 +93,14 @@ export default {
 				this.friendItems.push(item);
 			}))
 		},
+    loadGroup(id) {
+      this.$http({
+        url: `/group/find/${id}`,
+        method: "GET"
+      }).then((group) => {
+        this.group = group;
+      })
+    },
 		loadGroupMembers(id) {
 			this.$http({
 				url: `/group/members/${id}`,
@@ -112,6 +122,7 @@ export default {
 	},
 	onLoad(options) {
 		this.groupId = options.id;
+    this.loadGroup(options.id);
 		this.loadGroupMembers(options.id);
 	}
 }
