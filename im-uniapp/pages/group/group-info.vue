@@ -52,6 +52,7 @@
 			<btn-bar type="primary" title="发送消息" @tap="onSendMessage()"></btn-bar>
 			<btn-bar v-if="!isOwner" type="danger" title="退出群聊" @tap="onQuitGroup()"></btn-bar>
 			<btn-bar v-if="isOwner" type="danger" title="解散群聊" @tap="onDissolveGroup()"></btn-bar>
+			<btn-bar v-if="isOwner" type="primary" title="切换模板群聊" @tap="switchGroupType(1)"></btn-bar>
 		</bar-group>
     <group-member-list ref="groupMemberList" :members="groupMembers"></group-member-list>
 	</view>
@@ -185,6 +186,11 @@ export default {
 		},
     viewGroupMemberInfo() {
       this.$refs.groupMemberList.open();
+    },
+    switchGroupType(toGroupType) {
+      uni.navigateTo({
+        url: `/pages/group/group-switch?id=${this.groupId}&toGroupType=${toGroupType}`
+      })
     }
 	},
 	computed: {

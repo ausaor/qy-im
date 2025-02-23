@@ -59,6 +59,9 @@
 			"path": "pages/group/group-member"
 		},
 		{
+			"path": "pages/group/group-switch"
+		},
+		{
 			"path": "pages/mine/mine-edit"
 		},
 		{
