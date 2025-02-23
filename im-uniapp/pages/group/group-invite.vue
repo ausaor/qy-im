@@ -26,7 +26,7 @@
 				</view>
 			</scroll-view>
 		</view>
-    <character-list ref="characterList" :characters="selectableCharacters" @confirm="chooseTemplateCharacter"></character-list>
+    <character-list ref="characterList" :characters="characters" @confirm="chooseTemplateCharacter"></character-list>
 		<button class="bottom-btn" type="primary" :disabled="inviteSize == 0"
 			@click="onInviteFriends()">邀请({{ inviteSize }}) </button>
 	</view>
@@ -47,7 +47,7 @@ export default {
 			friendItems: [],
       curSelectedFriend: {},
       selectedFriendIndex: -1,
-      selectableCharacters: []
+      characters: []
 		}
 	},
 	methods: {
@@ -180,13 +180,12 @@ export default {
       if (this.group.groupType === 1) {
         await this.querySelectableTemplateCharacter();
         this.$refs.characterList.open();
+      } else if (this.group.groupType === 2 || this.group.groupType === 3) {
+
+      } else if (this.group.groupType === 4) {
+        await this.queryTemplateCharacter(this.group.templateGroupId);
+        this.$refs.characterList.open();
       }
-      // else if (this.groupType === 2 || this.groupType === 3) {
-      //   this.queryTemplateGroup();
-      //   this.selectCharactersVisible = true;
-      // } else if (this.groupType === 4) {
-      //   this.groupTemplateCharacterVisible = true;
-      // }
     },
     async querySelectableTemplateCharacter() {
       let paramVO = {
@@ -198,10 +197,19 @@ export default {
         method: 'post',
         data: paramVO
       }).then(result => {
-        this.selectableCharacters = result;
+        this.characters = result;
       }).finally(() =>{
 
       })
+    },
+    async queryTemplateCharacter(templateGroupId) {
+      this.$http({
+        url: `/templateCharacter/list/${templateGroupId}`,
+        method: 'get'
+      }).then(result => {
+        console.log(result);
+        this.characters = result;
+      });
     },
     chooseTemplateCharacter(character) {
       this.friendItems[this.selectedFriendIndex].templateCharacterId = character.id;
