@@ -220,7 +220,6 @@ export default {
         url: `/templateCharacter/list/${templateGroupId}`,
         method: 'get'
       }).then(result => {
-        console.log(result);
         this.characters = result;
       });
     },

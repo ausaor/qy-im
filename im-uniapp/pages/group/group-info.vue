@@ -15,6 +15,9 @@
 				<view class="invite-btn" @click="onInviteMember()">
 					<uni-icons type="plusempty" size="20" color="#888888"></uni-icons>
 				</view>
+        <view class="view-btn" @click="viewGroupMemberInfo" v-if="group.groupType!==0">
+          <uni-icons type="search" size="20" color="#888888"></uni-icons>
+        </view>
 			</view>
 			<view class="member-more" @click="onShowMoreMmeber()">{{ `查看全部群成员${groupMembers.length}人` }}></view>
 		</view>
@@ -50,11 +53,16 @@
 			<btn-bar v-if="!isOwner" type="danger" title="退出群聊" @tap="onQuitGroup()"></btn-bar>
 			<btn-bar v-if="isOwner" type="danger" title="解散群聊" @tap="onDissolveGroup()"></btn-bar>
 		</bar-group>
+    <group-member-list ref="groupMemberList" :members="groupMembers"></group-member-list>
 	</view>
 </template>
 
 <script>
+import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
+import GroupMemberList from "../../components/group-member-list/group-member-list.vue";
+
 export default {
+  components: {GroupMemberList, GroupTemplateList},
 	data() {
 		return {
 			groupId: null,
@@ -174,7 +182,10 @@ export default {
 			}).then((members) => {
 				this.groupMembers = members.filter(m => !m.quit);
 			})
-		}
+		},
+    viewGroupMemberInfo() {
+      this.$refs.groupMemberList.open();
+    }
 	},
 	computed: {
 		ownerName() {
@@ -237,6 +248,17 @@ export default {
 				border: $im-border solid 2rpx;
 				border-radius: 10%;
 			}
+
+      .view-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 86rpx;
+        height: 86rpx;
+        margin: 10rpx;
+        border: $im-border solid 2rpx;
+        border-radius: 10%;
+      }
 		}
 
 		.member-more {
