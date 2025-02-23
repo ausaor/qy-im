@@ -1,5 +1,6 @@
 <template>
 	<view class="page group-invite">
+    <nav-bar back>邀请</nav-bar>
 		<view class="nav-bar">
 			<view class="nav-search">
 				<uni-search-bar v-model="searchText" radius="100" cancelButton="none"
@@ -27,6 +28,7 @@
 			</scroll-view>
 		</view>
     <character-list ref="characterList" :characters="characters" @confirm="chooseTemplateCharacter"></character-list>
+    <group-template-list ref="groupTemplateList" :group-templates="templateGroupList" @confirm="chooseGroupTemplate"></group-template-list>
 		<button class="bottom-btn" type="primary" :disabled="inviteSize == 0"
 			@click="onInviteFriends()">邀请({{ inviteSize }}) </button>
 	</view>
@@ -35,9 +37,10 @@
 <script>
 import CharacterAvatar from "../../components/character-avatar/character-avatar.vue";
 import CharacterList from "../../components/character-list/character-list.vue";
+import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
 
 export default {
-  components: {CharacterList, CharacterAvatar},
+  components: {GroupTemplateList, CharacterList, CharacterAvatar},
 	data() {
 		return {
 			groupId: null,
@@ -47,7 +50,8 @@ export default {
 			friendItems: [],
       curSelectedFriend: {},
       selectedFriendIndex: -1,
-      characters: []
+      characters: [],
+      templateGroupList: [],
 		}
 	},
 	methods: {
@@ -169,7 +173,6 @@ export default {
 				this.initFriendItems();
 			})
 		},
-
 		isGroupMember(id) {
 			return this.groupMembers.some(m => m.userId == id);
 		},
@@ -181,11 +184,21 @@ export default {
         await this.querySelectableTemplateCharacter();
         this.$refs.characterList.open();
       } else if (this.group.groupType === 2 || this.group.groupType === 3) {
-
+          await this.queryTemplateGroup();
+          this.$refs.groupTemplateList.open();
       } else if (this.group.groupType === 4) {
         await this.queryTemplateCharacter(this.group.templateGroupId);
         this.$refs.characterList.open();
       }
+    },
+    async queryTemplateGroup() {
+      this.$http({
+        url: "/templateGroup/list",
+        method: 'get',
+        params: ''
+      }).then(data => {
+        this.templateGroupList = data;
+      })
     },
     async querySelectableTemplateCharacter() {
       let paramVO = {
@@ -215,6 +228,10 @@ export default {
       this.friendItems[this.selectedFriendIndex].templateCharacterId = character.id;
       this.friendItems[this.selectedFriendIndex].templateCharacterAvatar = character.avatar;
       this.friendItems[this.selectedFriendIndex].templateCharacterName = character.name;
+    },
+    async chooseGroupTemplate(groupTemplate) {
+      await this.queryTemplateCharacter(groupTemplate.id);
+      this.$refs.characterList.open();
     }
 	},
 	computed: {
