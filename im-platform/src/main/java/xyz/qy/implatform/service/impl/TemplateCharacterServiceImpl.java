@@ -93,7 +93,7 @@ public class TemplateCharacterServiceImpl extends ServiceImpl<TemplateCharacterM
         }
 
         // 查询模板群聊下的所有模板人物
-        List<TemplateCharacterVO> characterVOList = findTemplateCharactersByGroupId(vo.getTemplateGroupId());
+        List<TemplateCharacterVO> characterVOList = findPublishedByGroupId(vo.getTemplateGroupId());
         if (CollectionUtils.isEmpty(characterVOList)) {
             throw new GlobalException("数据异常");
         }

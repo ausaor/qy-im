@@ -8,45 +8,99 @@
 		</view>
 		<view class="friend-items">
 			<scroll-view class="scroll-bar" scroll-with-animation="true" scroll-y="true">
-				<view v-for="friend in friendItems" v-show="!searchText || friend.nickName.includes(searchText)"
+				<view v-for="(friend, index) in friendItems" v-show="!searchText || friend.nickName.includes(searchText)"
 					:key="friend.id">
 					<view class="friend-item" @click="onSwitchChecked(friend)"
 						:class="{ checked: friend.checked, disabled: friend.disabled }">
 						<head-image :name="friend.nickName" :online="friend.online"
 							:url="friend.headImage"></head-image>
 						<view class="friend-name">{{ friend.nickName }}</view>
+            <view class="character-info" v-if="group.groupType !== 0 && !friend.disabled">
+              <view class="character-name">{{friend.templateCharacterName}}</view>
+              <character-avatar :name="friend.templateCharacterName"
+                          :url="friend.templateCharacterId ? friend.templateCharacterAvatar : '/static/image/default_head.png'"
+                                @click.stop="selectCharacter(friend, index)">
+              </character-avatar>
+            </view>
 					</view>
 				</view>
 			</scroll-view>
 		</view>
+    <character-list ref="characterList" :characters="selectableCharacters" @confirm="chooseTemplateCharacter"></character-list>
 		<button class="bottom-btn" type="primary" :disabled="inviteSize == 0"
 			@click="onInviteFriends()">邀请({{ inviteSize }}) </button>
 	</view>
 </template>
 
 <script>
+import CharacterAvatar from "../../components/character-avatar/character-avatar.vue";
+import CharacterList from "../../components/character-list/character-list.vue";
+
 export default {
+  components: {CharacterList, CharacterAvatar},
 	data() {
 		return {
 			groupId: null,
 			searchText: "",
       group: {},
 			groupMembers: [],
-			friendItems: []
+			friendItems: [],
+      curSelectedFriend: {},
+      selectedFriendIndex: -1,
+      selectableCharacters: []
 		}
 	},
 	methods: {
 		onInviteFriends() {
+      let returnFlag = false;
+      if (this.group.groupType !== 0) {
+        this.friendItems.forEach((f) => {
+          if (f.checked && !f.disabled) {
+            if (!f.templateCharacterId) {
+              returnFlag = true;
+            }
+          }
+        })
+        if (returnFlag) {
+          uni.showToast({
+            title: "请为用户分配模板角色",
+            icon: 'none'
+          })
+          return false
+        }
+      }
 			let inviteVo = {
 				groupId: this.groupId,
 				friendIds: [],
+        characterInviteVOList: [],
+        isTemplate: this.group.isTemplate,
         groupType: this.group.groupType,
 			}
 			this.friendItems.forEach((f) => {
 				if (f.checked && !f.disabled) {
 					inviteVo.friendIds.push(f.id);
+          if (this.group.groupType !== 0) {
+            let obj = {
+              friendId: f.id,
+              templateCharacterId: f.templateCharacterId,
+              templateCharacterAvatar: f.templateCharacterAvatar,
+              templateCharacterName: f.templateCharacterName
+            }
+            inviteVo.characterInviteVOList.push(obj);
+          }
 				}
 			})
+      if (this.group.groupType === 1 || this.group.groupType === 2) {
+        const templateCharacterIds = inviteVo.characterInviteVOList.map(item => item["templateCharacterId"]);
+        let templateCharacterIdSet = new Set(templateCharacterIds);
+        if (templateCharacterIdSet.size !== templateCharacterIds.length) {
+          uni.showToast({
+            title: "存在重复的模板角色，请重新选择",
+            icon: 'none'
+          })
+          return;
+        }
+      }
 			if (inviteVo.friendIds.length > 0) {
 				this.$http({
 					url: "/group/invite",
@@ -76,6 +130,11 @@ export default {
 		onSwitchChecked(friend) {
 			if (!friend.disabled) {
 				friend.checked = !friend.checked;
+        if (!friend.checked) {
+          friend.templateCharacterId = null;
+          friend.templateCharacterAvatar = '';
+          friend.templateCharacterName = null;
+        }
 			}
 		},
 		initFriendItems() {
@@ -113,7 +172,42 @@ export default {
 
 		isGroupMember(id) {
 			return this.groupMembers.some(m => m.userId == id);
-		}
+		},
+    async selectCharacter(friend, index) {
+      friend.checked = true;
+      this.selectedFriendIndex = index;
+      this.curSelectedFriend = friend;
+      if (this.group.groupType === 1) {
+        await this.querySelectableTemplateCharacter();
+        this.$refs.characterList.open();
+      }
+      // else if (this.groupType === 2 || this.groupType === 3) {
+      //   this.queryTemplateGroup();
+      //   this.selectCharactersVisible = true;
+      // } else if (this.groupType === 4) {
+      //   this.groupTemplateCharacterVisible = true;
+      // }
+    },
+    async querySelectableTemplateCharacter() {
+      let paramVO = {
+        groupId: this.group.id,
+        templateGroupId: this.group.templateGroupId
+      }
+      this.$http({
+        url: "/templateCharacter/findSelectableTemplateCharacter",
+        method: 'post',
+        data: paramVO
+      }).then(result => {
+        this.selectableCharacters = result;
+      }).finally(() =>{
+
+      })
+    },
+    chooseTemplateCharacter(character) {
+      this.friendItems[this.selectedFriendIndex].templateCharacterId = character.id;
+      this.friendItems[this.selectedFriendIndex].templateCharacterAvatar = character.avatar;
+      this.friendItems[this.selectedFriendIndex].templateCharacterName = character.name;
+    }
 	},
 	computed: {
 		inviteSize() {
@@ -166,6 +260,20 @@ export default {
 				white-space: nowrap;
 				overflow: hidden;
 			}
+
+      .character-info {
+        display: flex;
+        align-items: center;
+
+
+        .character-name {
+          font-size: 30rpx;
+          font-weight: 600;
+          line-height: 60rpx;
+          white-space: nowrap;
+          margin-right: 20rpx;
+        }
+      }
 		}
 
 		.scroll-bar {
