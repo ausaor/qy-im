@@ -292,6 +292,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         vo.setAliasNamePrefix(member.getAliasNamePrefix());
         vo.setAliasNameSuffix(member.getAliasNameSuffix());
         vo.setNickName(member.getNickname());
+        vo.setShowNickName(member.getShowNickName());
         return vo;
     }
 

@@ -53,6 +53,18 @@
         <view class="label">昵称后缀</view>
         <uni-easyinput v-model="group.aliasNameSuffix" placeholder="输入昵称前缀" maxlength="10"></uni-easyinput>
       </view>
+      <view class="form-item" v-if="groupType!==0">
+        <view class="label">备注名</view>
+        <uni-easyinput v-model="group.nickName" placeholder="" maxlength="10"></uni-easyinput>
+      </view>
+      <view class="form-item" v-if="groupType!==0">
+        <view class="label">群成员名称显示</view>
+        <view style="display: flex;align-items: center;">
+          <up-text type="primary" text="关闭"></up-text>
+          <up-switch v-model="group.showNickName" activeColor="#13ce66" inactiveColor="#ff4949"></up-switch>
+          <up-text type="info" text="显示"></up-text>
+        </view>
+      </view>
 			<view class="form-item">
 				<view class="label">群公告</view>
 				<textarea class="notice" :class="isOwner?'':'disable'" maxlength="512" :disabled="!isOwner" v-model="group.notice" :placeholder="isOwner?'请输入群公告':''"></textarea>
