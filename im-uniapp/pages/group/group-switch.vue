@@ -4,7 +4,7 @@
     <view class="btns-box">
       <up-button text="随机设置" v-if="toGroupType ===2 || toGroupType ===3"></up-button>
       <up-button :text="groupTemplateName" type="primary" plain @click="openGroupTemplatePopup"></up-button>
-      <up-button text="确认" type="success" plain></up-button>
+      <up-button text="确认" type="success" plain @click="handleSwitch"></up-button>
     </view>
     <view class="nav-bar">
       <view class="nav-search">
@@ -136,6 +136,80 @@ export default {
         this.characters = result;
       });
     },
+    handleSwitch() {
+      let groupMemberList = this.groupMembers.filter(item => !item.quit);
+      if (this.toGroupType === 1 || this.toGroupType === 2) {
+        // 判断是否有重复的模板人物
+        const templateCharacterIds = groupMemberList.map(item => item["templateCharacterId"]);
+        let templateCharacterIdSet = new Set(templateCharacterIds);
+        if (templateCharacterIdSet.size !== templateCharacterIds.length) {
+          uni.showToast({
+            title: "存在重复的模板角色，请重新选择",
+            icon: 'none'
+          })
+          return;
+        }
+      }
+      let flag = false;
+      for (let i = 0; i < groupMemberList.length; i++) {
+        if (!groupMemberList[i].templateCharacterId) {
+          flag = true;
+          break;
+        }
+      }
+      if (flag) {
+        uni.showToast({
+          title: "有用户未分配角色！",
+          icon: 'none'
+        })
+        return;
+      }
+
+      let paramVO = {
+        groupId: this.group.id,
+        name: this.group.name,
+        templateGroupId: this.activeGroupTemplate.id,
+        groupMembers: groupMemberList,
+        toGroupType: this.toGroupType,
+      }
+      //console.log("paramVO", paramVO)
+      let url = null;
+      if (this.toGroupType === 1) {
+        url = "/group/switchTemplateGroup";
+      } else if (this.toGroupType === 2) {
+        url = "/group/switchMultCharacterGroup";
+      } else if (this.toGroupType === 3) {
+        url = "/group/switchMoreCharactersGroup"
+      } else if (this.toGroupType === 4) {
+        url = "/group/switchTemplateMultCharactersGroup"
+      }
+      this.$http({
+        url: url,
+        method: 'post',
+        data: paramVO
+      }).then((group) => {
+        // 更新聊天页面的群聊信息
+        this.chatStore.updateChatFromGroup(group);
+        // 更新聊天列表的群聊信息
+        this.groupStore.updateGroup(group);
+        uni.showToast({
+          title: "切换成功！",
+          icon: 'none'
+        })
+        setTimeout(() => {
+          // 回退并刷新
+          let pages = getCurrentPages();
+          let prevPage = pages[pages.length - 2];
+          prevPage.$vm.loadGroupInfo();
+          prevPage.$vm.loadGroupMembers();
+          uni.navigateBack({
+            delta: 1
+          })
+        }, 1000);
+      }).finally(() =>{
+
+      })
+    }
   }
 }
 </script>
