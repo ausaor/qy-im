@@ -22,6 +22,14 @@
 							<!-- <rich-text class="chat-msg-text" :nodes="nodesText"></rich-text> -->
 						</long-press-menu>
 					</view>
+          <view v-if="msgInfo.type == $enums.MESSAGE_TYPE.WORD_VOICE" class="chat-msg-word-voice">
+            <long-press-menu :items="menuItems" @select="onSelectMenu">
+              <view class="word-voice-box">
+                <view class="chat-msg-word-voice-text">{{JSON.parse(msgInfo.content).word}}</view>
+                <view class="iconfont icon-voice-circle" @click.stop="onPlayWordVoice"></view>
+              </view>
+            </long-press-menu>
+          </view>
 					<view class="chat-msg-image" v-if="msgInfo.type == $enums.MESSAGE_TYPE.IMAGE">
 						<long-press-menu :items="menuItems" @select="onSelectMenu">
 							<view class="img-load-box">
@@ -129,6 +137,7 @@ export default {
 		return {
 			audioPlayState: 'STOP',
 			innerAudioContext: null,
+      audioContext: null,
 			menu: {
 				show: false,
 				style: ""
@@ -197,7 +206,22 @@ export default {
 				this.innerAudioContext = null;
 				this.audioPlayState = "STOP"
 			}
-		}
+		},
+    onPlayWordVoice() {
+      // 创建音频上下文
+      this.audioContext = uni.createInnerAudioContext();
+      // 设置音频源
+      this.audioContext.src = JSON.parse(this.msgInfo.content).voice;
+      // 监听音频播放结束事件
+      this.audioContext.onEnded(() => {
+        console.log('音频播放结束');
+      });
+      // 监听音频播放错误事件
+      this.audioContext.onError((res) => {
+        console.log('音频播放出错:', res.errMsg);
+      });
+      this.audioContext.play();
+    }
 	},
 	computed: {
 		loading() {
@@ -278,6 +302,7 @@ export default {
 
 <style scoped lang="scss">
 .chat-msg-item {
+  $icon-color: rgba(0, 0, 0, 0.88);
 	padding: 2rpx 20rpx;
 
 	.chat-msg-tip {
@@ -317,6 +342,12 @@ export default {
 				padding-right: 80rpx;
 				margin-top: 5rpx;
 
+        .iconfont {
+          font-size: 40rpx;
+          margin: 0 6rpx;
+          color: $icon-color;
+        }
+
 				.chat-msg-text {
 					position: relative;
 					line-height: 1.6;
@@ -345,6 +376,40 @@ export default {
 						border-width: 18rpx;
 					}
 				}
+
+        .chat-msg-word-voice {
+          display: flex;
+          position: relative;
+          line-height: 1.6;
+          margin-top: 10rpx;
+          padding: 16rpx 24rpx;
+          background-color: $im-bg;
+          border-radius: 20rpx;
+          color: $im-text-color;
+          font-size: $im-font-size;
+          text-align: left;
+          word-break: break-all;
+          white-space: pre-line;
+
+
+          &:after {
+            content: "";
+            position: absolute;
+            left: -20rpx;
+            top: 26rpx;
+            width: 6rpx;
+            height: 6rpx;
+            border-style: solid dashed dashed;
+            border-color: $im-bg transparent transparent;
+            overflow: hidden;
+            border-width: 18rpx;
+          }
+
+          .word-voice-box {
+            display: flex;
+            align-items: center;
+          }
+        }
 
 
 				.chat-msg-image {
@@ -521,6 +586,18 @@ export default {
 							border-top-color: $im-color-primary-light-2;
 						}
 					}
+
+          .chat-msg-word-voice {
+            margin-left: 10px;
+            background-color: $im-color-primary-light-2;
+            color: #fff;
+
+            &:after {
+              left: auto;
+              right: -9px;
+              border-top-color: $im-color-primary-light-2;
+            }
+          }
 
 					.chat-msg-image {
 						flex-direction: row-reverse;
