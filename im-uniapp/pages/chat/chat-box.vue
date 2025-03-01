@@ -7,11 +7,11 @@
 					:scroll-into-view="'chat-item-' + scrollMsgIdx">
 					<view v-if="chat" v-for="(msgInfo, idx) in chat.messages" :key="idx">
 						<chat-message-item :ref="'message'+msgInfo.id" v-if="idx >= showMinIdx"
-							:headImage="headImage(msgInfo)" @call="onRtCall(msgInfo)" :showName="showName(msgInfo)"
+              @call="onRtCall(msgInfo)" :showInfo="showInfo(msgInfo)"
 							@recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
 							@longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
 							@audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
-							:groupMembers="groupMembers">
+							:groupMembers="groupMembers" :myGroupMemberInfo="myGroupMemberInfo">
 						</chat-message-item>
 					</view>
 				</scroll-view>
@@ -121,6 +121,7 @@ export default {
 			friend: {},
 			group: {},
 			groupMembers: [],
+      myGroupMemberInfo: {}, // 我的群聊成员信息
 			isReceipt: false, // 是否回执消息
 			scrollMsgIdx: 0, // 滚动条定位为到哪条消息
 			chatTabBox: 'none',
@@ -139,7 +140,7 @@ export default {
 			isEmpty: true, // 编辑器是否为空
 			isFocus: false, // 编辑器是否焦点
 			isReadOnly: false, // 编辑器是否只读
-			playingAudio: null // 当前正在播放的录音消息
+			playingAudio: null, // 当前正在播放的录音消息
 		}
 	},
 	methods: {
@@ -259,6 +260,61 @@ export default {
 				return msgInfo.selfSend ? this.mine.nickName : this.chat.showName
 			}
 		},
+    showInfo(msgInfo) {
+      let showInfoObj = {
+        showName: "",
+        headImage: "",
+        nickName: "",
+        characterNum: null,
+      };
+      if (this.chat.type == 'GROUP') {
+        let friend = this.friends.find((f) => f.id === msgInfo.sendId);
+        if (friend) {
+          if (friend.friendRemark) {
+            showInfoObj.nickName = friend.friendRemark;
+          } else if (friend.friendNickName) {
+            showInfoObj.nickName = friend.friendNickName;
+          }
+        }
+        // 是普通群聊
+        if (this.group.groupType === 0) {
+          if (friend) {
+            if (friend.friendRemark) {
+              showInfoObj.showName = friend.friendRemark;
+            } else if (friend.friendNickName) {
+              showInfoObj.showName = friend.friendNickName;
+            }
+          }
+        }
+        let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+        if (member) {
+          showInfoObj.characterNum = member.characterNum;
+          showInfoObj.headImage = member.headImage;
+          if (!showInfoObj.showName) {
+            showInfoObj.showName = member.aliasName;
+          }
+          if (!showInfoObj.nickName) {
+            showInfoObj.nickName = member.nickName;
+          }
+        }
+
+        if (!showInfoObj.showName) {
+          if (msgInfo.sendNickName) {
+            showInfoObj.showName = msgInfo.sendNickName;
+          }
+        }
+        if (!showInfoObj.headImage) {
+          if (msgInfo.sendUserAvatar) {
+            showInfoObj.headImage = msgInfo.sendUserAvatar;
+          }
+        }
+      } else {
+        msgInfo.sendId == this.mine.id ? showInfoObj.showName = this.mine.nickName : showInfoObj.showName = this.chat.showName;
+        msgInfo.sendId == this.mine.id ? showInfoObj.headImage = this.mine.headImage : showInfoObj.headImage = this.chat.headImage;
+      }
+
+      return showInfoObj;
+    },
 		sendTextMessage() {
 			this.editorCtx.getContents({
 				success: (e) => {
@@ -654,6 +710,7 @@ export default {
 				url: `/group/members/${groupId}`,
 				method: 'GET'
 			}).then((groupMembers) => {
+        this.myGroupMemberInfo = groupMembers.find((m) => m.userId === this.mine.id);
 				this.groupMembers = groupMembers;
 			});
 		},
@@ -871,7 +928,10 @@ export default {
 				}
 			})
 			return atUsers;
-		}
+		},
+    friends() {
+      return this.friendStore.friends;
+    }
 	},
 	watch: {
 		messageSize: function(newSize, oldSize) {

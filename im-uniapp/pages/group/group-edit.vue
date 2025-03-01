@@ -142,6 +142,7 @@ export default {
 					let pages = getCurrentPages();
 					let prevPage = pages[pages.length - 2];
 					prevPage.$vm.loadGroupInfo();
+					prevPage.$vm.loadGroupMembers();
 					uni.navigateBack();
 				}, 1000);
 

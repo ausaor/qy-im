@@ -8,11 +8,12 @@
 			{{ $date.toTimeText(msgInfo.sendTime) }}
 		</view>
 		<view class="chat-msg-normal" v-if="isNormal" :class="{ 'chat-msg-mine': msgInfo.selfSend }">
-			<head-image class="avatar" @longpress.prevent="$emit('longPressHead')" :id="msgInfo.sendId" :url="headImage"
-				:name="showName" size="small"></head-image>
+			<head-image class="avatar" @longpress.prevent="$emit('longPressHead')" :id="msgInfo.sendId" :url="showInfo.headImage"
+				:name="showInfo.showName" size="small"></head-image>
 			<view class="chat-msg-content">
 				<view v-if="msgInfo.groupId && !msgInfo.selfSend" class="chat-msg-top">
-					<text>{{ showName }}</text>
+					<text :style="nameColorStyle">{{ showInfo.showName }}</text>
+          <text v-show="myGroupMemberInfo.showNickName" style="margin-left: 20rpx;">{{showInfo.nickName}}</text>
 				</view>
 				<view class="chat-msg-bottom">
 					<view v-if="msgInfo.type == $enums.MESSAGE_TYPE.TEXT">
@@ -88,21 +89,32 @@
 export default {
 	name: "chat-message-item",
 	props: {
-		headImage: {
-			type: String,
-			required: true
-		},
-		showName: {
-			type: String,
-			required: true
-		},
+    showInfo: {
+      type: Object,
+      required: true,
+      default() {
+        return {
+          headImage: "",
+          showName: "",
+          nickName: "",
+          characterNum: null,
+        }
+      }
+    },
 		msgInfo: {
 			type: Object,
 			required: true
 		},
 		groupMembers: {
 			type: Array
-		}
+		},
+    myGroupMemberInfo: {
+      type: Object,
+      required: true,
+      default() {
+        return {}
+      }
+    },
 	},
 	data() {
 		return {
@@ -111,7 +123,10 @@ export default {
 			menu: {
 				show: false,
 				style: ""
-			}
+			},
+      colors:["#7dd24b","#c7515a","#db68ef","#15d29b",
+        "#85029b", "#c9b455","#fb2609","#bda818",
+        "#af0831","#326eb6"]
 		}
 	},
 	methods: {
@@ -237,7 +252,16 @@ export default {
 			let color = this.msgInfo.selfSend ? 'white' : '';
 			let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.content, color)
 			return this.$emo.transform(text, 'emoji-normal')
-		}
+		},
+    nameColorStyle() {
+      let index = 0;
+      if (this.showInfo.characterNum != null && this.showInfo.characterNum <= 10) {
+        index = this.showInfo.characterNum - 1;
+      } else {
+        return '';
+      }
+      return `color:${this.colors[index]};`
+    }
 	}
 
 }
