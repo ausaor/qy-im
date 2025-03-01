@@ -49,6 +49,15 @@
 						<text title="发送失败" v-if="loadFail" @click="onSendFail"
 							class="send-fail iconfont icon-warning-circle-fill"></text>
 					</view>
+          <view class="chat-msg-video" v-if="msgInfo.type == $enums.MESSAGE_TYPE.VIDEO">
+            <long-press-menu :items="menuItems" @select="onSelectMenu">
+              <view class="video-msg-box">
+                <video class="send-video" controls="controls" preload="none"
+                       :src="JSON.parse(msgInfo.content).videoUrl"
+                       :poster="JSON.parse(msgInfo.content).coverUrl"></video>
+              </view>
+            </long-press-menu>
+          </view>
 					<long-press-menu v-if="msgInfo.type == $enums.MESSAGE_TYPE.AUDIO" :items="menuItems"
 						@select="onSelectMenu">
 						<view class="chat-msg-audio chat-msg-text" @click="onPlayAudio()">
@@ -411,6 +420,25 @@ export default {
 
 				}
 
+        .chat-msg-video {
+          display: flex;
+          align-items: center;
+
+          .video-msg-box {
+            width: 100%;
+
+            .send-video {
+              width: 300rpx;
+              height: 200rpx;
+              border-radius: 10rpx;
+              overflow: hidden;
+              cursor: pointer;
+              -o-object-fit: cover;
+              object-fit: cover;
+            }
+          }
+        }
+
 				.chat-msg-audio {
 					display: flex;
 					align-items: center;
@@ -501,6 +529,10 @@ export default {
 					.chat-msg-file {
 						flex-direction: row-reverse;
 					}
+
+          .chat-msg-video {
+            flex-direction: row-reverse;
+          }
 
 					.chat-msg-audio {
 						flex-direction: row-reverse;
