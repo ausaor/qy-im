@@ -53,8 +53,34 @@
 			<btn-bar v-if="!isOwner" type="danger" title="退出群聊" @tap="onQuitGroup()"></btn-bar>
 			<btn-bar v-if="isOwner" type="danger" title="解散群聊" @tap="onDissolveGroup()"></btn-bar>
 			<btn-bar v-if="isOwner" type="primary" title="切换模板群聊" @tap="switchGroupType(1)"></btn-bar>
+			<btn-bar v-if="isOwner" type="primary" title="切换模板角色群聊" @tap="switchGroupType(4)"></btn-bar>
+			<btn-bar v-if="isOwner && group.groupType !== 2" type="primary" title="切换多元角色群聊" @tap="switchGroupType(2)"></btn-bar>
+			<btn-bar v-if="isOwner && group.groupType !== 3" type="primary" title="切换角色群聊" @tap="switchGroupType(3)"></btn-bar>
+			<btn-bar v-if="isOwner && group.groupType !== 0" type="primary" title="切换普通群聊" @tap="showSwitchCommonGroupPopup"></btn-bar>
 		</bar-group>
     <group-member-list ref="groupMemberList" :members="groupMembers"></group-member-list>
+    <up-popup :show="showSwitchCommonGroup" mode="center" @close="closeCommonPopup" :customStyle="{width: '90%', height: '500rpx', borderRadius: '18rpx'}">
+      <view class="common-form">
+        <view class="form-item">
+          <view class="label">群聊头像</view>
+          <view class="value">
+            <image-upload :onSuccess="onUnloadImageSuccess">
+              <image :src="group.headImage" class="group-image"></image>
+            </image-upload>
+          </view>
+        </view>
+        <view class="form-item">
+          <view class="label">群聊名称</view>
+          <view class="value">
+            <input class="input" maxlength="20"  v-model="group.name"  placeholder="请输入群聊名称"/>
+          </view>
+        </view>
+        <view class="btns">
+          <up-button  text="取消" @click="() => showSwitchCommonGroup = false"></up-button>
+          <up-button type="primary" text="确定" @click="switchCommonGroup"></up-button>
+        </view>
+      </view>
+    </up-popup>
 	</view>
 </template>
 
@@ -68,7 +94,8 @@ export default {
 		return {
 			groupId: null,
 			group: {},
-			groupMembers: []
+			groupMembers: [],
+      showSwitchCommonGroup: false,
 		}
 	},
 	methods: {
@@ -191,7 +218,35 @@ export default {
       uni.navigateTo({
         url: `/pages/group/group-switch?id=${this.groupId}&toGroupType=${toGroupType}`
       })
-    }
+    },
+    showSwitchCommonGroupPopup() {
+      this.showSwitchCommonGroup = true;
+    },
+    closeCommonPopup() {
+      this.showSwitchCommonGroup = false;
+    },
+    switchCommonGroup() {
+      let paramVO = {
+        groupId: this.group.id,
+        name: this.group.name,
+        avatar: this.group.headImage
+      }
+
+      this.$http({
+        url: "/group/switchCommonGroup",
+        method: 'post',
+        data: paramVO
+      }).then((group) => {
+        this.loadGroupInfo();
+        this.loadGroupMembers();
+      }).finally(() =>{
+        this.showSwitchCommonGroup = false;
+      })
+    },
+    onUnloadImageSuccess(file, res) {
+      this.group.headImage = res.data.originUrl;
+      this.group.headImage = res.data.thumbUrl;
+    },
 	},
 	computed: {
 		ownerName() {
@@ -311,5 +366,51 @@ export default {
 			color: $im-text-color-lighter;
 		}
 	}
+
+  .common-form {
+    margin-top: 60rpx;
+    width: 100%;
+
+    .form-item {
+      padding: 0 40rpx;
+      display: flex;
+      background: white;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10rpx;
+
+      .label {
+        line-height: 100rpx;
+        font-size: $im-font-size;
+        white-space: nowrap;
+      }
+
+      .value{
+        white-space: nowrap;
+      }
+
+      .input {
+        flex: 1;
+        text-align: right;
+        line-height: 100rpx;
+        font-size: $im-font-size-small;
+      }
+
+      .group-image {
+        width: 120rpx;
+        height: 120rpx;
+        border-radius: 50%;
+        border: 1px solid #ccc;
+      }
+    }
+
+    .btns {
+      margin-top: 50rpx;
+      display: flex;
+      justify-content: center;
+      gap: 60rpx;
+      padding: 0 40rpx;
+    }
+  }
 }
 </style>

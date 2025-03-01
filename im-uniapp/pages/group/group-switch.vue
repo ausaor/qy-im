@@ -2,7 +2,7 @@
   <view class="page group-switch-box">
     <nav-bar back>群聊类型切换</nav-bar>
     <view class="btns-box">
-      <up-button text="随机设置" v-if="toGroupType ===2 || toGroupType ===3"></up-button>
+      <up-button text="随机设置" v-if="toGroupType ===2 || toGroupType ===3" @click="randomSetCharacters"></up-button>
       <up-button :text="groupTemplateName" type="primary" plain @click="openGroupTemplatePopup"></up-button>
       <up-button text="确认" type="success" plain @click="handleSwitch"></up-button>
     </view>
@@ -79,6 +79,13 @@ export default {
       })
     },
     selectCharacter(member, index) {
+      if (!this.activeGroupTemplate.id) {
+        uni.showToast({
+          title: "请先选择群聊模板",
+          icon: 'none'
+        })
+        return;
+      }
       this.activeMemberIndex = index;
       this.activeMember = member;
       this.$refs.characterList.open();
@@ -208,6 +215,25 @@ export default {
         }, 1000);
       }).finally(() =>{
 
+      })
+    },
+    randomSetCharacters() {
+      let count = this.groupMembers.filter(item => !item.quit).length;
+      this.$http({
+        url: '/templateCharacter/getRandomCharacters?count=' + count,
+        method: 'get'
+      }).then((characters) => {
+        if (characters && characters.length > 0) {
+          let index = 0;
+          this.groupMembers.filter(item => {
+            if (!item.quit && index < characters.length) {
+              item.templateCharacterAvatar = characters[index].avatar
+              item.templateCharacterId = characters[index].id
+              item.templateCharacterName = characters[index].name
+              index++;
+            }
+          })
+        }
       })
     }
   }
