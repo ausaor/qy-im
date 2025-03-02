@@ -18,6 +18,12 @@
         <view class="view-btn" @click="viewGroupMemberInfo" v-if="group.groupType!==0">
           <uni-icons type="search" size="20" color="#888888"></uni-icons>
         </view>
+        <view class="view-btn" v-if="group.groupType!==0" @click="switchCharacter">
+          <uni-icons type="loop" size="20" color="#888888"></uni-icons>
+        </view>
+        <view class="view-btn" v-if="group.groupType!==0">
+          <uni-icons type="person" size="20" color="#888888"></uni-icons>
+        </view>
 			</view>
 			<view class="member-more" @click="onShowMoreMmeber()">{{ `查看全部群成员${groupMembers.length}人` }}></view>
 		</view>
@@ -59,6 +65,8 @@
 			<btn-bar v-if="isOwner && group.groupType !== 0" type="primary" title="切换普通群聊" @tap="showSwitchCommonGroupPopup"></btn-bar>
 		</bar-group>
     <group-member-list ref="groupMemberList" :members="groupMembers"></group-member-list>
+    <group-template-list ref="groupTemplateList" :group-templates="templateGroupList" @confirm="chooseGroupTemplate"></group-template-list>
+    <character-list ref="characterList" :characters="characters" @confirm="chooseCharacter"></character-list>
     <up-popup :show="showSwitchCommonGroup" mode="center" @close="closeCommonPopup" :customStyle="{width: '90%', height: '500rpx', borderRadius: '18rpx'}">
       <view class="common-form">
         <view class="form-item">
@@ -87,15 +95,20 @@
 <script>
 import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
 import GroupMemberList from "../../components/group-member-list/group-member-list.vue";
+import CharacterList from "../../components/character-list/character-list.vue";
 
 export default {
-  components: {GroupMemberList, GroupTemplateList},
+  components: {CharacterList, GroupMemberList, GroupTemplateList},
 	data() {
 		return {
 			groupId: null,
 			group: {},
 			groupMembers: [],
       showSwitchCommonGroup: false,
+      templateGroupList: [],
+      characters: [],
+      characterAvatars: [],
+      activeGroupTemplateId: null,
 		}
 	},
 	methods: {
@@ -187,7 +200,6 @@ export default {
 					});
 				}
 			});
-
 		},
 		loadGroupInfo() {
 			this.$http({
@@ -199,7 +211,6 @@ export default {
 				this.chatStore.updateChatFromGroup(group);
 				// 更新聊天列表的群聊信息
 				this.groupStore.updateGroup(group);
-
 			});
 		},
 		loadGroupMembers() {
@@ -247,6 +258,60 @@ export default {
       this.group.headImage = res.data.originUrl;
       this.group.headImage = res.data.thumbUrl;
     },
+    async switchCharacter() {
+      if (this.group.groupType === 1 || this.group.groupType === 4) {
+        this.activeGroupTemplateId = this.group.templateGroupId;
+        await this.queryCharacterList(this.group.templateGroupId);
+        this.$refs.characterList.open();
+      } else if (this.group.groupType === 2 || this.group.groupType === 3) {
+        await this.queryGroupTemplateList();
+        this.$refs.groupTemplateList.open();
+      }
+    },
+    async queryGroupTemplateList() {
+      await this.$http({
+        url: "/templateGroup/list",
+        method: 'get',
+        params: ''
+      }).then(data => {
+        this.templateGroupList = data;
+      })
+    },
+    async queryCharacterList(templateGroupId) {
+      await this.$http({
+        url: `/templateCharacter/list/${templateGroupId}`,
+        method: 'get'
+      }).then(result => {
+        this.characters = result;
+      });
+    },
+    async chooseGroupTemplate(groupTemplate) {
+      this.activeGroupTemplateId = groupTemplate.id;
+      await this.queryCharacterList(groupTemplate.id);
+      this.$refs.characterList.open();
+    },
+    chooseCharacter(character) {
+      let groupMemberVO = {
+        groupId: this.group.id,
+        templateGroupId: this.activeGroupTemplateId,
+        templateCharacterId: character.id,
+        templateCharacterName: character.name,
+        templateCharacterAvatar: character.avatar,
+        groupType: this.group.groupType,
+      }
+      this.$http({
+        url: "/group/member/switchTemplateCharacter",
+        method: 'post',
+        data: groupMemberVO
+      }).then(() => {
+        uni.showToast({
+          title: "切换成功",
+          icon: 'none'
+        });
+        this.loadGroupMembers();
+      }).finally(() =>{
+      })
+    }
 	},
 	computed: {
 		ownerName() {
