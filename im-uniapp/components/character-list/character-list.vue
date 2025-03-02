@@ -7,7 +7,7 @@
       </view>
       <view class="btns">
         <up-button text="取消" :custom-style="{width: '30%'}" @click="cancel"></up-button>
-        <up-button type="primary" text="确定" :custom-style="{width: '30%'}" @click="confirm"></up-button>
+        <up-button type="primary" text="确定" :disabled="characters.length === 0" :custom-style="{width: '30%'}" @click="confirm"></up-button>
       </view>
       <view class="search-bar">
         <uni-search-bar v-model="searchText" cancelButton="none" radius="100" placeholder="搜索"></uni-search-bar>
@@ -55,6 +55,13 @@ export default {
       this.$refs.popup.close();
     },
     confirm() {
+      if (!this.activeCharacter.id) {
+        uni.showToast({
+          title: "请选择一个角色",
+          icon: 'none'
+        });
+        return;
+      }
       this.$emit("confirm", this.activeCharacter);
       this.$refs.popup.close();
       this.activeIndex = -1;

@@ -276,6 +276,15 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "您已不在群聊里面，无法切换模板角色");
         }
 
+        // 判断上次切换时间与当前时间间隔
+        Date switchTime = groupMember.getSwitchTime();
+        if (switchTime != null) {
+            long interval = (new Date().getTime() - switchTime.getTime()) / 1000;
+            if (interval < Constant.SWITCH_INTERVAL) {
+                throw new GlobalException("距离上次切换操作未超过30分钟");
+            }
+        }
+
         // 查询群信息
         Group group = groupService.getById(groupMemberVO.getGroupId());
         if (group == null || group.getDeleted()) {
@@ -287,15 +296,6 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         }
         if (!group.getGroupType().equals(groupMemberVO.getGroupType())) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "群聊类型已切换");
-        }
-
-        // 判断上次切换时间与当前时间间隔
-        Date switchTime = groupMember.getSwitchTime();
-        if (switchTime != null) {
-            long interval = (new Date().getTime() - switchTime.getTime()) / 1000;
-            if (interval < Constant.SWITCH_INTERVAL) {
-                throw new GlobalException("距离上次切换模板人物未超过30分钟");
-            }
         }
 
         TemplateCharacter templateCharacter = null;
@@ -366,7 +366,16 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
                 .eq(GroupMember::getUserId, session.getUserId());
         GroupMember groupMember = this.getOne(wrapper);
         if (ObjectUtil.isNull(groupMember) || groupMember.getQuit()) {
-            throw new GlobalException(ResultCode.PROGRAM_ERROR, "您已不在群聊里面，无法切换模板角色头像");
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "您不在群聊中！");
+        }
+
+        // 判断上次切换时间与当前时间间隔
+        Date switchTime = groupMember.getSwitchTime();
+        if (switchTime != null) {
+            long interval = (new Date().getTime() - switchTime.getTime()) / 1000;
+            if (interval < Constant.SWITCH_INTERVAL) {
+                throw new GlobalException("距离上次切换操作未超过30分钟");
+            }
         }
 
         // 查询群信息
@@ -381,8 +390,12 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         if (!group.getGroupType().equals(avatarVO.getGroupType())) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "群聊类型已切换");
         }
+        if (!groupMember.getTemplateCharacterId().equals(avatarVO.getTemplateCharacterId())) {
+            throw new GlobalException("用户角色已切换");
+        }
         // 判断模板角色是否属于当前模板群聊
-        if (GroupTypeEnum.TEMPLATE.getCode().equals(group.getGroupType())) {
+        if (GroupTypeEnum.TEMPLATE.getCode().equals(group.getGroupType()) ||
+            GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(group.getGroupType())) {
             if (ObjectUtil.isNull(avatarVO.getTemplateGroupId())) {
                 throw new GlobalException("参数异常");
             }
@@ -416,6 +429,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
             groupMember.setAliasName(characterAvatar.getTemplateCharacterName());
         }
         groupMember.setAvatarAlias(characterAvatar.getName());
+        groupMember.setSwitchTime(new Date());
 
         this.saveOrUpdateBatch(group.getId(), Collections.singletonList(groupMember));
 

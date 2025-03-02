@@ -1,24 +1,24 @@
 <template>
   <uni-popup ref="popup" type="bottom">
-    <view class="template-list-box">
-      <view class="choosed-template">
-        <character-avatar :size="70" :url="activeGroupTemplate.avatar" :name="activeGroupTemplate.groupName"></character-avatar>
-        <view class="template-name">{{ activeGroupTemplate.groupName }}</view>
+    <view class="character-avatar-list-box">
+      <view class="choosed-character-avatar">
+        <character-avatar :size="70" :url="activeAvatar.avatar" :name="activeAvatar.name"></character-avatar>
+        <view class="character-avatar-name">{{ activeAvatar.name }}</view>
       </view>
       <view class="btns">
         <up-button text="取消" :custom-style="{width: '30%'}" @click="cancel"></up-button>
-        <up-button type="primary" text="确定" :disabled="groupTemplates.length === 0" :custom-style="{width: '30%'}" @click="confirm"></up-button>
+        <up-button type="primary" text="确定" :disabled="characterAvatars.length === 0" :custom-style="{width: '30%'}" @click="confirm"></up-button>
       </view>
       <view class="search-bar">
         <uni-search-bar v-model="searchText" cancelButton="none" radius="100" placeholder="搜索"></uni-search-bar>
       </view>
-      <view class="template-list">
+      <view class="character-avatar-list">
         <scroll-view class="scroll-bar" scroll-with-animation="true" scroll-y="true">
-          <view v-for="(template, index) in groupTemplates" v-show="template.groupName.includes(searchText)" :key="template.id"
-                class="template-item" :class="{checked: activeIndex===index}" @click="onSwitchChecked(template, index)">
-            <view class="template-info">
-              <character-avatar :size="70" :url="template.avatar" :name="template.groupName"></character-avatar>
-              <view class="template-name">{{ template.groupName }}</view>
+          <view v-for="(item, index) in characterAvatars" v-show="item.name.includes(searchText)" :key="item.id"
+                class="character-avatar-item" :class="{checked: activeIndex===index}" @click="onSwitchChecked(item, index)">
+            <view class="character-avatar-info">
+              <character-avatar :size="70" :url="item.avatar" :name="item.name"></character-avatar>
+              <view class="character-avatar-name">{{ item.name }}</view>
             </view>
           </view>
         </scroll-view>
@@ -31,58 +31,58 @@
 import CharacterAvatar from "../character-avatar/character-avatar.vue";
 
 export default {
-  name: "group-template-list",
+  name: "character-avatar-list",
   components: {CharacterAvatar},
   props: {
-    groupTemplates: Array,
+    characterAvatars: Array,
   },
   data() {
     return {
       searchText: "",
       activeIndex: -1,
-      activeGroupTemplate: {}
-    }
+      activeAvatar: {},
+    };
   },
   methods: {
     open() {
       this.$refs.popup.open();
     },
-    onSwitchChecked(template, index) {
+    onSwitchChecked(character, index) {
       this.activeIndex = index;
-      this.activeGroupTemplate = template;
+      this.activeAvatar = character;
     },
     cancel() {
       this.$refs.popup.close();
     },
     confirm() {
-      if (!this.activeGroupTemplate.id) {
+      if (!this.activeAvatar.id) {
         uni.showToast({
-          title: "请选择一个群聊模板",
+          title: "请选择一个角色头像",
           icon: 'none'
         });
         return;
       }
-      this.$emit("confirm", this.activeGroupTemplate);
+      this.$emit("confirm", this.activeAvatar);
       this.$refs.popup.close();
       this.activeIndex = -1;
-      this.activeGroupTemplate = {};
+      this.activeAvatar = {};
     }
   },
 }
 </script>
 
 <style scoped lang="scss">
-.template-list-box {
+.character-avatar-list-box {
   background-color: #fff;
   padding: 10rpx;
 
-  .choosed-template {
+  .choosed-character-avatar {
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 20rpx;
 
-    .template-name {
+    .character-avatar-name {
       margin-left: 20rpx;
     }
   }
@@ -91,23 +91,23 @@ export default {
     display: flex;
   }
 
-  .template-list {
+  .character-avatar-list {
     overflow: hidden;
 
     .scroll-bar {
       height: 800rpx;
 
-      .template-item {
+      .character-avatar-item {
         height: 80rpx;
         margin-bottom: 10rpx;
         display: flex;
         justify-content: space-between;
 
-        .template-info {
+        .character-avatar-info {
           display: flex;
           align-items: center;
 
-          .template-name {
+          .character-avatar-name {
             margin-left: 20rpx;
           }
         }
@@ -119,4 +119,5 @@ export default {
     }
   }
 }
+
 </style>

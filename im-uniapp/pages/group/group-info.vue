@@ -21,7 +21,7 @@
         <view class="view-btn" v-if="group.groupType!==0" @click="switchCharacter">
           <uni-icons type="loop" size="20" color="#888888"></uni-icons>
         </view>
-        <view class="view-btn" v-if="group.groupType!==0">
+        <view class="view-btn" v-if="group.groupType!==0" @click="switchCharacterAvatar">
           <uni-icons type="person" size="20" color="#888888"></uni-icons>
         </view>
 			</view>
@@ -67,6 +67,7 @@
     <group-member-list ref="groupMemberList" :members="groupMembers"></group-member-list>
     <group-template-list ref="groupTemplateList" :group-templates="templateGroupList" @confirm="chooseGroupTemplate"></group-template-list>
     <character-list ref="characterList" :characters="characters" @confirm="chooseCharacter"></character-list>
+    <character-avatar-list ref="characterAvatarList" :characterAvatars="characterAvatars" @confirm="chooseCharacterAvatar"></character-avatar-list>
     <up-popup :show="showSwitchCommonGroup" mode="center" @close="closeCommonPopup" :customStyle="{width: '90%', height: '500rpx', borderRadius: '18rpx'}">
       <view class="common-form">
         <view class="form-item">
@@ -96,9 +97,10 @@
 import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
 import GroupMemberList from "../../components/group-member-list/group-member-list.vue";
 import CharacterList from "../../components/character-list/character-list.vue";
+import CharacterAvatarList from "../../components/character-avatar-list/character-avatar-list.vue";
 
 export default {
-  components: {CharacterList, GroupMemberList, GroupTemplateList},
+  components: {CharacterAvatarList, CharacterList, GroupMemberList, GroupTemplateList},
 	data() {
 		return {
 			groupId: null,
@@ -268,6 +270,18 @@ export default {
         this.$refs.groupTemplateList.open();
       }
     },
+    async switchCharacterAvatar() {
+      await this.queryCharacterAvatars(this.group.templateCharacterId);
+      this.$refs.characterAvatarList.open();
+    },
+    async queryCharacterAvatars(templateCharacterId) {
+      await this.$http({
+        url: `/characterAvatar/list/${templateCharacterId}`,
+        method: 'get'
+      }).then((data) => {
+        this.characterAvatars = data;
+      });
+    },
     async queryGroupTemplateList() {
       await this.$http({
         url: "/templateGroup/list",
@@ -308,8 +322,32 @@ export default {
           title: "切换成功",
           icon: 'none'
         });
+        this.loadGroupInfo();
         this.loadGroupMembers();
       }).finally(() =>{
+      })
+    },
+    chooseCharacterAvatar(characterAvatar) {
+      let switchCharacterAvatarVO = {
+        groupId: this.group.id,
+        groupType: this.group.groupType,
+        templateGroupId: this.group.templateGroupId,
+        templateCharacterId: characterAvatar.templateCharacterId,
+        characterAvatarId: characterAvatar.id,
+      }
+      this.$http({
+        url: "/group/member/switchCharacterAvatar",
+        method: 'post',
+        data: switchCharacterAvatarVO
+      }).then(() => {
+        uni.showToast({
+          title: "切换成功",
+          icon: 'none'
+        });
+        this.loadGroupMembers();
+        this.loadGroupInfo();
+      }).finally(() =>{
+
       })
     }
 	},
