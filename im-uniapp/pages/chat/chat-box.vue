@@ -26,6 +26,7 @@
 					</view>
 				</scroll-view>
 			</view>
+      <character-word-list ref="characterWordList" :words="words" @confirm="chooseCharacterWord"></character-word-list>
 			<view class="send-bar">
 				<view v-if="!showRecord" class="iconfont icon-voice-circle" @click="onRecorderInput()"></view>
 				<view v-else class="iconfont icon-keyboard" @click="onKeyboardInput()"></view>
@@ -88,7 +89,7 @@
 					<view class="tool-icon iconfont icon-call"></view>
 					<view class="tool-name">语音通话</view>
 				</view>
-        <view v-if="chat.type == 'GROUP' && myGroupMemberInfo.isTemplate" class="chat-tools-item">
+        <view v-if="chat.type == 'GROUP' && myGroupMemberInfo.isTemplate" class="chat-tools-item" @click="onCharacterWord()">
           <view class="tool-icon iconfont icon-minganci"></view>
           <view class="tool-name">角色台词</view>
         </view>
@@ -117,8 +118,12 @@
 
 <script>
 import UNI_APP from '@/.env.js';
+import characterWordList from "../../components/character-word-list/character-word-list.vue";
 
 export default {
+  components: {
+    characterWordList
+  },
 	data() {
 		return {
 			chat: {},
@@ -145,6 +150,10 @@ export default {
 			isFocus: false, // 编辑器是否焦点
 			isReadOnly: false, // 编辑器是否只读
 			playingAudio: null, // 当前正在播放的录音消息
+      words: {
+        group: [],
+        character: []
+      },
 		}
 	},
 	methods: {
@@ -371,6 +380,32 @@ export default {
 			})
 
 		},
+    chooseCharacterWord(data) {
+      let content = {
+        id: data.id,
+        templateGroupId: data.templateGroupId,
+        characterId: data.characterId,
+        characterName: data.characterName,
+        word: data.word,
+        voice: data.voice
+      }
+      let msgInfo = {
+        content: JSON.stringify(content),
+        type: this.$enums.MESSAGE_TYPE.WORD_VOICE,
+        receipt: this.isReceipt
+      }
+      // 填充对方id
+      this.fillTargetId(msgInfo, this.chat.targetId);
+      this.sendMessageRequest(msgInfo).then((m) => {
+        m.selfSend = true;
+        this.chatStore.insertMessage(m, this.chat);
+        // 会话置顶
+        this.moveChatToTop();
+        // 滚动到底部
+        this.scrollToBottom();
+        this.isReceipt = false;
+      })
+    },
 		createAtText() {
 			let atText = "";
 			this.atUserIds.forEach((id) => {
@@ -880,7 +915,25 @@ export default {
 		generateId() {
 			// 生成临时id 
 			return String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
-		}
+		},
+    onCharacterWord() {
+      this.switchChatTabBox('none');
+      this.queryCharacterWord(this.myGroupMemberInfo.templateCharacterId).then((data) => {
+        this.words.group = data.group;
+        this.words.character = data.character;
+        this.$refs.characterWordList.open();
+      })
+    },
+    queryCharacterWord(characterId) {
+      return new Promise((resolve, reject) => {
+        this.$http({
+          url: `/character/word/publishedWord?characterId=${characterId}`,
+          method: "get",
+        }).then((data) => {
+          resolve(data)
+        })
+      });
+    },
 	},
 	computed: {
 		mine() {
