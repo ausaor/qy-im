@@ -403,6 +403,7 @@ export default {
 @import "@/uni_modules/uview-plus/index.scss";
 @import "@/im.scss";
 @import url('./static/icon/iconfont.css');
+@import url('./static/iconfont/iconfont.css');
 
 // #ifdef H5 
 uni-page-head {

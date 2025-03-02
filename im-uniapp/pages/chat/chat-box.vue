@@ -88,6 +88,10 @@
 					<view class="tool-icon iconfont icon-call"></view>
 					<view class="tool-name">语音通话</view>
 				</view>
+        <view v-if="chat.type == 'GROUP' && myGroupMemberInfo.isTemplate" class="chat-tools-item">
+          <view class="tool-icon iconfont icon-minganci"></view>
+          <view class="tool-name">角色台词</view>
+        </view>
 				<!-- #endif -->
 			</view>
 			<scroll-view v-if="chatTabBox === 'emo'" class="chat-emotion" scroll-y="true"

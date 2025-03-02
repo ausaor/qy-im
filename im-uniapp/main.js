@@ -6,6 +6,7 @@ import * as  enums from './common/enums.js';
 import * as date from './common/date';
 import * as socketApi from './common/wssocket';
 import * as messageType from './common/messageType';
+import '@/static/iconfont/iconfont.js';
 import { createSSRApp } from 'vue'
 import uviewPlus from '@/uni_modules/uview-plus'
 import * as pinia from 'pinia';
@@ -18,6 +19,8 @@ import barGroup from '@/components/bar/bar-group'
 import arrowBar from '@/components/bar/arrow-bar'
 import btnBar from '@/components/bar/btn-bar'
 import switchBar from '@/components/bar/switch-bar'
+import 'virtual:svg-icons-register';
+import SvgIcon from './components/svg-icon/svg-icon.vue';
 
 //import VConsole from 'vconsole'
 //new VConsole();
@@ -36,6 +39,7 @@ export function createApp() {
   app.component('arrow-bar', arrowBar);
   app.component('btn-bar', btnBar);
   app.component('switch-bar', switchBar);
+  app.component('svg-icon', SvgIcon);
   app.config.globalProperties.$http = request;
   app.config.globalProperties.$wsApi = socketApi;
   app.config.globalProperties.$msgType = messageType;

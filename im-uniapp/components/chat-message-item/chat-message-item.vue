@@ -26,7 +26,9 @@
             <long-press-menu :items="menuItems" @select="onSelectMenu">
               <view class="word-voice-box">
                 <view class="chat-msg-word-voice-text">{{JSON.parse(msgInfo.content).word}}</view>
-                <view class="iconfont icon-voice-circle" @click.stop="onPlayWordVoice"></view>
+                <view class="voice" @click.stop="onPlayWordVoice">
+                  <svg-icon :icon-class="'xitongxiaoxi'" />
+                </view>
               </view>
             </long-press-menu>
           </view>

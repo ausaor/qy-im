@@ -6,5 +6,8 @@
 	"dependencies": {
 		"pinyin-pro": "^3.23.1",
 		"vconsole": "^3.15.1"
+	},
+	"devDependencies": {
+		"vite-plugin-svg-icons": "^2.0.1"
 	}
 }
