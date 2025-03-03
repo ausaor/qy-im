@@ -10,7 +10,7 @@ if(ENV=="DEV"){
 	// #endif
 }
 if(ENV=="PROD"){
-	UNI_APP.BASE_URL = "https://www.boxim.online/api";
-	UNI_APP.WS_URL = "wss://www.boxim.online/im";
+	UNI_APP.BASE_URL = "http://im.timemory.xyz/api";
+	UNI_APP.WS_URL = "ws://im.timemory.xyz/im";
 }
 export default UNI_APP
