@@ -7,10 +7,12 @@
 			"^u-([^-].*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue"
 		}
 	},
-	"pages": [{
-			"path": "pages/chat/chat"
-		}, {
+	"pages": [
+		{
 			"path": "pages/login/login"
+		},
+		{
+			"path": "pages/chat/chat"
 		},
 		{
 			"path": "pages/register/register"

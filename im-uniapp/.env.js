@@ -1,5 +1,5 @@
 //设置环境(打包前修改此变量)
-const ENV = "DEV";
+const ENV = "PROD";
 const UNI_APP = {}
 if(ENV=="DEV"){
 	UNI_APP.BASE_URL = "http://127.0.0.1:8888";
