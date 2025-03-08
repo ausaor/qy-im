@@ -18,46 +18,48 @@
 
       <!-- 动态列表 -->
       <view class="moments-list">
-        <view v-for="(item, index) in moments" :key="index" class="moment-item">
+        <view v-for="(item, index) in talkList" :key="index" class="moment-item">
           <view class="user-info">
-            <image class="avatar" :src="item.avatar" mode="aspectFill"/>
+            <head-image class="avatar" :url="item.avatar" :name="item.nickname" :id="item.userId" size="small"></head-image>
             <view class="info-right">
-              <text class="nickname">{{item.nickname}}</text>
-              <text class="time">{{item.time}}</text>
+              <text class="nickname">{{item.nickName}}</text>
+              <text class="time">{{item.createTime}}</text>
             </view>
             <text class="delete-btn cursor-pointer" @click="deleteMoment(index)">删除</text>
           </view>
 
           <view class="content">
             <text class="text">{{item.content}}</text>
-            <view class="image-grid" v-if="item.images && item.images.length">
-              <image
-                  v-for="(img, imgIndex) in item.images"
-                  :key="imgIndex"
-                  :src="img"
-                  class="content-image cursor-pointer"
-                  mode="aspectFill"
-                  @click="previewImage(item.images, imgIndex)"
-              />
+            <view class="image-grid" v-if="item.fileList && item.fileList.length">
+              <view v-for="(fileItem, fileIndex) in item.fileList"
+                    :key="fileIndex">
+                <image v-if="fileItem.fileType === 1"
+                    :src="fileItem.url"
+                    class="content-image cursor-pointer"
+                    mode="aspectFill"
+                    @click="previewImage([fileItem.url], 0)"
+                />
+              </view>
+
             </view>
           </view>
 
           <view class="interaction">
             <view class="like-comment">
               <view class="action-btn cursor-pointer" @click="toggleLike(index)">
-                <uni-icons :type="item.isLiked ? 'heart-filled' : 'heart'" size="20" :color="item.isLiked ? '#ff5d5d' : '#666'"/>
-                <text :class="['count', item.isLiked ? 'liked' : '']">{{item.likes}}</text>
+                <uni-icons :type="item.isLike ? 'heart-filled' : 'heart'" size="20" :color="item.isLike ? '#ff5d5d' : '#666'"/>
+                <text :class="['count', item.isLike ? 'liked' : '']">{{item.talkStarVOS.length}}</text>
               </view>
               <view class="action-btn cursor-pointer" @click="showCommentInput(index)">
                 <uni-icons type="chat" size="20" color="#666"/>
-                <text class="count">{{item.comments.length}}</text>
+                <text class="count">{{item.talkCommentVOS.length}}</text>
               </view>
             </view>
 
-            <view class="comments" v-if="item.comments.length">
-              <view v-for="(comment, cIndex) in item.comments" :key="cIndex" class="comment">
-                <text class="comment-user">{{comment.user}}</text>
-                <text class="comment-text">{{comment.text}}</text>
+            <view class="comments" v-if="item.talkCommentVOS.length">
+              <view v-for="(comment, cIndex) in item.talkCommentVOS" :key="cIndex" class="comment">
+                <text class="comment-user">{{comment.userNickname}}</text>
+                <text class="comment-text">{{comment.content}}</text>
               </view>
             </view>
           </view>
@@ -83,105 +85,156 @@
   </view>
 </template>
 
-<script lang="ts" setup>
-import { ref } from 'vue';
+<script>
+import HeadImage from "../../components/head-image/head-image.vue";
 
-const moments = ref([
-  {
-    nickname: '元歌',
-    avatar: 'https://public.readdy.ai/ai/img_res/718f526c479002e76297a3cade749324.jpg',
-    time: '2025-03-08',
-    content: '在撒哈拉沙漠体验热气球之旅，感受壮丽的沙漠日出，这里的景色令人难忘。',
-    images: ['https://public.readdy.ai/ai/img_res/84c00efbeca9b1dc2c280eb439528646.jpg'],
-    likes: 45,
-    isLiked: false,
-    comments: [
-      { user: '清风', text: '太美了！好想去体验' },
-      { user: '明月', text: '景色真是壮观，分享好照片谢谢' }
-    ]
+export default {
+  components: {HeadImage},
+  data() {
+    return {
+      moments: [
+        {
+          nickname: '元歌',
+          avatar: 'https://public.readdy.ai/ai/img_res/718f526c479002e76297a3cade749324.jpg',
+          time: '2025-03-08',
+          content: '在撒哈拉沙漠体验热气球之旅，感受壮丽的沙漠日出，这里的景色令人难忘。',
+          images: ['https://public.readdy.ai/ai/img_res/84c00efbeca9b1dc2c280eb439528646.jpg'],
+          likes: 45,
+          isLiked: false,
+          comments: [
+            { user: '清风', text: '太美了！好想去体验' },
+            { user: '明月', text: '景色真是壮观，分享好照片谢谢' }
+          ]
+        },
+        {
+          nickname: '元歌',
+          avatar: 'https://public.readdy.ai/ai/img_res/d5465a8b03d6f2d125dc9d9b5f078d00.jpg',
+          time: '2025-03-07',
+          content: '今天和可爱的小狗狗一起度过了愉快的下午时光。',
+          images: ['https://public.readdy.ai/ai/img_res/fa7fc362bf3c0e32ac8d6019128ac69b.jpg'],
+          likes: 32,
+          isLiked: false,
+          comments: [
+            { user: '小雨', text: '好可爱的狗狗！' }
+          ]
+        }
+      ],
+      commentText: '',
+      currentMomentIndex: -1,
+      loadMoreStatus: 'more',
+      friendId: null,
+      section: null,
+      groupId: null,
+      regionGroupId: null,
+      regionCode: null,
+      page: {
+        pageNo: 1,
+        pageSize: 10,
+        totalPage: 0,
+      },
+      talkList: [],
+    };
   },
-  {
-    nickname: '元歌',
-    avatar: 'https://public.readdy.ai/ai/img_res/d5465a8b03d6f2d125dc9d9b5f078d00.jpg',
-    time: '2025-03-07',
-    content: '今天和可爱的小狗狗一起度过了愉快的下午时光。',
-    images: ['https://public.readdy.ai/ai/img_res/fa7fc362bf3c0e32ac8d6019128ac69b.jpg'],
-    likes: 32,
-    isLiked: false,
-    comments: [
-      { user: '小雨', text: '好可爱的狗狗！' }
-    ]
-  }
-]);
+  methods: {
+    goBack() {
+      uni.navigateBack();
+    },
+    openCamera() {
+      uni.chooseImage({
+        count: 9,
+        success: (res) => {
+          console.log(res.tempFilePaths);
+        }
+      });
+    },
+    toggleLike(index) {
+      const moment = this.moments[index];
+      moment.isLiked = !moment.isLiked;
+      moment.likes += moment.isLiked ? 1 : -1;
+    },
+    showCommentInput(index) {
+      this.currentMomentIndex = index;
+      this.commentText = '';
+      this.$refs.commentPopup.open();
+    },
+    submitComment() {
+      if (!this.commentText.trim()) return;
 
-const commentPopup = ref();
-const commentText = ref('');
-const currentMomentIndex = ref(-1);
-const loadMoreStatus = ref('more');
-
-const goBack = () => {
-  uni.navigateBack();
-};
-
-const openCamera = () => {
-  uni.chooseImage({
-    count: 9,
-    success: (res) => {
-      console.log(res.tempFilePaths);
-    }
-  });
-};
-
-const toggleLike = (index: number) => {
-  const moment = moments.value[index];
-  moment.isLiked = !moment.isLiked;
-  moment.likes += moment.isLiked ? 1 : -1;
-};
-
-const showCommentInput = (index: number) => {
-  currentMomentIndex.value = index;
-  commentText.value = '';
-  commentPopup.value.open();
-};
-
-const submitComment = () => {
-  if (!commentText.value.trim()) return;
-
-  if (currentMomentIndex.value >= 0) {
-    moments.value[currentMomentIndex.value].comments.push({
-      user: '我',
-      text: commentText.value
-    });
-  }
-
-  commentText.value = '';
-  commentPopup.value.close();
-};
-
-const deleteMoment = (index: number) => {
-  uni.showModal({
-    title: '提示',
-    content: '确定要删除这条动态吗？',
-    success: (res) => {
-      if (res.confirm) {
-        moments.value.splice(index, 1);
+      if (this.currentMomentIndex >= 0) {
+        this.moments[this.currentMomentIndex].comments.push({
+          user: '我',
+          text: this.commentText
+        });
       }
+
+      this.commentText = '';
+      this.$refs.commentPopup.close();
+    },
+    deleteMoment(index) {
+      uni.showModal({
+        title: '提示',
+        content: '确定要删除这条动态吗？',
+        success: (res) => {
+          if (res.confirm) {
+            this.moments.splice(index, 1);
+          }
+        }
+      });
+    },
+    previewImage(images, current) {
+      uni.previewImage({
+        urls: images,
+        current: images[current]
+      });
+    },
+    loadMore() {
+      this.loadMoreStatus = 'loading';
+      setTimeout(() => {
+        this.loadMoreStatus = 'noMore';
+      }, 2000);
+    },
+    pageQueryTalkList() {
+      let friendIds = [];
+      if (this.friendId) {
+        friendIds.push(this.friendId);
+      }
+      if (this.section === 'friend' && friendIds.length === 0) {
+        return
+      }
+      if (this.section === 'group' && !this.groupId) {
+        return
+      }
+      if (this.section === 'my-region' && !this.regionGroupId) {
+        return
+      }
+      if (this.section === 'region' && !this.regionCode) {
+        return
+      }
+      let params = {
+        category: this.category,
+        section: this.section,
+        groupId: this.groupId,
+        regionGroupId: this.regionGroupId,
+        regionCode: this.regionCode,
+        friendIds: friendIds,
+      }
+      this.$http({
+        url: `/talk/pageQueryTalkList?pageNo=${this.page.pageNo}&pageSize=${this.page.pageSize}`,
+        method: "post",
+        data: params
+      }).then((data) => {
+        this.talkList.push(...data.data)
+        this.page.totalPage = (data.total - 1) / this.page.pageSize + 1;
+      })
     }
-  });
-};
-
-const previewImage = (images: string[], current: number) => {
-  uni.previewImage({
-    urls: images,
-    current: images[current]
-  });
-};
-
-const loadMore = () => {
-  loadMoreStatus.value = 'loading';
-  setTimeout(() => {
-    loadMoreStatus.value = 'noMore';
-  }, 2000);
+  },
+  onLoad(options) {
+    console.log(options.category)
+    console.log(options.section)
+    this.category = options.category;
+    this.section = options.section;
+    this.pageQueryTalkList();
+  }
 };
 </script>
 
@@ -231,10 +284,11 @@ const loadMore = () => {
 .content-area {
   position: relative;
   height: 100%;
-  z-index: 1;
+  z-index: 9;
 }
 
 .header-space {
+  width: 100%;
   height: 400rpx;
 }
 

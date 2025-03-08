@@ -61,7 +61,7 @@ export default {
 		},
     onActivitySpace() {
       uni.navigateTo({
-        url: "/pages/activity/activity-space"
+        url: "/pages/activity/activity-space?category=private&section=my-friends"
       })
     },
 		onQuit() {
