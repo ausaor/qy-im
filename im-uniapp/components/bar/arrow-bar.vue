@@ -17,7 +17,11 @@ export default {
 		icon: {
 			type: String,
 			default: ''
-		}
+		},
+    inColor: {
+      type: String,
+      default: ''
+    }
 	},
 	data() {
 		return {
@@ -27,6 +31,9 @@ export default {
 	},
 	computed:{
 		textColor() {
+      if (this.inColor) {
+        return this.inColor;
+      }
 			let hash = 0;
 			for (var i = 0; i < this.title.length; i++) {
 				hash += this.title.charCodeAt(i);

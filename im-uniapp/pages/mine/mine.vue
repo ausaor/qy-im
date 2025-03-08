@@ -35,6 +35,7 @@
 		</uni-card>
 		<bar-group>
 			<arrow-bar title="修改密码" icon="icon-modify-pwd"  @tap="onModifyPassword()"></arrow-bar>
+			<arrow-bar title="动态空间" icon="icon-shejiaotubiao-40" :in-color="'#f5be3f'" @tap="onActivitySpace()"></arrow-bar>
 		</bar-group>
 		<bar-group>
 			<btn-bar title="退出登录" type="danger" @tap="onQuit()"></btn-bar>
@@ -58,6 +59,11 @@ export default {
 				url: "/pages/mine/mine-password"
 			})
 		},
+    onActivitySpace() {
+      uni.navigateTo({
+        url: "/pages/activity/activity-space"
+      })
+    },
 		onQuit() {
 			uni.showModal({
 				title: '确认退出?',

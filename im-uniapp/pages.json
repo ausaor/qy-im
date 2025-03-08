@@ -68,6 +68,9 @@
 		},
 		{
 			"path": "pages/mine/mine-password"
+		},
+		{
+			"path": "pages/activity/activity-space"
 		}
 	],
 	"globalStyle": {
