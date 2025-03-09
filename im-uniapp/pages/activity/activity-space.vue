@@ -25,11 +25,14 @@
               <text class="nickname">{{item.nickName}}</text>
               <text class="time">{{item.createTime}}</text>
             </view>
-            <text class="delete-btn cursor-pointer" @click="deleteMoment(index)">删除</text>
+            <text class="delete-btn cursor-pointer" @click="deleteMoment(index)" v-if="item.isOwner">删除</text>
           </view>
 
           <view class="content">
-            <text class="text">{{item.content}}</text>
+            <view class="text">
+              <up-parse class="rich-text" :showImgMenu="false" :content="nodesText(item.content)"></up-parse>
+            </view>
+
             <view class="image-grid" v-if="item.fileList && item.fileList.length">
               <view v-for="(fileItem, fileIndex) in item.fileList"
                     :key="fileIndex">
@@ -58,8 +61,17 @@
 
             <view class="comments" v-if="item.talkCommentVOS.length">
               <view v-for="(comment, cIndex) in item.talkCommentVOS" :key="cIndex" class="comment">
-                <text class="comment-user">{{comment.userNickname}}</text>
-                <text class="comment-text">{{comment.content}}</text>
+                <view class="comment-user" @click.stop="showUserInfo(comment.userId)">
+                  <text>{{comment.userNickname}}</text>
+                </view>
+                <view class="reply-user" v-if="comment.replyCommentId" style="margin-left: 10rpx;">
+                  <text style="margin-right: 10rpx;color: #3cc51f">回复</text>
+                  <text @click.stop="showUserInfo(comment.replyUserId)">{{comment.replyUserNickname}}</text>
+                </view>
+                <text>：</text>
+                <view class="comment-text">
+                  <up-parse class="comment-rich-text" :showImgMenu="false" :content="nodesText(comment.content)"></up-parse>
+                </view>
               </view>
             </view>
           </view>
@@ -226,7 +238,22 @@ export default {
         this.talkList.push(...data.data)
         this.page.totalPage = (data.total - 1) / this.page.pageSize + 1;
       })
+    },
+    nodesText(content) {
+      let color = '';
+      let text = this.$url.replaceURLWithHTMLLinks(content, color)
+      return this.$emo.transform(text, 'emoji-small')
+    },
+    showUserInfo(userId) {
+      if (userId && userId > 0) {
+        uni.navigateTo({
+          url: "/pages/common/user-info?id=" + userId
+        })
+      }
     }
+  },
+  computed: {
+
   },
   onLoad(options) {
     console.log(options.category)
@@ -284,7 +311,7 @@ export default {
 .content-area {
   position: relative;
   height: 100%;
-  z-index: 9;
+  z-index: 1;
 }
 
 .header-space {
@@ -348,6 +375,23 @@ export default {
   line-height: 1.6;
 }
 
+.rich-text {
+  word-wrap: break-word;   /* 长单词或URL换行 */
+  white-space: pre-wrap;   /* 保留空白符但允许换行 */
+  overflow-wrap: break-word; /* 类似word-wrap */
+  word-break: break-all;   /* 更激进的中英文换行 */
+  display: flex;
+  align-items: center;
+}
+
+/* 使用 /deep/ 或 ::v-deep 穿透组件作用域 */
+::v-deep .up-parse-inner-element {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  display: flex;
+  align-items: center;
+}
+
 .image-grid {
   margin-top: 20rpx;
   display: flex;
@@ -393,19 +437,37 @@ export default {
 }
 
 .comment {
-  margin-bottom: 10rpx;
+  margin-bottom: 12rpx;
+  display: flex;
+  align-items: flex-end;
+  height: 38rpx;
 }
 
 .comment-user {
   font-size: 28rpx;
   color: #576b95;
   font-weight: 500;
+  height: 38rpx;
+}
+
+.reply-user {
+  font-size: 28rpx;
+  color: #576b95;
+  font-weight: 500;
+  height: 38rpx;
 }
 
 .comment-text {
   font-size: 28rpx;
   color: #333333;
-  margin-left: 10rpx;
+  display: flex;
+  align-items: flex-end;
+  height: 38rpx;
+}
+
+.comment-rich-text {
+  display: flex;
+  align-items: flex-end;
 }
 
 .comment-input-box {
