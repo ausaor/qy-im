@@ -49,7 +49,7 @@
 
           <view class="interaction">
             <view class="like-comment">
-              <view class="action-btn cursor-pointer" @click="toggleLike(index)">
+              <view class="action-btn cursor-pointer" @click="likeAction(item)">
                 <uni-icons :type="item.isLike ? 'heart-filled' : 'heart'" size="20" :color="item.isLike ? '#ff5d5d' : '#666'"/>
                 <text :class="['count', item.isLike ? 'liked' : '']">{{item.talkStarVOS.length}}</text>
               </view>
@@ -250,7 +250,56 @@ export default {
           url: "/pages/common/user-info?id=" + userId
         })
       }
-    }
+    },
+    likeAction(talk) {
+      if (!talk.isLike) {
+        let params = {
+          talkId: talk.id,
+          nickname: talk.commentCharacterName,
+          characterId: talk.commentCharacterId,
+          avatar: talk.commentCharacterAvatar,
+        }
+        this.$http({
+          url: "/talk/like",
+          method: 'post',
+          data: params
+        }).then((data) => {
+          talk.isLike = true
+          if (data.characterId) {
+            talk.commentCharacterId = data.characterId;
+            talk.commentCharacterName = data.nickname;
+            talk.commentCharacterAvatar = data.avatar;
+          }
+          talk.talkStarVOS.push(data);
+          uni.showToast({
+            title: "点赞成功",
+            icon: 'none'
+          });
+        }).finally(() => {
+
+        })
+      } else {
+        let params = {
+          talkId: talk.id
+        }
+        this.$http({
+          url: "/talk/cancelLike",
+          method: 'post',
+          data: params
+        }).then((data) => {
+          talk.isLike = false;
+          talk.talkStarVOS = talk.talkStarVOS.filter(function (item) {
+            return !item.isOwner;
+          });
+          uni.showToast({
+            title: "已取消",
+            icon: 'none'
+          });
+        }).finally(() => {
+
+        })
+      }
+    },
   },
   computed: {
 
