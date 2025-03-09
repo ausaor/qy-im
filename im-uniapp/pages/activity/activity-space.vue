@@ -20,7 +20,7 @@
       <view class="moments-list">
         <view v-for="(item, index) in talkList" :key="index" class="moment-item">
           <view class="user-info">
-            <head-image class="avatar" :url="item.avatar" :name="item.nickname" :id="item.userId" size="small"></head-image>
+            <head-image class="avatar" :url="item.avatar" :name="item.nickName" :id="item.userId" size="small"></head-image>
             <view class="info-right">
               <text class="nickname">{{item.nickName}}</text>
               <text class="time">{{item.createTime}}</text>
@@ -36,17 +36,57 @@
               <up-parse class="rich-text" :showImgMenu="false" :content="nodesText(item.content)"></up-parse>
             </view>
 
-            <view class="image-grid" v-if="item.fileList && item.fileList.length">
+            <view class="image-grid" v-if="item.fileList && item.fileList.length" v-show="showType==='grid'">
               <view v-for="(fileItem, fileIndex) in item.fileList"
                     :key="fileIndex">
                 <image v-if="fileItem.fileType === 1"
-                    :src="fileItem.url"
-                    class="content-image cursor-pointer"
-                    mode="aspectFill"
-                    @click="previewImage([fileItem.url], 0)"
+                       :src="fileItem.url"
+                       class="content-image cursor-pointer"
+                       mode="aspectFill"
+                       @click="previewImage([fileItem.url], 0)"
                 />
+                <video v-else-if="fileItem.fileType === 2" :src="fileItem.url" :poster="fileItem.coverUrl" class="content-video" :controls="true"></video>
+                <view class="content-audio" v-else-if="fileItem.fileType === 3" @click.stop="toggleAudio(fileItem)">
+                  <svg-icon v-show="!fileItem.isPlaying" :icon-class="'yinpinbofang'" style="width: 220rpx;height: 220rpx;" :class-name="'yinpinColor'"></svg-icon>
+                  <view class="rc-wave" v-show="fileItem.isPlaying">
+                    <text class="note" style="--d: 0"></text>
+                    <text class="note" style="--d: 1"></text>
+                    <text class="note" style="--d: 2"></text>
+                    <text class="note" style="--d: 3"></text>
+                    <text class="note" style="--d: 4"></text>
+                    <text class="note" style="--d: 5"></text>
+                    <text class="note" style="--d: 6"></text>
+                    <text class="note" style="--d: 7"></text>
+                    <text class="note" style="--d: 8"></text>
+                    <text class="note" style="--d: 9"></text>
+                  </view>
+                </view>
               </view>
+            </view>
 
+            <!-- 媒体内容区域 -->
+            <view class="media-container" v-show="showType==='swiper'">
+              <swiper v-if="item.fileList.length > 0" class="media-swiper" :indicator-dots="true">
+                <swiper-item v-for="(media, mediaIndex) in item.fileList" :key="mediaIndex" class="media-item">
+                  <image v-if="media.fileType === 1" :src="media.url" mode="aspectFill" class="media-content cursor-pointer" @click="previewImage([media.url], 0)" />
+                  <video v-else-if="media.fileType === 2" :src="media.url" :poster="media.coverUrl" class="media-content" :controls="true" />
+                  <view v-else-if="media.fileType === 3" class="audio-player" @click.stop="toggleAudio(media)">
+                    <svg-icon v-show="!media.isPlaying" :icon-class="'yinpinbofang'" style="width: 220rpx;height: 220rpx;" :class-name="'yinpinColor'"></svg-icon>
+                    <view class="rc-wave" v-show="media.isPlaying">
+                      <text class="note" style="--d: 0"></text>
+                      <text class="note" style="--d: 1"></text>
+                      <text class="note" style="--d: 2"></text>
+                      <text class="note" style="--d: 3"></text>
+                      <text class="note" style="--d: 4"></text>
+                      <text class="note" style="--d: 5"></text>
+                      <text class="note" style="--d: 6"></text>
+                      <text class="note" style="--d: 7"></text>
+                      <text class="note" style="--d: 8"></text>
+                      <text class="note" style="--d: 9"></text>
+                    </view>
+                  </view>
+                </swiper-item>
+              </swiper>
             </view>
           </view>
 
@@ -59,6 +99,10 @@
               <view class="action-btn cursor-pointer" @click="doComment(null, item)">
                 <uni-icons type="chat" size="20" color="#666"/>
                 <text class="count">{{item.talkCommentVOS.length}}</text>
+              </view>
+              <view class="action-btn cursor-pointer" @click.stop="toggleShowType">
+                <uni-icons v-show="showType==='grid'" custom-prefix="iconfont" type="icon-grid" size="20" color="#666"/>
+                <uni-icons v-show="showType==='swiper'" custom-prefix="iconfont" type="icon-swiper" size="20" color="#666"/>
               </view>
             </view>
 
@@ -110,9 +154,10 @@
 
 <script>
 import HeadImage from "../../components/head-image/head-image.vue";
+import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 
 export default {
-  components: {HeadImage},
+  components: {SvgIcon, HeadImage},
   data() {
     return {
       moments: [
@@ -166,6 +211,12 @@ export default {
         content: ""
       },
       deleteComment: null,
+      showType: 'grid',
+      audioPlayState: 'STOP',
+      innerAudioContext: null,
+      audioContext: null,
+      audioUrl: null,
+      playingAudio: null,
     };
   },
   methods: {
@@ -206,6 +257,46 @@ export default {
         urls: images,
         current: images[current]
       });
+    },
+    toggleAudio(media) {
+      if (this.audioUrl && this.audioUrl !== media.url && this.audioPlayState === "PLAYING") {
+        uni.showToast({
+          title: "请先暂停已播放音频",
+          icon: 'none'
+        });
+        return;
+      }
+
+      // 初始化音频播放器
+      if (!this.innerAudioContext ||  this.audioUrl !== media.url) {
+        this.innerAudioContext = uni.createInnerAudioContext();
+        let url = media.url;
+        this.innerAudioContext.src = url;
+        this.innerAudioContext.onEnded((e) => {
+          console.log('停止')
+          this.audioPlayState = "STOP"
+          this.playingAudio.isPlaying = false;
+        })
+        this.innerAudioContext.onError((e) => {
+          this.audioPlayState = "STOP"
+          this.playingAudio.isPlaying = false;
+          console.log("播放音频出错");
+          console.log(e)
+        });
+      }
+      media.isPlaying = !media.isPlaying;
+      this.audioUrl = media.url;
+      this.playingAudio = media;
+      if (this.audioPlayState == 'STOP') {
+        this.innerAudioContext.play();
+        this.audioPlayState = "PLAYING";
+      } else if (this.audioPlayState == 'PLAYING') {
+        this.innerAudioContext.pause();
+        this.audioPlayState = "PAUSE"
+      } else if (this.audioPlayState == 'PAUSE') {
+        this.innerAudioContext.play();
+        this.audioPlayState = "PLAYING"
+      }
     },
     loadMore() {
       this.loadMoreStatus = 'loading';
@@ -398,6 +489,15 @@ export default {
     closeDelCommentPopup() {
       this.deleteComment = null;
       this.$refs.delCommentPopup.close();
+    },
+    togglePlay(media) {
+
+    },
+    seek(e) {
+      this.audio.seek(e.detail.value);
+    },
+    toggleShowType() {
+      this.showType = this.showType === 'grid' ? 'swiper' : 'grid';
     }
   },
   computed: {
@@ -409,7 +509,29 @@ export default {
     this.category = options.category;
     this.section = options.section;
     this.pageQueryTalkList();
-  }
+  },
+  onHide() {
+    console.log("onHide")
+    if (this.playingAudio) {
+      this.playingAudio.isPlaying = false;
+    }
+    if (this.innerAudioContext) {
+      this.audioPlayState = 'STOP';
+      this.innerAudioContext.pause();
+    }
+  },
+  onUnload() {
+    console.log('页面卸载');
+    if (this.playingAudio) {
+      this.playingAudio.isPlaying = false;
+    }
+    if (this.innerAudioContext) {
+      this.audioUrl = null;
+      this.audioPlayState = 'STOP';
+      this.innerAudioContext.pause();
+      this.innerAudioContext = null;
+    }
+  },
 };
 </script>
 
@@ -556,6 +678,120 @@ export default {
   width: 220rpx;
   height: 220rpx;
   border-radius: 8rpx;
+}
+
+.content-video {
+  width: 220rpx;
+  height: 220rpx;
+  border-radius: 8rpx;
+}
+
+.content-audio {
+  width: 220rpx;
+  height: 220rpx;
+  border-radius: 8rpx;
+}
+
+.rc-wave {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  height: 220rpx;
+  width: 220rpx;
+
+  .note {
+    background: linear-gradient(to top, $im-color-primary-light-1 0%, $im-color-primary-light-9 100%);
+    width: 4px;
+    height: 90%;
+    border-radius: 5rpx;
+    margin-right: 4px;
+    animation: loading 0.5s infinite linear;
+    animation-delay: calc(0.1s * var(--d));
+
+    @keyframes loading {
+      0% {
+        background-image: linear-gradient(to right, $im-color-primary-light-1 0%, $im-color-primary-light-9 100%);
+        height: 20%;
+        border-radius: 5rpx;
+      }
+
+      50% {
+        background-image: linear-gradient(to top, $im-color-primary-light-1 0%, $im-color-primary-light-9 100%);
+        height: 90%;
+        border-radius: 5rpx;
+      }
+
+      100% {
+        background-image: linear-gradient(to top, $im-color-primary-light-1 0%, $im-color-primary-light-9 100%);
+        height: 20%;
+        border-radius: 5rpx;
+      }
+    }
+  }
+}
+
+.yinpinColor {
+  color: #3cc51f;
+}
+
+.media-container {
+  margin-bottom: 20rpx;
+}
+
+.media-swiper {
+  height: 400rpx;
+  border-radius: 8rpx;
+  overflow: hidden;
+  object-fit: cover;
+}
+
+.media-item {
+  width: 100%;
+  height: 100%;
+}
+
+.media-content {
+  width: 100%;
+  height: 100%;
+}
+
+.audio-player {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  padding: 20rpx;
+  border-radius: 8rpx;
+}
+
+.audio-cover {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 8rpx;
+  margin-right: 20rpx;
+}
+
+.audio-controls {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.audio-progress {
+  flex: 1;
+  height: 4rpx;
+  background-color: #e0e0e0;
+  margin: 0 20rpx;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #576b95;
+}
+
+.audio-time {
+  font-size: 12px;
+  color: #999999;
 }
 
 .interaction {
