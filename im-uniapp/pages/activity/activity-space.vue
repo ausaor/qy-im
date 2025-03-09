@@ -25,7 +25,10 @@
               <text class="nickname">{{item.nickName}}</text>
               <text class="time">{{item.createTime}}</text>
             </view>
-            <text class="delete-btn cursor-pointer" @click="deleteMoment(index)" v-if="item.isOwner">删除</text>
+            <text class="more-action cursor-pointer" @click.stop="moreAction">
+              <uni-icons type="more-filled" size="30"></uni-icons>
+            </text>
+<!--            <text class="delete-btn cursor-pointer" @click="deleteMoment(index)" v-if="item.isOwner">删除</text>-->
           </view>
 
           <view class="content">
@@ -53,7 +56,7 @@
                 <uni-icons :type="item.isLike ? 'heart-filled' : 'heart'" size="20" :color="item.isLike ? '#ff5d5d' : '#666'"/>
                 <text :class="['count', item.isLike ? 'liked' : '']">{{item.talkStarVOS.length}}</text>
               </view>
-              <view class="action-btn cursor-pointer" @click="showCommentInput(index)">
+              <view class="action-btn cursor-pointer" @click="doComment(null, item)">
                 <uni-icons type="chat" size="20" color="#666"/>
                 <text class="count">{{item.talkCommentVOS.length}}</text>
               </view>
@@ -69,7 +72,7 @@
                   <text @click.stop="showUserInfo(comment.replyUserId)">{{comment.replyUserNickname}}</text>
                 </view>
                 <text>：</text>
-                <view class="comment-text">
+                <view class="comment-text" @click.stop="doComment(comment, item)">
                   <up-parse class="comment-rich-text" :showImgMenu="false" :content="nodesText(comment.content)"></up-parse>
                 </view>
               </view>
@@ -83,15 +86,23 @@
     </scroll-view>
 
     <!-- 评论输入框 -->
-    <uni-popup ref="commentPopup" type="bottom">
+    <uni-popup ref="commentPopup" type="bottom" @change="commentPopupChange">
       <view class="comment-input-box">
         <input
             class="input"
             v-model="commentText"
-            placeholder="说点什么..."
+            :placeholder="commentPlaceholder"
             @confirm="submitComment"
         />
         <button class="send-btn cursor-pointer" @click="submitComment">发送</button>
+      </view>
+    </uni-popup>
+    <uni-popup ref="talkSetPopup" type="bottom" background-color="#fff">底部弹出 Popup</uni-popup>
+    <uni-popup ref="delCommentPopup" type="bottom">
+      <view style="background-color: white;padding: 20rpx 0;font-size: 28rpx;">
+        <view style="color: red;text-align: center;margin-bottom: 20rpx;" @click.stop="doDeleteComment">删除</view>
+        <view style="background-color: #e2e4ea;height: 10rpx;width: 100%;"></view>
+        <view style="color: grey;text-align: center;margin-top: 20rpx;" @click.stop="closeDelCommentPopup">取消</view>
       </view>
     </uni-popup>
   </view>
@@ -145,6 +156,16 @@ export default {
         totalPage: 0,
       },
       talkList: [],
+      commentPlaceholder: '说点什么...',
+      curTalk: null,
+      comment: {
+        replyUserId: null,
+        replyUserNickname: null,
+        replyCommentId: null,
+        talkId: null,
+        content: ""
+      },
+      deleteComment: null,
     };
   },
   methods: {
@@ -168,19 +189,6 @@ export default {
       this.currentMomentIndex = index;
       this.commentText = '';
       this.$refs.commentPopup.open();
-    },
-    submitComment() {
-      if (!this.commentText.trim()) return;
-
-      if (this.currentMomentIndex >= 0) {
-        this.moments[this.currentMomentIndex].comments.push({
-          user: '我',
-          text: this.commentText
-        });
-      }
-
-      this.commentText = '';
-      this.$refs.commentPopup.close();
     },
     deleteMoment(index) {
       uni.showModal({
@@ -300,6 +308,97 @@ export default {
         })
       }
     },
+    moreAction(talk) {
+      this.$refs.talkSetPopup.open();
+    },
+    doComment(comment, talk) {
+      if (comment && comment.isOwner) {
+        this.$refs.delCommentPopup.open();
+        this.deleteComment = comment;
+        this.curTalk = talk;
+        return;
+      }
+      if (comment) {
+        this.commentPlaceholder = "回复" + comment.userNickname + ":"
+        this.comment.replyUserId = comment.userId
+        this.comment.replyUserNickname = comment.userNickname
+        this.comment.replyCommentId = comment.id
+      } else {
+        this.comment.replyUserId = null
+        this.comment.replyUserNickname = null
+        this.comment.replyCommentId = null
+      }
+      this.curTalk = talk;
+      this.comment.talkId = talk.id
+      this.$refs.commentPopup.open();
+    },
+    submitComment() {
+      let sendText = this.commentText;
+      if (!sendText.trim()) {
+        return
+      }
+      this.comment.content = sendText
+      let talk = this.curTalk;
+      let params = {
+        talkId: talk.id,
+        content: this.comment.content,
+        userNickname: talk.commentCharacterName,
+        characterId: talk.commentCharacterId,
+        userAvatar: talk.commentCharacterAvatar,
+        replyCommentId: this.comment.replyCommentId
+      }
+      this.$http({
+        url: "/talk/addTalkComment",
+        method: 'post',
+        data: params
+      }).then((data) => {
+        if (data.characterId) {
+          talk.commentCharacterId = data.characterId;
+          talk.commentCharacterName = data.userNickname;
+          talk.commentCharacterAvatar = data.userAvatar;
+        }
+        talk.talkCommentVOS.push(data);
+        uni.showToast({
+          title: "评论成功",
+          icon: 'none'
+        });
+      }).finally(() => {
+        this.$refs.commentPopup.close();
+        this.comment = {}
+        this.commentPlaceholder = '说点什么...';
+        this.curTalk = null;
+        this.commentText = '';
+      })
+    },
+    commentPopupChange(e) {
+      if (!e.show) {
+        this.commentPlaceholder = "说点什么...";
+      }
+    },
+    doDeleteComment() {
+      let talk = this.curTalk;
+      let commentId = this.deleteComment.id;
+      this.$http({
+        url: `/talkComment/delete/${commentId}`,
+        method: 'delete'
+      }).then((data) => {
+        talk.talkCommentVOS = talk.talkCommentVOS.filter(function (item) {
+          return item.id !== commentId;
+        });
+        uni.showToast({
+          title: "删除成功",
+          icon: 'none'
+        });
+      }).finally(() => {
+        this.curTalk = null;
+        this.deleteComment = null;
+        this.$refs.delCommentPopup.close();
+      })
+    },
+    closeDelCommentPopup() {
+      this.deleteComment = null;
+      this.$refs.delCommentPopup.close();
+    }
   },
   computed: {
 
@@ -407,6 +506,11 @@ export default {
   color: #999999;
   display: block;
   margin-top: 4rpx;
+}
+
+.more-action {
+  font-size: 28rpx;
+  color: #999999;
 }
 
 .delete-btn {
