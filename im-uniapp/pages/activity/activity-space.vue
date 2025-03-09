@@ -25,7 +25,7 @@
               <text class="nickname">{{item.nickName}}</text>
               <text class="time">{{item.createTime}}</text>
             </view>
-            <text class="more-action cursor-pointer" @click.stop="moreAction">
+            <text class="more-action cursor-pointer" @click.stop="moreAction(item)">
               <uni-icons type="more-filled" size="30"></uni-icons>
             </text>
 <!--            <text class="delete-btn cursor-pointer" @click="deleteMoment(index)" v-if="item.isOwner">删除</text>-->
@@ -141,7 +141,12 @@
         <button class="send-btn cursor-pointer" @click="submitComment">发送</button>
       </view>
     </uni-popup>
-    <uni-popup ref="talkSetPopup" type="bottom" background-color="#fff">底部弹出 Popup</uni-popup>
+    <uni-popup ref="talkSetPopup" type="bottom" background-color="#fff" @change="talkSetPopupChange">
+      <view style="font-size: 28rpx;">
+        <view v-show="curTalk.isOwner" style="background-color: white;color: red;text-align: center;padding: 20rpx 0;" @click="doDeleteTalk">删除</view>
+        <view style="background-color: white;color: grey;text-align: center;padding: 20rpx 0;" @click.stop="closeTalkSetPopup">取消</view>
+      </view>
+    </uni-popup>
     <uni-popup ref="delCommentPopup" type="bottom">
       <view style="background-color: white;padding: 20rpx 0;font-size: 28rpx;">
         <view style="color: red;text-align: center;margin-bottom: 20rpx;" @click.stop="doDeleteComment">删除</view>
@@ -202,7 +207,7 @@ export default {
       },
       talkList: [],
       commentPlaceholder: '说点什么...',
-      curTalk: null,
+      curTalk: {},
       comment: {
         replyUserId: null,
         replyUserNickname: null,
@@ -400,6 +405,7 @@ export default {
       }
     },
     moreAction(talk) {
+      this.curTalk = talk;
       this.$refs.talkSetPopup.open();
     },
     doComment(comment, talk) {
@@ -457,7 +463,7 @@ export default {
         this.$refs.commentPopup.close();
         this.comment = {}
         this.commentPlaceholder = '说点什么...';
-        this.curTalk = null;
+        this.curTalk = {};
         this.commentText = '';
       })
     },
@@ -481,7 +487,7 @@ export default {
           icon: 'none'
         });
       }).finally(() => {
-        this.curTalk = null;
+        this.curTalk = {};
         this.deleteComment = null;
         this.$refs.delCommentPopup.close();
       })
@@ -498,7 +504,48 @@ export default {
     },
     toggleShowType() {
       this.showType = this.showType === 'grid' ? 'swiper' : 'grid';
-    }
+    },
+    talkSetPopupChange(e) {
+      if (!e.show) {
+        this.curTalk = {};
+      }
+    },
+    closeTalkSetPopup() {
+      this.$refs.talkSetPopup.close();
+    },
+    doDeleteTalk() {
+      uni.showModal({
+        title: '提示',
+        content: '确定要删除这条动态吗？',
+        success: (res) => {
+          if (res.confirm) {
+            this.$http({
+              url: "/talk/delete",
+              method: 'delete',
+              data: {id: this.curTalk.id}
+            }).then((data) => {
+              uni.showToast({
+                title: "删除成功",
+                icon: 'none'
+              });
+              this.refreshTalkList();
+            }).finally(() => {
+              this.curTalk = {};
+              this.$refs.talkSetPopup.close();
+            })
+          } else {
+            this.curTalk = {};
+            this.$refs.talkSetPopup.close();
+          }
+        }
+      });
+    },
+    refreshTalkList() {
+      this.page.pageNo = 1;
+      this.page.totalPage = 0;
+      this.talkList = [];
+      this.pageQueryTalkList();
+    },
   },
   computed: {
 
