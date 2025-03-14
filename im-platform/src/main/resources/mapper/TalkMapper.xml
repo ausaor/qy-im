@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.qy.implatform.mapper.TalkMapper">
+
+    <sql id="taskQueryBase">
+        select id,user_id,character_id,nick_name,avatar,content,files,`scope`,address,
+        category,group_visible,region_visible,group_id,region_code,
+        create_time,create_by,update_time,update_by,deleted from im_talk
+    </sql>
+
+    <select id="pageQueryMyTalkList" resultType="xyz.qy.implatform.entity.Talk">
+        <include refid="taskQueryBase"/> my
+        where my.user_id = #{queryDTO.ownerId} and my.deleted = 0
+        order by create_time desc
+    </select>
+
+    <select id="pageQueryMyAndFriendsTalkList" resultType="xyz.qy.implatform.entity.Talk">
+        <include refid="taskQueryBase"/> my
+        <where>
+            <if test="queryDTO.ownerId != null">
+                my.user_id = #{queryDTO.ownerId}
+            </if>
+            <if test="true">
+                and my.deleted = 0
+            </if>
+        </where>
+        <if test="queryDTO.friendIds != null and queryDTO.friendIds.size() > 0">
+            union
+            <include refid="taskQueryBase"/> f
+            <where>
+                f.user_id in
+                <foreach collection="queryDTO.friendIds" item="userId" index="index" separator="," open="(" close=")">
+                    #{userId}
+                </foreach>
+                <if test="true">
+                    and f.category = 'private'
+                </if>
+                <if test="true">
+                    and f.deleted = 0
+                </if>
+                <if test="true">
+                    and (f.scope = 2 or f.scope = 9)
+                </if>
+            </where>
+        </if>
+        order by create_time desc
+    </select>
+
+    <select id="pageQueryFriendsTalkList" resultType="xyz.qy.implatform.entity.Talk">
+        <if test="queryDTO.friendIds != null and queryDTO.friendIds.size() > 0">
+            <include refid="taskQueryBase"/> f
+            <where>
+                f.user_id in
+                <foreach collection="queryDTO.friendIds" item="userId" index="index" separator="," open="(" close=")">
+                    #{userId}
+                </foreach>
+                <if test="true">
+                    and f.category = 'private'
+                </if>
+                <if test="true">
+                    and f.deleted = 0
+                </if>
+                <if test="true">
+                    and (f.scope = 2 or f.scope = 9)
+                </if>
+            </where>
+            order by create_time desc
+        </if>
+    </select>
+
+    <select id="pageQueryGroupTalkList" resultType="xyz.qy.implatform.entity.Talk">
+        <include refid="taskQueryBase"/> g
+        <where>
+            g.group_id = #{queryDTO.groupId}
+            <if test="true">
+                and g.category = 'group'
+            </if>
+            <if test="true">
+                and g.deleted = 0
+            </if>
+        </where>
+        <if test="queryDTO.groupMemberUserIds != null and queryDTO.groupMemberUserIds.size() > 0">
+            union
+            <include refid="taskQueryBase"/> u
+            <where>
+                u.user_id in
+                <foreach collection="queryDTO.groupMemberUserIds" item="userId" index="index" separator="," open="(" close=")">
+                    #{userId}
+                </foreach>
+                <if test="true">
+                    and u.category = 'private'
+                </if>
+                <if test="true">
+                    and u.deleted = 0
+                </if>
+                <if test="true">
+                    and u.group_visible = 1
+                </if>
+                <if test="true">
+                    and u.scope = 9
+                </if>
+            </where>
+        </if>
+        order by create_time desc
+    </select>
+
+    <select id="pageQueryRegionTalkList" resultType="xyz.qy.implatform.entity.Talk">
+        <include refid="taskQueryBase"/> r
+        <where>
+            r.region_code = #{queryDTO.regionCode}
+            <if test="true">
+                and r.category = 'region'
+            </if>
+            <if test="true">
+                and r.deleted = 0
+            </if>
+        </where>
+        <if test="queryDTO.groupMemberUserIds != null and queryDTO.groupMemberUserIds.size() > 0">
+            union
+            <include refid="taskQueryBase"/> u
+            <where>
+                u.user_id in
+                <foreach collection="queryDTO.groupMemberUserIds" item="userId" index="index" separator="," open="(" close=")">
+                    #{userId}
+                </foreach>
+                <if test="true">
+                    and u.category = 'private'
+                </if>
+                <if test="true">
+                    and u.deleted = 0
+                </if>
+                <if test="true">
+                    and u.region_visible = 1
+                </if>
+                <if test="true">
+                    and u.scope = 9
+                </if>
+            </where>
+        </if>
+        order by create_time desc
+    </select>
+
+</mapper> 

@@ -1,0 +1,36 @@
+# redis单节点配置方式
+singleServerConfig:
+  # 连接空闲超时，单位：毫秒
+  idleConnectionTimeout: 10000
+  # 连接超时，单位：毫秒
+  connectTimeout: 10000
+  # 命令等待超时，单位：毫秒 默认3000
+  timeout: 3000
+  # 命令失败重试次数
+  retryAttempts: 3
+  # 命令重试发送时间间隔，单位：毫秒
+  retryInterval: 1500
+  # 无密码则设置 null
+  password: "redis_404"
+  # 单个连接最大订阅数量
+  subscriptionsPerConnection: 5
+  # 客户端名称
+  clientName: null
+  # redis 节点地址
+  address: "redis://127.0.0.1:6379"
+  # 从节点发布和订阅连接的最小空闲连接数
+  subscriptionConnectionMinimumIdleSize: 1
+  # 发布和订阅连接池大小
+  subscriptionConnectionPoolSize: 50
+  # 发布和订阅连接的最小空闲连接数
+  connectionMinimumIdleSize: 32
+  # 发布和订阅连接池大小
+  connectionPoolSize: 64
+  # 数据库编号
+  database: 1
+  # DNS监测时间间隔，单位：毫秒  在启用该功能以后，Redisson将会监测DNS的变化情况
+  dnsMonitoringInterval: 5000
+threads: 0
+nettyThreads: 0
+codec: !<org.redisson.codec.JsonJacksonCodec> {}
+transportMode: "NIO"
