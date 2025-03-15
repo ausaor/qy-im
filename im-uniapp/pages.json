@@ -71,6 +71,9 @@
 		},
 		{
 			"path": "pages/activity/activity-space"
+		},
+		{
+			"path": "pages/activity/activity-add"
 		}
 	],
 	"globalStyle": {

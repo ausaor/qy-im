@@ -174,11 +174,12 @@ export default {
   components: {CharacterList, GroupTemplateList, SvgIcon, HeadImage},
   data() {
     return {
+      category: '',
+      section: '',
       commentText: '',
       currentMomentIndex: -1,
       loadMoreStatus: 'more',
       friendId: null,
-      section: null,
       groupId: null,
       regionGroupId: null,
       regionCode: null,
@@ -218,12 +219,15 @@ export default {
       uni.navigateBack();
     },
     openCamera() {
-      uni.chooseImage({
-        count: 9,
-        success: (res) => {
-          console.log(res.tempFilePaths);
-        }
-      });
+      // uni.chooseImage({
+      //   count: 9,
+      //   success: (res) => {
+      //     console.log(res.tempFilePaths);
+      //   }
+      // });
+      uni.navigateTo({
+        url: `/pages/activity/activity-add?category=${this.category}`
+      })
     },
     previewImage(images, current) {
       uni.previewImage({

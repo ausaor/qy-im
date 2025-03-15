@@ -46,7 +46,12 @@
                     "<uses-feature android:name=\"android.hardware.camera\"/>",
                     "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>",
                     "<uses-permission android:name=\"android.permission.MODIFY_AUDIO_SETTINGS\" />",
-                    "<uses-permission android:name=\"android.permission.RECORD_AUDIO\" />"
+                    "<uses-permission android:name=\"android.permission.RECORD_AUDIO\" />",
+                    "<uses-permission android:name=\"android.permission.CAMERA\" />",
+                    "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" />",
+                    "android.permission.CAMERA",
+                    "android.permission.READ_EXTERNAL_STORAGE",
+                    "android.permission.WRITE_EXTERNAL_STORAGE"
                 ],
                 "abiFilters" : [ "armeabi-v7a", "arm64-v8a", "x86" ],
                 "minSdkVersion" : 21
