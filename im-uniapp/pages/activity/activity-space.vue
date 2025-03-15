@@ -143,6 +143,11 @@
     </uni-popup>
     <uni-popup ref="talkSetPopup" type="bottom" background-color="#fff" @change="talkSetPopupChange">
       <view style="font-size: 28rpx;">
+        <view style="background-color: white;padding: 20rpx 0;display: flex;justify-content: center;align-items: center;gap: 20rpx;">
+          <text>我的角色:</text>
+          <head-image :url="commentSetForm.avatar" :name="commentSetForm.nickName" size="mini" @click="showGroupTemplatesPopup"></head-image>
+          <text>{{commentSetForm.nickName}}</text>
+        </view>
         <view v-show="curTalk.isOwner" style="background-color: white;color: red;text-align: center;padding: 20rpx 0;" @click="doDeleteTalk">删除</view>
         <view style="background-color: white;color: grey;text-align: center;padding: 20rpx 0;" @click.stop="closeTalkSetPopup">取消</view>
       </view>
@@ -154,15 +159,19 @@
         <view style="color: grey;text-align: center;margin-top: 20rpx;" @click.stop="closeDelCommentPopup">取消</view>
       </view>
     </uni-popup>
+    <group-template-list ref="groupTemplateListRef" :group-templates="groupTemplates" @confirm="chooseGroupTemplate"></group-template-list>
+    <character-list ref="characterListRef" :characters="characters" @confirm="chooseCharacter"></character-list>
   </view>
 </template>
 
 <script>
 import HeadImage from "../../components/head-image/head-image.vue";
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
+import CharacterList from "../../components/character-list/character-list.vue";
 
 export default {
-  components: {SvgIcon, HeadImage},
+  components: {CharacterList, GroupTemplateList, SvgIcon, HeadImage},
   data() {
     return {
       commentText: '',
@@ -175,7 +184,7 @@ export default {
       regionCode: null,
       page: {
         pageNo: 1,
-        pageSize: 2,
+        pageSize: 10,
         totalPage: 0,
       },
       talkList: [],
@@ -188,6 +197,11 @@ export default {
         talkId: null,
         content: ""
       },
+      commentSetForm: {
+        commentCharacterId: null,
+        nickName: '',
+        avatar: '',
+      },
       deleteComment: null,
       showType: 'grid',
       audioPlayState: 'STOP',
@@ -195,6 +209,8 @@ export default {
       audioContext: null,
       audioUrl: null,
       playingAudio: null,
+      groupTemplates: [],
+      characters: [],
     };
   },
   methods: {
@@ -361,6 +377,9 @@ export default {
       }
     },
     moreAction(talk) {
+      this.commentSetForm.nickName = talk.commentCharacterName ? talk.commentCharacterName : talk.commentUserNickname;
+      this.commentSetForm.avatar = talk.commentCharacterAvatar ? talk.commentCharacterAvatar : talk.commentUserAvatar;
+      this.commentSetForm.commentCharacterId = talk.commentCharacterId;
       this.curTalk = talk;
       this.$refs.talkSetPopup.open();
     },
@@ -460,6 +479,9 @@ export default {
     },
     talkSetPopupChange(e) {
       if (!e.show) {
+        this.commentSetForm.nickName = '';
+        this.commentSetForm.avatar = '';
+        this.commentSetForm.commentCharacterId = null;
         this.curTalk = {};
       }
     },
@@ -499,6 +521,45 @@ export default {
       this.talkList = [];
       this.pageQueryTalkList();
     },
+    showGroupTemplatesPopup() {
+      if (!this.groupTemplates || this.groupTemplates.length === 0) {
+        this.queryGroupTemplateList();
+      }
+      this.$refs.groupTemplateListRef.open();
+    },
+    async queryGroupTemplateList() {
+      await this.$http({
+        url: "/templateGroup/list",
+        method: 'get',
+        params: ''
+      }).then(data => {
+        this.groupTemplates = data;
+      })
+    },
+    chooseGroupTemplate(groupTemplate) {
+      this.$refs.groupTemplateListRef.cancel();
+      if (groupTemplate) {
+        this.queryCharacterList(groupTemplate.id);
+        this.$refs.characterListRef.open();
+      }
+    },
+    async queryCharacterList(templateGroupId) {
+      await this.$http({
+        url: `/templateCharacter/list/${templateGroupId}`,
+        method: 'get'
+      }).then(result => {
+        this.characters = result;
+      });
+    },
+    chooseCharacter(character) {
+      this.$refs.characterListRef.cancel();
+      this.commentSetForm.commentCharacterId = character.id;
+      this.commentSetForm.nickName = character.name;
+      this.commentSetForm.avatar = character.avatar;
+      this.curTalk.commentCharacterId = character.id;
+      this.curTalk.commentCharacterAvatar = character.avatar;
+      this.curTalk.commentCharacterName = character.name;
+    }
   },
   computed: {
 
@@ -565,7 +626,7 @@ export default {
 }
 
 .fixed-bg {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
