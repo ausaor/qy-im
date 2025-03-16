@@ -2,19 +2,21 @@
 <template>
   <view class="page-box">
     <!-- 顶部导航栏 -->
-    <view class="top-nav-bar">
-      <uni-icons class="back-icon cursor-pointer" type="back" size="24" color="#ffffff" @click="goBack"/>
-      <uni-icons class="camera-icon cursor-pointer" type="camera" size="24" color="#ffffff" @click="openCamera"/>
-    </view>
-
-    <!-- 固定背景图 -->
-    <view class="fixed-bg">
-      <image class="bg-image" src="https://public.readdy.ai/ai/img_res/be9bbbcabbc10bdd17557fbb7c1b0b28.jpg" mode="aspectFill"/>
+    <view class="top-nav-bar" :style="{ backgroundColor: headerBgColor }">
+      <uni-icons class="back-icon cursor-pointer" type="back" size="24" :color="headerColor" @click="goBack"/>
+      <text :style="{opacity: fontOpacity}">空间动态</text>
+      <uni-icons class="camera-icon cursor-pointer" type="camera" size="24" :color="headerColor" @click="openCamera"/>
     </view>
 
     <!-- 内容区域 -->
-    <scroll-view class="content-area" scroll-y @scrolltolower="loadMore">
-      <view class="header-space"></view>
+    <scroll-view class="content-area"
+                 scroll-y
+                 @scroll="handleScroll"
+                 @scrolltolower="loadMore">
+      <!-- 固定背景图 -->
+      <view class="fixed-bg">
+        <image class="bg-image" src="https://public.readdy.ai/ai/img_res/be9bbbcabbc10bdd17557fbb7c1b0b28.jpg" mode="aspectFill"/>
+      </view>
 
       <!-- 动态列表 -->
       <view class="moments-list">
@@ -25,9 +27,9 @@
               <text class="nickname">{{item.nickName}}</text>
               <text class="time">{{item.createTime}}</text>
             </view>
-            <text class="more-action cursor-pointer" @click.stop="moreAction(item)">
+            <view class="more-action cursor-pointer" @click.stop="moreAction(item)">
               <uni-icons type="more-filled" size="30"></uni-icons>
-            </text>
+            </view>
 <!--            <text class="delete-btn cursor-pointer" @click="deleteMoment(index)" v-if="item.isOwner">删除</text>-->
           </view>
 
@@ -172,11 +174,15 @@ import HeadImage from "../../components/head-image/head-image.vue";
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
 import CharacterList from "../../components/character-list/character-list.vue";
+import {throttle} from "../../common/throttle";
 
 export default {
   components: {CharacterList, GroupTemplateList, SvgIcon, HeadImage},
   data() {
     return {
+      headerBgColor: 'rgba(239, 244, 255, 0)', // 初始透明
+      headerColor: '#ffffff',
+      fontOpacity: 0,
       category: '',
       section: '',
       commentText: '',
@@ -215,9 +221,30 @@ export default {
       playingAudio: null,
       groupTemplates: [],
       characters: [],
+      isRefreshing: false,
     };
   },
   methods: {
+    handleScroll: throttle(function(e) {
+      //console.log('自定义节流函数:', e.detail.scrollTop);
+      const scrollTop = e.detail.scrollTop;
+
+      // 计算透明度（示例：0~200px 滚动范围，透明度从0到0.8）
+      let opacity = 0;
+       if (scrollTop > 200) {
+         this.headerColor = '#000000';
+         this.fontOpacity = 1;
+        opacity = 1;
+      } else if (scrollTop > 100) {
+         this.headerColor = '#000000';
+         this.fontOpacity = 0.8;
+         opacity = 0.6;
+      } else {
+         this.headerColor = '#ffffff';
+         this.fontOpacity = 0;
+      }
+      this.headerBgColor = `rgba(239, 244, 255, ${opacity})`;
+    }, 150),
     goBack() {
       uni.navigateBack();
     },
@@ -288,8 +315,8 @@ export default {
     async loadMore() {
       this.loadMoreStatus = 'loading';
       this.page.pageNo++;
-      await this.pageQueryTalkList();
       if (this.page.pageNo <= this.page.totalPage) {
+        await this.pageQueryTalkList();
         this.loadMoreStatus = 'more';
       } else {
         this.loadMoreStatus = 'noMore';
@@ -529,6 +556,21 @@ export default {
         }
       });
     },
+    onPullDownRefresh() {
+      try {
+        // 模拟异步请求
+        console.log("下拉刷新")
+        this.isRefreshing = true;
+        this.refreshTalkList();
+      } finally {
+        setTimeout(() => {
+          uni.stopPullDownRefresh();
+          this.isRefreshing = false; // 确保状态重置
+          console.log("下拉刷新关闭")
+        }, 1000)
+      }
+
+    },
     refreshTalkList() {
       this.page.pageNo = 1;
       this.page.totalPage = 0;
@@ -628,6 +670,7 @@ export default {
   align-items: center;
   padding: 0 30rpx;
   z-index: 100;
+  transition: background-color 0.3s; /* 添加过渡效果 */
 }
 
 .back-icon, .camera-icon {
@@ -640,9 +683,7 @@ export default {
 }
 
 .fixed-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
+
   width: 100%;
   height: 400rpx;
   z-index: 2;
@@ -655,7 +696,7 @@ export default {
 
 .content-area {
   position: relative;
-  height: 100%;
+  height: 100vh;
   z-index: 1;
 }
 
@@ -667,7 +708,7 @@ export default {
 .moments-list {
   background-color: #ffffff;
   border-radius: 20rpx 20rpx 0 0;
-  margin-top: -20rpx;
+  margin-top: 20rpx;
   position: relative;
 }
 
