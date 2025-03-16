@@ -299,14 +299,13 @@ export default {
         return
       }
 
-      //;
-
       let uploadSuccess = true;
 
       if (this.fileList && this.fileList.length > 0) {
         this.$refs.uploadingPopup.open();
         let progress = Math.floor(1 / this.fileList.length * 100);
         console.log("progress", progress)
+        this.form.files = [];
         for (let i = 0; i < this.fileList.length; i++) {
           if (this.fileList[i].url.startsWith("blob:")) {
             if (this.fileList[i].fileType === 1) {
@@ -342,6 +341,10 @@ export default {
               });
             }
           } else {
+            this.form.files.push({
+              fileType: this.fileList[i].fileType,
+              url: this.fileList[i].url,
+            });
             this.uploadProgress += progress;
           }
         }
@@ -375,6 +378,9 @@ export default {
           duration: 2000,
           success: () => {
             setTimeout(() => {
+              let pages = getCurrentPages();
+              let prevPage = pages[pages.length - 2];
+              prevPage.$vm.refreshTalkList();
               uni.navigateBack();
             }, 2000);
           },
@@ -417,7 +423,8 @@ export default {
         method: 'get'
       }).then((data) => {
         this.form = data;
-        this.fileList = data.files;
+        this.form.files = [];
+        this.fileList = data.fileList;
       });
     },
   },

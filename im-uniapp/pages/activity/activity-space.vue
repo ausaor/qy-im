@@ -148,6 +148,9 @@
           <head-image :url="commentSetForm.avatar" :name="commentSetForm.nickName" size="mini" @click="showGroupTemplatesPopup"></head-image>
           <text>{{commentSetForm.nickName}}</text>
         </view>
+        <view v-show="curTalk.isOwner && category=== curTalk.category" style="background-color: white;padding: 20rpx 0;text-align: center;" @click="doEditTalk">
+          编辑
+        </view>
         <view v-show="curTalk.isOwner" style="background-color: white;color: red;text-align: center;padding: 20rpx 0;" @click="doDeleteTalk">删除</view>
         <view style="background-color: white;color: grey;text-align: center;padding: 20rpx 0;" @click.stop="closeTalkSetPopup">取消</view>
       </view>
@@ -227,6 +230,13 @@ export default {
       // });
       uni.navigateTo({
         url: `/pages/activity/activity-add?category=${this.category}`
+      })
+    },
+    doEditTalk() {
+      let talkId = this.curTalk.id;
+      this.$refs.talkSetPopup.close();
+      uni.navigateTo({
+        url: `/pages/activity/activity-add?category=${this.category}&talkId=${talkId}`
       })
     },
     previewImage(images, current) {
