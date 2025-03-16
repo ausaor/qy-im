@@ -36,7 +36,7 @@
               <up-parse class="rich-text" :showImgMenu="false" :content="nodesText(item.content)"></up-parse>
             </view>
 
-            <view class="image-grid" v-if="item.fileList && item.fileList.length" v-show="showType==='grid'">
+            <view class="image-grid" v-if="item.fileList && item.fileList.length" v-show="!item.showType || item.showType!=='swiper'">
               <view v-for="(fileItem, fileIndex) in item.fileList"
                     :key="fileIndex">
                 <image v-if="fileItem.fileType === 1"
@@ -65,7 +65,7 @@
             </view>
 
             <!-- 媒体内容区域 -->
-            <view class="media-container" v-show="showType==='swiper'">
+            <view class="media-container" v-show="item.showType==='swiper'">
               <swiper v-if="item.fileList && item.fileList.length > 0" class="media-swiper" :indicator-dots="true">
                 <swiper-item v-for="(media, mediaIndex) in item.fileList" :key="mediaIndex" class="media-item">
                   <image v-if="media.fileType === 1" :src="media.url" mode="aspectFill" class="media-content cursor-pointer" @click="previewImage([media.url], 0)" />
@@ -100,9 +100,9 @@
                 <uni-icons type="chat" size="20" color="#666"/>
                 <text class="count">{{item.talkCommentVOS.length}}</text>
               </view>
-              <view class="action-btn cursor-pointer" @click.stop="toggleShowType">
-                <uni-icons v-show="showType==='grid'" custom-prefix="iconfont" type="icon-grid" size="20" color="#666"/>
-                <uni-icons v-show="showType==='swiper'" custom-prefix="iconfont" type="icon-swiper" size="20" color="#666"/>
+              <view class="action-btn cursor-pointer" @click.stop="toggleShowType(item)">
+                <uni-icons v-show="!item.showType || item.showType!=='swiper'" custom-prefix="iconfont" type="icon-grid" size="20" color="#666"/>
+                <uni-icons v-show="item.showType ==='swiper'" custom-prefix="iconfont" type="icon-swiper" size="20" color="#666"/>
               </view>
             </view>
 
@@ -488,8 +488,8 @@ export default {
     seek(e) {
       this.audio.seek(e.detail.value);
     },
-    toggleShowType() {
-      this.showType = this.showType === 'grid' ? 'swiper' : 'grid';
+    toggleShowType(talk) {
+      talk.showType = (!talk.showType || talk.showType === 'grid') ? 'swiper' : 'grid';
     },
     talkSetPopupChange(e) {
       if (!e.show) {
