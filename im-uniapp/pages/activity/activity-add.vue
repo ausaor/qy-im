@@ -13,7 +13,7 @@
     <view class="content">
       <!-- 用户信息 -->
       <view class="user-info">
-        <head-image class="avatar" :name="form.nickName" :url="form.avatar" :size="80"></head-image>
+        <head-image class="avatar" :name="form.nickName" :url="form.avatar" :size="80" @click="openCharacterChoosePopup"></head-image>
         <text class="nickname">{{form.nickName}}</text>
       </view>
 
@@ -135,6 +135,8 @@
         <progress :percent="uploadProgress" active stroke-width="3" />
       </view>
     </uni-popup>
+    <group-template-list ref="groupTemplateList" :group-templates="templateGroupList" @confirm="chooseGroupTemplate"></group-template-list>
+    <character-list ref="characterList" :characters="characterList" @confirm="chooseCharacter"></character-list>
   </view>
 </template>
 
@@ -142,9 +144,11 @@
 import UNI_APP from '@/.env.js'
 import HeadImage from "../../components/head-image/head-image.vue";
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
+import CharacterList from "../../components/character-list/character-list.vue";
 
 export default {
-  components: {SvgIcon, HeadImage},
+  components: {CharacterList, GroupTemplateList, SvgIcon, HeadImage},
   data() {
     return {
       uploadProgress: 0,
@@ -169,6 +173,8 @@ export default {
       audioContext: null,
       audioUrl: null,
       playingAudio: null,
+      templateGroupList: [],
+      characterList: [],
     };
   },
 
@@ -544,6 +550,70 @@ export default {
         this.fileList = data.fileList;
       });
     },
+    async openCharacterChoosePopup() {
+      // 当前动态已使用过模板角色
+      if (this.form.commentCharacterId) {
+        if (!this.form.characterId) {
+          uni.showModal({
+            title: '动态头像设置',
+            content: '当前动态已使用过模板角色，是否使用？',
+            success: (res) => {
+              if (res.confirm) {
+                this.form.characterId = this.form.commentCharacterId;
+                this.form.nickName = this.form.commentCharacterName;
+                this.form.avatar = this.form.commentCharacterAvatar;
+              }
+            }
+          });
+        } else {
+          uni.showModal({
+            title: '动态头像设置',
+            content: '清除角色头像？',
+            success: (res) => {
+              if (res.confirm) {
+                this.form.characterId = null;
+                this.form.nickName = this.userInfo.nickName;
+                this.form.avatar = this.userInfo.headImage;
+              }
+            }
+          });
+        }
+      } else {
+        if (this.templateGroupList.length === 0) {
+          await this.queryTemplateGroup();
+        }
+        this.$refs.groupTemplateList.open();
+      }
+    },
+    async queryTemplateGroup() {
+      this.$http({
+        url: "/templateGroup/list",
+        method: 'get',
+        params: ''
+      }).then(data => {
+        this.templateGroupList = data;
+      })
+    },
+    async queryCharacterList(templateGroupId) {
+      await this.$http({
+        url: `/templateCharacter/list/${templateGroupId}`,
+        method: 'get'
+      }).then(result => {
+        this.characterList = result;
+      });
+    },
+    async chooseGroupTemplate(groupTemplate) {
+      this.$refs.groupTemplateList.cancel();
+      if (groupTemplate) {
+        await this.queryCharacterList(groupTemplate.id);
+        this.$refs.characterList.open();
+      }
+    },
+    chooseCharacter(character) {
+      this.form.nickName = character.name;
+      this.form.avatar = character.avatar;
+      this.form.characterId = character.id;
+    }
   },
   onLoad(options) {
     this.form.category = options.category;
@@ -732,7 +802,7 @@ export default {
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
-  z-index: 999;
+  z-index: 9;
 }
 
 .upload-btn {
@@ -836,6 +906,12 @@ export default {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.comment-character {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
 }
 </style>
 

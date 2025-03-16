@@ -1,5 +1,6 @@
 package xyz.qy.implatform.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -31,7 +32,7 @@ public class Talk extends BaseEntity{
     /**
      * 角色人物id
      */
-    @TableField("character_id")
+    @TableField(value = "character_id", updateStrategy = FieldStrategy.IGNORED)
     private Long characterId;
 
     /**

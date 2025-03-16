@@ -79,7 +79,7 @@
           <el-avatar :fit="fit" size="medium" icon="el-icon-user-solid" :src="form.avatar">
           </el-avatar>
         </span>
-        <span class="nick-name">{{form.nickName}} <el-button @click="removeCharacter" class="del-btn" v-if="form.enableCharacterChoose" type="danger" icon="el-icon-delete" size="mini" circle></el-button></span>
+        <span class="nick-name">{{form.nickName}} <el-button @click="removeCharacter" class="del-btn" v-if="form.characterId" type="danger" icon="el-icon-delete" size="mini" circle></el-button></span>
       </el-form-item>
       <el-form-item label="图片|视频|音频：" prop="imgUrl" label-width="120px" class="form-item">
 <!--        <batch-image-upload class="form-content"
@@ -474,7 +474,7 @@ export default {
       this.fileList = [];
     },
     openCharacterChooseDialog() {
-      if (this.form.enableCharacterChoose) {
+      if (!this.form.characterId) {
         this.chooseCharacterDialogVisible = true;
         this.queryTemplateGroup();
       } else {

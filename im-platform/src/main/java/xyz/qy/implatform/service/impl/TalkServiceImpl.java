@@ -132,9 +132,11 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         User user = userService.getById(userId);
 
         Talk talk = this.baseMapper.selectById(talkUpdateDTO.getId());
-        if (!Objects.isNull(talk.getCharacterId())
-                && !talk.getCharacterId().equals(talkUpdateDTO.getCharacterId())) {
-            throw new GlobalException("角色不能修改");
+        if (ObjectUtil.isNotNull(talkUpdateDTO.getCharacterId())) {
+            boolean verified = verifyTalkCommentCharacter(talk.getId(), talkUpdateDTO.getCharacterId());
+            if (verified) {
+                throw new GlobalException("所选角色不允许");
+            }
         }
         if (!Objects.isNull(talkUpdateDTO.getCharacterId())) {
             TemplateCharacter character = characterService.getById(talkUpdateDTO.getCharacterId());
@@ -281,7 +283,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         // 动态评论数据(包含删除的)
         List<TalkComment> allTalkCommentList = talkCommentService.lambdaQuery().in(TalkComment::getTalkId, talkIds)
                 .orderByAsc(TalkComment::getCreateTime).list();
-        // 根据评论id分组
+        // 根据动态id分组
         Map<Long, List<TalkComment>> allTalkCommentGroupMap = allTalkCommentList.stream().collect(Collectors.groupingBy(TalkComment::getTalkId));
 
         // 动态评论数据-未删除
@@ -390,13 +392,76 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
     @Override
     public TalkVO getTalkDetail(Long talkId) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
         Talk talk = this.baseMapper.selectById(talkId);
+        if (Objects.isNull(talk) || talk.getDeleted()) {
+            throw new GlobalException("当前动态已被删除");
+        }
+        if (!userId.equals(talk.getCreateBy())) {
+            throw new GlobalException("您不是当前动态作者");
+        }
         TalkVO talkVO = BeanUtils.copyProperties(talk, TalkVO.class);
         assert talkVO != null;
         if (StringUtils.isNotBlank(talk.getFiles())) {
             talkVO.setFileList(JSONArray.parseArray(talk.getFiles()));
         }
-        if (Objects.isNull(talk.getCharacterId())) {
+
+        // 是否有使用过角色用于 编辑、评论、点赞 动态
+        boolean hasCharacter = false;
+
+        if (ObjectUtil.isNotNull(talk.getCharacterId())) {
+            TemplateCharacter character = characterService.getById(talk.getCharacterId());
+            if (ObjectUtil.isNotNull(character)) {
+                talkVO.setCommentCharacterId(character.getId());
+                talkVO.setCommentCharacterName(character.getName());
+                talkVO.setCommentCharacterAvatar(character.getAvatar());
+                hasCharacter = true;
+            }
+        }
+
+        if (!hasCharacter) {
+            // 查询当前用户是否在点赞数据使用模板角色
+            List<TalkStar> talkStars = talkStarService.lambdaQuery()
+                    .eq(TalkStar::getTalkId, talkId)
+                    .eq(TalkStar::getUserId, userId)
+                    .eq(TalkStar::getDeleted, Boolean.FALSE)
+                    .isNotNull(TalkStar::getCharacterId)
+                    .last("limit 1")
+                    .list();
+            if (CollectionUtils.isNotEmpty(talkStars)) {
+                TemplateCharacter character = characterService.getById(talkStars.get(0).getCharacterId());
+                if (ObjectUtil.isNotNull(character)) {
+                    talkVO.setCommentCharacterId(character.getId());
+                    talkVO.setCommentCharacterName(character.getName());
+                    talkVO.setCommentCharacterAvatar(character.getAvatar());
+                    hasCharacter = true;
+                }
+            }
+        }
+
+        if (!hasCharacter) {
+            // 查询当前用户是否在评论数据使用模板角色
+            List<TalkComment> talkComments = talkCommentService.lambdaQuery()
+                    .eq(TalkComment::getTalkId, talkId)
+                    .eq(TalkComment::getUserId, userId)
+                    .eq(TalkComment::getDeleted, Boolean.FALSE)
+                    .isNotNull(TalkComment::getCharacterId)
+                    .last("limit 1")
+                    .list();
+            if (CollectionUtils.isNotEmpty(talkComments)) {
+                TemplateCharacter character = characterService.getById(talkComments.get(0).getCharacterId());
+                if (ObjectUtil.isNotNull(character)) {
+                    talkVO.setCommentCharacterId(character.getId());
+                    talkVO.setCommentCharacterName(character.getName());
+                    talkVO.setCommentCharacterAvatar(character.getAvatar());
+                    hasCharacter = true;
+                }
+            }
+        }
+
+        if (!hasCharacter) {
             talkVO.setEnableCharacterChoose(Boolean.TRUE);
         }
 
