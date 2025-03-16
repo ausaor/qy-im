@@ -547,7 +547,7 @@ export default {
       }).then((data) => {
         this.form = data;
         this.form.files = [];
-        this.fileList = data.fileList;
+        this.fileList = data.fileList ? data.fileList : [];
       });
     },
     async openCharacterChoosePopup() {
