@@ -28,11 +28,14 @@
 
       <!-- 功能按钮区 -->
       <view class="function-bar">
-        <view class="function-item cursor-pointer" @click="chooseMedia('image')">
+        <view class="function-item cursor-pointer" @click="chooseImage">
           <uni-icons type="image" size="24" :color="imageEnabled ? '#07C160' : '#cccccc'"/>
         </view>
-        <view class="function-item cursor-pointer" @click="chooseMedia('video')">
+        <view class="function-item cursor-pointer" @click="chooseVideo">
           <uni-icons type="videocam" size="24" :color="videoEnabled ? '#07C160' : '#cccccc'"/>
+        </view>
+        <view class="function-item cursor-pointer" @click="chooseAudio">
+          <uni-icons type="sound" size="24" :color="audioEnabled ? '#07C160' : '#cccccc'"/>
         </view>
         <view class="function-item cursor-pointer" @click="handleLocation">
           <uni-icons type="location" size="24" color="#666"/>
@@ -60,6 +63,21 @@
               class="media-content"
               @click="previewMedia(index)"
           />
+          <view class="media-content" v-if="item.fileType === 3" @click="toggleAudio(item)">
+            <svg-icon v-show="!item.isPlaying" :icon-class="'yinpinbofang'" style="width: 220rpx;height: 220rpx;" :class-name="'yinpinColor'"></svg-icon>
+            <view class="rc-wave" v-show="item.isPlaying">
+              <text class="note" style="--d: 0"></text>
+              <text class="note" style="--d: 1"></text>
+              <text class="note" style="--d: 2"></text>
+              <text class="note" style="--d: 3"></text>
+              <text class="note" style="--d: 4"></text>
+              <text class="note" style="--d: 5"></text>
+              <text class="note" style="--d: 6"></text>
+              <text class="note" style="--d: 7"></text>
+              <text class="note" style="--d: 8"></text>
+              <text class="note" style="--d: 9"></text>
+            </view>
+          </view>
           <view class="delete-btn cursor-pointer" @click="deleteMedia(index)">
             <uni-icons type="closeempty" size="20" color="#fff"/>
           </view>
@@ -123,9 +141,10 @@
 <script>
 import UNI_APP from '@/.env.js'
 import HeadImage from "../../components/head-image/head-image.vue";
+import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 
 export default {
-  components: {HeadImage},
+  components: {SvgIcon, HeadImage},
   data() {
     return {
       uploadProgress: 0,
@@ -145,6 +164,11 @@ export default {
         files: []
       },
       fileList: [],
+      audioPlayState: 'STOP',
+      innerAudioContext: null,
+      audioContext: null,
+      audioUrl: null,
+      playingAudio: null,
     };
   },
 
@@ -153,25 +177,27 @@ export default {
       return this.form.content.trim().length > 0 || this.fileList.length > 0;
     },
     showUploadBtn() {
-      const imageCount = this.fileList.filter(item => item.fileType === 1).length;
-      const videoCount = this.fileList.filter(item => item.fileType === 2).length;
-      return !(imageCount >= 9 || videoCount >=1);
+      return this.fileList.length < 9;
     },
     imageEnabled() {
-      const imageCount = this.fileList.filter(item => item.fileType === 1).length;
-      const videoCount = this.fileList.filter(item => item.fileType === 2).length;
-      return imageCount < 9 && videoCount < 1;
+      return this.fileList.length < 9;
     },
     videoEnabled() {
-      const imageCount = this.fileList.filter(item => item.fileType === 1).length;
       const videoCount = this.fileList.filter(item => item.fileType === 2).length;
-      return imageCount < 1 && videoCount < 1;
+      return this.fileList.length < 9 && videoCount < 1;
+    },
+    audioEnabled() {
+      const audioCount = this.fileList.filter(item => item.fileType === 3).length;
+      return this.fileList.length < 9 && audioCount < 1;
     },
     imageAction() {
       return `/image/upload`;
     },
     videoAction() {
       return `/video/upload`;
+    },
+    audioAction() {
+      return `/audio/upload`;
     },
     userInfo() {
       return this.userStore.userInfo;
@@ -195,20 +221,41 @@ export default {
       }
     },
 
-    chooseMedia(mediaType) {
-      const isVideo = this.fileList.some(item => item.fileType === 2);
+    chooseImage() {
       const isImage = this.fileList.some(item => item.fileType === 1);
 
-      if (isVideo && this.fileList.length >= 1) {
+      if (isImage && this.fileList.length >= 9) {
+        uni.showToast({ title: '最多选择9个媒体文件', icon: 'none' });
+        return;
+      }
+      this.chooseMedia('image');
+    },
+    chooseVideo() {
+      const isVideo = this.fileList.some(item => item.fileType === 2);
+      if (isVideo) {
         uni.showToast({ title: '最多选择1个视频', icon: 'none' });
         return;
       }
-
-      if (isImage && this.fileList.length >= 9) {
-        uni.showToast({ title: '最多选择9张图片', icon: 'none' });
+      if (this.fileList.length >= 9) {
+        uni.showToast({ title: '最多选择9个媒体文件', icon: 'none' });
         return;
       }
+      this.chooseMedia('video');
+    },
+    chooseAudio() {
+      const isAudio = this.fileList.some(item => item.fileType === 3);
+      if (isAudio) {
+        uni.showToast({ title: '最多选择1个音频', icon: 'none' });
+        return;
+      }
+      if (this.fileList.length >= 9) {
+        uni.showToast({ title: '最多选择9个媒体文件', icon: 'none' });
+        return;
+      }
+      this.chooseMedia('audio');
+    },
 
+    chooseMedia(mediaType) {
       if (mediaType === 'image') {
         uni.chooseImage({
           count: 9 - this.fileList.length,
@@ -231,7 +278,6 @@ export default {
           maxDuration: 60,
           camera: 'back',
           success: (res) => {
-            console.log("res-----------", res)
             this.fileList.push({
               fileType: 2,
               url: res.tempFilePath,
@@ -240,24 +286,44 @@ export default {
             });
           }
         });
+      } else if (mediaType === 'audio') {
+        uni.chooseFile({
+          count: 1, // 选择1个文件
+          type: 'file', // 或 'all'（部分平台支持指定文件类型）
+          extension: ['mp3', 'wav', 'aac'], // 限制音频格式（可选）
+          success: (res) => {
+            const tempFile = res.tempFiles[0];
+            this.fileList.push({
+              fileType: 3,
+              url: tempFile.path,
+              thumbFile: tempFile,
+              upload: false,
+            });
+          },
+          fail: (err) => {
+            console.error('选择文件失败:', err);
+          }
+        });
       }
     },
 
     showUploadActionSheet() {
-      this.chooseMedia('image');
-      // uni.showActionSheet({
-      //   itemList: ['图片', '视频'],
-      //   success: (res) => {
-      //     switch (res.tapIndex) {
-      //       case 0:
-      //         this.chooseMedia('image');
-      //         break;
-      //       case 1:
-      //         this.chooseMedia('video');
-      //         break;
-      //     }
-      //   }
-      // });
+      uni.showActionSheet({
+        itemList: ['图片', '视频', '音频'],
+        success: (res) => {
+          switch (res.tapIndex) {
+            case 0:
+              this.chooseImage();
+              break;
+            case 1:
+              this.chooseVideo();
+              break;
+            case 2:
+              this.chooseAudio();
+              break;
+          }
+        }
+      });
     },
 
     previewMedia(index) {
@@ -269,7 +335,46 @@ export default {
         });
       }
     },
+    toggleAudio(media) {
+      if (this.audioUrl && this.audioUrl !== media.url && this.audioPlayState === "PLAYING") {
+        uni.showToast({
+          title: "请先暂停已播放音频",
+          icon: 'none'
+        });
+        return;
+      }
 
+      // 初始化音频播放器
+      if (!this.innerAudioContext ||  this.audioUrl !== media.url) {
+        this.innerAudioContext = uni.createInnerAudioContext();
+        let url = media.url;
+        this.innerAudioContext.src = url;
+        this.innerAudioContext.onEnded((e) => {
+          console.log('停止')
+          this.audioPlayState = "STOP"
+          this.playingAudio.isPlaying = false;
+        })
+        this.innerAudioContext.onError((e) => {
+          this.audioPlayState = "STOP"
+          this.playingAudio.isPlaying = false;
+          console.log("播放音频出错");
+          console.log(e)
+        });
+      }
+      media.isPlaying = !media.isPlaying;
+      this.audioUrl = media.url;
+      this.playingAudio = media;
+      if (this.audioPlayState == 'STOP') {
+        this.innerAudioContext.play();
+        this.audioPlayState = "PLAYING";
+      } else if (this.audioPlayState == 'PLAYING') {
+        this.innerAudioContext.pause();
+        this.audioPlayState = "PAUSE"
+      } else if (this.audioPlayState == 'PAUSE') {
+        this.innerAudioContext.play();
+        this.audioPlayState = "PLAYING"
+      }
+    },
     deleteMedia(index) {
       uni.showModal({
         title: '提示',
@@ -310,7 +415,6 @@ export default {
           if (this.fileList[i].url.startsWith("blob:")) {
             if (this.fileList[i].fileType === 1) {
               await this.uploadFile(this.fileList[i].url, this.imageAction).then(data => {
-                console.log("image-result", data)
                 if (data) {
                   this.form.files.push({
                     fileType: 1,
@@ -325,12 +429,25 @@ export default {
               });
             } else if (this.fileList[i].fileType === 2) {
               await this.uploadFile(this.fileList[i].url, this.videoAction).then(result => {
-                console.log("video-result", result)
                 if (result) {
                   this.form.files.push({
                     fileType: 2,
                     url: result.videoUrl,
                     coverUrl: result.coverUrl,
+                  });
+                  this.uploadProgress += progress;
+                } else {
+                  this.uploadProgress = 0;
+                  this.$refs.uploadingPopup.close();
+                  uploadSuccess = false;
+                }
+              });
+            } else if (this.fileList[i].fileType === 3) {
+              await this.uploadFile(this.fileList[i].url, this.audioAction).then(result => {
+                if (result) {
+                  this.form.files.push({
+                    fileType: 3,
+                    url: result.url,
                   });
                   this.uploadProgress += progress;
                 } else {
@@ -436,7 +553,29 @@ export default {
       this.form.avatar = this.userInfo.headImage;
       this.form.nickName = this.userInfo.nickName;
     }
-  }
+  },
+  onHide() {
+    console.log("onHide")
+    if (this.playingAudio) {
+      this.playingAudio.isPlaying = false;
+    }
+    if (this.innerAudioContext) {
+      this.audioPlayState = 'STOP';
+      this.innerAudioContext.pause();
+    }
+  },
+  onUnload() {
+    console.log('页面卸载');
+    if (this.playingAudio) {
+      this.playingAudio.isPlaying = false;
+    }
+    if (this.innerAudioContext) {
+      this.audioUrl = null;
+      this.audioPlayState = 'STOP';
+      this.innerAudioContext.pause();
+      this.innerAudioContext = null;
+    }
+  },
 }
 </script>
 
@@ -543,6 +682,45 @@ export default {
   background-color: #f0f0f0;
 }
 
+.rc-wave {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  height: 220rpx;
+  width: 220rpx;
+
+  .note {
+    background: linear-gradient(to top, $im-color-primary-light-1 0%, $im-color-primary-light-9 100%);
+    width: 4px;
+    height: 90%;
+    border-radius: 5rpx;
+    margin-right: 4px;
+    animation: loading 0.5s infinite linear;
+    animation-delay: calc(0.1s * var(--d));
+
+    @keyframes loading {
+      0% {
+        background-image: linear-gradient(to right, $im-color-primary-light-1 0%, $im-color-primary-light-9 100%);
+        height: 20%;
+        border-radius: 5rpx;
+      }
+
+      50% {
+        background-image: linear-gradient(to top, $im-color-primary-light-1 0%, $im-color-primary-light-9 100%);
+        height: 90%;
+        border-radius: 5rpx;
+      }
+
+      100% {
+        background-image: linear-gradient(to top, $im-color-primary-light-1 0%, $im-color-primary-light-9 100%);
+        height: 20%;
+        border-radius: 5rpx;
+      }
+    }
+  }
+}
+
 .delete-btn {
   position: absolute;
   top: -10rpx;
@@ -554,6 +732,7 @@ export default {
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
+  z-index: 999;
 }
 
 .upload-btn {

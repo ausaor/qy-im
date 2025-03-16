@@ -70,7 +70,7 @@
                 <swiper-item v-for="(media, mediaIndex) in item.fileList" :key="mediaIndex" class="media-item">
                   <image v-if="media.fileType === 1" :src="media.url" mode="aspectFill" class="media-content cursor-pointer" @click="previewImage([media.url], 0)" />
                   <video v-else-if="media.fileType === 2" :src="media.url" :poster="media.coverUrl" class="media-content" :controls="true" />
-                  <view v-else-if="media.fileType === 3" class="audio-player" @click.stop="toggleAudio(media)">
+                  <view v-else-if="media.fileType === 3" class="media-content audio-player" @click.stop="toggleAudio(media)">
                     <svg-icon v-show="!media.isPlaying" :icon-class="'yinpinbofang'" style="width: 220rpx;height: 220rpx;" :class-name="'yinpinColor'"></svg-icon>
                     <view class="rc-wave" v-show="media.isPlaying">
                       <text class="note" style="--d: 0"></text>
@@ -833,6 +833,7 @@ export default {
 
 .audio-player {
   display: flex;
+  justify-content: center;
   align-items: center;
   background-color: white;
   padding: 20rpx;
