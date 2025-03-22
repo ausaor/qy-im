@@ -359,7 +359,7 @@ export default {
     nodesText(content) {
       let color = '';
       let text = this.$url.replaceURLWithHTMLLinks(content, color)
-      return this.$emo.transform(text, 'emoji-small')
+      return this.$emo.transform(text, 'emoji-small').replace(/\n/g, '<br>');
     },
     showUserInfo(userId) {
       if (userId && userId > 0) {

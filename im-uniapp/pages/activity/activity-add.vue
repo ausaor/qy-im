@@ -18,13 +18,17 @@
       </view>
 
       <!-- 文本输入区 -->
-      <textarea
+<!--      <textarea
           v-model="form.content"
           class="input-area"
           placeholder="想记录点什么"
           placeholder-class="placeholder"
           maxlength="2000"
-      />
+      />-->
+
+      <editor id="editor" class="input-area" ref="myEditor" placeholder="想记录点什么"
+              :read-only="isReadOnly" @focus="onEditorFocus" @blur="onEditorBlur" @ready="onEditorReady" @input="onTextInput">
+      </editor>
 
       <!-- 功能按钮区 -->
       <view class="function-bar">
@@ -37,10 +41,24 @@
         <view class="function-item cursor-pointer" @click="chooseAudio">
           <uni-icons type="sound" size="24" :color="audioEnabled ? '#07C160' : '#cccccc'"/>
         </view>
+        <view class="function-item cursor-pointer" @click="chooseEmoji">
+          <uni-icons custom-prefix="iconfont" type="icon-icon_emoji" size="24" :color="showEmo ? '#07C160' : '#cccccc'"/>
+        </view>
         <view class="function-item cursor-pointer" @click="handleLocation">
-          <uni-icons type="location" size="24" color="#666"/>
+          <uni-icons  type="location" size="24" color="#666"/>
         </view>
       </view>
+
+      <view >
+
+      </view>
+      <scroll-view class="emo-box" scroll-y="true" v-show="showEmo">
+        <view class="emotion-item-list">
+          <image class="emotion-item emoji-large" :title="emoText" :src="$emo.textToPathOriginal(emoText)"
+                 v-for="(emoText, i) in $emo.originalEmoTextList" :key="i" @click="selectEmoji(emoText)" mode="aspectFit"
+                 lazy-load="true"></image>
+        </view>
+      </scroll-view>
 
       <!-- 媒体展示区 -->
       <view class="media-grid" v-if="fileList.length > 0">
@@ -175,12 +193,17 @@ export default {
       playingAudio: null,
       templateGroupList: [],
       characterList: [],
+      editorCtx: null, // 编辑器上下文
+      isEmpty: true, // 编辑器是否为空
+      isFocus: false, // 编辑器是否焦点
+      isReadOnly: false, // 编辑器是否只读
+      showEmo: false,
     };
   },
 
   computed: {
     canPublish() {
-      return this.form.content.trim().length > 0 || this.fileList.length > 0;
+      return !this.isEmpty || this.fileList.length > 0;
     },
     showUploadBtn() {
       return this.fileList.length < 9;
@@ -211,6 +234,43 @@ export default {
   },
 
   methods: {
+    selectEmoji(emoText) {
+      let path = this.$emo.textToPathOriginal(emoText)
+      // 先把键盘禁用了，否则会重新弹出键盘
+      this.isReadOnly = true;
+      this.isEmpty = false;
+      this.$nextTick(() => {
+        this.editorCtx.insertImage({
+          src: path,
+          alt: emoText,
+          extClass: 'emoji-small',
+          nowrap: true,
+          complete: () => {
+            this.isReadOnly = false;
+            this.editorCtx.blur();
+          }
+        });
+      })
+    },
+    onTextInput(e) {
+      //const content = e.detail.html; // 获取富文本 HTML
+      //const text = e.detail.text;    // 获取纯文本
+      //this.form.content = content;
+      this.isEmpty = e.detail.html == '<p><br></p>'
+    },
+    onEditorReady() {
+      console.log("编辑器已初始化")
+      const query = uni.createSelectorQuery().in(this);
+      query.select('#editor').context((res) => {
+        this.editorCtx = res.context
+      }).exec()
+    },
+    onEditorFocus(e) {
+      this.isFocus = true;
+    },
+    onEditorBlur(e) {
+      this.isFocus = false;
+    },
     handleBack() {
       if (this.form.content || this.fileList.length > 0) {
         uni.showModal({
@@ -259,6 +319,9 @@ export default {
         return;
       }
       this.chooseMedia('audio');
+    },
+    chooseEmoji() {
+      this.showEmo = !this.showEmo;
     },
 
     chooseMedia(mediaType) {
@@ -410,106 +473,129 @@ export default {
         return
       }
 
-      let uploadSuccess = true;
-
-      if (this.fileList && this.fileList.length > 0) {
-        this.$refs.uploadingPopup.open();
-        let progress = Math.floor(1 / this.fileList.length * 100);
-        console.log("progress", progress)
-        this.form.files = [];
-        for (let i = 0; i < this.fileList.length; i++) {
-          if (this.fileList[i].url.startsWith("blob:")) {
-            if (this.fileList[i].fileType === 1) {
-              await this.uploadFile(this.fileList[i].url, this.imageAction).then(data => {
-                if (data) {
-                  this.form.files.push({
-                    fileType: 1,
-                    url: data.originUrl,
-                  });
-                  this.uploadProgress += progress;
-                } else {
-                  this.uploadProgress = 0;
-                  this.$refs.uploadingPopup.close();
-                  uploadSuccess = false;
-                }
-              });
-            } else if (this.fileList[i].fileType === 2) {
-              await this.uploadFile(this.fileList[i].url, this.videoAction).then(result => {
-                if (result) {
-                  this.form.files.push({
-                    fileType: 2,
-                    url: result.videoUrl,
-                    coverUrl: result.coverUrl,
-                  });
-                  this.uploadProgress += progress;
-                } else {
-                  this.uploadProgress = 0;
-                  this.$refs.uploadingPopup.close();
-                  uploadSuccess = false;
-                }
-              });
-            } else if (this.fileList[i].fileType === 3) {
-              await this.uploadFile(this.fileList[i].url, this.audioAction).then(result => {
-                if (result) {
-                  this.form.files.push({
-                    fileType: 3,
-                    url: result.url,
-                  });
-                  this.uploadProgress += progress;
-                } else {
-                  this.uploadProgress = 0;
-                  this.$refs.uploadingPopup.close();
-                  uploadSuccess = false;
-                }
-              });
-            }
-          } else {
-            this.form.files.push({
-              fileType: this.fileList[i].fileType,
-              url: this.fileList[i].url,
+      this.editorCtx.getContents({
+        success: async (e) => {
+          let sendText = "";
+          e.delta.ops.forEach((op) => {
+            if (op.insert.image) {
+              // emo表情
+              sendText += `#${op.attributes.alt};`
+            } else (
+                // 文字
+                sendText += op.insert
+            )
+          })
+          if (!sendText.trim() && this.fileList.length === 0) {
+            return uni.showToast({
+              title: "不能发送空白信息",
+              icon: "none"
             });
-            this.uploadProgress += progress;
           }
+
+          this.form.content = sendText;
+
+          let uploadSuccess = true;
+
+          if (this.fileList && this.fileList.length > 0) {
+            this.$refs.uploadingPopup.open();
+            let progress = Math.floor(1 / this.fileList.length * 100);
+            console.log("progress", progress)
+            this.form.files = [];
+            for (let i = 0; i < this.fileList.length; i++) {
+              if (this.fileList[i].url.startsWith("blob:")) {
+                if (this.fileList[i].fileType === 1) {
+                  await this.uploadFile(this.fileList[i].url, this.imageAction).then(data => {
+                    if (data) {
+                      this.form.files.push({
+                        fileType: 1,
+                        url: data.originUrl,
+                      });
+                      this.uploadProgress += progress;
+                    } else {
+                      this.uploadProgress = 0;
+                      this.$refs.uploadingPopup.close();
+                      uploadSuccess = false;
+                    }
+                  });
+                } else if (this.fileList[i].fileType === 2) {
+                  await this.uploadFile(this.fileList[i].url, this.videoAction).then(result => {
+                    if (result) {
+                      this.form.files.push({
+                        fileType: 2,
+                        url: result.videoUrl,
+                        coverUrl: result.coverUrl,
+                      });
+                      this.uploadProgress += progress;
+                    } else {
+                      this.uploadProgress = 0;
+                      this.$refs.uploadingPopup.close();
+                      uploadSuccess = false;
+                    }
+                  });
+                } else if (this.fileList[i].fileType === 3) {
+                  await this.uploadFile(this.fileList[i].url, this.audioAction).then(result => {
+                    if (result) {
+                      this.form.files.push({
+                        fileType: 3,
+                        url: result.url,
+                      });
+                      this.uploadProgress += progress;
+                    } else {
+                      this.uploadProgress = 0;
+                      this.$refs.uploadingPopup.close();
+                      uploadSuccess = false;
+                    }
+                  });
+                }
+              } else {
+                this.form.files.push({
+                  fileType: this.fileList[i].fileType,
+                  url: this.fileList[i].url,
+                });
+                this.uploadProgress += progress;
+              }
+            }
+          }
+          this.$refs.uploadingPopup.close();
+          if (!uploadSuccess) {
+            uni.showToast({
+              title: '文件上传失败',
+              icon: 'fail',
+            });
+            return;
+          }
+          console.log("this.uploadProgress", this.uploadProgress)
+          this.uploadProgress = 100;
+          console.log("form", this.form);
+
+          let url = "/talk"
+          if (this.form.id != null) {
+            url += "/update"
+          } else {
+            url += "/add"
+          }
+          this.$http({
+            url: url,
+            method: 'post',
+            data: this.form
+          }).then((data) => {
+            uni.showToast({
+              title: "发布成功",
+              icon: "success",
+              duration: 2000,
+              success: () => {
+                setTimeout(() => {
+                  let pages = getCurrentPages();
+                  let prevPage = pages[pages.length - 2];
+                  prevPage.$vm.refreshTalkList();
+                  uni.navigateBack();
+                }, 2000);
+              },
+            });
+          }).finally(() => {
+
+          })
         }
-      }
-      this.$refs.uploadingPopup.close();
-      if (!uploadSuccess) {
-        uni.showToast({
-          title: '文件上传失败',
-          icon: 'fail',
-        });
-        return;
-      }
-      console.log("this.uploadProgress", this.uploadProgress)
-      this.uploadProgress = 100;
-      console.log("form", this.form);
-
-      let url = "/talk"
-      if (this.form.id != null) {
-        url += "/update"
-      } else {
-        url += "/add"
-      }
-      this.$http({
-        url: url,
-        method: 'post',
-        data: this.form
-      }).then((data) => {
-        uni.showToast({
-          title: "发布成功",
-          icon: "success",
-          duration: 2000,
-          success: () => {
-            setTimeout(() => {
-              let pages = getCurrentPages();
-              let prevPage = pages[pages.length - 2];
-              prevPage.$vm.refreshTalkList();
-              uni.navigateBack();
-            }, 2000);
-          },
-        });
-      }).finally(() => {
-
       })
     },
     uploadFile(filePath, apiPath) {
@@ -540,15 +626,62 @@ export default {
         })
       })
     },
-    getTalkDetail(talkId) {
+    async getTalkDetail(talkId) {
       this.$http({
         url: `/talk/getTalkDetail/${talkId}`,
         method: 'get'
-      }).then((data) => {
+      }).then(async (data) => {
         this.form = data;
         this.form.files = [];
+        if (this.form.content) {
+          let contentHtml = this.$emo.transform(this.form.content, 'emoji-small');
+          this.htmlToDelta(contentHtml);
+        }
         this.fileList = data.fileList ? data.fileList : [];
       });
+    },
+    htmlToDelta(html) {
+      // 匹配文本和图片标签（正则表达式拆分内容）
+      const pattern = /(<img[^>]+>)|([^<]+)/g;
+      const nodes = html.match(pattern) || [];
+
+      const delta = { ops: [] };
+
+      nodes.forEach(node => {
+        if (node.startsWith('<img')) {
+          // 处理图片节点
+          const srcMatch = node.match(/src="([^"]+)"/);
+          const alt = node.match(/alt="([^"]+)"/);
+          if (srcMatch && srcMatch[1]) {
+            this.editorCtx.insertImage({
+              src: srcMatch[1],
+              alt: alt[1],
+              extClass: 'emoji-small',
+              nowrap: true,
+              complete: () => {
+                this.isReadOnly = false;
+                this.editorCtx.blur();
+              }
+            });
+            delta.ops.push({ insert: { image: srcMatch[1] } });
+          }
+        } else {
+          // 处理文本节点（保留换行符）
+          const text = node.replace(/\n/g, '\n');
+          //if (text.trim()) {
+            this.editorCtx.insertText({
+              text: text,
+              complete: () => {
+                this.isReadOnly = false;
+                this.editorCtx.blur();
+              }
+            });
+            delta.ops.push({ insert: text });
+          //}
+        }
+      });
+
+      return delta;
     },
     async openCharacterChoosePopup() {
       // 当前动态已使用过模板角色
@@ -725,6 +858,26 @@ export default {
 
 .placeholder {
   color: #999;
+}
+
+.emo-box {
+  background-color: white;
+  padding: 20rpx;
+  height: 310px;
+  box-sizing: border-box;
+
+  .emotion-item-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-content: center;
+
+    .emotion-item {
+      text-align: center;
+      cursor: pointer;
+      padding: 5px;
+    }
+  }
 }
 
 .media-grid {

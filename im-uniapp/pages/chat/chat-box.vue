@@ -1059,7 +1059,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .chat-box {
 	$icon-color: rgba(0, 0, 0, 0.88);
 	position: relative;

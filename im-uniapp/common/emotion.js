@@ -22,13 +22,13 @@ let transform = (content, extClass) => {
 		let idx = emoTextList.indexOf(word);
 		if (idx >= 0) {
 			let path = textToPath(emoText);
-			let img = `<img src="${path}" class="${extClass}"/>`;
+			let img = `<img src="${path}" class="${extClass}" alt="${word}"/>`;
 			return img;
 		}
 		idx = originalEmoTextList.indexOf(word);
 		if (idx >= 0) {
 			let path = textToPathOriginal(emoText);
-			let img = `<img src="${path}" class="${extClass}"/>`;
+			let img = `<img src="${path}" class="${extClass}" alt="${word}"/>`;
 			return img;
 		}
 		if (idx == -1) {
@@ -61,6 +61,8 @@ let textToPathOriginal = (emoText) => {
 
 export default {
 	emoTextList,
+	originalEmoTextList,
 	transform,
-	textToPath
+	textToPath,
+	textToPathOriginal,
 }

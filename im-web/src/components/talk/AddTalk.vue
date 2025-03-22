@@ -530,7 +530,7 @@ export default {
         method: 'get'
       }).then((data) => {
         _this.form = data;
-        _this.fileList = data.fileList;
+        _this.fileList = data.fileList || [];
         if (data.imgUrls && data.imgUrls.length > 0) {
           _this.imageList = data.imgUrls.map(item => {return {url: item}});
         }
