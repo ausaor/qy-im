@@ -949,8 +949,10 @@ export default {
 .content-audio {
   width: 100%;
   height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-radius: 8rpx;
-  object-fit: cover;
 }
 
 .rc-wave {
