@@ -15,8 +15,9 @@
                  @scrolltolower="loadMore">
       <!-- 固定背景图 -->
       <view class="fixed-bg">
-        <image class="bg-image" src="https://public.readdy.ai/ai/img_res/be9bbbcabbc10bdd17557fbb7c1b0b28.jpg" mode="aspectFill"/>
-        <uni-icons class="refresh-btn" type="refresh" color="white" size="30" @click="refreshTalkList"></uni-icons>
+        <image class="bg-image" src="@/static/image/activity-bg.jpg" mode="aspectFill"/>
+        <head-image class="my-head-image" :url="mine.headImage" :name="mine.nickName" size="small"></head-image>
+        <uni-icons class="refresh-btn" type="refresh" color="white" size="24" @click="refreshTalkList"></uni-icons>
       </view>
 
       <!-- 动态列表 -->
@@ -94,19 +95,33 @@
           </view>
 
           <view class="interaction">
-            <view class="like-comment">
-              <view class="action-btn cursor-pointer" @click="likeAction(item)">
-                <uni-icons :type="item.isLike ? 'heart-filled' : 'heart'" size="20" :color="item.isLike ? '#ff5d5d' : '#666'"/>
-                <text :class="['count', item.isLike ? 'liked' : '']">{{item.talkStarVOS.length}}</text>
+            <view style="display: flex; align-items: center; justify-content: space-between;">
+              <view class="location">
+                <uni-icons  type="location" size="20" color="#87CEFA"/>
+                <text>{{item.address}}</text>
               </view>
-              <view class="action-btn cursor-pointer" @click="doComment(null, item)">
-                <uni-icons type="chat" size="20" color="#666"/>
-                <text class="count">{{item.talkCommentVOS.length}}</text>
+              <view class="like-comment">
+                <view class="action-btn cursor-pointer" @click="likeAction(item)">
+                  <uni-icons :type="item.isLike ? 'hand-up-filled' : 'hand-up'" size="20" :color="item.isLike ? '#FFA500' : '#666'"/>
+                  <text :class="['count', item.isLike ? 'liked' : '']">{{item.talkStarVOS.length}}</text>
+                </view>
+                <view class="action-btn cursor-pointer" @click="doComment(null, item)">
+                  <uni-icons type="chat" size="20" color="#666"/>
+                  <text class="count">{{item.talkCommentVOS.length}}</text>
+                </view>
+                <view class="action-btn cursor-pointer" @click.stop="toggleShowType(item)">
+                  <uni-icons v-show="!item.showType || item.showType!=='swiper'" custom-prefix="iconfont" type="icon-grid" size="20" color="#666"/>
+                  <uni-icons v-show="item.showType ==='swiper'" custom-prefix="iconfont" type="icon-swiper" size="20" color="#666"/>
+                </view>
               </view>
-              <view class="action-btn cursor-pointer" @click.stop="toggleShowType(item)">
-                <uni-icons v-show="!item.showType || item.showType!=='swiper'" custom-prefix="iconfont" type="icon-grid" size="20" color="#666"/>
-                <uni-icons v-show="item.showType ==='swiper'" custom-prefix="iconfont" type="icon-swiper" size="20" color="#666"/>
-              </view>
+            </view>
+
+            <view class="star-user">
+              <uni-icons v-if="item.talkStarVOS && item.talkStarVOS.length > 0" type="hand-up-filled" size="20" :color="'#666'"/>
+              <text v-for="(user, user_index) in item.talkStarVOS" :key="user_index">
+                {{ user.nickname }}
+                {{user_index < item.talkStarVOS.length - 1 ? '、' : ''}}
+              </text>
             </view>
 
             <view class="comments" v-if="item.talkCommentVOS.length">
@@ -697,7 +712,9 @@ export default {
     },
   },
   computed: {
-
+    mine() {
+      return this.userStore.userInfo;
+    }
   },
   onLoad(options) {
     console.log(options.category)
@@ -773,12 +790,20 @@ export default {
   height: 100%;
 }
 
+.my-head-image {
+  position: absolute;
+  left: 35rpx;
+  bottom: 10rpx;
+  z-index: 5;
+}
+
 .refresh-btn {
   position: absolute;
   width: 48rpx;
   height: 48rpx;
   right: 35rpx;
   bottom: 10rpx;
+  z-index: 5;
 }
 
 .content-area {
@@ -1002,8 +1027,21 @@ export default {
   margin-top: 20rpx;
 }
 
+.location {
+  display: flex;
+  align-items: center;
+  color: #87CEFA;
+}
+
+.star-user {
+  margin-top: 10rpx;
+  display: flex;
+  align-items: center;
+}
+
 .like-comment {
   display: flex;
+  justify-content: right;
   gap: 40rpx;
 }
 
