@@ -70,7 +70,14 @@
 			"path": "pages/mine/mine-password"
 		},
 		{
-			"path": "pages/activity/activity-space"
+			"path": "pages/activity/activity-space",
+			"style": {
+				"navigationStyle": "custom",
+				"app-plus": {
+					// adjustPan窗体高度不变，但窗体上推、adjustResize屏幕高度=webview窗体高度+软键盘高度
+					"softinputMode": "adjustResize"
+				}
+			}
 		},
 		{
 			"path": "pages/activity/activity-add"

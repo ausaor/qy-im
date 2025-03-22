@@ -134,14 +134,25 @@
     <!-- 评论输入框 -->
     <uni-popup ref="commentPopup" type="bottom" @change="commentPopupChange">
       <view class="comment-input-box">
-        <input
+<!--        <input
             class="input"
             v-model="commentText"
             :placeholder="commentPlaceholder"
             @confirm="submitComment"
-        />
-        <button class="send-btn cursor-pointer" @click="submitComment">发送</button>
+        />-->
+        <editor id="editor" class="comment-input" ref="myEditor" :placeholder="commentPlaceholder"
+                :read-only="isReadOnly" @focus="onEditorFocus" @blur="onEditorBlur" @ready="onEditorReady" @input="onTextInput">
+        </editor>
+        <uni-icons @click="chooseEmoji" custom-prefix="iconfont" type="icon-icon_emoji" size="32" :color="showEmo ? '#07C160' : '#cccccc'"/>
+        <view class="send-btn cursor-pointer" size="mini" @click="submitComment">发送</view>
       </view>
+      <scroll-view class="emo-box" scroll-y="true" v-show="showEmo">
+        <view class="emotion-item-list">
+          <image class="emotion-item emoji-large" :title="emoText" :src="$emo.textToPathOriginal(emoText)"
+                 v-for="(emoText, i) in $emo.originalEmoTextList" :key="i" @click="selectEmoji(emoText)" mode="aspectFit"
+                 lazy-load="true"></image>
+        </view>
+      </scroll-view>
     </uni-popup>
     <uni-popup ref="talkSetPopup" type="bottom" background-color="#fff" @change="talkSetPopupChange">
       <view style="font-size: 28rpx;">
@@ -222,6 +233,11 @@ export default {
       groupTemplates: [],
       characters: [],
       isRefreshing: false,
+      showEmo: false,
+      editorCtx: null, // 编辑器上下文
+      isEmpty: true, // 编辑器是否为空
+      isFocus: false, // 编辑器是否焦点
+      isReadOnly: false, // 编辑器是否只读
     };
   },
   methods: {
@@ -245,6 +261,44 @@ export default {
       }
       this.headerBgColor = `rgba(239, 244, 255, ${opacity})`;
     }, 150),
+    selectEmoji(emoText) {
+      let path = this.$emo.textToPathOriginal(emoText)
+      // 先把键盘禁用了，否则会重新弹出键盘
+      this.isReadOnly = true;
+      this.isEmpty = false;
+      this.$nextTick(() => {
+        this.editorCtx.insertImage({
+          src: path,
+          alt: emoText,
+          extClass: 'emoji-small',
+          nowrap: true,
+          complete: () => {
+            this.isReadOnly = false;
+            this.editorCtx.blur();
+          }
+        });
+      })
+    },
+    onTextInput(e) {
+      //const content = e.detail.html; // 获取富文本 HTML
+      //const text = e.detail.text;    // 获取纯文本
+      //this.form.content = content;
+      this.isEmpty = e.detail.html == '<p><br></p>'
+    },
+    onEditorReady() {
+      console.log("编辑器已初始化")
+      const query = uni.createSelectorQuery().in(this);
+      query.select('#editor').context((res) => {
+        this.editorCtx = res.context
+      }).exec()
+    },
+    onEditorFocus(e) {
+      this.isFocus = true;
+      this.showEmo = false;
+    },
+    onEditorBlur(e) {
+      this.isFocus = false;
+    },
     goBack() {
       uni.navigateBack();
     },
@@ -446,41 +500,62 @@ export default {
       this.$refs.commentPopup.open();
     },
     submitComment() {
-      let sendText = this.commentText;
-      if (!sendText.trim()) {
-        return
-      }
-      this.comment.content = sendText
-      let talk = this.curTalk;
-      let params = {
-        talkId: talk.id,
-        content: this.comment.content,
-        userNickname: talk.commentCharacterName,
-        characterId: talk.commentCharacterId,
-        userAvatar: talk.commentCharacterAvatar,
-        replyCommentId: this.comment.replyCommentId
-      }
-      this.$http({
-        url: "/talk/addTalkComment",
-        method: 'post',
-        data: params
-      }).then((data) => {
-        if (data.characterId) {
-          talk.commentCharacterId = data.characterId;
-          talk.commentCharacterName = data.userNickname;
-          talk.commentCharacterAvatar = data.userAvatar;
+      this.editorCtx.getContents({
+        success: async (e) => {
+          let commentText = "";
+          e.delta.ops.forEach((op) => {
+            if (op.insert.image) {
+              // emo表情
+              commentText += `#${op.attributes.alt};`
+            } else (
+                // 文字
+                commentText += op.insert
+            )
+          })
+          if (!commentText.trim()) {
+            return uni.showToast({
+              title: "不能发送空白信息",
+              icon: "none"
+            });
+          }
+          let sendText = commentText;
+          if (!sendText.trim()) {
+            return
+          }
+          this.comment.content = sendText
+          let talk = this.curTalk;
+          let params = {
+            talkId: talk.id,
+            content: this.comment.content,
+            userNickname: talk.commentCharacterName,
+            characterId: talk.commentCharacterId,
+            userAvatar: talk.commentCharacterAvatar,
+            replyCommentId: this.comment.replyCommentId
+          }
+          this.$http({
+            url: "/talk/addTalkComment",
+            method: 'post',
+            data: params
+          }).then((data) => {
+            if (data.characterId) {
+              talk.commentCharacterId = data.characterId;
+              talk.commentCharacterName = data.userNickname;
+              talk.commentCharacterAvatar = data.userAvatar;
+            }
+            talk.talkCommentVOS.push(data);
+            uni.showToast({
+              title: "评论成功",
+              icon: 'none'
+            });
+          }).finally(() => {
+            this.$refs.commentPopup.close();
+            this.comment = {}
+            this.commentPlaceholder = '说点什么...';
+            this.curTalk = {};
+            this.commentText = '';
+            this.showEmo = false;
+          })
         }
-        talk.talkCommentVOS.push(data);
-        uni.showToast({
-          title: "评论成功",
-          icon: 'none'
-        });
-      }).finally(() => {
-        this.$refs.commentPopup.close();
-        this.comment = {}
-        this.commentPlaceholder = '说点什么...';
-        this.curTalk = {};
-        this.commentText = '';
       })
     },
     commentPopupChange(e) {
@@ -615,7 +690,10 @@ export default {
       this.curTalk.commentCharacterId = character.id;
       this.curTalk.commentCharacterAvatar = character.avatar;
       this.curTalk.commentCharacterName = character.name;
-    }
+    },
+    chooseEmoji() {
+      this.showEmo = !this.showEmo;
+    },
   },
   computed: {
 
@@ -969,6 +1047,7 @@ export default {
   display: flex;
   align-items: flex-end;
   height: 38rpx;
+  width: 100%;
 }
 
 .comment-rich-text {
@@ -978,9 +1057,11 @@ export default {
 
 .comment-input-box {
   display: flex;
+  align-items: center;
   padding: 20rpx;
   background-color: #ffffff;
   border-top: 2rpx solid #eeeeee;
+  position: relative;
 }
 
 .input {
@@ -992,16 +1073,46 @@ export default {
   font-size: 28rpx;
 }
 
+.comment-input {
+  width: 100%;
+  height: 100%;
+  min-height: 60rpx;
+  max-height: 200rpx;
+  font-size: 30rpx;
+  background-color: #f8f8f8;
+  border: 1rpx solid #eeeeee;
+  border-radius: 30rpx;
+}
+
 .send-btn {
   margin-left: 20rpx;
   width: 120rpx;
-  height: 72rpx;
-  line-height: 72rpx;
+  height: 60rpx;
+  line-height: 60rpx;
   text-align: center;
   background-color: #07c160;
   color: #ffffff;
   border-radius: 36rpx;
-  font-size: 28rpx;
+}
+
+.emo-box {
+  background-color: white;
+  padding: 20rpx;
+  height: 310px;
+  box-sizing: border-box;
+
+  .emotion-item-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-content: center;
+
+    .emotion-item {
+      text-align: center;
+      cursor: pointer;
+      padding: 5px;
+    }
+  }
 }
 
 .cursor-pointer {

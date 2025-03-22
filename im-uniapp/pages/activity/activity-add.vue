@@ -267,6 +267,7 @@ export default {
     },
     onEditorFocus(e) {
       this.isFocus = true;
+      this.showEmo = false;
     },
     onEditorBlur(e) {
       this.isFocus = false;
