@@ -16,6 +16,7 @@
       <!-- 固定背景图 -->
       <view class="fixed-bg">
         <image class="bg-image" src="https://public.readdy.ai/ai/img_res/be9bbbcabbc10bdd17557fbb7c1b0b28.jpg" mode="aspectFill"/>
+        <uni-icons class="refresh-btn" type="refresh" color="white" size="30" @click="refreshTalkList"></uni-icons>
       </view>
 
       <!-- 动态列表 -->
@@ -761,15 +762,23 @@ export default {
 }
 
 .fixed-bg {
-
   width: 100%;
   height: 400rpx;
   z-index: 2;
+  position: relative;
 }
 
 .bg-image {
   width: 100%;
   height: 100%;
+}
+
+.refresh-btn {
+  position: absolute;
+  width: 48rpx;
+  height: 48rpx;
+  right: 35rpx;
+  bottom: 10rpx;
 }
 
 .content-area {
@@ -1042,12 +1051,12 @@ export default {
 }
 
 .comment-text {
+  flex: 1;
   font-size: 28rpx;
   color: #333333;
   display: flex;
   align-items: flex-end;
   height: 38rpx;
-  width: 100%;
 }
 
 .comment-rich-text {
