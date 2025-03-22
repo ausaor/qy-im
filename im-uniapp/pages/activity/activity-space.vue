@@ -42,7 +42,7 @@
 
             <view class="image-grid" v-if="item.fileList && item.fileList.length" v-show="!item.showType || item.showType!=='swiper'">
               <view v-for="(fileItem, fileIndex) in item.fileList"
-                    :key="fileIndex">
+                    :key="fileIndex" class="grid-item">
                 <image v-if="fileItem.fileType === 1"
                        :src="fileItem.url"
                        class="content-image cursor-pointer"
@@ -899,25 +899,58 @@ export default {
   margin-top: 20rpx;
   display: flex;
   flex-wrap: wrap;
-  gap: 10rpx;
+  gap: 5rpx;
+
+  /* 默认三列布局 (3,5,6,7,8,9 张) */
+  .grid-item {
+    flex: 1 1 32.5%;
+    max-width: 32.5%;
+    height: 220rpx;
+    box-sizing: border-box;
+  }
+
+  /* 单张图片占满宽度 */
+  .grid-item:only-child {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* 两张图片时各占 50% */
+  .grid-item:nth-child(1):nth-last-child(2),
+  .grid-item:nth-child(2):nth-last-child(1) {
+    flex: 0 0 49%;
+    max-width: 49%;
+  }
+
+  /* 四张图片时各占 50% */
+  .grid-item:nth-child(1):nth-last-child(4),
+  .grid-item:nth-child(2):nth-last-child(3),
+  .grid-item:nth-child(3):nth-last-child(2),
+  .grid-item:nth-child(4):nth-last-child(1) {
+    flex: 0 0 49%;
+    max-width: 49%;
+  }
 }
 
 .content-image {
-  width: 220rpx;
-  height: 220rpx;
+  width: 100%;
+  height: 100%;
   border-radius: 8rpx;
+  object-fit: cover;
 }
 
 .content-video {
-  width: 220rpx;
-  height: 220rpx;
+  width: 100%;
+  height: 100%;
   border-radius: 8rpx;
+  object-fit: cover;
 }
 
 .content-audio {
-  width: 220rpx;
-  height: 220rpx;
+  width: 100%;
+  height: 100%;
   border-radius: 8rpx;
+  object-fit: cover;
 }
 
 .rc-wave {
