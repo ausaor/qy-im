@@ -97,7 +97,7 @@
           <view class="interaction">
             <view style="display: flex; align-items: center; justify-content: space-between;">
               <view class="location">
-                <uni-icons  type="location" size="20" color="#87CEFA"/>
+                <uni-icons  type="location" size="20"/>
                 <text>{{item.address}}</text>
               </view>
               <view class="like-comment">
@@ -896,7 +896,6 @@ export default {
 }
 
 .image-grid {
-  margin-top: 20rpx;
   display: flex;
   flex-wrap: wrap;
   gap: 5rpx;
@@ -913,6 +912,7 @@ export default {
   .grid-item:only-child {
     flex: 0 0 100%;
     max-width: 100%;
+    height: 440rpx;
   }
 
   /* 两张图片时各占 50% */
@@ -1063,7 +1063,6 @@ export default {
 .location {
   display: flex;
   align-items: center;
-  color: #87CEFA;
 }
 
 .star-user {
