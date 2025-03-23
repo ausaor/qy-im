@@ -61,12 +61,14 @@
 			<btn-bar type="primary" title="发送消息" @tap="onSendMessage()"></btn-bar>
 			<btn-bar v-if="!isOwner" type="danger" title="退出群聊" @tap="onQuitGroup()"></btn-bar>
 			<btn-bar v-if="isOwner" type="danger" title="解散群聊" @tap="onDissolveGroup()"></btn-bar>
-			<btn-bar v-if="isOwner" type="primary" title="切换模板群聊" @tap="switchGroupType(1)"></btn-bar>
-			<btn-bar v-if="isOwner" type="primary" title="切换模板角色群聊" @tap="switchGroupType(4)"></btn-bar>
-			<btn-bar v-if="isOwner && group.groupType !== 2" type="primary" title="切换多元角色群聊" @tap="switchGroupType(2)"></btn-bar>
-			<btn-bar v-if="isOwner && group.groupType !== 3" type="primary" title="切换角色群聊" @tap="switchGroupType(3)"></btn-bar>
-			<btn-bar v-if="isOwner && group.groupType !== 0" type="primary" title="切换普通群聊" @tap="showSwitchCommonGroupPopup"></btn-bar>
 		</bar-group>
+    <view v-if="!group.quit && isOwner" class="group-types">
+      <view class="group-type-item" style="color: rgb(0,47,167)" @click="switchGroupType(1)">切换模板群聊</view>
+      <view class="group-type-item" style="color: rgb(176,89,35)" @click="switchGroupType(4)">切换模板角色群聊</view>
+      <view class="group-type-item" style="color: rgb(144,0,33)" v-if="group.groupType !== 3" @click="switchGroupType(3)">切换角色群聊</view>
+      <view class="group-type-item" style="color: rgb(105,149,114)" v-if="group.groupType !== 2" @click="switchGroupType(2)">切换多元角色群聊</view>
+      <view class="group-type-item" v-if="group.groupType !== 0" @click="showSwitchCommonGroupPopup">切换普通群聊</view>
+    </view>
     <group-member-list ref="groupMemberList" :members="groupMembers"></group-member-list>
     <group-template-list ref="groupTemplateList" :group-templates="templateGroupList" @confirm="chooseGroupTemplate"></group-template-list>
     <character-list ref="characterList" :characters="characters" @confirm="chooseCharacter"></character-list>
@@ -441,6 +443,22 @@ export default {
 			color: $im-text-color-lighter;
 		}
 	}
+
+  .group-types {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10rpx;
+    margin-bottom: 20rpx;
+
+    .group-type-item {
+      padding: 20rpx 20rpx;
+      background-color: white;
+      text-align: left;
+      color: #35567f;
+      font-size: 32rpx;
+      font-weight: 600;
+    }
+  }
 
 	.form {
 		margin-top: 20rpx;
