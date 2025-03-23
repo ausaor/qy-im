@@ -1,22 +1,30 @@
 <template>
 	<view class="login">
-		<view class="title">欢迎登录</view>
-		<uni-forms :modelValue="loginForm" :rules="rules" validate-trigger="bind">
-			<uni-forms-item name="userName">
-				<uni-easyinput type="text" v-model="loginForm.userName" prefix-icon="person" placeholder="用户名" />
-			</uni-forms-item>
-			<uni-forms-item name="password">
-				<uni-easyinput type="password" v-model="loginForm.password" prefix-icon="locked" placeholder="密码" />
-			</uni-forms-item>
-      <uni-forms-item name="code">
-        <uni-easyinput type="text" v-model="loginForm.code" placeholder="请输入验证码" />
-        <u-image :src="codeUrl" width="100px" height="35px" @click="getCode"></u-image>
-      </uni-forms-item>
-			<button class="btn-submit" @click="submit" type="primary">登录</button>
-		</uni-forms>
-		<navigator class="nav-register" url="/pages/register/register">
-			没有账号,前往注册
-		</navigator>
+    <view class="container">
+      <view class="title">{{title}}</view>
+      <uni-forms :modelValue="loginForm" :rules="rules" validate-trigger="bind">
+        <uni-forms-item name="userName">
+          <uni-easyinput type="text" v-model="loginForm.userName" prefix-icon="person" placeholder="用户名" />
+        </uni-forms-item>
+        <uni-forms-item name="password">
+          <uni-easyinput type="password" v-model="loginForm.password" prefix-icon="locked" placeholder="密码" />
+        </uni-forms-item>
+        <uni-forms-item name="code">
+          <view style="display: flex;align-items: center;">
+            <view style="width: 60%;">
+              <uni-easyinput type="text" v-model="loginForm.code" placeholder="请输入验证码" />
+            </view>
+            <view style="width: 40%;display: flex;justify-content: right;">
+              <u-image :src="codeUrl" width="100px" height="35px" @click="getCode"></u-image>
+            </view>
+          </view>
+        </uni-forms-item>
+        <button class="btn-submit" @click="submit" type="primary">登录</button>
+      </uni-forms>
+    </view>
+    <navigator class="nav-register" url="/pages/register/register">
+      没有账号,前往注册
+    </navigator>
 	</view>
 </template>
 
@@ -27,6 +35,7 @@ export default {
   components: {UImage},
 	data() {
 		return {
+      title: '青語',
       codeUrl: '',
 			loginForm: {
 				terminal: 1, // APP终端
@@ -88,6 +97,7 @@ export default {
 	},
 
 	onLoad() {
+    this.title = Math.floor(Math.random()*2) === 0 ? '輕語' : '青語';
     this.getCode();
 		this.loginForm.userName = uni.getStorageSync("userName");
 		this.loginForm.password = uni.getStorageSync("password");
@@ -97,31 +107,39 @@ export default {
 
 <style lang="scss">
 .login {
-	.title {
-		padding-top: 150rpx;
-		padding-bottom: 50rpx;
-		color: $im-color-primary;
-		text-align: center;
-		font-size: 24px;
-		font-weight: bold;
-	}
+  display: grid;
+  place-items: center; /* 同时水平+垂直居中 */
+  height: 100vh;
 
-	.uni-forms {
-		padding: 50rpx;
+  .container {
+    position: relative;
 
-		.btn-submit {
-			margin-top: 80rpx;
-			border-radius: 50rpx;
-		}
-	}
+    .title {
+      padding-bottom: 50rpx;
+      color: $im-color-primary;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 32rpx;
+    }
 
-	.nav-register {
-		position: fixed;
-		width: 100%;
-		bottom: 100rpx;
-		color: $im-color-primary;
-		text-align: center;
-		font-size: $im-font-size;
-	}
+    .uni-forms {
+      padding: 50rpx;
+
+      .btn-submit {
+        margin-top: 80rpx;
+        border-radius: 50rpx;
+      }
+    }
+  }
+
+  .nav-register {
+    position: fixed;
+    width: 100%;
+    bottom: 100rpx;
+    color: $im-color-primary;
+    text-align: center;
+    font-size: $im-font-size;
+  }
 }
 </style>

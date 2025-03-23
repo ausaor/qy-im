@@ -15,8 +15,14 @@
 				<uni-easyinput type="password" v-model="dataForm.corfirmPassword" placeholder="确认密码" />
 			</uni-forms-item>
       <uni-forms-item name="code" label="验证码">
-        <uni-easyinput type="text" v-model="dataForm.code" placeholder="请输入验证码" />
-        <u-image :src="codeUrl" width="100px" height="35px" @click="getCode"></u-image>
+        <view style="display: flex;align-items: center;">
+          <view style="width: 70%;">
+            <uni-easyinput type="text" v-model="dataForm.code" placeholder="请输入验证码" />
+          </view>
+          <view style="width: 30%;display: flex;justify-content: right;">
+            <u-image :src="codeUrl" width="100px" height="35px" @click="getCode"></u-image>
+          </view>
+        </view>
       </uni-forms-item>
 			<button class="btn-submit" @click="submit" type="primary">注册并登录</button>
 		</uni-forms>
