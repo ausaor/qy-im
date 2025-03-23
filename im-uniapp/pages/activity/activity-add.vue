@@ -44,9 +44,9 @@
         <view class="function-item cursor-pointer" @click="chooseEmoji">
           <uni-icons custom-prefix="iconfont" type="icon-icon_emoji" size="24" :color="showEmo ? '#07C160' : '#cccccc'"/>
         </view>
-        <view class="function-item cursor-pointer" @click="handleLocation">
+<!--        <view class="function-item cursor-pointer" @click="handleLocation">
           <uni-icons  type="location" size="24" color="#666"/>
-        </view>
+        </view>-->
       </view>
 
       <view >
@@ -108,7 +108,7 @@
       </view>
 
       <!-- 权限设置 -->
-      <view class="permission-section">
+      <view class="permission-section" v-show="category === 'private'">
         <radio-group class="permission-group" @change="handlePermissionChange">
           <label class="permission-item">
             <radio value="9" :checked="form.scope === 9" color="#07C160"/>
@@ -129,7 +129,7 @@
           </label>-->
         </radio-group>
       </view>
-      <view class="visible-range">
+      <view class="visible-range" v-show="category === 'private'">
         <view class="visible-range-item" style="border-bottom: 1px solid #eee;">
           <text style="margin-right: 20rpx;">群聊空间可见</text>
           <up-switch v-model="form.groupVisible" activeColor="#13ce66" inactiveColor="#ff4949"></up-switch>
@@ -169,6 +169,8 @@ export default {
   components: {CharacterList, GroupTemplateList, SvgIcon, HeadImage},
   data() {
     return {
+      category: '',
+      groupId: null,
       uploadProgress: 0,
       uploadingPopup: null,
       form: {
@@ -568,6 +570,7 @@ export default {
           console.log("this.uploadProgress", this.uploadProgress)
           this.uploadProgress = 100;
           console.log("form", this.form);
+          this.form.groupId = this.groupId;
 
           let url = "/talk"
           if (this.form.id != null) {
@@ -751,6 +754,10 @@ export default {
   },
   onLoad(options) {
     this.form.category = options.category;
+    this.category = options.category;
+    if (options.groupId) {
+      this.groupId = options.groupId;
+    }
     if (options.talkId) {
       this.getTalkDetail(options.talkId);
     } else {

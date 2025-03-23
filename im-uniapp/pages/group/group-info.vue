@@ -24,6 +24,9 @@
         <view class="view-btn" v-if="group.groupType!==0" @click="switchCharacterAvatar">
           <uni-icons type="person" size="20" color="#888888"></uni-icons>
         </view>
+        <view class="view-btn" @click="toGroupSpace">
+          <svg-icon icon-class="shejiaotubiao-40" style="width: 86rpx;height: 86rpx;"></svg-icon>
+        </view>
 			</view>
 			<view class="member-more" @click="onShowMoreMmeber()">{{ `查看全部群成员${groupMembers.length}人` }}></view>
 		</view>
@@ -98,9 +101,10 @@ import GroupTemplateList from "../../components/group-template-list/group-templa
 import GroupMemberList from "../../components/group-member-list/group-member-list.vue";
 import CharacterList from "../../components/character-list/character-list.vue";
 import CharacterAvatarList from "../../components/character-avatar-list/character-avatar-list.vue";
+import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 
 export default {
-  components: {CharacterAvatarList, CharacterList, GroupMemberList, GroupTemplateList},
+  components: {SvgIcon, CharacterAvatarList, CharacterList, GroupMemberList, GroupTemplateList},
 	data() {
 		return {
 			groupId: null,
@@ -130,6 +134,11 @@ export default {
 				url: `/pages/group/group-edit?id=${this.groupId}`
 			})
 		},
+    toGroupSpace() {
+      uni.navigateTo({
+        url: `/pages/activity/activity-space?category=group&section=group&groupId=${this.groupId}`
+      })
+    },
 		onSendMessage() {
 			let chat = {
 				type: 'GROUP',

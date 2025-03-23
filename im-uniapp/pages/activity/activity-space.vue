@@ -325,15 +325,23 @@ export default {
       //     console.log(res.tempFilePaths);
       //   }
       // });
+      let url = `/pages/activity/activity-add?category=${this.category}`;
+      if (this.groupId) {
+        url += `&groupId=${this.groupId}`;
+      }
       uni.navigateTo({
-        url: `/pages/activity/activity-add?category=${this.category}`
+        url: url
       })
     },
     doEditTalk() {
       let talkId = this.curTalk.id;
       this.$refs.talkSetPopup.close();
+      let url = `/pages/activity/activity-add?category=${this.category}&talkId=${talkId}`;
+      if (this.groupId) {
+        url += `&groupId=${this.groupId}`;
+      }
       uni.navigateTo({
-        url: `/pages/activity/activity-add?category=${this.category}&talkId=${talkId}`
+        url: url
       })
     },
     previewImage(images, current) {
@@ -721,6 +729,9 @@ export default {
     console.log(options.section)
     this.category = options.category;
     this.section = options.section;
+    if (options.groupId) {
+      this.groupId = options.groupId;
+    }
     this.pageQueryTalkList();
   },
   onHide() {
