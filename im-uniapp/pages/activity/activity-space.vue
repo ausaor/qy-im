@@ -4,7 +4,7 @@
     <!-- 顶部导航栏 -->
     <view class="top-nav-bar" :style="{ backgroundColor: headerBgColor }">
       <uni-icons class="back-icon cursor-pointer" type="back" size="24" :color="headerColor" @click="goBack"/>
-      <text :style="{opacity: fontOpacity}">空间动态</text>
+      <text :style="{opacity: fontOpacity}">{{spaceTitle}}</text>
       <uni-icons class="camera-icon cursor-pointer" type="camera" size="24" :color="headerColor" @click="openCamera"/>
     </view>
 
@@ -207,6 +207,7 @@ export default {
   components: {CharacterList, GroupTemplateList, SvgIcon, HeadImage},
   data() {
     return {
+      spaceTitle: '空间动态',
       headerBgColor: 'rgba(239, 244, 255, 0)', // 初始透明
       headerColor: '#ffffff',
       fontOpacity: 0,
@@ -731,6 +732,9 @@ export default {
     this.section = options.section;
     if (options.groupId) {
       this.groupId = options.groupId;
+    }
+    if (options.spaceTitle) {
+      this.spaceTitle = options.spaceTitle;
     }
     this.pageQueryTalkList();
   },

@@ -136,7 +136,7 @@ export default {
 		},
     toGroupSpace() {
       uni.navigateTo({
-        url: `/pages/activity/activity-space?category=group&section=group&groupId=${this.groupId}`
+        url: `/pages/activity/activity-space?category=group&section=group&groupId=${this.groupId}&spaceTitle=群空间动态`
       })
     },
 		onSendMessage() {
