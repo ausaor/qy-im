@@ -3,9 +3,11 @@
   <view class="page-box">
     <!-- 顶部导航栏 -->
     <view class="top-nav-bar" :style="{ backgroundColor: headerBgColor }">
-      <uni-icons class="back-icon cursor-pointer" type="back" size="24" :color="headerColor" @click="goBack"/>
-      <text :style="{opacity: fontOpacity}">{{spaceTitle}}</text>
-      <uni-icons class="camera-icon cursor-pointer" type="camera" size="24" :color="headerColor" @click="openCamera"/>
+      <uni-icons class="back-icon cursor-pointer item-left" type="back" size="24" :color="headerColor" @click="goBack"/>
+      <text class="item-center" :style="{opacity: fontOpacity}">{{spaceTitle}}</text>
+      <view class="item-right">
+        <uni-icons v-show="showAdd" class="camera-icon cursor-pointer" type="camera" size="24" :color="headerColor" @click="openCamera"/>
+      </view>
     </view>
 
     <!-- 内容区域 -->
@@ -207,6 +209,7 @@ export default {
   components: {CharacterList, GroupTemplateList, SvgIcon, HeadImage},
   data() {
     return {
+      showAdd: true,
       spaceTitle: '空间动态',
       headerBgColor: 'rgba(239, 244, 255, 0)', // 初始透明
       headerColor: '#ffffff',
@@ -730,8 +733,14 @@ export default {
     console.log(options.section)
     this.category = options.category;
     this.section = options.section;
+    if (this.section === 'friend') {
+      this.showAdd = false;
+    }
     if (options.groupId) {
       this.groupId = options.groupId;
+    }
+    if (options.friendId) {
+      this.friendId = options.friendId;
     }
     if (options.spaceTitle) {
       this.spaceTitle = options.spaceTitle;

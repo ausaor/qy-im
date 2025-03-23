@@ -41,11 +41,20 @@
 			<btn-bar v-show="!isFriend" type="primary" title="加为好友" @tap="onAddFriend()"></btn-bar>
 			<btn-bar v-show="isFriend" type="danger" title="删除好友" @tap="onDelFriend()"></btn-bar>
 		</bar-group>
+    <view class="user-space">
+      <view class="activity-space" @click="toFriendSpace">
+        <svg-icon icon-class="shejiaotubiao-40" style="width: 60rpx;height: 60rpx;"></svg-icon>
+        <text class="label">好友空间</text>
+      </view>
+    </view>
 	</view>
 </template>
 
 <script>
+import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+
 export default {
+  components: {SvgIcon},
 	data() {
 		return {
 			userInfo: {}
@@ -140,7 +149,12 @@ export default {
 					this.updateFriendInfo()
 				}
 			})
-		}
+		},
+    toFriendSpace() {
+      uni.navigateTo({
+        url: `/pages/activity/activity-space?category=private&section=friend&friendId=${this.userInfo.id}&spaceTitle=好友空间`
+      })
+    }
 	},
 	computed: {
 		isFriend() {
@@ -214,5 +228,23 @@ export default {
 		}
 	}
 
+  .user-space {
+    width: 100%;
+    padding: 10rpx 20rpx;
+    background-color: white;
+
+    .activity-space {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10rpx;
+
+      .label {
+        color: #35567f;
+        font-size: 32rpx;
+        font-weight: 600;
+      }
+    }
+  }
 }
 </style>
