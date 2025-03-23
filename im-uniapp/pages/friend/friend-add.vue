@@ -16,7 +16,7 @@
 						<view class="user-info">
 							<view class="user-name">
 								<view>{{ user.userName }}</view>
-								<uni-tag v-if="user.status == 1" circle type="error" text="已注销" size="small"></uni-tag>
+<!--								<uni-tag v-if="user.status == 1" circle type="error" text="已注销" size="small"></uni-tag>-->
 							</view>
 							<view class="nick-name">{{ `昵称:${user.nickName}`}}</view>
 						</view>
