@@ -93,6 +93,10 @@
           <view class="tool-icon iconfont icon-minganci"></view>
           <view class="tool-name">角色台词</view>
         </view>
+        <view v-if="chat.type == 'GROUP' && myGroupMemberInfo.isTemplate" class="chat-tools-item" @click="onShowCharacterEmo()">
+          <view class="tool-icon iconfont icon-biaoqing"></view>
+          <view class="tool-name">角色表情</view>
+        </view>
 				<!-- #endif -->
 			</view>
 			<scroll-view v-if="chatTabBox === 'emo'" class="chat-emotion" scroll-y="true"
@@ -103,6 +107,21 @@
 						lazy-load="true"></image>
 				</view>
 			</scroll-view>
+      <scroll-view v-if="chatTabBox === 'characterEmo'" class="character-emotion" scroll-y="true"
+				:style="{height: keyboardHeight+'px'}">
+        <swiper class="emo-swiper" :indicator-dots="true">
+          <swiper-item v-if="characterEmos.group.length !== 0" class="emo-swiper-item">
+            <image class="emotion-item" :src="emo.url"
+                   v-for="(emo, i) in characterEmos.group" :key="i" @click="selectCharacterEmoji(emo)" mode="aspectFit"
+                   lazy-load="true"></image>
+          </swiper-item>
+          <swiper-item v-if="characterEmos.character.length !== 0" class="emo-swiper-item">
+            <image class="emotion-item" :src="emo.url"
+                   v-for="(emo, i) in characterEmos.character" :key="i" @click="selectCharacterEmoji(emo)" mode="aspectFit"
+                   lazy-load="true"></image>
+          </swiper-item>
+        </swiper>
+      </scroll-view>
 		</view>
 		<!-- @用户时选择成员 -->
 		<chat-at-box ref="atBox" :ownerId="group.ownerId" :members="groupMembers"
@@ -151,6 +170,10 @@ export default {
 			isReadOnly: false, // 编辑器是否只读
 			playingAudio: null, // 当前正在播放的录音消息
       words: {
+        group: [],
+        character: []
+      },
+      characterEmos: {
         group: [],
         character: []
       },
@@ -917,11 +940,33 @@ export default {
 			return String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
 		},
     onCharacterWord() {
-      this.switchChatTabBox('none');
       this.queryCharacterWord(this.myGroupMemberInfo.templateCharacterId).then((data) => {
-        this.words.group = data.group;
-        this.words.character = data.character;
-        this.$refs.characterWordList.open();
+        if (data.group.length === 0 && data.character.length === 0) {
+          uni.showToast({
+            title: "该角色未配置语音台词",
+            icon: "none"
+          })
+        } else {
+          this.switchChatTabBox('none');
+          this.words.group = data.group;
+          this.words.character = data.character;
+          this.$refs.characterWordList.open();
+        }
+      })
+    },
+    onShowCharacterEmo() {
+      this.queryCharacterEmo(this.myGroupMemberInfo.templateCharacterId).then((data) => {
+        if (data.group.length === 0 && data.character.length === 0) {
+          uni.showToast({
+            title: "该角色未配置表情包",
+            icon: "none"
+          })
+        } else {
+          this.characterEmos.group = data.group;
+          this.characterEmos.character = data.character;
+          this.showRecord = false;
+          this.switchChatTabBox('characterEmo')
+        }
       })
     },
     queryCharacterWord(characterId) {
@@ -934,6 +979,53 @@ export default {
         })
       });
     },
+    queryCharacterEmo(characterId) {
+      return new Promise((resolve, reject) => {
+        this.$http({
+          url: `/character/emo/publishedEmo?characterId=${characterId}`,
+          method: "get",
+        }).then((data) => {
+          resolve(data)
+        })
+      });
+    },
+    selectCharacterEmoji(emo) {
+      let content = {
+        id: emo.id,
+        templateGroupId: emo.templateGroupId,
+        characterId: emo.characterId,
+        characterName: emo.characterName,
+        name: emo.name,
+        originUrl: emo.url
+      }
+      let msgInfo = {
+        sendId: this.mine.id,
+        content: JSON.stringify(content),
+        sendTime: new Date().getTime(),
+        selfSend: true,
+        type: this.$enums.MESSAGE_TYPE.IMAGE,
+        readedCount: 0,
+        loadStatus: "loading",
+        receipt: this.isReceipt,
+        status: this.$enums.MESSAGE_STATUS.UNSEND
+      }
+
+      // 填充对方id
+      this.fillTargetId(msgInfo, this.chat.targetId);
+
+      this.sendMessageRequest(msgInfo).then((m) => {
+        msgInfo.loadStatus = 'ok';
+        msgInfo.id = m.id;
+        this.isReceipt = false;
+        this.chatStore.insertMessage(msgInfo, this.chat);
+      })
+
+      // 会话置顶
+      this.moveChatToTop();
+
+      // 滚到最低部
+      this.scrollToBottom();
+    }
 	},
 	computed: {
 		mine() {
@@ -1247,6 +1339,38 @@ export default {
 				}
 			}
 		}
+
+    .character-emotion {
+      height: 310px;
+      width: 100%;
+      padding: 10rpx;
+      box-sizing: border-box;
+
+      .emo-swiper {
+        height: 310rpx;
+        width: 100vw;
+
+        .emo-swiper-item {
+          height: 310rpx;
+          width: 100vw;
+
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          grid-auto-rows: 90rpx; /* 强制统一行高 */
+          gap: 10rpx;
+
+          .emotion-item {
+            width: 90rpx;
+            height: 90rpx;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1; /* 宽高比 1:1 */
+            object-fit: cover; /* 图片裁剪填充 */
+          }
+        }
+      }
+    }
 
 	}
 }

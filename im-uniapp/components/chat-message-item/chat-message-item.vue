@@ -35,7 +35,7 @@
 					<view class="chat-msg-image" v-if="msgInfo.type == $enums.MESSAGE_TYPE.IMAGE">
 						<long-press-menu :items="menuItems" @select="onSelectMenu">
 							<view class="img-load-box">
-								<image class="send-image" mode="heightFix" :src="JSON.parse(msgInfo.content).thumbUrl"
+								<image class="send-image" mode="heightFix" :src="JSON.parse(msgInfo.content).originUrl"
 									lazy-load="true" @click.stop="onShowFullImage()">
 								</image>
 								<loading v-if="loading"></loading>
@@ -86,12 +86,12 @@
 							<text>{{ msgInfo.content }}</text>
 						</view>
 					</long-press-menu>
-					<view class="chat-msg-status" v-if="!isAction">
+<!--					<view class="chat-msg-status" v-if="!isAction">
 						<text class="chat-readed" v-if="msgInfo.selfSend && !msgInfo.groupId
 							&& msgInfo.status == $enums.MESSAGE_STATUS.READED">已读</text>
 						<text class="chat-unread" v-if="msgInfo.selfSend && !msgInfo.groupId
 							&& msgInfo.status != $enums.MESSAGE_STATUS.READED">未读</text>
-					</view>
+					</view>-->
 					<view class="chat-receipt" v-if="msgInfo.receipt" @click="onShowReadedBox">
 						<text v-if="msgInfo.receiptOk" class="tool-icon iconfont icon-ok"></text>
 						<text v-else>{{ msgInfo.readedCount }}人已读</text>

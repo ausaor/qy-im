@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4843012 */
-  src: url('iconfont.woff2?t=1741510445611') format('woff2'),
-       url('iconfont.woff?t=1741510445611') format('woff'),
-       url('iconfont.ttf?t=1741510445611') format('truetype');
+  src: url('iconfont.woff2?t=1742712855986') format('woff2'),
+       url('iconfont.woff?t=1742712855986') format('woff'),
+       url('iconfont.ttf?t=1742712855986') format('truetype');
 }
 
 .iconfont {
@@ -31,6 +31,10 @@
 
 .icon-xitongxiaoxi:before {
   content: "\e647";
+}
+
+.icon-biaoqing:before {
+  content: "\e60e";
 }
 
 .icon-minganci:before {
