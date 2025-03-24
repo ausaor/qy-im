@@ -24,6 +24,9 @@
 							<head-image :name="m.aliasName" :online="m.online" :url="m.headImage"
 								size="small"></head-image>
 							<view class="member-name">{{ m.aliasName }}</view>
+							<view class="nick-name" v-if="m.isTemplate">{{ m.nickName }}</view>
+              <head-image v-if="m.isTemplate" :name="m.nickName" :url="m.userAvatar"
+                          size="small"></head-image>
 							<!--							<view class="member-checked">-->
 							<!--								<radio :checked="m.checked" @click.stop="onSwitchChecked(m)" />-->
 							<!--							</view>-->
@@ -168,6 +171,14 @@ export default {
 				white-space: nowrap;
 				overflow: hidden;
 			}
+
+      .nick-name {
+        margin-right: 20rpx;
+        font-size: $im-font-size;
+        line-height: 60rpx;
+        white-space: nowrap;
+        overflow: hidden;
+      }
 		}
 
 		.scroll-bar {
