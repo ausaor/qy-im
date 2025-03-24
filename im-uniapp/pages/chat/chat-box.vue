@@ -1,6 +1,6 @@
 <template>
 	<view class="page chat-box">
-		<nav-bar back more @more="onShowMore">{{ title }}</nav-bar>
+		<nav-bar back more :refresh="chat.type === 'GROUP'" @more="onShowMore" @refresh="refreshChat">{{ title }}</nav-bar>
 		<view class="chat-main-box" :style="{height: chatMainHeight+'px'}">
 			<view class="chat-msg" @click="switchChatTabBox('none')">
 				<scroll-view class="scroll-box" scroll-y="true" upper-threshold="200" @scrolltoupper="onScrollToTop"
@@ -1025,6 +1025,9 @@ export default {
 
       // 滚到最低部
       this.scrollToBottom();
+    },
+    refreshChat() {
+      this.loadGroup(this.chat.targetId)
     }
 	},
 	computed: {

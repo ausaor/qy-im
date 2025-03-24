@@ -13,6 +13,8 @@
       <view class="btn">
         <uni-icons class="btn-item" v-if="search" type="search" :size="iconFontSize"
           @click="$emit('search')"></uni-icons>
+        <uni-icons class="btn-item" v-if="refresh" type="refresh" :size="iconFontSize"
+                   @click="$emit('refresh')"></uni-icons>
         <uni-icons class="btn-item" v-if="add" type="plusempty" :size="iconFontSize" @click="$emit('add')"></uni-icons>
         <uni-icons class="btn-item" v-if="more" type="more-filled" :size="iconFontSize"
           @click="$emit('more')"></uni-icons>
@@ -42,6 +44,10 @@ export default {
       default: false
     },
     more: {
+      type: Boolean,
+      default: false
+    },
+    refresh: {
       type: Boolean,
       default: false
     },
