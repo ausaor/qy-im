@@ -14,6 +14,8 @@
 				<view v-if="msgInfo.groupId && !msgInfo.selfSend" class="chat-msg-top">
 					<text :style="nameColorStyle">{{ showInfo.showName }}</text>
           <text v-show="myGroupMemberInfo.showNickName" style="margin-left: 20rpx;">{{showInfo.nickName}}</text>
+          <text v-if="isOwner && msgInfo.groupId" style="margin-left: 20rpx;" class="group-owner">群主</text>
+          <text v-if="msgInfo.sendId===1" style="margin-left: 20rpx;" class="blogger">博主</text>
 				</view>
 				<view class="chat-msg-bottom">
 					<view v-if="msgInfo.type == $enums.MESSAGE_TYPE.TEXT">
@@ -134,6 +136,10 @@ export default {
         return {}
       }
     },
+    isOwner: {
+      type: Boolean,
+      default: false
+    }
 	},
 	data() {
 		return {
@@ -337,6 +343,28 @@ export default {
 				font-size: $im-font-size-smaller;
 				line-height: $im-font-size-smaller;
 				height: $im-font-size-smaller;
+
+        .group-owner {
+          background-color: orange;
+          color: white;
+          font-size: 14rpx;
+          font-weight: 500;
+          padding: 5rpx 12rpx;
+          display: flex;
+          align-items: center;
+          border-radius: 16rpx;
+        }
+
+        .blogger {
+          background-color: #1E90FF;
+          color: white;
+          font-size: 14rpx;
+          font-weight: 500;
+          padding: 5rpx 12rpx;
+          display: flex;
+          align-items: center;
+          border-radius: 16rpx;
+        }
 			}
 
 			.chat-msg-bottom {

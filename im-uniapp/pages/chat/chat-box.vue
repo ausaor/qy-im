@@ -11,7 +11,7 @@
 							@recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
 							@longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
 							@audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
-							:groupMembers="groupMembers" :myGroupMemberInfo="myGroupMemberInfo">
+							:groupMembers="groupMembers" :myGroupMemberInfo="myGroupMemberInfo" :isOwner="group.ownerId === msgInfo.sendId">
 						</chat-message-item>
 					</view>
 				</scroll-view>
