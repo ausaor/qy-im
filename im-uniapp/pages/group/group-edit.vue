@@ -25,25 +25,21 @@
 			</view>
       <view v-if="!isEdit && groupType!==0" class="form-item">
         <view class="label">群聊模板</view>
-        <uni-data-select
-            :localdata="range"
-            v-mode="group.templateGroupId"
-            @change="change"
-            :clear="false"
-        />
+        <view class="form-value">
+          <text style="color: #3c9cff;" @click="openTemplateListPopup">选择</text>
+          <head-image class="template-image" :name="group.templateGroupName" :url="group.templateGroupAvatar"
+                      :size="50"></head-image>
+        </view>
       </view>
       <view v-if="!isEdit && groupType!==0" class="form-item">
         <view class="label" style="display: flex;align-items: center;">
           <text>模板角色</text>
-          <head-image class="character-image" :name="group.templateCharacterName" :url="group.templateCharacterAvatar" :size="50"></head-image>
         </view>
-        <uni-data-select
-            :localdata="characterRange"
-            ref="dataSelectRef"
-            v-mode="group.templateCharacterId"
-            @change="characterChange"
-            :clear="false"
-        />
+        <view class="form-value">
+          <text style="color: #e6a64c;" @click="openCharacterListPopup">选择</text>
+          <head-image class="template-image" :name="group.templateCharacterName" :url="group.templateCharacterAvatar"
+                      :size="50"></head-image>
+        </view>
       </view>
       <view class="form-item" v-if="groupType!==0">
         <view class="label">昵称前缀</view>
@@ -71,11 +67,17 @@
 			</view>
 		</view>	
 		<button class="bottom-btn" type="primary" @click="submit()">提交</button>
+    <group-template-list ref="groupTemplateList" :group-templates="groupTemplates" @confirm="chooseGroupTemplate"></group-template-list>
+    <character-list ref="characterList" :characters="characters" @confirm="chooseTemplateCharacter"></character-list>
 	</view>
 </template>
 
 <script>
+import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
+import CharacterList from "../../components/character-list/character-list.vue";
+
 export default {
+  components: {CharacterList, GroupTemplateList},
 	data() {
 		return {
 			group: {
@@ -269,7 +271,34 @@ export default {
         // 假设组件有一个 clear 方法用于清除选中值
         this.$refs.dataSelectRef.clear();
       }
-    }
+    },
+    chooseGroupTemplate(groupTemplate) {
+      this.group.templateGroupId = groupTemplate.id;
+      if (this.groupType === 1 || this.groupType === 4) {
+        this.group.name = groupTemplate.groupName;
+        this.group.remark = groupTemplate.groupName;
+        this.group.headImage = groupTemplate.avatar;
+      }
+      this.group.templateGroupName = groupTemplate.groupName;
+      this.group.templateGroupAvatar = groupTemplate.avatar;
+
+      this.group.templateCharacterId = null;
+      this.group.templateCharacterAvatar = null;
+      this.group.templateCharacterName = null;
+      this.loadTemplateCharacters(groupTemplate.id);
+    },
+    openTemplateListPopup() {
+      this.$refs.groupTemplateList.open();
+    },
+    chooseTemplateCharacter(character) {
+      this.group.templateCharacterId = character.id;
+      this.group.templateCharacterAvatar = character.avatar;
+      this.group.templateCharacterName = character.name;
+      this.group.aliasName = character.name;
+    },
+    openCharacterListPopup() {
+      this.$refs.characterList.open();
+    },
 	},
 	computed: {
 		isOwner() {
@@ -319,7 +348,20 @@ export default {
 			
 			.value{
 				flex: 1;
+
+
 			}
+
+      .form-value {
+        display: flex;
+        align-items: center;
+
+        .template-image {
+          border-radius: 50%;
+          border: 1px solid #ccc;
+          margin-left: 20rpx;
+        }
+      }
 			
 			.input {
 				flex: 1;
