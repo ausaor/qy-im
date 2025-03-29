@@ -11,6 +11,7 @@
         <slot></slot>
       </view>
       <view class="btn">
+        <uni-icons type="home" @click="goHomePage" v-if="home" :size="iconFontSize"></uni-icons>
         <uni-icons class="btn-item" v-if="search" type="search" :size="iconFontSize"
           @click="$emit('search')"></uni-icons>
         <uni-icons class="btn-item" v-if="refresh" type="refresh" :size="iconFontSize"
@@ -27,6 +28,10 @@
 export default {
   name: "nav-bar",
   props: {
+    home: {
+      type: Boolean,
+      default: false
+    },
     back: {
       type: Boolean,
       default: false
@@ -68,6 +73,11 @@ export default {
     handleBackClick() {
       uni.navigateBack({
         delta: 1
+      })
+    },
+    goHomePage() {
+      uni.reLaunch({
+        url: '/pages/chat/chat'
       })
     }
   }
