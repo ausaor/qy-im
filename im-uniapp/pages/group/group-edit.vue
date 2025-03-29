@@ -230,7 +230,7 @@ export default {
       this.characters = [];
       this.characterRange = [];
       this.$http({
-        url: `templateCharacter/list-published/${groupTemplateId}`,
+        url: `/templateCharacter/list-published/${groupTemplateId}`,
         method: 'GET',
       }).then((list) => {
         this.characters = list;
