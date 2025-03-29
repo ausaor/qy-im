@@ -12,6 +12,13 @@
 						</view>
 					</view>
 				</view>
+        <view class="upload-btn" v-if="group.groupType===0">
+          <image-upload :onSuccess="onUploadMemberAvatarSuccess" class="upload-image">
+            <image v-if="myGroupMemberInfo.headImage" :src="myGroupMemberInfo.headImage" class="head-image"></image>
+            <uni-icons v-else type="cloud-upload" size="40" color="#888888"></uni-icons>
+          </image-upload>
+          <text style="font-size: 26rpx;">上传</text>
+        </view>
 				<view class="invite-btn" @click="onInviteMember()">
 					<uni-icons type="plusempty" size="20" color="#888888"></uni-icons>
 				</view>
@@ -79,7 +86,7 @@
           <view class="label">群聊头像</view>
           <view class="value">
             <image-upload :onSuccess="onUnloadImageSuccess">
-              <image :src="group.headImage" class="group-image"></image>
+              <image v-if="myGroupMemberInfo.headImage" :src="group.headImage" class="group-image"></image>
             </image-upload>
           </view>
         </view>
@@ -112,6 +119,7 @@ export default {
 			groupId: null,
 			group: {},
 			groupMembers: [],
+      myGroupMemberInfo: {},
       showSwitchCommonGroup: false,
       templateGroupList: [],
       characters: [],
@@ -233,6 +241,7 @@ export default {
 				method: "GET"
 			}).then((members) => {
 				this.groupMembers = members.filter(m => !m.quit);
+        this.myGroupMemberInfo = this.groupMembers.find((m) => m.userId === this.mine.id);
 			})
 		},
     viewGroupMemberInfo() {
@@ -270,6 +279,11 @@ export default {
     onUnloadImageSuccess(file, res) {
       this.group.headImage = res.data.originUrl;
       this.group.headImage = res.data.thumbUrl;
+    },
+    onUploadMemberAvatarSuccess(file, res) {
+      this.myGroupMemberInfo.headImage = res.data.originUrl;
+      this.group.memberHeadImage = res.data.originUrl;
+      this.modifyGroup(this.group);
     },
     async switchCharacter() {
       if (this.group.groupType === 1 || this.group.groupType === 4) {
@@ -360,6 +374,15 @@ export default {
       }).finally(() =>{
 
       })
+    },
+    modifyGroup(data) {
+      this.$http({
+        url: "/group/modify",
+        method: "put",
+        data: data
+      }).then((group) => {
+        this.groupStore.updateGroup(group);
+      })
     }
 	},
 	computed: {
@@ -369,7 +392,10 @@ export default {
 		},
 		isOwner() {
 			return this.group.ownerId == this.userStore.userInfo.id;
-		}
+		},
+    mine() {
+      return this.userStore.userInfo;
+    },
 	},
 	onLoad(options) {
 		this.groupId = options.id;
@@ -390,6 +416,7 @@ export default {
 
 		.member-items {
 			display: flex;
+      align-items: center;
 			flex-wrap: wrap;
 
 			.member-item {
@@ -433,6 +460,32 @@ export default {
         margin: 10rpx;
         border: $im-border solid 2rpx;
         border-radius: 10%;
+      }
+
+      .upload-btn {
+        width: 120rpx;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        align-items: center;
+        white-space: nowrap;
+
+        .upload-image {
+          width: 86rpx;
+          height: 86rpx;
+          border: $im-border solid 2rpx;
+          border-radius: 50%;
+
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          .head-image {
+            width: 86rpx;
+            height: 86rpx;
+            border-radius: 50%;
+          }
+        }
       }
 		}
 
