@@ -158,6 +158,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
      **/
     @CacheEvict(key = "#vo.getId()")
     @Transactional(rollbackFor = Exception.class)
+    @Lock(prefix = "im:group:member:modify", key = "#vo.getId()")
     @Override
     public GroupVO modifyGroup(GroupVO vo) {
         UserSession session = SessionContext.getSession();

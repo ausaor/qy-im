@@ -20,11 +20,14 @@
           </view>
         </uni-forms-item>
         <button class="btn-submit" @click="submit" type="primary">登录</button>
+        <view class="register-link">
+          <text>没有账号，</text>
+          <navigator class="link-text" url="/pages/register/register">
+            前往注册
+          </navigator>
+        </view>
       </uni-forms>
     </view>
-    <navigator class="nav-register" url="/pages/register/register">
-      没有账号,前往注册
-    </navigator>
 	</view>
 </template>
 
@@ -110,16 +113,23 @@ export default {
   display: grid;
   place-items: center; /* 同时水平+垂直居中 */
   height: 100vh;
+  background: linear-gradient(180deg, #E8F5FF 0%, #F8FBFF 100%);
 
   .container {
+    width: 100%;
+    max-width: 600rpx;
     position: relative;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20rpx;
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+    padding: 40rpx 10px;
 
     .title {
       padding-bottom: 50rpx;
-      color: $im-color-primary;
+      color: #2b85e4;
       text-align: center;
-      font-size: 24px;
-      font-weight: bold;
+      font-size: 60rpx;
+      font-weight: 600;
       letter-spacing: 32rpx;
     }
 
@@ -129,17 +139,23 @@ export default {
       .btn-submit {
         margin-top: 80rpx;
         border-radius: 50rpx;
+        background: linear-gradient(135deg, #2B85E4 0%, #1A6FD6 100%);
+      }
+
+      .register-link {
+        display: flex;
+        justify-content: center;
+        margin-top: 30rpx;
+        text-align: center;
+        font-size: 28rpx;
+        color: #666;
+
+        .link-text {
+          color: #2B85E4;
+          margin: 0 4rpx;
+        }
       }
     }
-  }
-
-  .nav-register {
-    position: fixed;
-    width: 100%;
-    bottom: 100rpx;
-    color: $im-color-primary;
-    text-align: center;
-    font-size: $im-font-size;
   }
 }
 </style>
