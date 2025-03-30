@@ -60,13 +60,12 @@
 					</image-upload>
 					<view class="tool-name">相册</view>
 				</view>
-				<view class="chat-tools-item">
-					<image-upload sourceType="camera" :onBefore="onUploadImageBefore" :onSuccess="onUploadImageSuccess"
-						:onError="onUploadImageFail">
-						<view class="tool-icon iconfont icon-camera"></view>
-					</image-upload>
-					<view class="tool-name">拍摄</view>
-				</view>
+        <view class="chat-tools-item">
+          <video-upload sourceType="album" :onBefore="onUploadVideoBefore" :onSuccess="onUploadVideoSuccess" :onError="onUploadVideoFail">
+            <view class="tool-icon iconfont icon-film"></view>
+          </video-upload>
+          <view class="tool-name">视频</view>
+        </view>
 				<view class="chat-tools-item" @click="onRecorderInput()">
 					<view class="tool-icon iconfont icon-microphone"></view>
 					<view class="tool-name">语音消息</view>
@@ -138,9 +137,11 @@
 <script>
 import UNI_APP from '@/.env.js';
 import characterWordList from "../../components/character-word-list/character-word-list.vue";
+import VideoUpload from "../../components/video-upload/video-upload.vue";
 
 export default {
   components: {
+    VideoUpload,
     characterWordList
   },
 	data() {
@@ -504,6 +505,56 @@ export default {
 				});
 			})
 		},
+    onUploadVideoBefore(file) {
+      // 检查是否被封禁
+      if (this.isBanned) {
+        this.showBannedTip();
+        return;
+      }
+      let data = {
+        videoUrl: file.tempFilePath,
+      }
+      let msgInfo = {
+        id: 0,
+        tmpId: this.generateId(),
+        fileId: file.uid,
+        sendId: this.mine.id,
+        content: JSON.stringify(data),
+        sendTime: new Date().getTime(),
+        selfSend: true,
+        type: this.$enums.MESSAGE_TYPE.VIDEO,
+        readedCount: 0,
+        loadStatus: "loading",
+        status: this.$enums.MESSAGE_STATUS.UNSEND
+      }
+      // 填充对方id
+      this.fillTargetId(msgInfo, this.chat.targetId);
+      // 插入消息
+      this.chatStore.insertMessage(msgInfo, this.chat);
+      // 会话置顶
+      this.moveChatToTop();
+      // 借助file对象保存
+      file.msgInfo = msgInfo;
+      // 滚到最低部
+      this.scrollToBottom();
+      return true;
+    },
+    onUploadVideoSuccess(file, res) {
+      let msgInfo = JSON.parse(JSON.stringify(file.msgInfo));
+      msgInfo.content = JSON.stringify(res.data);
+      msgInfo.receipt = this.isReceipt
+      this.sendMessageRequest(msgInfo).then((m) => {
+        msgInfo.loadStatus = 'ok';
+        msgInfo.id = m.id;
+        this.isReceipt = false;
+        this.chatStore.insertMessage(msgInfo, this.chat);
+      })
+    },
+    onUploadVideoFail(file, err) {
+      let msgInfo = JSON.parse(JSON.stringify(file.msgInfo));
+      msgInfo.loadStatus = 'fail';
+      this.chatStore.insertMessage(msgInfo, this.chat);
+    },
 		onUploadImageBefore(file) {
 			// 检查是否被封禁
 			if (this.isBanned) {
