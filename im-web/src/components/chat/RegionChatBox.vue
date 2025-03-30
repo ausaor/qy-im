@@ -807,7 +807,7 @@ export default {
 .chat-box {
   position: relative;
   width: 100%;
-  background: #f8f8f8;
+  background: #fff;
   border: var(--border-color) solid 1px;
 
   .region-group-name {
@@ -820,7 +820,7 @@ export default {
     line-height: 50px;
     font-size: 20px;
     font-weight: 600;
-    border: var(--border-color) solid 1px;
+    border-bottom: 1px solid #EBEEF5;
 
     .btn-side {
       position: absolute;

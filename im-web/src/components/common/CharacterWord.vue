@@ -97,7 +97,7 @@ export default {
       return this.pos.x - 200;
     },
     y() {
-      return this.pos.y - 280;
+      return this.pos.y - 260;
     }
   }
 }
@@ -108,10 +108,9 @@ export default {
   position: fixed;
   width: 300px;
   box-sizing: border-box;
-  border: 1px solid #b4b4b4;
   border-radius: 5px;
   background-color: white;
-  box-shadow: 0 0 10px #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
   text-align: left;
 
   .word-list {
@@ -172,19 +171,6 @@ export default {
         height: 20px;
       }
     }
-  }
-
-  &:after {
-    content: "";
-    position: absolute;
-    left: 185px;
-    bottom: -30px;
-    width: 0;
-    height: 0;
-    border-style: solid dashed dashed;
-    border-color: #f5f5f5 transparent transparent;
-    overflow: hidden;
-    border-width: 15px;
   }
 
   .word-bottom {
