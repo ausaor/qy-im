@@ -7,6 +7,9 @@
       <view class="back" @click="handleBackClick" v-if="back">
         <uni-icons type="back" :size="iconFontSize"></uni-icons>
       </view>
+      <view class="back" @click="goHomePage" v-if="backHome">
+        <uni-icons type="back" :size="iconFontSize"></uni-icons>
+      </view>
       <view class="title" v-if="title">
         <slot></slot>
       </view>
@@ -29,6 +32,10 @@ export default {
   name: "nav-bar",
   props: {
     home: {
+      type: Boolean,
+      default: false
+    },
+    backHome: {
       type: Boolean,
       default: false
     },

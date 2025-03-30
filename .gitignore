@@ -14,4 +14,5 @@ target/
 /im-uniapp/node_modules/
 /im-uniapp/package-lock.json
 /im-uniapp/.hbuilderx
+/im-uniapp/unpackage/dist
 
