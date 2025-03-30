@@ -757,10 +757,12 @@ export default {
 			this.isEmpty = e.detail.html == '<p><br></p>'
 		},
 		onEditorReady() {
-			const query = uni.createSelectorQuery().in(this);
-			query.select('#editor').context((res) => {
-				this.editorCtx = res.context
-			}).exec()
+      this.$nextTick(()=>{
+        const query = uni.createSelectorQuery().in(this);
+        query.select('#editor').context((res) => {
+          this.editorCtx = res.context
+        }).exec()
+      })
 		},
 		onEditorFocus(e) {
 			this.isFocus = true;
