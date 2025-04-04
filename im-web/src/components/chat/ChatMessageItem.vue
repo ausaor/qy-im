@@ -334,11 +334,13 @@
 					name: '删除',
 					icon: 'el-icon-delete'
 				});
-        items.push({
-          key: 'QUOTE',
-          name: '引用',
-          icon: 'el-icon-chat-round'
-        });
+        if (this.$msgType.isNormal(this.msgInfo.type)) {
+          items.push({
+            key: 'QUOTE',
+            name: '引用',
+            icon: 'el-icon-chat-round'
+          });
+        }
 				if (this.msgInfo.selfSend && this.msgInfo.id > 0) {
 					items.push({
 						key: 'RECALL',
