@@ -19,6 +19,7 @@ import config from "./assets/js/config";
 import * as  enums from './api/enums.js';
 import * as  date from './api/date.js';
 import './utils/directive/dialogDrag';
+import { v4 as uuidv4 } from 'uuid'
 import VueImageSwipe from "vue-image-swipe";
 import "vue-image-swipe/dist/vue-image-swipe.css";
 
@@ -38,6 +39,10 @@ Vue.prototype.$elm = element; // 元素操作
 Vue.prototype.$enums = enums; // 枚举
 Vue.prototype.$eventBus = new Vue(); // 全局事件
 Vue.prototype.config = config;
+Vue.prototype.$uuid = {
+  v4: () => uuidv4()  // 封装为函数避免复用同一ID
+}
+Vue.prototype.$shortId = () => uuidv4().split('-')[0];
 Vue.config.productionTip = false;
 
 import hljs from 'highlight.js';

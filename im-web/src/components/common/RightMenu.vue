@@ -1,7 +1,7 @@
 <template>
   <div class="right-menu-mask" @click.stop="close()" @contextmenu.prevent="close()">
     <div class="right-menu" :style="{'left':pos.x+'px','top':pos.y+'px'}">
-      <el-menu text-color="#333333">
+      <el-menu text-color="#2830d3">
         <el-menu-item v-for="(item) in items" :key="item.key" :title="item.name"
                       @click.native.stop="onSelectMenu(item)">
 <!--          <span :class="item.icon"></span>-->

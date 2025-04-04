@@ -15,7 +15,8 @@
             <el-main class="im-chat-main" id="chatScrollBox" @scroll="onScroll">
               <div class="im-chat-box">
                 <ul>
-                  <li v-for="(msgInfo,idx) in chat.messages" :key="idx">
+                  <li v-for="(msgInfo,idx) in chat.messages" :key="msgInfo.id" :ref="`message-${msgInfo.id}`"
+                      :data-highlight="highlightedMessageId === msgInfo.id" class="message-wrapper">
                     <chat-message-item
                         v-if="idx>=showMinIdx"
                         @call="onCall(msgInfo.type)"
@@ -27,7 +28,8 @@
                         :groupMembers="groupMembers"
                         @delete="deleteMessage"
                         @recall="recallMessage"
-                        @quote="quoteMessage">
+                        @quote="quoteMessage"
+                        @scrollToMessage="scrollToTargetMsg">
                     </chat-message-item>
                   </li>
                 </ul>
@@ -208,6 +210,7 @@
           msgInfo: null,
           show: false
         },
+        highlightedMessageId: null,
 			}
 		},
     created() {
@@ -885,11 +888,13 @@
 				}
 			},
       showInfo(msgInfo) {
+        console.log("showInfo")
         let showInfoObj = {
           showName: "",
           headImage: "",
           nickName: "",
           characterNum: null,
+          quoteShowName: '',
         };
         if (this.chat.type == 'GROUP') {
           let friend = this.friends.find((f) => f.id === msgInfo.sendId);
@@ -913,7 +918,7 @@
           let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
           if (msgInfo.quoteMsg) {
             let member2 = this.groupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
-            msgInfo.quoteMsg.showName = member2 ? member2.aliasName : "";
+            showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
           }
           if (member) {
             showInfoObj.characterNum = member.characterNum;
@@ -1002,6 +1007,18 @@
       generateId(){
         // 生成临时id
         return String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
+      },
+      scrollToTargetMsg(messageId) {
+        const element = this.$refs[`message-${messageId}`][0];
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+          // 高亮显示源消息
+          this.highlightedMessageId = messageId;
+          setTimeout(() => {
+            this.highlightedMessageId = null;
+          }, 2000);
+        }
       }
 		},
 		computed: {
@@ -1105,6 +1122,26 @@
 			}
 		}
 
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes highlight {
+      0%, 100% {
+        background-color: transparent;
+      }
+      20%, 80% {
+        background-color: rgba(79, 70, 229, 0.1);
+      }
+    }
+
 		.im-chat-main {
 			padding: 0;
 			border: var(--border-color) solid 1px;
@@ -1115,6 +1152,15 @@
 					li {
 						list-style-type: none;
 					}
+
+          .message-wrapper {
+            animation: fadeIn 0.3s ease;
+            margin-bottom: 15px;
+          }
+
+          .message-wrapper[data-highlight="true"] {
+            animation: highlight 2s ease;
+          }
 				}
 			}
 		}

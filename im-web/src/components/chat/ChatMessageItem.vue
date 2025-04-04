@@ -33,9 +33,9 @@
               <div class="img-load-box" v-loading="loading" element-loading-text="上传中.."
                    element-loading-background="rgba(0, 0, 0, 0.4)">
                 <img class="send-image" :src="JSON.parse(msgInfo.content).originUrl"
-                     @click="showFullImageBox()" />
+                     @click.stop="showFullImageBox()" />
               </div>
-              <span title="发送失败" v-show="loadFail" @click="onSendFail"
+              <span title="发送失败" v-show="loadFail" @click.stop="onSendFail"
                     class="send-fail el-icon-warning"></span>
             </div>
             <div class="chat-msg-video" v-if="msgInfo.type==$enums.MESSAGE_TYPE.VIDEO">
@@ -67,16 +67,16 @@
             </div>
             <div class="chat-msg-word-voice" v-if="msgInfo.type==$enums.MESSAGE_TYPE.WORD_VOICE">
               <span class="word" :title="JSON.parse(msgInfo.content).word">{{JSON.parse(msgInfo.content).word}}</span>
-              <span class="voice" @click="playVoice(JSON.parse(msgInfo.content).voice)">
+              <span class="voice" @click.stop="playVoice(JSON.parse(msgInfo.content).voice)">
                 <svg class="icon svg-icon" aria-hidden="true">
                   <use xlink:href="#icon-xitongxiaoxi"></use>
                 </svg>
               </span>
             </div>
             <div class="chat-action chat-msg-text" v-if="isAction">
-              <span v-if="msgInfo.type==$enums.MESSAGE_TYPE.ACT_RT_VOICE" title="重新呼叫" @click="$emit('call')"
+              <span v-if="msgInfo.type==$enums.MESSAGE_TYPE.ACT_RT_VOICE" title="重新呼叫" @click.stop="$emit('call')"
                     class="iconfont icon-chat-voice"></span>
-              <span v-if="msgInfo.type==$enums.MESSAGE_TYPE.ACT_RT_VIDEO" title="重新呼叫" @click="$emit('call')"
+              <span v-if="msgInfo.type==$enums.MESSAGE_TYPE.ACT_RT_VIDEO" title="重新呼叫" @click.stop="$emit('call')"
                     class="iconfont icon-chat-video"></span>
               <span>{{msgInfo.content}}</span>
             </div>
@@ -86,20 +86,21 @@
               <span class="chat-unread" v-show="msgInfo.selfSend && !msgInfo.groupId
 						  && msgInfo.status != $enums.MESSAGE_STATUS.READED">未读</span>
             </div>-->
-            <div class="chat-receipt" v-show="msgInfo.receipt" @click="onShowReadedBox">
+            <div class="chat-receipt" v-show="msgInfo.receipt" @click.stop="onShowReadedBox">
               <span v-if="msgInfo.receiptOk" class="icon iconfont icon-icon-ok" title="全体已读"></span>
               <span v-else>{{msgInfo.readedCount}}人已读</span>
             </div>
           </div>
-          <div class="quote-message" v-if="msgInfo.quoteMsg">
+          <div class="quote-message" v-if="msgInfo.quoteMsg" @click.stop="scrollToMessage(msgInfo.quoteMsg.id)"
+               @contextmenu.prevent.stop="showQuoteRightMenu($event)">
             <div class="chat-quote-message">
-              <div class="send-user">{{msgInfo.quoteMsg.showName}}：</div>
+              <div class="send-user">{{showInfo.quoteShowName}}：</div>
               <div class="quote-content">
                 <span v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.TEXT"
                       v-html="htmlQuoteText"></span>
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.IMAGE">
                   <img class="quote-image" :src="JSON.parse(msgInfo.quoteMsg.content).originUrl"
-                         @click="showQuoteMsgFullImageBox()" />
+                         @click.stop="showQuoteMsgFullImageBox()" />
                 </div>
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.VIDEO">
                   <video class="quote-video" controls="controls" preload="none" :src="JSON.parse(msgInfo.quoteMsg.content).videoUrl" :poster="JSON.parse(msgInfo.quoteMsg.content).coverUrl"></video>
@@ -119,7 +120,7 @@
                 </div>
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.WORD_VOICE" class="quote-word-voice">
                   <span class="word" :title="JSON.parse(msgInfo.quoteMsg.content).word">{{JSON.parse(msgInfo.quoteMsg.content).word}}</span>
-                  <span class="voice" @click="playVoice(JSON.parse(msgInfo.quoteMsg.content).voice)">
+                  <span class="voice" @click.stop="playVoice(JSON.parse(msgInfo.quoteMsg.content).voice)">
                     <svg class="icon svg-icon" aria-hidden="true">
                       <use xlink:href="#icon-xitongxiaoxi"></use>
                     </svg>
@@ -134,6 +135,8 @@
 		</div>
 		<right-menu v-show="menu && rightMenu.show" :pos="rightMenu.pos" :items="menuItems"
         @close="rightMenu.show=false" @select="onSelectMenu"></right-menu>
+    <right-menu v-show="menu && rightMenuQuote.show" :pos="rightMenuQuote.pos" :items="menuItemsQuote"
+                @close="rightMenuQuote.show=false" @select="onSelectMenuQuote"></right-menu>
     <chat-group-readed ref="chatGroupReadedBox" :msgInfo="msgInfo" :groupMembers="groupMembers"></chat-group-readed>
 	</div>
 </template>
@@ -151,6 +154,9 @@
       ChatGroupReaded
 		},
 		props: {
+      uid: {
+        type: String,
+      },
       mode: {
         type: Number,
         default: 1
@@ -167,6 +173,7 @@
             headImage: "",
             showName: "",
             nickName: "",
+            quoteShowName: "",
             characterNum: null,
           }
         }
@@ -216,6 +223,13 @@
 						y: 0
 					}
 				},
+        rightMenuQuote: {
+          show: false,
+          pos: {
+            x: 0,
+            y: 0
+          }
+        },
         colors:["#7dd24b","#c7515a","#db68ef","#15d29b",
           "#85029b", "#c9b455","#fb2609","#bda818",
           "#af0831","#326eb6"]
@@ -253,10 +267,20 @@
 				};
 				this.rightMenu.show = "true";
 			},
+      showQuoteRightMenu(e) {
+        this.rightMenuQuote.pos = {
+          x: e.x,
+          y: e.y
+        };
+        this.rightMenuQuote.show = "true";
+      },
       onSelectMenu(item) {
         this.msgInfo.showName = this.showInfo.showName;
 				this.$emit(item.key.toLowerCase(), this.msgInfo);
 			},
+      onSelectMenuQuote() {
+        this.$emit('scrollToMessage', this.msgInfo.quoteMsg.id);
+      },
       onShowReadedBox() {
         let rect = this.$refs.chatMsgBox.getBoundingClientRect();
         this.$refs.chatGroupReadedBox.open(rect);
@@ -265,7 +289,10 @@
         let audio = new Audio();
         audio.src = url;
         audio.play();
-      }
+      },
+      scrollToMessage(msgId) {
+        this.$emit('scrollToMessage', msgId)
+      },
 		},
 		computed: {
 			loading() {
@@ -321,6 +348,15 @@
 				}
 				return items;
 			},
+      menuItemsQuote() {
+        let items = [];
+        items.push({
+          key: 'scrollToMessage',
+          name: '定位到原消息',
+          icon: ''
+        });
+        return items;
+      },
       isAction(){
         return this.$msgType.isAction(this.msgInfo.type);
       },
