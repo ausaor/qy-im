@@ -6,6 +6,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -42,6 +43,7 @@ import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.GroupMessageVO;
+import xyz.qy.implatform.vo.QuoteMsg;
 
 import javax.annotation.Resource;
 import java.util.Collections;
@@ -108,12 +110,23 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         if (MessageType.TEXT.code().equals(msg.getType())) {
             msg.setContent(SensitiveUtil.filter(msg.getContent()));
         }
+        QuoteMsg quoteMsg1 = null;
+        if (ObjectUtil.isNotNull(dto.getQuoteId())) {
+            GroupMessage quoteMsg = this.getById(dto.getQuoteId());
+            if (ObjectUtil.isNotNull(quoteMsg)) {
+                quoteMsg1 = covertQuoteMsg(quoteMsg);
+                msg.setQuoteMsg(JSON.toJSONString(quoteMsg1));
+            }
+        }
         msg.setAtUserIds(CommaTextUtils.asText(dto.getAtUserIds()));
         this.save(msg);
         // 不用发给自己
         userIds = userIds.stream().filter(id -> !session.getUserId().equals(id)).collect(Collectors.toList());
         // 群发
         GroupMessageVO msgInfo = BeanUtils.copyProperties(msg, GroupMessageVO.class);
+        if (quoteMsg1 != null) {
+            msgInfo.setQuoteMsg(quoteMsg1);
+        }
         msgInfo.setAtUserIds(dto.getAtUserIds());
         msgInfo.setSendUserAvatar(member.getHeadImage());
         IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
@@ -124,6 +137,16 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         imClient.sendGroupMessage(sendMessage);
         log.info("发送群聊消息，发送id:{},群聊id:{},内容:{}", session.getUserId(), dto.getGroupId(), dto.getContent());
         return msgInfo;
+    }
+
+    private QuoteMsg covertQuoteMsg(GroupMessage message) {
+        QuoteMsg quoteMsg = new QuoteMsg();
+        quoteMsg.setId(message.getId());
+        quoteMsg.setContent(message.getContent());
+        quoteMsg.setStatus(message.getStatus());
+        quoteMsg.setType(message.getType());
+        quoteMsg.setSendId(message.getSendId());
+        return quoteMsg;
     }
 
     @Override
@@ -290,6 +313,10 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
                 }
                 // 组装vo
                 GroupMessageVO vo = BeanUtils.copyProperties(m, GroupMessageVO.class);
+                if (StrUtil.isNotBlank(m.getQuoteMsg())) {
+                    vo.setQuoteMsg(JSON.parseObject(m.getQuoteMsg(), QuoteMsg.class));
+                }
+
                 // 被@用户列表
                 List<String> atIds = CommaTextUtils.asList(m.getAtUserIds());
                 vo.setAtUserIds(atIds.stream().map(Long::parseLong).collect(Collectors.toList()));

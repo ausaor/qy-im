@@ -32,4 +32,7 @@ public class PrivateMessageVO {
     @ApiModelProperty(value = " 发送时间")
     @JsonSerialize(using = DateToLongSerializer.class)
     private Date sendTime;
+
+    @ApiModelProperty(value = "引用消息")
+    private QuoteMsg quoteMsg;
 }

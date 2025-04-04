@@ -33,4 +33,7 @@ public class GroupMessageDTO {
     @Size(max = 20,message = "一次最多只能@20个小伙伴哦")
     @ApiModelProperty(value = "被@用户列表")
     private List<Long> atUserIds;
+
+    @ApiModelProperty(value = "引用消息id")
+    private Long quoteId;
 }

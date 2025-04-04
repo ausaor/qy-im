@@ -54,4 +54,7 @@ public class GroupMessageVO {
 
     @ApiModelProperty(value = "群聊信息变动类型")
     private Integer groupChangeType;
+
+    @ApiModelProperty(value = "引用消息")
+    private QuoteMsg quoteMsg;
 }

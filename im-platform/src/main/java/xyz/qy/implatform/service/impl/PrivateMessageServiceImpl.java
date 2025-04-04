@@ -1,5 +1,8 @@
 package xyz.qy.implatform.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -17,6 +20,7 @@ import xyz.qy.imcommon.model.IMPrivateMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.dto.PrivateMessageDTO;
 import xyz.qy.implatform.entity.Friend;
+import xyz.qy.implatform.entity.GroupMessage;
 import xyz.qy.implatform.entity.PrivateMessage;
 import xyz.qy.implatform.enums.MessageStatus;
 import xyz.qy.implatform.enums.MessageType;
@@ -30,6 +34,7 @@ import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.PrivateMessageVO;
+import xyz.qy.implatform.vo.QuoteMsg;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -69,6 +74,15 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         if (MessageType.TEXT.code().equals(msg.getType())) {
             msg.setContent(SensitiveUtil.filter(msg.getContent()));
         }
+
+        if (ObjectUtil.isNotNull(dto.getQuoteId())) {
+            PrivateMessage quoteMsg = this.getById(dto.getQuoteId());
+            if (ObjectUtil.isNotNull(quoteMsg)) {
+                QuoteMsg quoteMsg1 = covertQuoteMsg(quoteMsg);
+                msg.setQuoteMsg(JSON.toJSONString(quoteMsg1));
+            }
+        }
+
         this.save(msg);
         // 推送消息
         PrivateMessageVO msgInfo = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
@@ -81,6 +95,16 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         imClient.sendPrivateMessage(sendMessage);
         log.info("发送私聊消息，发送id:{},接收id:{}，内容:{}", session.getUserId(), dto.getRecvId(), dto.getContent());
         return msgInfo;
+    }
+
+    private QuoteMsg covertQuoteMsg(PrivateMessage message) {
+        QuoteMsg quoteMsg = new QuoteMsg();
+        quoteMsg.setId(message.getId());
+        quoteMsg.setContent(message.getContent());
+        quoteMsg.setStatus(message.getStatus());
+        quoteMsg.setType(message.getType());
+        quoteMsg.setSendId(message.getSendId());
+        return quoteMsg;
     }
 
     /**
@@ -185,6 +209,9 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         // 推送消息
         for(PrivateMessage m:messages ){
             PrivateMessageVO vo = BeanUtils.copyProperties(m, PrivateMessageVO.class);
+            if (StrUtil.isNotBlank(m.getQuoteMsg())) {
+                vo.setQuoteMsg(JSON.parseObject(m.getQuoteMsg(), QuoteMsg.class));
+            }
             IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
             sendMessage.setSender(new IMUserInfo(m.getSendId(), IMTerminalType.WEB.code()));
             sendMessage.setRecvId(session.getUserId());

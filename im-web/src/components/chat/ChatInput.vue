@@ -1,12 +1,32 @@
 <template>
-	<div class="chat-input-area">
-		<div :class="['edit-chat-container',isEmpty?'':'not-empty']" contenteditable="true" @paste.prevent="onPaste"
-			@keydown="onKeydown" @compositionstart="compositionFlag=true" @compositionend="onCompositionEnd"
-			@input="onEditorInput" @mousedown="onMousedown" ref="content" @blur="onBlur">
-		</div>
-		<chat-at-box @select="onAtSelect" :search-text="atSearchText" ref="atBox" :ownerId="ownerId"
-			:members="groupMembers" :show-nick-name="showNickName"></chat-at-box>
-	</div>
+  <div class="send-content-area">
+    <div class="chat-input-area">
+      <div :class="['edit-chat-container',isEmpty?'':'not-empty']" contenteditable="true" @paste.prevent="onPaste"
+           @keydown="onKeydown" @compositionstart="compositionFlag=true" @compositionend="onCompositionEnd"
+           @input="onEditorInput" @mousedown="onMousedown" ref="content" @blur="onBlur">
+      </div>
+      <chat-at-box @select="onAtSelect" :search-text="atSearchText" ref="atBox" :ownerId="ownerId"
+                   :members="groupMembers" :show-nick-name="showNickName"></chat-at-box>
+    </div>
+    <div class="quote-message" v-if="quoteMessage.show">
+      <div class="chat-quote-message">
+        <div class="send-user">{{quoteMessage.msgInfo?.showName}}：</div>
+        <div class="quote-content">
+          <span v-if="quoteMessage.msgInfo?.type===$enums.MESSAGE_TYPE.TEXT" v-html="htmlText"></span>
+          <div v-if="quoteMessage.msgInfo?.type===$enums.MESSAGE_TYPE.IMAGE">
+            <img :src="JSON.parse(quoteMessage.msgInfo?.content).originUrl" class="quote-image">
+          </div>
+          <div v-if="quoteMessage.msgInfo?.type===$enums.MESSAGE_TYPE.VIDEO">
+            <video controls="controls" preload="none" :src="JSON.parse(quoteMessage.msgInfo?.content).videoUrl"
+                   :poster="JSON.parse(quoteMessage.msgInfo?.content).coverUrl" class="quote-video"></video>
+          </div>
+        </div>
+      </div>
+      <div class="quote-remove" @click="removeQuoteMsg">
+        <i class="el-icon-close"></i>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -25,7 +45,16 @@
       showNickName: {
 			  type: Boolean,
         default: false,
-      }
+      },
+      quoteMessage: {
+			  type: Object,
+			  default() {
+				  return {
+					  msgInfo: null,
+					  show: false
+				}
+			}
+		},
 		},
 		data() {
 			return {
@@ -485,110 +514,194 @@
 			},
 			focus() {
 				this.$refs.content.focus();
-			}
-
-		}
+			},
+      removeQuoteMsg() {
+        this.$emit('removeQuoteMsg')
+      }
+		},
+    computed: {
+      htmlText() {
+        let text = this.$url.replaceURLWithHTMLLinks(this.quoteMessage.msgInfo?.content, '')
+        return this.$emo.transform(text)
+      },
+    }
 	}
 </script>
 
 <style lang="scss">
-	.chat-input-area {
-		width: 100%;
-		height: 100%;
-		position: relative;
+  .send-content-area {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #fff !important;
 
-		.edit-chat-container {
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			border: 1px solid #c3c3c3;
-			outline: none;
-			padding: 5px;
-			line-height: 30px;
-			font-size: 16px;
-			text-align: left;
-			overflow-y: scroll;
+    .chat-input-area {
+      width: 100%;
+      height: 100%;
+      position: relative;
 
-			// 单独一行时，无法在前面输入的bug
-			>div:before {
-				content: "\00a0";
-				font-size: 14px;
-				position: absolute;
-				top: 0;
-				left: 0;
-			}
+      .edit-chat-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: 1px solid #c3c3c3;
+        outline: none;
+        padding: 5px;
+        line-height: 30px;
+        font-size: 16px;
+        text-align: left;
+        overflow-y: scroll;
 
-			.chat-image {
-				display: block;
-				max-width: 200px;
-				max-height: 100px;
-				border: 1px solid #e6e6e6;
-				cursor: pointer;
-			}
+        // 单独一行时，无法在前面输入的bug
+        >div:before {
+          content: "\00a0";
+          font-size: 14px;
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
 
-			.chat-emoji {
-				width: 30px;
-				height: 30px;
-				vertical-align: top;
-				cursor: pointer;
-			}
+        .chat-image {
+          display: block;
+          max-width: 200px;
+          max-height: 100px;
+          border: 1px solid #e6e6e6;
+          cursor: pointer;
+        }
 
-			.chat-file-container {
-				max-width: 65%;
-				padding: 10px;
-				border: 2px solid #587ff0;
-				display: flex;
-				background: #eeeC;
-				border-radius: 10px;
+        .chat-emoji {
+          width: 30px;
+          height: 30px;
+          vertical-align: top;
+          cursor: pointer;
+        }
 
-				.file-position-left {
-					display: flex;
-					width: 80px;
-					justify-content: center;
-					align-items: center;
+        .chat-file-container {
+          max-width: 65%;
+          padding: 10px;
+          border: 2px solid #587ff0;
+          display: flex;
+          background: #eeeC;
+          border-radius: 10px;
 
-					.el-icon-document {
-						font-size: 40px;
-						text-align: center;
-						color: #d42e07;
-					}
-				}
+          .file-position-left {
+            display: flex;
+            width: 80px;
+            justify-content: center;
+            align-items: center;
 
-				.file-position-right {
-					flex: 1;
+            .el-icon-document {
+              font-size: 40px;
+              text-align: center;
+              color: #d42e07;
+            }
+          }
 
-					.file-name {
-						font-size: 16px;
-						font-weight: 600;
-						color: #66b1ff;
-					}
+          .file-position-right {
+            flex: 1;
 
-					.file-size {
-						font-size: 14px;
-						font-weight: 600;
-						color: black;
-					}
-				}
-			}
+            .file-name {
+              font-size: 16px;
+              font-weight: 600;
+              color: #66b1ff;
+            }
 
-			.chat-at-user {
-				color: #00f;
-				font-weight: 600;
+            .file-size {
+              font-size: 14px;
+              font-weight: 600;
+              color: black;
+            }
+          }
+        }
 
-				border-radius: 3px;
-			}
-		}
+        .chat-at-user {
+          color: #00f;
+          font-weight: 600;
 
-		.edit-chat-container>div:nth-of-type(1):after {
-			content: '请输入消息（按Ctrl+Enter键换行）';
-			color: gray;
-		}
+          border-radius: 3px;
+        }
+      }
 
-		.edit-chat-container.not-empty>div:nth-of-type(1):after {
-			content: none;
-		}
+      .edit-chat-container>div:nth-of-type(1):after {
+        content: '请输入消息（按Ctrl+Enter键换行）';
+        color: gray;
+      }
 
-	}
+      .edit-chat-container.not-empty>div:nth-of-type(1):after {
+        content: none;
+      }
+
+    }
+
+    .quote-message {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      font-size: 14px;
+      max-width: 80%;
+      border-radius: 5px;
+
+      .chat-quote-message {
+        background: #eee;
+        padding: 5px;
+        display: inline-flex;
+        align-items: center;
+        border-radius: 8px;
+        font-size: 12px;
+        color: #999;
+
+        .send-user {
+          margin-right: 10px;
+          font-weight: 600;
+        }
+
+        .quote-content {
+
+          .quote-image {
+            min-width: 40px;
+            min-height: 30px;
+            max-width: 80px;
+            max-height: 60px;
+            cursor: pointer;
+          }
+
+          .quote-video {
+            min-width: 80px;
+            min-height: 60px;
+            max-width: 160px;
+            max-height: 120px;
+            cursor: pointer;
+          }
+        }
+      }
+
+      .quote-remove {
+        display: none;
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        font-size: 14px;
+        color: #fff;
+        border-radius: 50%;
+        background: #aaa;
+        cursor: pointer;
+      }
+
+      .quote-remove:hover {
+        background: #888;
+      }
+    }
+
+    .quote-message:hover {
+      .quote-remove {
+        display: block;
+      }
+    }
+  }
 </style>

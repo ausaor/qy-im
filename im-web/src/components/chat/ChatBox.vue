@@ -26,7 +26,8 @@
                         :myGroupMemberInfo="myGroupMemberInfo"
                         :groupMembers="groupMembers"
                         @delete="deleteMessage"
-                        @recall="recallMessage">
+                        @recall="recallMessage"
+                        @quote="quoteMessage">
                     </chat-message-item>
                   </li>
                 </ul>
@@ -114,8 +115,8 @@
               </div>
               <div class="send-content-area">
                 <ChatInput :ownerId="group.ownerId" ref="chatInputEditor" :group-members="groupMembers"
-                           :show-nick-name="group.groupType !== 0"
-                           @submit="sendMessage" />
+                           :show-nick-name="group.groupType !== 0" :quote-message="quoteMsgInfo"
+                           @submit="sendMessage" @removeQuoteMsg="cancelQuote"/>
                 <div class="send-btn-area">
                   <el-button type="primary" size="small" @click="notifySend()">发送</el-button>
                 </div>
@@ -202,6 +203,10 @@
         emos: {
 				  group: [],
           character: []
+        },
+        quoteMsgInfo: {
+          msgInfo: null,
+          show: false
         },
 			}
 		},
@@ -779,6 +784,16 @@
           })
         });
       },
+      quoteMessage(msgInfo) {
+        console.log("引用消息", msgInfo);
+
+        this.quoteMsgInfo.msgInfo =  msgInfo;
+        this.quoteMsgInfo.show = true;
+      },
+      cancelQuote() {
+        this.quoteMsgInfo.msgInfo = null;
+        this.quoteMsgInfo.show = false;
+      },
       readedMessage() {
         if (this.chat.unreadCount == 0) {
           return;
@@ -896,6 +911,10 @@
             }
           }
           let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+          if (msgInfo.quoteMsg) {
+            let member2 = this.groupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+            msgInfo.quoteMsg.showName = member2 ? member2.aliasName : "";
+          }
           if (member) {
             showInfoObj.characterNum = member.characterNum;
             showInfoObj.headImage = member.headImage;
@@ -957,6 +976,11 @@
         if (this.reqQueue.length && !this.isSending) {
           this.isSending = true;
           const reqData = this.reqQueue.shift();
+          if (this.quoteMsgInfo.msgInfo) {
+            reqData.msgInfo.quoteId = this.quoteMsgInfo.msgInfo.id;
+            this.quoteMsgInfo.msgInfo = null;
+            this.quoteMsgInfo.show = false;
+          }
           this.$http({
             url: this.messageAction,
             method: 'post',

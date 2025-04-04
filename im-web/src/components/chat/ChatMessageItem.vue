@@ -90,7 +90,22 @@
               <span v-if="msgInfo.receiptOk" class="icon iconfont icon-icon-ok" title="全体已读"></span>
               <span v-else>{{msgInfo.readedCount}}人已读</span>
             </div>
-
+          </div>
+          <div class="quote-message" v-if="msgInfo.quoteMsg">
+            <div class="chat-quote-message">
+              <div class="send-user">{{msgInfo.quoteMsg.showName}}：</div>
+              <div class="quote-content">
+                <span v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.TEXT"
+                      v-html="htmlQuoteText"></span>
+                <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.IMAGE">
+                  <img class="quote-image" :src="JSON.parse(msgInfo.quoteMsg.content).originUrl"
+                         @click="showQuoteMsgFullImageBox()" />
+                </div>
+                <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.VIDEO">
+                  <video class="quote-video" controls="controls" preload="none" :src="JSON.parse(msgInfo.quoteMsg.content).videoUrl" :poster="JSON.parse(msgInfo.quoteMsg.content).coverUrl"></video>
+                </div>
+              </div>
+            </div>
           </div>
 				</div>
 			</div>
@@ -196,6 +211,12 @@
 					this.$store.commit('showFullImageBox', imageUrl);
 				}
 			},
+      showQuoteMsgFullImageBox() {
+        let imageUrl = JSON.parse(this.msgInfo.quoteMsg.content).originUrl;
+        if (imageUrl) {
+          this.$store.commit('showFullImageBox', imageUrl);
+        }
+      },
       onPlayVoice() {
 				if (!this.audio) {
 					this.audio = new Audio();
@@ -212,6 +233,7 @@
 				this.rightMenu.show = "true";
 			},
       onSelectMenu(item) {
+        this.msgInfo.showName = this.showInfo.showName;
 				this.$emit(item.key.toLowerCase(), this.msgInfo);
 			},
       onShowReadedBox() {
@@ -251,6 +273,11 @@
 					name: '删除',
 					icon: 'el-icon-delete'
 				});
+        items.push({
+          key: 'QUOTE',
+          name: '引用',
+          icon: 'el-icon-chat-round'
+        });
 				if (this.msgInfo.selfSend && this.msgInfo.id > 0) {
 					items.push({
 						key: 'RECALL',
@@ -270,6 +297,10 @@
       htmlText() {
         let color = this.msgInfo.selfSend ? 'white' : '';
         let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.content, color)
+        return this.$emo.transform(text)
+      },
+      htmlQuoteText() {
+        let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.quoteMsg?.content, '')
         return this.$emo.transform(text)
       },
       nameColorStyle() {
@@ -335,11 +366,10 @@
           padding-right: 300px;
 
 					.chat-msg-text {
-            display: block;
+            display: inline-flex;
             position: relative;
             line-height: 26px;
-            margin-top: 3px;
-            padding: 7px;
+            padding: 6px 10px;
             background-color: #daf3fd;
             border-radius: 10px;
             color: black;
@@ -350,15 +380,14 @@
             box-shadow: 1px 1px 1px #c0c0f0;
 
             &:after {
-							content: "";
-							position: absolute;
-							left: -10px;
-							top: 13px;
-              z-index: -1;
-							width: 0;
-							height: 0;
-							border-style: solid dashed dashed;
-              border-color: white transparent transparent;
+              content: "";
+              position: absolute;
+              left: -10px;
+              top: 13px;
+              width: 0;
+              height: 0;
+              border-style: solid dashed dashed;
+              border-color: #daf3fd transparent transparent;
               overflow: hidden;
               border-width: 10px;
 						}
@@ -512,6 +541,46 @@
             .icon {
               font-size: 20px;
               height: 20px;
+            }
+          }
+
+          .quote-message {
+            display: block;
+            margin-top: 3px;
+            cursor: pointer;
+
+            .chat-quote-message {
+              background: #eee;
+              padding: 5px;
+              display: inline-flex;
+              align-items: center;
+              border-radius: 8px;
+              font-size: 12px;
+              color: #999;
+
+              .send-user {
+                margin-right: 10px;
+                font-weight: 600;
+              }
+
+              .quote-content {
+
+                .quote-image {
+                  min-width: 40px;
+                  min-height: 30px;
+                  max-width: 80px;
+                  max-height: 60px;
+                  cursor: pointer;
+                }
+
+                .quote-video {
+                  min-width: 80px;
+                  min-height: 60px;
+                  max-width: 160px;
+                  max-height: 120px;
+                  cursor: pointer;
+                }
+              }
             }
           }
 

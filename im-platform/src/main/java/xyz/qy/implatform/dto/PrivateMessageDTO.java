@@ -23,4 +23,7 @@ public class PrivateMessageDTO {
     @NotNull(message="消息类型不可为空")
     @ApiModelProperty(value = "消息类型 0:文字 1:图片 2:文件 3:语音 4:视频")
     private Integer type;
+
+    @ApiModelProperty(value = "引用消息id")
+    private Long quoteId;
 }
