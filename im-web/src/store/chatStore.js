@@ -211,7 +211,7 @@ export default {
 			// 间隔大于10分钟插入时间显示
 			if (!chat.lastTimeTip || (chat.lastTimeTip < msgInfo.sendTime - 600 * 1000)) {
 				chat.messages.push({
-					id: generateShortId(),
+					uid: generateShortId(),
 					sendTime: msgInfo.sendTime,
 					type: MESSAGE_TYPE.TIP_TIME,
 				});

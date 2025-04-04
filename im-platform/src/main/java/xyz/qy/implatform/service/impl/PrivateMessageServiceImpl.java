@@ -75,10 +75,11 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
             msg.setContent(SensitiveUtil.filter(msg.getContent()));
         }
 
+        QuoteMsg quoteMsg1 = null;
         if (ObjectUtil.isNotNull(dto.getQuoteId())) {
             PrivateMessage quoteMsg = this.getById(dto.getQuoteId());
             if (ObjectUtil.isNotNull(quoteMsg)) {
-                QuoteMsg quoteMsg1 = covertQuoteMsg(quoteMsg);
+                quoteMsg1 = covertQuoteMsg(quoteMsg);
                 msg.setQuoteMsg(JSON.toJSONString(quoteMsg1));
             }
         }
@@ -86,6 +87,9 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         this.save(msg);
         // 推送消息
         PrivateMessageVO msgInfo = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
+        if (quoteMsg1 != null) {
+            msgInfo.setQuoteMsg(quoteMsg1);
+        }
         IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setRecvId(msgInfo.getRecvId());

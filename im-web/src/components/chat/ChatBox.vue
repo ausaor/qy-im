@@ -15,7 +15,7 @@
             <el-main class="im-chat-main" id="chatScrollBox" @scroll="onScroll">
               <div class="im-chat-box">
                 <ul>
-                  <li v-for="(msgInfo,idx) in chat.messages" :key="msgInfo.id" :ref="`message-${msgInfo.id}`"
+                  <li v-for="(msgInfo,idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid" :ref="`message-${msgInfo.id}`"
                       :data-highlight="highlightedMessageId === msgInfo.id" class="message-wrapper">
                     <chat-message-item
                         v-if="idx>=showMinIdx"
@@ -944,6 +944,9 @@
         } else {
           msgInfo.sendId == this.mine.id ? showInfoObj.showName = this.mine.nickName : showInfoObj.showName = this.chat.showName;
           msgInfo.sendId == this.mine.id ? showInfoObj.headImage = this.mine.headImage : showInfoObj.headImage = this.chat.headImage;
+          if (msgInfo.quoteMsg) {
+            msgInfo.quoteMsg.sendId == this.mine.id ? showInfoObj.quoteShowName = this.mine.nickName : showInfoObj.quoteShowName = this.chat.showName;
+          }
         }
 
         return showInfoObj;
