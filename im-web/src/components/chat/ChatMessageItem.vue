@@ -104,6 +104,27 @@
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.VIDEO">
                   <video class="quote-video" controls="controls" preload="none" :src="JSON.parse(msgInfo.quoteMsg.content).videoUrl" :poster="JSON.parse(msgInfo.quoteMsg.content).coverUrl"></video>
                 </div>
+                <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.AUDIO">
+                  <mini-audio :audio-source="JSON.parse(msgInfo.quoteMsg.content).url"></mini-audio>
+                </div>
+                <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.FILE" class="quote-file">
+                  <div class="quote-file-info">
+                    <el-link class="quote-file-name" :underline="true" target="_blank" type="primary"
+                             :href="quoteMsgData.url">{{quoteMsgData.name}}</el-link>
+                    <div class="quote-file-size">{{quoteMsgFileSize}}</div>
+                  </div>
+                  <div class="quote-file-icon">
+                    <span type="primary" class="el-icon-document"></span>
+                  </div>
+                </div>
+                <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.WORD_VOICE" class="quote-word-voice">
+                  <span class="word" :title="JSON.parse(msgInfo.quoteMsg.content).word">{{JSON.parse(msgInfo.quoteMsg.content).word}}</span>
+                  <span class="voice" @click="playVoice(JSON.parse(msgInfo.quoteMsg.content).voice)">
+                    <svg class="icon svg-icon" aria-hidden="true">
+                      <use xlink:href="#icon-xitongxiaoxi"></use>
+                    </svg>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -266,6 +287,19 @@
 				}
 				return size + "B";
 			},
+      quoteMsgData() {
+        return JSON.parse(this.msgInfo.quoteMsg.content)
+      },
+      quoteMsgFileSize() {
+        let size = this.quoteMsgData.size;
+        if (size > 1024 * 1024) {
+          return Math.round(size / 1024 / 1024) + "M";
+        }
+        if (size > 1024) {
+          return Math.round(size / 1024) + "KB";
+        }
+        return size + "B";
+      },
 			menuItems() {
 				let items = [];
 				items.push({
@@ -518,11 +552,10 @@
               position: absolute;
               left: -10px;
               top: 13px;
-              z-index: -1;
               width: 0;
               height: 0;
               border-style: solid dashed dashed;
-              border-color: white transparent transparent;
+              border-color: #daf3fd transparent transparent;
               overflow: hidden;
               border-width: 10px;
             }
@@ -579,6 +612,66 @@
                   max-width: 160px;
                   max-height: 120px;
                   cursor: pointer;
+                }
+
+                .quote-file {
+                  display: flex;
+                  flex-wrap: nowrap;
+                  flex-direction: row;
+                  align-items: center;
+                  cursor: pointer;
+                  padding: 2px 15px;
+
+                  .quote-file-info {
+                    flex: 1;
+                    height: 100%;
+                    text-align: left;
+                    font-size: 14px;
+                    margin-right: 10px;
+
+                    .quote-file-name {
+                      display: inline-block;
+                      min-width: 160px;
+                      max-width: 220px;
+                      font-size: 14px;
+                      margin-bottom: 4px;
+                      white-space: pre-wrap;
+                      word-break: break-all;
+                    }
+
+                    .quote-file-size {
+                      font-size: 12px;
+                      color: #999;
+                    }
+                  }
+
+                  .quote-file-icon {
+                    font-size: 32px;
+                    color: #d42e07;
+                  }
+                }
+
+                .quote-word-voice {
+                  display: flex;
+                  align-items: center;
+
+                  .word {
+                    display: flex;
+                    align-items: center;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    max-width: 260px;
+                  }
+
+                  .voice {
+                    cursor: pointer;
+                  }
+
+                  .icon {
+                    font-size: 16px;
+                    height: 16px;
+                  }
                 }
               }
             }

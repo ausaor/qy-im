@@ -20,6 +20,27 @@
             <video controls="controls" preload="none" :src="JSON.parse(quoteMessage.msgInfo?.content).videoUrl"
                    :poster="JSON.parse(quoteMessage.msgInfo?.content).coverUrl" class="quote-video"></video>
           </div>
+          <div v-if="quoteMessage.msgInfo?.type===$enums.MESSAGE_TYPE.AUDIO">
+            <mini-audio :audio-source="JSON.parse(quoteMessage.msgInfo?.content).url"></mini-audio>
+          </div>
+          <div v-if="quoteMessage.msgInfo?.type===$enums.MESSAGE_TYPE.FILE" class="quote-file">
+            <div class="quote-file-info">
+              <el-link class="quote-file-name" :underline="true" target="_blank" type="primary"
+                       :href="data.url">{{data.name}}</el-link>
+              <div class="quote-file-size">{{fileSize}}</div>
+            </div>
+            <div class="quote-file-icon">
+              <span type="primary" class="el-icon-document"></span>
+            </div>
+          </div>
+          <div v-if="quoteMessage.msgInfo?.type===$enums.MESSAGE_TYPE.WORD_VOICE" class="quote-word-voice">
+            <span class="word" :title="JSON.parse(quoteMessage.msgInfo.content).word">{{JSON.parse(quoteMessage.msgInfo.content).word}}</span>
+            <span class="voice">
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-xitongxiaoxi"></use>
+                </svg>
+              </span>
+          </div>
         </div>
       </div>
       <div class="quote-remove" @click="removeQuoteMsg">
@@ -524,6 +545,19 @@
         let text = this.$url.replaceURLWithHTMLLinks(this.quoteMessage.msgInfo?.content, '')
         return this.$emo.transform(text)
       },
+      data() {
+        return JSON.parse(this.quoteMessage.msgInfo.content)
+      },
+      fileSize() {
+        let size = this.data.size;
+        if (size > 1024 * 1024) {
+          return Math.round(size / 1024 / 1024) + "M";
+        }
+        if (size > 1024) {
+          return Math.round(size / 1024) + "KB";
+        }
+        return size + "B";
+      },
     }
 	}
 </script>
@@ -659,6 +693,8 @@
         }
 
         .quote-content {
+          display: flex;
+          align-items: center;
 
           .quote-image {
             min-width: 40px;
@@ -674,6 +710,65 @@
             max-width: 160px;
             max-height: 120px;
             cursor: pointer;
+          }
+
+          .quote-file {
+            display: flex;
+            flex-wrap: nowrap;
+            flex-direction: row;
+            align-items: center;
+            cursor: pointer;
+            padding: 2px 15px;
+
+            .quote-file-info {
+              flex: 1;
+              height: 100%;
+              text-align: left;
+              font-size: 14px;
+              margin-right: 10px;
+
+              .quote-file-name {
+                display: inline-block;
+                min-width: 160px;
+                max-width: 220px;
+                font-size: 14px;
+                margin-bottom: 4px;
+                white-space: pre-wrap;
+                word-break: break-all;
+              }
+
+              .quote-file-size {
+                font-size: 12px;
+                color: #999;
+              }
+            }
+
+            .quote-file-icon {
+              font-size: 32px;
+              color: #d42e07;
+            }
+          }
+
+          .quote-word-voice {
+            display: flex;
+            align-items: center;
+
+            .word {
+              display: flex;
+              align-items: center;
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+              max-width: 260px;
+            }
+            .voice {
+              cursor: pointer;
+            }
+
+            .icon {
+              font-size: 16px;
+              height: 16px;
+            }
           }
         }
       }
