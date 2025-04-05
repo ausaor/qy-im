@@ -4,13 +4,14 @@
 		<view class="chat-main-box" :style="{height: chatMainHeight+'px'}">
 			<view class="chat-msg" @click="switchChatTabBox('none')">
 				<scroll-view class="scroll-box" scroll-y="true" upper-threshold="200" @scrolltoupper="onScrollToTop"
-					:scroll-into-view="'chat-item-' + scrollMsgIdx">
-					<view v-if="chat" v-for="(msgInfo, idx) in chat.messages" :key="idx">
+					:scroll-into-view="'chat-item-' + scrollMsgIdx" :scroll-with-animation="true">
+					<view v-if="chat" v-for="(msgInfo, idx) in chat.messages" :key="idx" :ref="`message-${msgInfo.id}`" class="message-wrapper"
+                :data-highlight="scrollMsgIdx === msgInfo.id">
 						<chat-message-item :ref="'message'+msgInfo.id" v-if="idx >= showMinIdx"
               @call="onRtCall(msgInfo)" :showInfo="showInfo(msgInfo)"
 							@recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
 							@longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
-              @quote="quoteMessage"
+              @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg"
 							@audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
 							:groupMembers="groupMembers" :myGroupMemberInfo="myGroupMemberInfo" :isOwner="group.ownerId === msgInfo.sendId">
 						</chat-message-item>
@@ -313,6 +314,7 @@ export default {
         headImage: "",
         nickName: "",
         characterNum: null,
+        quoteShowName: '',
       };
       if (this.chat.type == 'GROUP') {
         let friend = this.friends.find((f) => f.id === msgInfo.sendId);
@@ -344,6 +346,10 @@ export default {
             showInfoObj.nickName = member.nickName;
           }
         }
+        if (msgInfo.quoteMsg) {
+          let member2 = this.groupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+          showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
+        }
 
         if (!showInfoObj.showName) {
           if (msgInfo.sendNickName) {
@@ -358,6 +364,9 @@ export default {
       } else {
         msgInfo.sendId == this.mine.id ? showInfoObj.showName = this.mine.nickName : showInfoObj.showName = this.chat.showName;
         msgInfo.sendId == this.mine.id ? showInfoObj.headImage = this.mine.headImage : showInfoObj.headImage = this.chat.headImage;
+        if (msgInfo.quoteMsg) {
+          msgInfo.quoteMsg.sendId == this.mine.id ? showInfoObj.quoteShowName = this.mine.nickName : showInfoObj.quoteShowName = this.chat.showName;
+        }
       }
 
       return showInfoObj;
@@ -867,6 +876,13 @@ export default {
 			if (this.reqQueue.length && !this.isSending) {
 				this.isSending = true;
 				const reqData = this.reqQueue.shift();
+        if (this.quoteMsgInfo.msgInfo) {
+          reqData.msgInfo.quoteId = this.quoteMsgInfo.msgInfo.id;
+          this.quoteMsgInfo.msgInfo = null;
+          this.quoteMsgInfo.quoteContent = '';
+          this.quoteMsgInfo.show = false;
+        }
+        console.log("quoteMsgInfo", this.quoteMsgInfo)
 				this.$http({
 					url: this.messageAction,
 					method: 'post',
@@ -1118,6 +1134,12 @@ export default {
       this.quoteMsgInfo.quoteContent = "";
       this.quoteMsgInfo.show = false;
     },
+    scrollToTargetMsg(messageId) {
+      this.scrollMsgIdx = messageId;
+      setTimeout(() => {
+        this.scrollMsgIdx = -1;
+      }, 2000);
+    }
 	},
 	computed: {
 		mine() {
@@ -1249,6 +1271,26 @@ export default {
 	position: relative;
 	background-color: #fafafa;
 
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes highlight {
+    0%, 100% {
+      background-color: transparent;
+    }
+    20%, 80% {
+      background-color: rgba(79, 70, 229, 0.1);
+    }
+  }
+
 	.header {
 		display: flex;
 		justify-content: center;
@@ -1294,6 +1336,15 @@ export default {
 
 			.scroll-box {
 				height: 100%;
+
+        .message-wrapper {
+          animation: fadeIn 0.3s ease;
+          margin-bottom: 15px;
+        }
+
+        .message-wrapper[data-highlight="true"] {
+          animation: highlight 2s ease;
+        }
 			}
 		}
 

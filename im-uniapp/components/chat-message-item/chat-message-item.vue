@@ -20,15 +20,15 @@
 				<view class="chat-msg-bottom">
 					<view v-if="msgInfo.type == $enums.MESSAGE_TYPE.TEXT">
 						<long-press-menu :items="menuItems" @select="onSelectMenu">
-							<up-parse class="chat-msg-text" :showImgMenu="false" :content="nodesText"></up-parse>
-							<!-- <rich-text class="chat-msg-text" :nodes="nodesText"></rich-text> -->
+<!--							<up-parse class="chat-msg-text" :showImgMenu="false" :content="nodesText"></up-parse>-->
+							 <rich-text class="chat-msg-text" :nodes="nodesText"></rich-text>
 						</long-press-menu>
 					</view>
           <view v-if="msgInfo.type == $enums.MESSAGE_TYPE.WORD_VOICE" class="chat-msg-word-voice">
             <long-press-menu :items="menuItems" @select="onSelectMenu">
               <view class="word-voice-box">
                 <view class="chat-msg-word-voice-text">{{JSON.parse(msgInfo.content).word}}</view>
-                <view class="voice" @click.stop="onPlayWordVoice">
+                <view class="voice" @click.stop="onPlayWordVoice(JSON.parse(msgInfo.content).voice)">
                   <svg-icon :icon-class="'xitongxiaoxi'" />
                 </view>
               </view>
@@ -88,6 +88,48 @@
 							<text>{{ msgInfo.content }}</text>
 						</view>
 					</long-press-menu>
+          <view class="quote-message" v-if="msgInfo.quoteMsg">
+            <long-press-menu :items="quoteMsgMenuItems" @select="quoteMsgOnSelectMenu">
+              <view class="chat-quote-message" @click.stop="scrollToMessage(msgInfo.quoteMsg.id)">
+                <view class="send-user">{{showInfo.quoteShowName}}:</view>
+                <view class="quote-content">
+                  <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.TEXT">
+                    <rich-text class="quote-text" :nodes="nodesTextQuote"></rich-text>
+                  </view>
+                  <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.IMAGE">
+                    <image class="quote-image" mode="aspectFill" :src="JSON.parse(msgInfo.quoteMsg.content).originUrl" lazy-load="true" @click.stop="onShowFullImageQuote()"></image>
+                  </view>
+                  <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.VIDEO">
+                    <video class="quote-video" controls="controls" preload="none"
+                           :src="JSON.parse(msgInfo.quoteMsg.content).videoUrl"
+                           :poster="JSON.parse(msgInfo.quoteMsg.content).coverUrl"></video>
+                  </view>
+                  <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.FILE" class="quote-msg-file">
+                    <view class="quote-file-box">
+                      <view class="quote-file-info">
+                        <uni-link class="quote-file-name" :text="quoteMsgData.name" showUnderLine="true"
+                                  color="#007BFF" :href="quoteMsgData.url"></uni-link>
+                        <view class="quote-file-size">{{quoteMsgFileSize}}</view>
+                      </view>
+                      <view class="quote-file-icon iconfont icon-file"></view>
+                    </view>
+                  </view>
+                  <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.AUDIO" class="quote-msg-audio" @click.stop="onPlayQuoteAudio()">
+                    <text class="iconfont icon-voice-play"></text>
+                    <text class="quote-audio-text">{{ JSON.parse(msgInfo.quoteMsg.content).duration + '"' }}</text>
+                    <text v-if="audioPlayStateQuote == 'PAUSE'" class="iconfont icon-play"></text>
+                    <text v-if="audioPlayStateQuote == 'PLAYING'" class="iconfont icon-pause"></text>
+                  </view>
+                  <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.WORD_VOICE" class="quote-msg-word-voice">
+                    <view class="word">{{JSON.parse(msgInfo.quoteMsg.content).word}}</view>
+                    <view class="voice" @click.stop="onPlayWordVoice(JSON.parse(msgInfo.quoteMsg.content).voice)">
+                      <svg-icon :icon-class="'xitongxiaoxi'" />
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </long-press-menu>
+          </view>
 <!--					<view class="chat-msg-status" v-if="!isAction">
 						<text class="chat-readed" v-if="msgInfo.selfSend && !msgInfo.groupId
 							&& msgInfo.status == $enums.MESSAGE_STATUS.READED">已读</text>
@@ -119,6 +161,7 @@ export default {
           showName: "",
           nickName: "",
           characterNum: null,
+          quoteShowName: "",
         }
       }
     },
@@ -146,6 +189,9 @@ export default {
 			audioPlayState: 'STOP',
 			innerAudioContext: null,
       audioContext: null,
+      audioPlayStateQuote: 'STOP',
+      innerAudioContextQuote: null,
+      audioContextQuote: null,
 			menu: {
 				show: false,
 				style: ""
@@ -192,17 +238,56 @@ export default {
 			}
 			this.emit();
 		},
+    onPlayQuoteAudio() {
+      // 初始化音频播放器
+      if (!this.innerAudioContextQuote) {
+        this.innerAudioContextQuote = uni.createInnerAudioContext();
+        let url = JSON.parse(this.msgInfo.quoteMsg.content).url;
+        this.innerAudioContextQuote.src = url;
+        this.innerAudioContextQuote.onEnded((e) => {
+          console.log('停止')
+          this.audioPlayStateQuote = "STOP"
+          this.emit();
+        })
+        this.innerAudioContextQuote.onError((e) => {
+          this.audioPlayStateQuote = "STOP"
+          console.log("播放音频出错");
+          console.log(e)
+          this.emit();
+        });
+      }
+      if (this.audioPlayStateQuote == 'STOP') {
+        this.innerAudioContextQuote.play();
+        this.audioPlayStateQuote = "PLAYING";
+      } else if (this.audioPlayStateQuote == 'PLAYING') {
+        this.innerAudioContextQuote.pause();
+        this.audioPlayStateQuote = "PAUSE"
+      } else if (this.audioPlayStateQuote == 'PAUSE') {
+        this.innerAudioContextQuote.play();
+        this.audioPlayStateQuote = "PLAYING"
+      }
+    },
 		onSelectMenu(item) {
       this.msgInfo.showName = this.showInfo.showName;
 			this.$emit(item.key.toLowerCase(), this.msgInfo);
 			this.menu.show = false;
 		},
+    quoteMsgOnSelectMenu() {
+      this.$emit('scrollToMessage', this.msgInfo.quoteMsg.id);
+      this.menu.show = false;
+    },
 		onShowFullImage() {
 			let imageUrl = JSON.parse(this.msgInfo.content).originUrl;
 			uni.previewImage({
 				urls: [imageUrl]
 			})
 		},
+    onShowFullImageQuote() {
+      let imageUrl = JSON.parse(this.msgInfo.quoteMsg.content).originUrl;
+      uni.previewImage({
+        urls: [imageUrl]
+      })
+    },
 		onShowReadedBox() {
 			this.$refs.chatGroupReaded.open();
 		},
@@ -216,11 +301,11 @@ export default {
 				this.audioPlayState = "STOP"
 			}
 		},
-    onPlayWordVoice() {
+    onPlayWordVoice(voiceUrl) {
       // 创建音频上下文
       this.audioContext = uni.createInnerAudioContext();
       // 设置音频源
-      this.audioContext.src = JSON.parse(this.msgInfo.content).voice;
+      this.audioContext.src = voiceUrl;
       // 监听音频播放结束事件
       this.audioContext.onEnded(() => {
         console.log('音频播放结束');
@@ -230,7 +315,10 @@ export default {
         console.log('音频播放出错:', res.errMsg);
       });
       this.audioContext.play();
-    }
+    },
+    scrollToMessage(msgId) {
+      this.$emit('scrollToMessage', msgId)
+    },
 	},
 	computed: {
 		loading() {
@@ -252,6 +340,29 @@ export default {
 			}
 			return size + "B";
 		},
+    quoteMsgData() {
+      return JSON.parse(this.msgInfo.quoteMsg.content)
+    },
+    quoteMsgFileSize() {
+      let size = this.quoteMsgData.size;
+      if (size > 1024 * 1024) {
+        return Math.round(size / 1024 / 1024) + "M";
+      }
+      if (size > 1024) {
+        return Math.round(size / 1024) + "KB";
+      }
+      return size + "B";
+    },
+    quoteMsgMenuItems() {
+      let items = [];
+      items.push({
+        key: 'origin',
+        name: '定位到原消息',
+        icon: 'flag'
+      });
+
+      return items;
+    },
 		menuItems() {
 			let items = [];
 			if (this.msgInfo.type == this.$enums.MESSAGE_TYPE.TEXT) {
@@ -302,6 +413,10 @@ export default {
 			let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.content, color)
 			return this.$emo.transform(text, 'emoji-normal')
 		},
+    nodesTextQuote() {
+      let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.quoteMsg.content, '')
+      return this.$emo.transform(text, 'emoji-normal')
+    },
     nameColorStyle() {
       let index = 0;
       if (this.showInfo.characterNum != null && this.showInfo.characterNum <= 10) {
@@ -399,10 +514,11 @@ export default {
 					display: block;
 					word-break: break-all;
 					white-space: pre-line;
+          display: inline-flex;
+          overflow: visible;
 
 
 					&:after {
-						content: "";
 						position: absolute;
 						left: -20rpx;
 						top: 26rpx;
@@ -565,6 +681,129 @@ export default {
 						padding-right: 8px;
 					}
 				}
+
+        .quote-message {
+
+          .chat-quote-message {
+            background: #eee;
+            padding: 5rpx 10rpx;
+            display: inline-flex;
+            align-items: center;
+            border-radius: 10rpx;
+            font-size: 20rpx;
+            color: #909399;
+            margin-top: 8rpx;
+
+            .send-user {
+              margin-right: 20rpx;
+              font-weight: 600;
+              white-space: nowrap;
+            }
+
+            .quote-content {
+
+              .quote-text {
+                position: relative;
+                line-height: 1.6;
+                text-align: left;
+                display: block;
+                word-break: break-all;
+                white-space: pre-line;
+              }
+
+              .quote-image {
+                min-width: 120rpx;
+                max-width: 160rpx;
+                height: 120rpx;
+                cursor: pointer;
+                border-radius: 12rpx;
+              }
+
+              .quote-video {
+                min-width: 160rpx;
+                max-width: 240rpx;
+                height: 160rpx;
+                cursor: pointer;
+                border-radius: 12rpx;
+              }
+
+              .quote-msg-file {
+                display: flex;
+                flex-wrap: nowrap;
+                flex-direction: row;
+                align-items: center;
+                cursor: pointer;
+
+                .quote-file-box {
+                  position: relative;
+                  display: flex;
+                  flex-wrap: nowrap;
+                  align-items: center;
+                  min-height: 80rpx;
+
+                  .quote-file-info {
+                    flex: 1;
+                    height: 100%;
+                    text-align: left;
+                    font-size: 26rpx;
+                    width: 260rpx;
+
+                    .quote-file-name {
+                      font-weight: 600;
+                      margin-bottom: 14rpx;
+                      word-break: break-all;
+                    }
+
+                    .quote-file-size {
+                      font-size: 18rpx;
+                    }
+                  }
+
+                  .quote-file-icon {
+                    font-size: 50rpx;
+                    color: #d42e07;
+                  }
+                }
+              }
+
+              .quote-msg-audio {
+                display: flex;
+                align-items: center;
+                padding: 6rpx 10rpx;
+
+                .icon-voice-play {
+                  font-size: 26rpx;
+                  padding-right: 12rpx;
+                }
+
+                .quote-audio-text {
+                  padding-right: 12rpx;
+                }
+
+                .icon-play {
+                  font-size: 26rpx;
+                }
+
+                .icon-pause {
+                  font-size: 26rpx;
+                }
+              }
+
+              .quote-msg-word-voice {
+                display: flex;
+                align-items: center;
+
+                .word {
+                  width: 260rpx;
+                }
+
+                .voice {
+                  padding-left: 10rpx;
+                }
+              }
+            }
+          }
+        }
 
 				.chat-msg-status {
 					line-height: $im-font-size-smaller-extra;
