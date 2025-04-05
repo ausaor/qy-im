@@ -10,6 +10,7 @@
               @call="onRtCall(msgInfo)" :showInfo="showInfo(msgInfo)"
 							@recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
 							@longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
+              @quote="quoteMessage"
 							@audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
 							:groupMembers="groupMembers" :myGroupMemberInfo="myGroupMemberInfo" :isOwner="group.ownerId === msgInfo.sendId">
 						</chat-message-item>
@@ -35,6 +36,10 @@
 					<editor id="editor" class="send-text-area" :placeholder="isReceipt ? '[回执消息]' : ''"
 						:read-only="isReadOnly" @focus="onEditorFocus" @blur="onEditorBlur" @ready="onEditorReady" @input="onTextInput">
 					</editor>
+          <view class="quote-message" v-if="quoteMsgInfo.show">
+            <view class="quote-text">{{quoteMsgInfo.quoteContent}}</view>
+            <uni-icons type="clear" size="20" color="#888888" @click="cancelQuote"></uni-icons>
+          </view>
 				</view>
 				<view v-if="chat && chat.type == 'GROUP'" class="iconfont icon-at" @click="openAtBox()"></view>
 				<view class="iconfont icon-icon_emoji" @click="onShowEmoChatTab()"></view>
@@ -177,6 +182,11 @@ export default {
       characterEmos: {
         group: [],
         character: []
+      },
+      quoteMsgInfo: {
+        msgInfo: null,
+        quoteContent: '',
+        show: false
       },
 		}
 	},
@@ -1081,7 +1091,33 @@ export default {
     },
     refreshChat() {
       this.loadGroup(this.chat.targetId)
-    }
+    },
+    quoteMessage(msgInfo) {
+      console.log("引用消息", msgInfo);
+
+      this.quoteMsgInfo.msgInfo =  msgInfo;
+      this.quoteMsgInfo.quoteContent += (msgInfo.showName + "：");
+      if (msgInfo.type === this.$enums.MESSAGE_TYPE.TEXT) {
+        this.quoteMsgInfo.quoteContent += msgInfo.content;
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.IMAGE) {
+        this.quoteMsgInfo.quoteContent += "[图片]";
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.VIDEO) {
+        this.quoteMsgInfo.quoteContent += "[视频]";
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.FILE) {
+        this.quoteMsgInfo.quoteContent += "[文件]";
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.AUDIO) {
+        this.quoteMsgInfo.quoteContent += "[语音]" + JSON.parse(msgInfo.content).duration + '"';
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.WORD_VOICE) {
+        //this.quoteMsgInfo.quoteContent += "[语音台词]";
+        this.quoteMsgInfo.quoteContent += JSON.parse(msgInfo.content).word;
+      }
+      this.quoteMsgInfo.show = true;
+    },
+    cancelQuote() {
+      this.quoteMsgInfo.msgInfo = null;
+      this.quoteMsgInfo.quoteContent = "";
+      this.quoteMsgInfo.show = false;
+    },
 	},
 	computed: {
 		mine() {
@@ -1328,6 +1364,23 @@ export default {
 					max-height: 200rpx;
 					font-size: 30rpx;
 				}
+
+        .quote-message {
+          background: #eee;
+          padding: .15625rem;
+          display: flex;
+          align-items: center;
+          border-radius: 10rpx;
+
+          .quote-text {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 20rpx;
+            color: #909399;
+          }
+        }
 			}
 
 			.btn-send {

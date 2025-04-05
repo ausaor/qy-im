@@ -193,6 +193,7 @@ export default {
 			this.emit();
 		},
 		onSelectMenu(item) {
+      this.msgInfo.showName = this.showInfo.showName;
 			this.$emit(item.key.toLowerCase(), this.msgInfo);
 			this.menu.show = false;
 		},
@@ -267,6 +268,13 @@ export default {
 					icon: 'refreshempty'
 				});
 			}
+      if (this.$msgType.isNormal(this.msgInfo.type)) {
+        items.push({
+          key: 'QUOTE',
+          name: '引用',
+          icon: 'flag'
+        })
+      }
 			items.push({
 				key: 'DELETE',
 				name: '删除',
