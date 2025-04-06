@@ -179,7 +179,7 @@ export default {
 							showCancel: false,
 							success: () => {
 								setTimeout(() => {
-									uni.switchTab({
+									uni.navigateTo({
 										url: "/pages/group/group"
 									});
 									this.groupStore.removeGroup(this.groupId);
@@ -209,7 +209,7 @@ export default {
 							showCancel: false,
 							success: () => {
 								setTimeout(() => {
-									uni.switchTab({
+									uni.navigateTo({
 										url: "/pages/group/group"
 									});
 									this.groupStore.removeGroup(this.groupId);

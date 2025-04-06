@@ -89,7 +89,7 @@
 						</view>
 					</long-press-menu>
           <view class="quote-message" v-if="msgInfo.quoteMsg">
-            <long-press-menu :items="quoteMsgMenuItems" @select="quoteMsgOnSelectMenu">
+            <long-press-menu :items="quoteMsgMenuItems">
               <view class="chat-quote-message" @click.stop="scrollToMessage(msgInfo.quoteMsg.id)">
                 <view class="send-user">{{showInfo.quoteShowName}}:</view>
                 <view class="quote-content">
@@ -136,7 +136,7 @@
 						<text class="chat-unread" v-if="msgInfo.selfSend && !msgInfo.groupId
 							&& msgInfo.status != $enums.MESSAGE_STATUS.READED">未读</text>
 					</view>-->
-					<view class="chat-receipt" v-if="msgInfo.receipt" @click="onShowReadedBox">
+					<view class="chat-receipt" v-if="msgInfo.receipt" @click.stop="onShowReadedBox">
 						<text v-if="msgInfo.receiptOk" class="tool-icon iconfont icon-ok"></text>
 						<text v-else>{{ msgInfo.readedCount }}人已读</text>
 					</view>

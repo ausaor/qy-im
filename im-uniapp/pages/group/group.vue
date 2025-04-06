@@ -1,6 +1,6 @@
 <template>
-	<view class="tab-page group">
-		<nav-bar add search @add="onCreateNewGroup" @search="showSearch = !showSearch">群聊</nav-bar>
+	<view class="page group">
+		<nav-bar back add search @add="onCreateNewGroup" @search="showSearch = !showSearch">群聊</nav-bar>
 		<view class="nav-bar" v-if="showSearch">
 			<view class="nav-search">
 				<uni-search-bar v-model="searchText" cancelButton="none" radius="100"

@@ -21,7 +21,7 @@
 			"path": "pages/friend/friend"
 		},
 		{
-			"path": "pages/group/group"
+			"path": "pages/region-group/region-group"
 		},
 		{
 			"path": "pages/mine/mine"
@@ -47,6 +47,9 @@
 		},
 		{
 			"path": "pages/friend/friend-add"
+		},
+		{
+			"path": "pages/group/group"
 		},
 		{
 			"path": "pages/group/group-info"
@@ -101,16 +104,16 @@
 				"text": "消息"
 			},
 			{
+				"pagePath": "pages/region-group/region-group",
+				"iconPath": "static/tarbar/earth.png",
+				"selectedIconPath": "static/tarbar/earth_active.png",
+				"text": "地区群聊"
+			},
+			{
 				"pagePath": "pages/friend/friend",
 				"iconPath": "static/tarbar/friend.png",
 				"selectedIconPath": "static/tarbar/friend_active.png",
-				"text": "好友"
-			},
-			{
-				"pagePath": "pages/group/group",
-				"iconPath": "static/tarbar/group.png",
-				"selectedIconPath": "static/tarbar/group_active.png",
-				"text": "群聊"
+				"text": "通讯录"
 			},
 			{
 				"pagePath": "pages/mine/mine",

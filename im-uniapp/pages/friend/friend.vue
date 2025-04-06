@@ -1,13 +1,27 @@
 <template>
 
 	<view class="tab-page friend">
-		<nav-bar add search @add="onAddNewFriends" @search="showSearch = !showSearch">好友</nav-bar>
+		<nav-bar add search @add="onAddNewFriends" @search="showSearch = !showSearch">通讯录</nav-bar>
 		<view class="nav-bar" v-if="showSearch">
 			<view class="nav-search">
 				<uni-search-bar v-model="searchText" radius="100" cancelButton="none"
 					placeholder="点击搜索好友"></uni-search-bar>
 			</view>
 		</view>
+    <view class="socializes">
+      <view class="socializes-item">
+        <view class="item-icon">
+          <svg-icon class="svg-icon" icon-class="xindepengyou"></svg-icon>
+        </view>
+        <view class="item-name">新的朋友</view>
+      </view>
+      <view class="socializes-item" @click.stop="toGroupPage">
+        <view class="item-icon">
+          <svg-icon class="svg-icon" icon-class="qunliao"></svg-icon>
+        </view>
+        <view class="item-name">群聊</view>
+      </view>
+    </view>
 		<view class="friend-tip" v-if="friends.length == 0">
 			温馨提示：您现在还没有任何好友，快点击右上方'+'按钮添加好友吧~
 		</view>
@@ -28,8 +42,10 @@
 
 <script>
 import { pinyin } from 'pinyin-pro';
+import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 
 export default {
+  components: {SvgIcon},
 	data() {
 		return {
 			showSearch: false,
@@ -53,7 +69,12 @@ export default {
 		},
 		isEnglish(character) {
 			return /^[A-Za-z]+$/.test(character);
-		}
+		},
+    toGroupPage() {
+			uni.navigateTo({
+				url: "/pages/group/group"
+			})
+		},
 	},
 	computed: {
 		friends() {
@@ -127,6 +148,35 @@ export default {
 		font-size: $im-font-size-small !important;
 	}
 
+  .socializes {
+    background-color: #ffffff;
+    padding: 10rpx 30rpx;
+
+    .socializes-item {
+      display: flex;
+      align-items: center;
+      padding: 10rpx 0;
+
+      .item-icon {
+        width: 2.4rem;
+        height: 2.4rem;
+
+        .svg-icon {
+          width: 2.4rem;
+          height: 2.4rem;
+        }
+      }
+
+      .item-name {
+        width: 100%;
+        height: 2.4rem;
+        line-height: 2.4rem;
+        margin-left: 20rpx;
+        color: $im-text-color;
+      }
+    }
+  }
+
 	.friend-tip {
 		position: absolute;
 		top: 400rpx;
@@ -137,7 +187,7 @@ export default {
 	}
 
 	.friend-items {
-		flex: 1;
+    flex: 1;
 		padding: 0;
 		overflow: scroll;
 		position: relative;

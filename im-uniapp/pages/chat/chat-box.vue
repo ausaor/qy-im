@@ -1137,7 +1137,10 @@ export default {
       this.quoteMsgInfo.show = false;
     },
     scrollToTargetMsg(messageId) {
-      this.scrollToMsgIdx(messageId);
+      this.scrollMsgIdx = messageId;
+      setTimeout(() => {
+        this.scrollMsgIdx = 0;
+      }, 2000);
     }
 	},
 	computed: {
