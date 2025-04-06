@@ -5,7 +5,7 @@
 			<view class="chat-msg" @click="switchChatTabBox('none')">
 				<scroll-view class="scroll-box" scroll-y="true" upper-threshold="200" @scrolltoupper="onScrollToTop"
 					:scroll-into-view="'chat-item-' + scrollMsgIdx" :scroll-with-animation="true">
-					<view v-if="chat" v-for="(msgInfo, idx) in chat.messages" :key="idx" :ref="`message-${msgInfo.id}`" class="message-wrapper"
+					<view v-if="chat" v-for="(msgInfo, idx) in chat.messages" :key="idx" class="message-wrapper"
                 :data-highlight="scrollMsgIdx === msgInfo.id">
 						<chat-message-item :ref="'message'+msgInfo.id" v-if="idx >= showMinIdx"
               @call="onRtCall(msgInfo)" :showInfo="showInfo(msgInfo)"
@@ -1135,10 +1135,7 @@ export default {
       this.quoteMsgInfo.show = false;
     },
     scrollToTargetMsg(messageId) {
-      this.scrollMsgIdx = messageId;
-      setTimeout(() => {
-        this.scrollMsgIdx = -1;
-      }, 2000);
+      this.scrollToMsgIdx(messageId);
     }
 	},
 	computed: {

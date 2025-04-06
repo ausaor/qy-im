@@ -412,6 +412,20 @@ uni-page-head {
 
 // #endif
 
+@font-face {
+  font-family: 'MyGlobalFont';
+  src: url('/static/fonts/2.woff2') format('woff2');
+}
+
+body {
+  font-family: 'MyGlobalFont', sans-serif;
+}
+
+/* 确保所有文本元素继承全局字体 */
+text, view, div, p, span, button, input {
+  font-family: inherit;
+}
+
 .tab-page {
 	position: relative;
 	display: flex;
@@ -428,7 +442,8 @@ uni-page-head {
 	color: $im-text-color;
 	background-color: $im-bg;
 	font-size: $im-font-size;
-	font-family: $font-family;
+  font-family: 'MyGlobalFont', sans-serif;
+	//font-family: $font-family;
 }
 
 .page {
@@ -444,6 +459,7 @@ uni-page-head {
 	color: $im-text-color;
 	background-color: $im-bg;
 	font-size: $im-font-size;
-	font-family: $font-family;
+  font-family: 'MyGlobalFont', sans-serif;
+	//font-family: $font-family;
 }
 </style>
