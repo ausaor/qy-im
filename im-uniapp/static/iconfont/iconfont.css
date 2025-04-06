@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4843012 */
-  src: url('iconfont.woff2?t=1742712855986') format('woff2'),
-       url('iconfont.woff?t=1742712855986') format('woff'),
-       url('iconfont.ttf?t=1742712855986') format('truetype');
+  src: url('iconfont.woff2?t=1743901938328') format('woff2'),
+       url('iconfont.woff?t=1743901938328') format('woff'),
+       url('iconfont.ttf?t=1743901938328') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,58 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-fabiaoqing:before {
+  content: "\e64f";
+}
+
+.icon-yihuizhi:before {
+  content: "\e610";
+}
+
+.icon-yuyin:before {
+  content: "\e667";
+}
+
+.icon-icon-wenjian:before {
+  content: "\e62a";
+}
+
+.icon-phone2:before {
+  content: "\e613";
+}
+
+.icon-yinpin:before {
+  content: "\e604";
+}
+
+.icon-yuyintonghua:before {
+  content: "\e963";
+}
+
+.icon-tupian:before {
+  content: "\e664";
+}
+
+.icon-icon_phone_accept_hover:before {
+  content: "\e60d";
+}
+
+.icon-icon_phone_reject_nor:before {
+  content: "\e60f";
+}
+
+.icon-shipin:before {
+  content: "\e609";
+}
+
+.icon-GIF:before {
+  content: "\eb95";
+}
+
+.icon-mv:before {
+  content: "\e8d0";
 }
 
 .icon-swiper:before {

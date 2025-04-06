@@ -55,51 +55,51 @@
 				<view class="chat-tools-item">
 					<file-upload ref="fileUpload" :onBefore="onUploadFileBefore" :onSuccess="onUploadFileSuccess"
 						:onError="onUploadFileFail">
-						<view class="tool-icon iconfont icon-folder"></view>
+            <svg-icon class="tool-icon" icon-class="icon-wenjian"></svg-icon>
 					</file-upload>
 					<view class="tool-name">文件</view>
 				</view>
 				<view class="chat-tools-item">
 					<image-upload :maxCount="9" sourceType="album" :onBefore="onUploadImageBefore"
 						:onSuccess="onUploadImageSuccess" :onError="onUploadImageFail">
-						<view class="tool-icon iconfont icon-picture"></view>
+            <svg-icon class="tool-icon" icon-class="tupian"></svg-icon>
 					</image-upload>
 					<view class="tool-name">相册</view>
 				</view>
         <view class="chat-tools-item">
           <video-upload sourceType="album" :onBefore="onUploadVideoBefore" :onSuccess="onUploadVideoSuccess" :onError="onUploadVideoFail">
-            <view class="tool-icon iconfont icon-film"></view>
+            <svg-icon class="tool-icon" icon-class="mv"></svg-icon>
           </video-upload>
           <view class="tool-name">视频</view>
         </view>
 				<view class="chat-tools-item" @click="onRecorderInput()">
-					<view class="tool-icon iconfont icon-microphone"></view>
+          <svg-icon class="tool-icon" icon-class="yuyin"></svg-icon>
 					<view class="tool-name">语音消息</view>
 				</view>
 				<view v-if="chat.type == 'GROUP'" class="chat-tools-item" @click="switchReceipt()">
-					<view class="tool-icon iconfont icon-receipt" :class="isReceipt ? 'active' : ''"></view>
+          <svg-icon class="tool-icon" :class="isReceipt ? 'active' : ''" icon-class="yihuizhi"></svg-icon>
 					<view class="tool-name">回执消息</view>
 				</view>
 				<!-- #ifndef MP-WEIXIN -->
 				<!-- 音视频不支持小程序 -->
 				<view v-if="chat.type == 'PRIVATE'" class="chat-tools-item" @click="onPriviteVideo()">
-					<view class="tool-icon iconfont icon-video"></view>
+          <svg-icon class="tool-icon" icon-class="shipin"></svg-icon>
 					<view class="tool-name">视频通话</view>
 				</view>
 				<view v-if="chat.type == 'PRIVATE'" class="chat-tools-item" @click="onPriviteVoice()">
-					<view class="tool-icon iconfont icon-call"></view>
+          <svg-icon class="tool-icon" icon-class="yuyintonghua"></svg-icon>
 					<view class="tool-name">语音通话</view>
 				</view>
 				<view v-if="chat.type == 'GROUP'" class="chat-tools-item" @click="onGroupVideo()">
-					<view class="tool-icon iconfont icon-call"></view>
+          <svg-icon class="tool-icon" icon-class="yuyintonghua"></svg-icon>
 					<view class="tool-name">语音通话</view>
 				</view>
         <view v-if="chat.type == 'GROUP' && myGroupMemberInfo.isTemplate" class="chat-tools-item" @click="onCharacterWord()">
-          <view class="tool-icon iconfont icon-minganci"></view>
+          <svg-icon class="tool-icon" icon-class="minganci"></svg-icon>
           <view class="tool-name">角色台词</view>
         </view>
         <view v-if="chat.type == 'GROUP' && myGroupMemberInfo.isTemplate" class="chat-tools-item" @click="onShowCharacterEmo()">
-          <view class="tool-icon iconfont icon-biaoqing"></view>
+          <svg-icon class="tool-icon" icon-class="biaoqing"></svg-icon>
           <view class="tool-name">角色表情</view>
         </view>
 				<!-- #endif -->
@@ -144,9 +144,11 @@
 import UNI_APP from '@/.env.js';
 import characterWordList from "../../components/character-word-list/character-word-list.vue";
 import VideoUpload from "../../components/video-upload/video-upload.vue";
+import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 
 export default {
   components: {
+    SvgIcon,
     VideoUpload,
     characterWordList
   },
