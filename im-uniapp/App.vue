@@ -44,6 +44,7 @@ export default {
 				// 加载离线消息
 				this.pullPrivateOfflineMessage(this.chatStore.privateMsgMaxId);
 				this.pullGroupOfflineMessage(this.chatStore.groupMsgMaxId);
+        this.pullRegionGroupOfflineMessage(this.regionStore.regionGroupMsgMaxId)
 			});
 			wsApi.onMessage((cmd, msgInfo) => {
 				if (cmd == 2) {
@@ -62,7 +63,10 @@ export default {
 				} else if (cmd == 5) {
 					// 系统消息
 					this.handleSystemMessage(msgInfo);
-				}
+				} else if (cmd == 9) {
+          // 地区群聊消息
+          this.handleRegionGroupMessage(msgInfo);
+        }
 			});
 			wsApi.onClose((res) => {
 				console.log("ws断开", res);
@@ -76,7 +80,9 @@ export default {
 				const promises = [];
 				promises.push(this.friendStore.loadFriend());
 				promises.push(this.groupStore.loadGroup());
+				promises.push(this.regionStore.loadRegionGroup());
 				promises.push(this.chatStore.loadChat());
+				promises.push(this.regionStore.loadRegionChat());
 				promises.push(this.configStore.loadConfig());
 				return Promise.all(promises);
 			})
@@ -87,6 +93,7 @@ export default {
 			this.chatStore.clear();
 			this.configStore.clear();
 			this.userStore.clear();
+      this.regionStore.clear();
 		},
 		pullPrivateOfflineMessage(minId) {
 			this.chatStore.setLoadingPrivateMsg(true)
@@ -106,6 +113,15 @@ export default {
 				this.chatStore.setLoadingGroupMsg(false)
 			})
 		},
+    pullRegionGroupOfflineMessage(minId) {
+      this.regionStore.setLoadingRegionGroupMsg(true)
+      http({
+        url: "/message/regionGroup/pullOfflineMessage?minId=" + minId,
+        method: 'GET'
+      }).catch(() => {
+        this.regionStore.setLoadingRegionGroupMsg(false)
+      })
+    },
 		handlePrivateMessage(msg) {
 			// 消息加载标志
 			if (msg.type == enums.MESSAGE_TYPE.LOADING) {
@@ -140,7 +156,6 @@ export default {
 			if (msgType.isRtcPrivate(msg.type)) {
 				// #ifdef MP-WEIXIN
 				// 小程序不支持音视频
-				return;
 				// #endif
 				// 被呼叫，弹出视频页面
 				let delayTime = 100;
@@ -215,6 +230,46 @@ export default {
 				this.insertGroupMessage(group, msg);
 			})
 		},
+    handleRegionGroupMessage(msg) {
+      // 消息加载标志
+      if (msg.type == enums.MESSAGE_TYPE.LOADING) {
+        debugger
+        this.regionStore.setLoadingRegionGroupMsg(JSON.parse(msg.content))
+        return;
+      }
+      // 消息已读处理
+      if (msg.type == enums.MESSAGE_TYPE.READED) {
+        // 我已读对方的消息，清空已读数量
+        let chatInfo = {
+          type: 'REGION-GROUP',
+          targetId: msg.regionGroupId
+        }
+        this.regionStore.resetRegionUnreadCount(chatInfo)
+        return;
+      }
+      // 消息回执处理
+      if (msg.type == enums.MESSAGE_TYPE.RECEIPT) {
+        let chatInfo = {
+          type: 'REGION-GROUP',
+          targetId: msg.regionGroupId
+        }
+        // 更新消息已读人数
+        let msgInfo = {
+          id: msg.id,
+          regionGroupId: msg.regionGroupId,
+          readedCount: msg.readedCount,
+          receiptOk: msg.receiptOk
+        };
+        this.regionStore.updaterRegionMessage(msgInfo,chatInfo)
+        return;
+      }
+      // 标记这条消息是不是自己发的
+      msg.selfSend = msg.sendId == this.userStore.userInfo.id;
+      this.loadRegionGroupInfo(msg.regionGroupId, (group) => {
+        // 插入群聊消息
+        this.insertRegionGroupMessage(group, msg);
+      })
+    },
 		handleSystemMessage(msg) {
 			if (msg.type == enums.MESSAGE_TYPE.USER_BANNED) {
 				// 用户被封禁
@@ -231,7 +286,6 @@ export default {
 			if (msgType.isRtcGroup(msg.type)) {
 				// #ifdef MP-WEIXIN
 				// 小程序不支持音视频
-				return;
 				// #endif
 				// 被呼叫，弹出视频页面
 				let delayTime = 100;
@@ -269,6 +323,49 @@ export default {
 			// 播放提示音
 			this.playAudioTip();
 		},
+    insertRegionGroupMessage(group, msg) {
+      // 群视频信令
+      if (msgType.isRtcGroup(msg.type)) {
+        // #ifdef MP-WEIXIN
+        // 小程序不支持音视频
+        // #endif
+        // 被呼叫，弹出视频页面
+        let delayTime = 100;
+        if (msg.type == enums.MESSAGE_TYPE.RTC_GROUP_SETUP) {
+          let pages = getCurrentPages();
+          let curPage = pages[pages.length - 1].route;
+          if (curPage != "pages/chat/chat-group-video") {
+            const userInfos = encodeURIComponent(msg.content);
+            const inviterId = msg.sendId;
+            const groupId = msg.groupId
+            uni.navigateTo({
+              url: `/pages/chat/chat-group-video?groupId=${groupId}&isHost=false
+									&inviterId=${inviterId}&userInfos=${userInfos}`
+            })
+            delayTime = 500;
+          }
+        }
+        // 消息转发到chat-group-video页面进行处理
+        setTimeout(() => {
+          uni.$emit('WS_RTC_GROUP', msg);
+        }, delayTime)
+        return;
+      }
+
+      debugger
+      let chatInfo = {
+        type: 'REGION-GROUP',
+        targetId: group.id,
+        showName: group.remark,
+        headImage: group.headImage
+      };
+      // 打开会话
+      this.regionStore.openRegionChat(chatInfo);
+      // 插入消息
+      this.regionStore.insertRegionMessage(msg, chatInfo);
+      // 播放提示音
+      this.playAudioTip();
+    },
 		loadFriendInfo(id, callback) {
 			let friend = this.friendStore.findFriend(id);
 			if (friend) {
@@ -297,6 +394,20 @@ export default {
 				})
 			}
 		},
+    loadRegionGroupInfo(id, callback) {
+      let group = this.regionStore.findRegionGroup(id);
+      if (group) {
+        callback(group);
+      } else {
+        http({
+          url: `/region/group/find/${id}`,
+          method: 'GET'
+        }).then((group) => {
+          this.regionStore.addRegionGroup(group);
+          callback(group)
+        })
+      }
+    },
 		exit() {
 			console.log("exit");
 			this.isExit = true;

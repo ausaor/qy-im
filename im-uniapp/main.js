@@ -15,6 +15,7 @@ import useFriendStore from '@/store/friendStore.js'
 import useGroupStore from '@/store/groupStore.js'
 import useConfigStore from '@/store/configStore.js'
 import useUserStore from '@/store/userStore.js'
+import useRegionStore from '@/store/regionStore.js'
 import barGroup from '@/components/bar/bar-group'
 import arrowBar from '@/components/bar/arrow-bar'
 import btnBar from '@/components/bar/btn-bar'
@@ -55,6 +56,7 @@ export function createApp() {
     app.config.globalProperties.groupStore = useGroupStore();
     app.config.globalProperties.configStore = useConfigStore();
     app.config.globalProperties.userStore = useUserStore();
+    app.config.globalProperties.regionStore = useRegionStore();
   }
   return {
     app,
