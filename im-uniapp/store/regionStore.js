@@ -47,7 +47,6 @@ export default defineStore('regionStore', {
             }
         },
         initRegionChats(chatsData) {
-            debugger
             cacheChats = [];
             this.regionChats = [];
             for (let chat of chatsData.regionChats) {
@@ -105,7 +104,6 @@ export default defineStore('regionStore', {
             this.regionSaveToStorage();
         },
         regionSaveToStorage(state) {
-            debugger
             // 加载中不保存，防止卡顿
             if (this.isRegionLoading()) {
                 return;
@@ -177,7 +175,6 @@ export default defineStore('regionStore', {
             }
         },
         openRegionChat(chatInfo) {
-            debugger
             let chats = this.curRegionChats;
             let chat = null;
             for (let idx in chats) {
@@ -191,7 +188,6 @@ export default defineStore('regionStore', {
             }
             // 创建会话
             if (chat == null) {
-                debugger
                 chat = {
                     targetId: chatInfo.targetId,
                     type: chatInfo.type,
@@ -264,7 +260,6 @@ export default defineStore('regionStore', {
                     chat.atAll = true;
                 }
             }
-            debugger
             // 间隔大于10分钟插入时间显示
             if (!chat.lastTimeTip || (chat.lastTimeTip < msgInfo.sendTime - 600 * 1000)) {
                 chat.messages.push({
@@ -316,7 +311,6 @@ export default defineStore('regionStore', {
         findRegionChatIdx: (state) => (chat) => {
             let chats = state.curRegionChats;
             for (let idx in chats) {
-                debugger
                 if (chats[idx].type == chat.type &&
                     chats[idx].targetId === chat.targetId) {
                     chat = state.regionChats[idx];
@@ -325,13 +319,11 @@ export default defineStore('regionStore', {
             }
         },
         findRegionChat: (state) => (chat) => {
-            debugger
             let chats = state.curRegionChats;
             let idx = state.findRegionChatIdx(chat);
             return chats[idx];
         },
         curRegionChats: (state) => {
-            debugger
             if (cacheChats && state.isRegionLoading()) {
                 return cacheChats;
             }
@@ -352,6 +344,10 @@ export default defineStore('regionStore', {
                     return chat.messages[idx];
                 }
             }
-        }
+        },
+        findRegionChatByGroup: (state) => (gid) => {
+            let chats = state.curRegionChats;
+            return chats.find(chat => chat.targetId === gid)
+        },
     }
 })

@@ -233,7 +233,6 @@ export default {
     handleRegionGroupMessage(msg) {
       // 消息加载标志
       if (msg.type == enums.MESSAGE_TYPE.LOADING) {
-        debugger
         this.regionStore.setLoadingRegionGroupMsg(JSON.parse(msg.content))
         return;
       }
@@ -352,7 +351,6 @@ export default {
         return;
       }
 
-      debugger
       let chatInfo = {
         type: 'REGION-GROUP',
         targetId: group.id,
