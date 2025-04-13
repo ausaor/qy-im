@@ -1450,7 +1450,7 @@ export default {
 		.chat-tools {
 			display: flex;
 			flex-wrap: wrap;
-			align-items: top;
+			align-items: center;
 			height: 310px;
 			padding: 40rpx;
 			box-sizing: border-box;

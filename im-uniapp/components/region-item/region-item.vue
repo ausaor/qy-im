@@ -50,14 +50,13 @@ export default {
         return;
       }
       uni.navigateTo({
-        url: "/pages/chat/chat-box?chatIdx=" + this.index
+        url: "/pages/region-group/region-chat-box?regionGroupId=" + this.regionGroup.id
       })
     },
   },
   computed: {
     chat() {
       let chat = this.regionStore.findRegionChatByGroup(this.regionGroup.id);
-      console.log("regionChat", chat)
       return chat ? chat : {};
     },
     atText() {

@@ -11,7 +11,7 @@
 			<head-image class="avatar" @longpress.prevent="$emit('longPressHead')" :id="msgInfo.sendId" :url="showInfo.headImage"
 				:name="showInfo.showName" size="small"></head-image>
 			<view class="chat-msg-content">
-				<view v-if="msgInfo.groupId && !msgInfo.selfSend" class="chat-msg-top">
+				<view v-if="(msgInfo.groupId || msgInfo.regionGroupId) && !msgInfo.selfSend" class="chat-msg-top">
 					<text :style="nameColorStyle">{{ showInfo.showName }}</text>
           <text v-show="myGroupMemberInfo.showNickName" style="margin-left: 20rpx;">{{showInfo.nickName}}</text>
           <text v-if="isOwner && msgInfo.groupId" style="margin-left: 20rpx;" class="group-owner">群主</text>

@@ -38,8 +38,26 @@ export default defineStore('regionStore', {
                 })
             });
         },
+        updateRegionGroup(regionGroup) {
+            this.regionGroups.forEach((g, idx) => {
+                if (g.id === regionGroup.id) {
+                    // 拷贝属性
+                    Object.assign(this.regionGroups[idx], regionGroup);
+                }
+            })
+        },
 
         /* region chat start */
+        activeRegionChat(regionGroupId) {
+            let chats = this.curRegionChats;
+            if (chats) {
+                for (const idx in chats) {
+                    if (chats[idx].targetId == regionGroupId) {
+                        chats[idx].unreadCount = 0;
+                    }
+                }
+            }
+        },
         setLoadingRegionGroupMsg(loading) {
             this.loadingRegionGroupMsg = loading;
             if (!this.isRegionLoading()) {
@@ -289,6 +307,33 @@ export default defineStore('regionStore', {
             chat.stored = false;
             this.regionSaveToStorage();
         },
+        updateRegionChatFromGroup(group) {
+            let chat = this.findRegionChatByGroup(group.id);
+            if (chat && (chat.showName !== group.regionGroupName)) {
+                chat.showName = group.regionGroupName;
+                chat.stored = false;
+                this.regionSaveToStorage();
+            }
+        },
+        deleteRegionMessage(msgInfo, chatInfo) {
+            // 获取对方id或群id
+            let chat = this.findRegionChat(chatInfo);
+            for (let idx in chat.messages) {
+                // 已经发送成功的，根据id删除
+                if (chat.messages[idx].id && chat.messages[idx].id == msgInfo.id) {
+                    chat.messages.splice(idx, 1);
+                    break;
+                }
+                // 正在发送中的消息可能没有id，根据发送时间删除
+                if (msgInfo.selfSend && chat.messages[idx].selfSend &&
+                    chat.messages[idx].sendTime == msgInfo.sendTime) {
+                    chat.messages.splice(idx, 1);
+                    break;
+                }
+            }
+            chat.stored = false;
+            this.regionSaveToStorage();
+        },
         /* region chat end */
 
         clear() {
@@ -315,6 +360,14 @@ export default defineStore('regionStore', {
                     chats[idx].targetId === chat.targetId) {
                     chat = state.regionChats[idx];
                     return idx;
+                }
+            }
+        },
+        findRegionChatById: (state) => (regionGroupId) => {
+            let chats = state.curRegionChats;
+            for (let idx in chats) {
+                if (chats[idx].targetId == regionGroupId) {
+                    return chats[idx];
                 }
             }
         },
