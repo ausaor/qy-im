@@ -87,7 +87,7 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
         }
 
         Long userId = session.getUserId();
-        this.sendLoadingMessage(true);
+        //this.sendLoadingMessage(true);
         Date startTime = DateUtils.addMonths(new Date(), -1);
 
         List<Pusher> pushers = pusherService.list();

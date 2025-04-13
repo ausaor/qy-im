@@ -209,7 +209,7 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
             return;
         }
         // 开启加载中标志
-        this.sendLoadingMessage(true);
+        //this.sendLoadingMessage(true);
         // 只能拉取最近1个月的,最多拉取1000条
         Date minDate = DateUtils.addMonths(new Date(), -1);
         LambdaQueryWrapper<RegionGroupMessage> wrapper = Wrappers.lambdaQuery();

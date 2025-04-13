@@ -198,7 +198,7 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
             return;
         }
         // 开启加载中标志
-        this.sendLoadingMessage(true);
+        //this.sendLoadingMessage(true);
         List<Long> friendIds = friends.stream().map(Friend::getFriendId).collect(Collectors.toList());
         // 获取当前用户的消息
         LambdaQueryWrapper<PrivateMessage> queryWrapper = Wrappers.lambdaQuery();
