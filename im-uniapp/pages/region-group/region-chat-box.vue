@@ -75,11 +75,11 @@
           <svg-icon class="tool-icon" icon-class="yuyin"></svg-icon>
           <view class="tool-name">语音消息</view>
         </view>
-        <view class="chat-tools-item" @click="switchReceipt()">
+        <view class="chat-tools-item" @click="switchReceipt()" v-show="regionGroup.joinType===1">
           <svg-icon class="tool-icon" :class="isReceipt ? 'active' : ''" icon-class="yihuizhi"></svg-icon>
           <view class="tool-name">回执消息</view>
         </view>
-        <view class="chat-tools-item" @click="onGroupVideo()">
+        <view class="chat-tools-item" @click="onGroupVideo()" v-show="regionGroup.joinType===1">
           <svg-icon class="tool-icon" icon-class="yuyintonghua"></svg-icon>
           <view class="tool-name">语音通话</view>
         </view>
@@ -156,6 +156,7 @@ export default {
       let msgInfo = {
         content: JSON.stringify(data),
         type: this.$enums.MESSAGE_TYPE.AUDIO,
+        joinType: this.regionGroup.joinType,
         receipt: this.isReceipt
       }
       // 填充对方id
@@ -234,6 +235,7 @@ export default {
             content: receiptText + sendText + atText,
             atUserIds: this.atUserIds,
             receipt: this.isReceipt,
+            joinType: this.regionGroup.joinType,
             type: 0
           }
           // 清空@成员和回执标记
@@ -309,6 +311,7 @@ export default {
         type: this.$enums.MESSAGE_TYPE.IMAGE,
         readedCount: 0,
         loadStatus: "loading",
+        joinType: this.regionGroup.joinType,
         status: this.$enums.MESSAGE_STATUS.UNSEND
       }
       // 填充对方id
@@ -343,6 +346,7 @@ export default {
         type: this.$enums.MESSAGE_TYPE.VIDEO,
         readedCount: 0,
         loadStatus: "loading",
+        joinType: this.regionGroup.joinType,
         status: this.$enums.MESSAGE_STATUS.UNSEND
       }
       // 填充对方id
@@ -410,6 +414,7 @@ export default {
         type: this.$enums.MESSAGE_TYPE.FILE,
         readedCount: 0,
         loadStatus: "loading",
+        joinType: this.regionGroup.joinType,
         status: this.$enums.MESSAGE_STATUS.UNSEND
       }
       // 填充对方id
