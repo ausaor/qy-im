@@ -64,6 +64,8 @@
       </view>
     </view>
     <region-group-members :members="regionGroupMembers" ref="membersPopup" @onConfirm="confirmChooseMember"></region-group-members>
+    <up-modal :show="leaderTransferShow" title="群主转移" :content='leaderTransferContent' :showCancelButton="true"
+              @confirm="confirmLeaderTransfer" @cancel="() => this.leaderTransferShow = false"></up-modal>
   </view>
 </template>
 
@@ -85,6 +87,8 @@ export default {
       bannedTime: 1,
       searchText: '',
       choosedMember: {},
+      leaderTransferShow: false,
+      leaderTransferContent: '',
     }
   },
   methods: {
@@ -122,7 +126,40 @@ export default {
       this.choosedMember = member;
     },
     leaderTransfer() {
-
+      this.leaderTransferContent = `请确认是否将群主转移给群成员【${this.choosedMember.aliasName}】？`;
+      this.leaderTransferShow = true;
+    },
+    confirmLeaderTransfer() {
+      if (this.choosedMember == null || this.choosedMember.joinType === 0) {
+        uni.showToast({
+          title: "请先选择一位常驻成员",
+          icon: 'none'
+        })
+        return;
+      }
+      if (this.myGroupMemberInfo.userId === this.choosedMember.userId) {
+        uni.showToast({
+          title: "不能选择自己",
+          icon: 'none'
+        })
+        return;
+      }
+      let paramVO = {
+        regionGroupId: this.regionGroup.id,
+        userId: this.choosedMember.userId,
+        joinType: this.choosedMember.joinType,
+      }
+      this.$http({
+        url: '/region/group/leaderTransfer',
+        method: 'post',
+        data: paramVO
+      }).then(() => {
+        uni.showToast({
+          title: "操作成功",
+          icon: 'none'
+        });
+        this.leaderTransferShow = false;
+      });
     },
   },
   computed: {
