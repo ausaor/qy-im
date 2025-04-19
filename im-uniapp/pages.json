@@ -77,6 +77,9 @@
 			"path": "pages/group/group-switch"
 		},
 		{
+			"path": "pages/region-group/region-group-info"
+		},
+		{
 			"path": "pages/mine/mine-edit"
 		},
 		{

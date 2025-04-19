@@ -149,6 +149,12 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         assert vo != null;
         RegionGroupMember member = regionGroupMemberService.findByRegionGroupIdAndUserId(regionGroupId, session.getUserId());
 
+        if (ObjectUtil.isNotNull(regionGroup.getLeaderId()) && ObjectUtil.isNotNull(regionGroup.getExpirationTime())) {
+            if (new Date().after(regionGroup.getExpirationTime())) {
+                vo.setLeaderId(null);
+            }
+        }
+
         // 判断当前用户是否临时加入
         Object object = redisCache.getCacheObject(IMRedisKey.IM_REGION_GROUP_NUM_TEMP_USER
                 + regionGroup.getCode() + ":" + regionGroup.getNum() + ":" + session.getUserId());

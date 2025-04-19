@@ -561,10 +561,12 @@ export default {
       });
     },
     onShowMore() {
-
+      uni.navigateTo({
+        url: "/pages/region-group/region-group-info?id=" + this.regionGroup.id
+      })
     },
     refreshChat() {
-
+      this.loadRegionGroup(this.chat.targetId)
     },
     listenKeyBoard() {
       // #ifdef H5
