@@ -18,21 +18,73 @@
       </view>
       <view class="member-more" @click="onShowMoreMember()">{{ `查看全部群成员${regionGroupMembers.length}人` }}></view>
     </view>
+    <view class="form">
+      <view class="form-item">
+        <view class="label" style="color: #3c9cff;" @click="chooseMember">选择成员</view>
+        <view class="value" style="display: flex;align-items: center;">
+          <head-image class="group-image" :name="choosedMember.aliasName" :url="choosedMember.headImage"
+                      :size="60"></head-image>
+          <text style="margin-left: 10rpx;">{{choosedMember.aliasName}}</text>
+        </view>
+      </view>
+      <view class="form-item leader-transfer" v-if="myGroupMemberInfo.isLeader">
+        <text @click="leaderTransfer">群主转移</text>
+      </view>
+      <view class="form-item leader-vote">
+        <text>群主投票</text>
+        <text>群主解除投票</text>
+      </view>
+      <view class="form-item">
+        <view class="label">投票通知</view>
+        <view class="value" style="display: flex;align-items: center;justify-content: space-between;">
+          <text>关闭</text>
+          <up-switch v-model="announce" activeColor="#13ce66" inactiveColor="#ff4949"></up-switch>
+          <text>通知</text>
+        </view>
+      </view>
+      <view class="form-item" v-if="myGroupMemberInfo.isLeader">
+        <view class="label">全员禁言</view>
+        <view class="value" style="display: flex;align-items: center;justify-content: space-between;">
+          <text>关闭</text>
+          <up-switch v-model="regionGroup.isBanned" activeColor="#13ce66" inactiveColor="#ff4949"></up-switch>
+          <text>开启</text>
+        </view>
+      </view>
+      <view class="form-item" v-if="myGroupMemberInfo.isLeader">
+        <view class="label">禁言时长</view>
+        <view class="value" style="display: flex;align-items: center;">
+          <up-number-box :min="1" :max="720" v-model="bannedTime"></up-number-box>
+          <text style="margin-left: 10rpx;">小时</text>
+          <text style="color: #3c9cff;margin-left: 30rpx;">确认</text>
+        </view>
+      </view>
+      <view class="form-item banned-msg" v-if="myGroupMemberInfo.isLeader">
+        <text>用户禁言</text>
+        <text>解除禁言</text>
+      </view>
+    </view>
+    <region-group-members :members="regionGroupMembers" ref="membersPopup" @onConfirm="confirmChooseMember"></region-group-members>
   </view>
 </template>
 
 <script>
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
+import RegionGroupMembers from "../../components/region-group-members/region-group-members.vue";
 
 export default {
   name: "region-group-info",
-  components: {SvgIcon},
+  components: {RegionGroupMembers, HeadImage, SvgIcon},
   data() {
     return {
       regionGroupId: null,
       regionGroup: {},
       regionGroupMembers: [],
       myGroupMemberInfo: {},
+      announce: false,
+      bannedTime: 1,
+      searchText: '',
+      choosedMember: {},
     }
   },
   methods: {
@@ -62,7 +114,16 @@ export default {
     },
     onShowMoreMember() {
 
-    }
+    },
+    chooseMember() {
+      this.$refs.membersPopup.open();
+    },
+    confirmChooseMember(member) {
+      this.choosedMember = member;
+    },
+    leaderTransfer() {
+
+    },
   },
   computed: {
     mine() {
@@ -185,7 +246,9 @@ export default {
   }
 
   .form {
+    background-color: white;
     margin-top: 20rpx;
+    padding: 10rpx 40rpx;
 
     .form-item {
       padding: 0 40rpx;
@@ -210,6 +273,32 @@ export default {
         white-space: nowrap;
         overflow: hidden;
       }
+    }
+
+    .group-image {
+      width: 60rpx;
+      height: 60rpx;
+      border-radius: 50%;
+      border: 1px solid #ccc;
+    }
+
+    .leader-transfer {
+      color: #3c9cff;
+      line-height: 100rpx;
+    }
+
+    .leader-vote {
+      display: flex;
+      justify-content: space-between;
+      color: #3c9cff;
+      line-height: 100rpx;
+    }
+
+    .banned-msg {
+      display: flex;
+      justify-content: space-between;
+      color: #3c9cff;
+      line-height: 100rpx;
     }
 
     .group-edit {
