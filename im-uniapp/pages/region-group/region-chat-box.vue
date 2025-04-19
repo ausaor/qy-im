@@ -18,13 +18,94 @@
           </view>
         </scroll-view>
       </view>
+      <view v-if="atUserIds.length > 0" class="chat-at-bar" @click="openAtBox()">
+        <view class="iconfont icon-at">:&nbsp;</view>
+        <scroll-view v-if="atUserIds.length > 0" class="chat-at-scroll-box" scroll-x="true" scroll-left="120">
+          <view class="chat-at-items">
+            <view v-for="m in atUserItems" class="chat-at-item" :key="m.userId">
+              <head-image :name="m.aliasName" :url="m.headImage" size="minier"></head-image>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+      <view class="send-bar">
+        <view v-if="!showRecord" class="iconfont icon-voice-circle" @click="onRecorderInput()"></view>
+        <view v-else class="iconfont icon-keyboard" @click="onKeyboardInput()"></view>
+        <chat-record v-if="showRecord" class="chat-record" @send="onSendRecord"></chat-record>
+        <view v-else class="send-text">
+          <editor id="editor" class="send-text-area" :placeholder="isReceipt ? '[回执消息]' : ''"
+                  :read-only="isReadOnly" @focus="onEditorFocus" @blur="onEditorBlur" @ready="onEditorReady" @input="onTextInput">
+          </editor>
+          <view class="quote-message" v-if="quoteMsgInfo.show">
+            <view class="quote-text">{{quoteMsgInfo.quoteContent}}</view>
+            <uni-icons type="clear" size="20" color="#888888" @click="cancelQuote"></uni-icons>
+          </view>
+        </view>
+        <view class="iconfont icon-at" @click="openAtBox()"></view>
+        <view class="iconfont icon-icon_emoji" @click="onShowEmoChatTab()"></view>
+        <view v-if="isEmpty" class="iconfont icon-add" @click="onShowToolsChatTab()">
+        </view>
+        <button v-if="!isEmpty || atUserIds.length" class="btn-send" type="primary"
+                @touchend.prevent="sendTextMessage()" size="mini">发送</button>
+      </view>
     </view>
+    <view class="chat-tab-bar">
+      <view v-if="chatTabBox == 'tools'" class="chat-tools" :style="{height: keyboardHeight+'px'}">
+        <view class="chat-tools-item">
+          <file-upload ref="fileUpload" :onBefore="onUploadFileBefore" :onSuccess="onUploadFileSuccess"
+                       :onError="onUploadFileFail">
+            <svg-icon class="tool-icon" icon-class="icon-wenjian"></svg-icon>
+          </file-upload>
+          <view class="tool-name">文件</view>
+        </view>
+        <view class="chat-tools-item">
+          <image-upload :maxCount="9" sourceType="album" :onBefore="onUploadImageBefore"
+                        :onSuccess="onUploadImageSuccess" :onError="onUploadImageFail">
+            <svg-icon class="tool-icon" icon-class="tupian"></svg-icon>
+          </image-upload>
+          <view class="tool-name">相册</view>
+        </view>
+        <view class="chat-tools-item">
+          <video-upload sourceType="album" :onBefore="onUploadVideoBefore" :onSuccess="onUploadVideoSuccess" :onError="onUploadVideoFail">
+            <svg-icon class="tool-icon" icon-class="mv"></svg-icon>
+          </video-upload>
+          <view class="tool-name">视频</view>
+        </view>
+        <view class="chat-tools-item" @click="onRecorderInput()">
+          <svg-icon class="tool-icon" icon-class="yuyin"></svg-icon>
+          <view class="tool-name">语音消息</view>
+        </view>
+        <view class="chat-tools-item" @click="switchReceipt()">
+          <svg-icon class="tool-icon" :class="isReceipt ? 'active' : ''" icon-class="yihuizhi"></svg-icon>
+          <view class="tool-name">回执消息</view>
+        </view>
+        <view class="chat-tools-item" @click="onGroupVideo()">
+          <svg-icon class="tool-icon" icon-class="yuyintonghua"></svg-icon>
+          <view class="tool-name">语音通话</view>
+        </view>
+      </view>
+      <scroll-view v-if="chatTabBox === 'emo'" class="chat-emotion" scroll-y="true"
+                   :style="{height: keyboardHeight+'px'}">
+        <view class="emotion-item-list">
+          <image class="emotion-item emoji-large" :title="emoText" :src="$emo.textToPath(emoText)"
+                 v-for="(emoText, i) in $emo.emoTextList" :key="i" @click="selectEmoji(emoText)" mode="aspectFit"
+                 lazy-load="true"></image>
+        </view>
+      </scroll-view>
+    </view>
+    <!-- @用户时选择成员 -->
+    <chat-at-box ref="atBox" :ownerId="regionGroup.leaderId" :members="regionGroupMembers"
+                 @complete="onAtComplete"></chat-at-box>
   </view>
 </template>
 
 <script>
+import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+import VideoUpload from "../../components/video-upload/video-upload.vue";
+
 export default {
   name: "region-chat-box",
+  components: {VideoUpload, SvgIcon},
   data() {
     return {
       chat: {},
@@ -33,6 +114,7 @@ export default {
       myGroupMemberInfo: {},
       regionGroupMembers: [],
       chatTabBox: 'none',
+      showRecord: false,
       atUserIds: [],
       isReceipt: false, // 是否回执消息
       chatMainHeight: 0, // 聊天窗口高度
@@ -57,6 +139,348 @@ export default {
     }
   },
   methods: {
+    onRecorderInput() {
+      this.showRecord = true;
+      this.switchChatTabBox('none');
+    },
+    onKeyboardInput() {
+      this.showRecord = false;
+      this.switchChatTabBox('none');
+    },
+    onSendRecord(data) {
+      // 检查是否被封禁
+      if (this.isBanned) {
+        this.showBannedTip();
+        return;
+      }
+      let msgInfo = {
+        content: JSON.stringify(data),
+        type: this.$enums.MESSAGE_TYPE.AUDIO,
+        receipt: this.isReceipt
+      }
+      // 填充对方id
+      this.fillTargetId(msgInfo, this.chat.targetId);
+      this.sendMessageRequest(msgInfo).then((m) => {
+        m.selfSend = true;
+        this.regionStore.insertRegionMessage(m, this.chat);
+        // 会话置顶
+        this.moveChatToTop();
+        // 滚动到底部
+        this.scrollToBottom();
+        this.isReceipt = false;
+
+      })
+    },
+    onTextInput(e) {
+      this.isEmpty = e.detail.html == '<p><br></p>'
+    },
+    onEditorReady() {
+      this.$nextTick(()=>{
+        const query = uni.createSelectorQuery().in(this);
+        query.select('#editor').context((res) => {
+          this.editorCtx = res.context
+        }).exec()
+      })
+    },
+    onEditorFocus(e) {
+      this.isFocus = true;
+      this.scrollToBottom()
+      this.switchChatTabBox('none')
+    },
+    onEditorBlur(e) {
+      this.isFocus = false;
+    },
+    onShowEmoChatTab() {
+      this.showRecord = false;
+      this.switchChatTabBox('emo')
+    },
+    onShowToolsChatTab() {
+      this.showRecord = false;
+      this.switchChatTabBox('tools')
+    },
+    moveChatToTop() {
+      let chatIdx = this.regionStore.findRegionChatIdx(this.chat);
+      this.regionStore.regionMoveTop(chatIdx);
+    },
+    sendTextMessage() {
+      this.editorCtx.getContents({
+        success: (e) => {
+          // 清空编辑框数据
+          this.editorCtx.clear();
+          // 检查是否被封禁
+          if (this.isBanned) {
+            this.showBannedTip();
+            return;
+          }
+          let sendText = "";
+          e.delta.ops.forEach((op) => {
+            if (op.insert.image) {
+              // emo表情
+              sendText += `#${op.attributes.alt};`
+            } else(
+                // 文字
+                sendText += op.insert
+            )
+          })
+          if (!sendText.trim() && this.atUserIds.length == 0) {
+            return uni.showToast({
+              title: "不能发送空白信息",
+              icon: "none"
+            });
+          }
+          let receiptText = this.isReceipt ? "【回执消息】" : "";
+          let atText = this.createAtText();
+          let msgInfo = {
+            content: receiptText + sendText + atText,
+            atUserIds: this.atUserIds,
+            receipt: this.isReceipt,
+            type: 0
+          }
+          // 清空@成员和回执标记
+          this.atUserIds = [];
+          this.isReceipt = false;
+          // 填充对方id
+          this.fillTargetId(msgInfo, this.chat.targetId);
+          this.sendMessageRequest(msgInfo).then((m) => {
+            m.selfSend = true;
+            this.regionStore.insertRegionMessage(m, this.chat);
+            // 会话置顶
+            this.moveChatToTop();
+          }).finally(() => {
+            // 滚动到底部
+            this.scrollToBottom();
+          });
+        }
+      })
+    },
+    createAtText() {
+      let atText = "";
+      this.atUserIds.forEach((id) => {
+        if (id == -1) {
+          atText += ` @全体成员`;
+        } else {
+          let member = this.regionGroupMembers.find((m) => m.userId == id);
+          if (member) {
+            atText += ` @${member.aliasName}`;
+          }
+        }
+      })
+      return atText;
+    },
+    selectEmoji(emoText) {
+      let path = this.$emo.textToPath(emoText)
+      // 先把键盘禁用了，否则会重新弹出键盘
+      this.isReadOnly = true;
+      this.isEmpty = false;
+      this.$nextTick(() => {
+        this.editorCtx.insertImage({
+          src: path,
+          alt: emoText,
+          extClass: 'emoji-small',
+          nowrap: true,
+          complete: () => {
+            this.isReadOnly = false;
+            this.editorCtx.blur();
+          }
+        });
+      })
+    },
+    switchReceipt() {
+      this.isReceipt = !this.isReceipt;
+    },
+    onUploadImageBefore(file) {
+      // 检查是否被封禁
+      if (this.isBanned) {
+        this.showBannedTip();
+        return;
+      }
+      let data = {
+        originUrl: file.path,
+        thumbUrl: file.path
+      }
+      let msgInfo = {
+        id: 0,
+        tmpId: this.generateId(),
+        fileId: file.uid,
+        sendId: this.mine.id,
+        content: JSON.stringify(data),
+        sendTime: new Date().getTime(),
+        selfSend: true,
+        type: this.$enums.MESSAGE_TYPE.IMAGE,
+        readedCount: 0,
+        loadStatus: "loading",
+        status: this.$enums.MESSAGE_STATUS.UNSEND
+      }
+      // 填充对方id
+      this.fillTargetId(msgInfo, this.chat.targetId);
+      // 插入消息
+      this.regionStore.insertRegionMessage(msgInfo, this.chat);
+      // 会话置顶
+      this.moveChatToTop();
+      // 借助file对象保存
+      file.msgInfo = msgInfo;
+      // 滚到最低部
+      this.scrollToBottom();
+      return true;
+    },
+    onUploadVideoBefore(file) {
+      // 检查是否被封禁
+      if (this.isBanned) {
+        this.showBannedTip();
+        return;
+      }
+      let data = {
+        videoUrl: file.tempFilePath,
+      }
+      let msgInfo = {
+        id: 0,
+        tmpId: this.generateId(),
+        fileId: file.uid,
+        sendId: this.mine.id,
+        content: JSON.stringify(data),
+        sendTime: new Date().getTime(),
+        selfSend: true,
+        type: this.$enums.MESSAGE_TYPE.VIDEO,
+        readedCount: 0,
+        loadStatus: "loading",
+        status: this.$enums.MESSAGE_STATUS.UNSEND
+      }
+      // 填充对方id
+      this.fillTargetId(msgInfo, this.chat.targetId);
+      // 插入消息
+      this.regionStore.insertRegionMessage(msgInfo, this.chat);
+      // 会话置顶
+      this.moveChatToTop();
+      // 借助file对象保存
+      file.msgInfo = msgInfo;
+      // 滚到最低部
+      this.scrollToBottom();
+      return true;
+    },
+    onUploadVideoSuccess(file, res) {
+      let msgInfo = JSON.parse(JSON.stringify(file.msgInfo));
+      msgInfo.content = JSON.stringify(res.data);
+      msgInfo.receipt = this.isReceipt
+      this.sendMessageRequest(msgInfo).then((m) => {
+        msgInfo.loadStatus = 'ok';
+        msgInfo.id = m.id;
+        this.isReceipt = false;
+        this.regionStore.insertRegionMessage(msgInfo, this.chat);
+      })
+    },
+    onUploadVideoFail(file, err) {
+      let msgInfo = JSON.parse(JSON.stringify(file.msgInfo));
+      msgInfo.loadStatus = 'fail';
+      this.regionStore.insertRegionMessage(msgInfo, this.chat);
+    },
+    onUploadImageSuccess(file, res) {
+      let msgInfo = JSON.parse(JSON.stringify(file.msgInfo));
+      msgInfo.content = JSON.stringify(res.data);
+      msgInfo.receipt = this.isReceipt
+      this.sendMessageRequest(msgInfo).then((m) => {
+        msgInfo.loadStatus = 'ok';
+        msgInfo.id = m.id;
+        this.isReceipt = false;
+        this.regionStore.insertRegionMessage(msgInfo, this.chat);
+      })
+    },
+    onUploadImageFail(file, err) {
+      let msgInfo = JSON.parse(JSON.stringify(file.msgInfo));
+      msgInfo.loadStatus = 'fail';
+      this.regionStore.insertRegionMessage(msgInfo, this.chat);
+    },
+    onUploadFileBefore(file) {
+      // 检查是否被封禁
+      if (this.isBanned) {
+        this.showBannedTip();
+        return;
+      }
+      let data = {
+        name: file.name,
+        size: file.size,
+        url: file.path
+      }
+      let msgInfo = {
+        id: 0,
+        tmpId: this.generateId(),
+        sendId: this.mine.id,
+        content: JSON.stringify(data),
+        sendTime: new Date().getTime(),
+        selfSend: true,
+        type: this.$enums.MESSAGE_TYPE.FILE,
+        readedCount: 0,
+        loadStatus: "loading",
+        status: this.$enums.MESSAGE_STATUS.UNSEND
+      }
+      // 填充对方id
+      this.fillTargetId(msgInfo, this.chat.targetId);
+      // 插入消息
+      this.regionStore.insertRegionMessage(msgInfo, this.chat);
+      // 会话置顶
+      this.moveChatToTop();
+      // 借助file对象保存
+      file.msgInfo = msgInfo;
+      // 滚到最低部
+      this.scrollToBottom();
+      return true;
+    },
+    onUploadFileSuccess(file, res) {
+      let data = {
+        name: file.name,
+        size: file.size,
+        url: res.data
+      }
+      let msgInfo = JSON.parse(JSON.stringify(file.msgInfo));
+      msgInfo.content = JSON.stringify(data);
+      msgInfo.receipt = this.isReceipt
+      this.sendMessageRequest(msgInfo).then((m) => {
+        msgInfo.loadStatus = 'ok';
+        msgInfo.id = m.id;
+        this.isReceipt = false;
+        this.regionStore.insertRegionMessage(msgInfo, this.chat);
+      })
+    },
+    onUploadFileFail(file, res) {
+      let msgInfo = JSON.parse(JSON.stringify(file.msgInfo));
+      msgInfo.loadStatus = 'fail';
+      this.regionStore.insertRegionMessage(msgInfo, this.chat);
+    },
+    sendMessageRequest(msgInfo) {
+      return new Promise((resolve, reject) => {
+        // 请求入队列，防止请求"后发先至"，导致消息错序
+        this.reqQueue.push({ msgInfo, resolve, reject });
+        this.processReqQueue();
+      })
+    },
+    processReqQueue() {
+      if (this.reqQueue.length && !this.isSending) {
+        this.isSending = true;
+        const reqData = this.reqQueue.shift();
+        if (this.quoteMsgInfo.msgInfo) {
+          reqData.msgInfo.quoteId = this.quoteMsgInfo.msgInfo.id;
+          this.quoteMsgInfo.msgInfo = null;
+          this.quoteMsgInfo.quoteContent = '';
+          this.quoteMsgInfo.show = false;
+        }
+        console.log("quoteMsgInfo", this.quoteMsgInfo)
+        this.$http({
+          url: this.messageAction,
+          method: 'post',
+          data: reqData.msgInfo
+        }).then((res) => {
+          reqData.resolve(res)
+        }).catch((e) => {
+          reqData.reject(e)
+        }).finally(() => {
+          this.isSending = false;
+          // 发送下一条请求
+          this.processReqQueue();
+        })
+      }
+    },
+    fillTargetId(msgInfo, targetId) {
+      msgInfo.regionGroupId = targetId;
+    },
     switchChatTabBox(chatTabBox) {
       this.chatTabBox = chatTabBox;
       this.reCalChatMainHeight();
@@ -401,6 +825,38 @@ export default {
         this.playingAudio = playingAudio;
       }
     },
+    unListenKeyboard() {
+      // #ifdef H5
+      window.removeEventListener('resize', this.resizeListener);
+      window.removeEventListener('focusin', this.focusInListener);
+      window.removeEventListener('focusout', this.focusOutListener);
+      // #endif
+      // #ifndef H5
+      uni.offKeyboardHeightChange(this.keyBoardListener);
+      // #endif
+    },
+    openAtBox() {
+      this.$refs.atBox.init(this.atUserIds);
+      this.$refs.atBox.open();
+    },
+    onAtComplete(atUserIds) {
+      this.atUserIds = atUserIds;
+    },
+    showBannedTip() {
+      let msgInfo = {
+        tmpId: this.generateId(),
+        sendId: this.mine.id,
+        sendTime: new Date().getTime(),
+        type: this.$enums.MESSAGE_TYPE.TIP_TEXT
+      }
+      msgInfo.regionGroupId = this.regionGroup.id;
+      msgInfo.content = "本群聊已被封禁！"
+      this.regionStore.insertRegionMessage(msgInfo, this.chat);
+    },
+    generateId() {
+      // 生成临时id
+      return String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
+    },
   },
   computed: {
     mine() {
@@ -424,9 +880,32 @@ export default {
       title += `(${size})`;
       return title;
     },
+    atUserItems() {
+      let atUsers = [];
+      this.atUserIds.forEach((id) => {
+        if (id == -1) {
+          atUsers.push({
+            id: -1,
+            aliasName: "全体成员"
+          })
+          return;
+        }
+        let member = this.regionGroupMembers.find((m) => m.userId == id);
+        if (member) {
+          atUsers.push(member);
+        }
+      })
+      return atUsers;
+    },
+    isBanned() {
+      return this.regionGroup.isBanned
+    },
     friends() {
       return this.friendStore.friends;
-    }
+    },
+    messageAction() {
+      return `/message/regionGroup/send`;
+    },
   },
   onLoad(options) {
     // 聊天数据
@@ -459,6 +938,16 @@ export default {
       }, { passive: false });
       // #endif
     });
+  },
+  onUnload() {
+    this.unListenKeyboard();
+  },
+  onShow() {
+    if (this.needScrollToBottom) {
+      // 页面滚到底部
+      this.scrollToBottom();
+      this.needScrollToBottom = false;
+    }
   }
 }
 </script>
