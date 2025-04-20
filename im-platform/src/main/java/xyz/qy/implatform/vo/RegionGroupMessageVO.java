@@ -60,4 +60,7 @@ public class RegionGroupMessageVO {
 
     @ApiModelProperty(value = "已读消息数量")
     private Integer readedCount = 0;
+
+    @ApiModelProperty(value = "引用消息")
+    private QuoteMsg quoteMsg;
 }

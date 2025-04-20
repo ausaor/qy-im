@@ -7,6 +7,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -25,6 +26,7 @@ import xyz.qy.imcommon.util.CommaTextUtils;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.contant.RegionGroupConst;
 import xyz.qy.implatform.dto.RegionGroupMessageDTO;
+import xyz.qy.implatform.entity.GroupMessage;
 import xyz.qy.implatform.entity.RegionGroup;
 import xyz.qy.implatform.entity.RegionGroupMember;
 import xyz.qy.implatform.entity.RegionGroupMessage;
@@ -43,6 +45,7 @@ import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.util.SensitiveUtil;
+import xyz.qy.implatform.vo.QuoteMsg;
 import xyz.qy.implatform.vo.RegionGroupMessageVO;
 
 import javax.annotation.Resource;
@@ -142,12 +145,23 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         if (CollUtil.isNotEmpty(dto.getAtUserIds())) {
             msg.setAtUserIds(StrUtil.join(",", dto.getAtUserIds()));
         }
+        QuoteMsg quoteMsg1 = null;
+        if (ObjectUtil.isNotNull(dto.getQuoteId())) {
+            RegionGroupMessage quoteMsg = this.getById(dto.getQuoteId());
+            if (ObjectUtil.isNotNull(quoteMsg)) {
+                quoteMsg1 = covertQuoteMsg(quoteMsg);
+                msg.setQuoteMsg(JSON.toJSONString(quoteMsg1));
+            }
+        }
         this.save(msg);
         // 不用发给自己
         userIds = userIds.stream().filter(id -> !session.getUserId().equals(id)).collect(Collectors.toList());
         // 群发
         RegionGroupMessageVO msgInfo = BeanUtils.copyProperties(msg, RegionGroupMessageVO.class);
         msgInfo.setSendUserAvatar(user.getHeadImage());
+        if (quoteMsg1 != null) {
+            msgInfo.setQuoteMsg(quoteMsg1);
+        }
         msgInfo.setAtUserIds(dto.getAtUserIds());
         IMRegionGroupMessage<RegionGroupMessageVO> sendMessage = new IMRegionGroupMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
@@ -160,6 +174,16 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         redisCache.recordKeyValueScore(RedisKey.REGION_ACTIVITY_RANGE, regionGroup.getCode(), 1.0);
         log.info("发送群聊消息，发送id:{},群聊id:{},内容:{}", session.getUserId(), dto.getRegionGroupId(), dto.getContent());
         return msgInfo;
+    }
+
+    private QuoteMsg covertQuoteMsg(RegionGroupMessage message) {
+        QuoteMsg quoteMsg = new QuoteMsg();
+        quoteMsg.setId(message.getId());
+        quoteMsg.setContent(message.getContent());
+        quoteMsg.setStatus(message.getStatus());
+        quoteMsg.setType(message.getType());
+        quoteMsg.setSendId(message.getSendId());
+        return quoteMsg;
     }
 
     private void checkUserInRegionGroup(Integer joinType, Long userId, RegionGroup regionGroup) {
@@ -243,6 +267,9 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
                 }
                 // 组装vo
                 RegionGroupMessageVO vo = BeanUtils.copyProperties(m, RegionGroupMessageVO.class);
+                if (StrUtil.isNotBlank(m.getQuoteMsg())) {
+                    vo.setQuoteMsg(JSON.parseObject(m.getQuoteMsg(), QuoteMsg.class));
+                }
                 // 被@用户列表
                 List<String> atIds = CommaTextUtils.asList(m.getAtUserIds());
                 vo.setAtUserIds(atIds.stream().map(Long::parseLong).collect(Collectors.toList()));

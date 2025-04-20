@@ -1,4 +1,5 @@
 import http from '../api/httpRequest.js'
+import { generateShortId } from '../utils/id-generator.js'
 import { MESSAGE_TYPE, MESSAGE_STATUS } from "../api/enums.js"
 import userStore from './userStore';
 import localForage from 'localforage';
@@ -215,6 +216,7 @@ export default {
 			// 间隔大于10分钟插入时间显示
 			if (!chat.lastTimeTip || (chat.lastTimeTip < msgInfo.sendTime - 600 * 1000)) {
 				chat.messages.push({
+					uid: generateShortId(),
 					sendTime: msgInfo.sendTime,
 					type: MESSAGE_TYPE.TIP_TIME,
 				});

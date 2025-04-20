@@ -692,7 +692,8 @@ export default {
       let showInfoObj = {
         showName: "",
         headImage: "",
-        nickName: ""
+        nickName: "",
+        quoteShowName: '',
       };
       if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
         let friend = this.friends.find((f) => f.id === msgInfo.sendId);
@@ -709,6 +710,10 @@ export default {
         }
         if (member) {
           showInfoObj.headImage = member.headImage;
+        }
+        if (msgInfo.quoteMsg) {
+          let member2 = this.regionGroupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+          showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
         }
         if (!showInfoObj.showName) {
           if (msgInfo.sendNickName) {

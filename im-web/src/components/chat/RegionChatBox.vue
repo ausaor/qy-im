@@ -15,7 +15,8 @@
             <el-main class="im-chat-main" id="chatScrollBox" @scroll="onScroll">
               <div class="im-chat-box">
                 <ul>
-                  <li v-for="(msgInfo,idx) in chat.messages" :key="idx">
+                  <li v-for="(msgInfo, idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid" :ref="`message-${msgInfo.id}`"
+                      :data-highlight="highlightedMessageId === msgInfo.id" class="message-wrapper">
                     <chat-message-item
                         v-if="idx>=showMinIdx"
                         @call="onCall(msgInfo.type)"
@@ -26,7 +27,9 @@
                         :myGroupMemberInfo="myGroupMemberInfo"
                         :groupMembers="regionGroupMembers"
                         @delete="deleteMessage"
-                        @recall="recallMessage">
+                        @recall="recallMessage"
+                        @quote="quoteMessage"
+                        @scrollToMessage="scrollToTargetMsg">
                     </chat-message-item>
                   </li>
                 </ul>
@@ -94,7 +97,7 @@
               </div>
               <div class="send-content-area">
                 <ChatInput :ownerId="regionGroup.leaderId" ref="chatInputEditor" :groupMembers="regionGroupMembers"
-                           @submit="sendMessage" />
+                           @submit="sendMessage" :quote-message="quoteMsgInfo" @removeQuoteMsg="cancelQuote"/>
                 <div class="send-btn-area">
                   <el-button type="primary" size="small" @click="notifySend()">发送</el-button>
                 </div>
@@ -157,7 +160,12 @@ export default {
       showMinIdx: 0, // 下标低于showMinIdx的消息不显示，否则页面会很卡
       friends: [],
       reqQueue: [],
-      isSending: false
+      isSending: false,
+      quoteMsgInfo: {
+        msgInfo: null,
+        show: false
+      },
+      highlightedMessageId: null,
     }
   },
   created() {
@@ -592,6 +600,16 @@ export default {
         })
       });
     },
+    quoteMessage(msgInfo) {
+      console.log("引用消息", msgInfo);
+
+      this.quoteMsgInfo.msgInfo =  msgInfo;
+      this.quoteMsgInfo.show = true;
+    },
+    cancelQuote() {
+      this.quoteMsgInfo.msgInfo = null;
+      this.quoteMsgInfo.show = false;
+    },
     readedMessage() {
       if (this.chat.unreadCount == 0) {
         return;
@@ -664,7 +682,8 @@ export default {
       let showInfoObj = {
         showName: "",
         headImage: "",
-        nickName: ""
+        nickName: "",
+        quoteShowName: '',
       };
       if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
         let friend = this.friends.find((f) => f.id === msgInfo.sendId);
@@ -674,6 +693,10 @@ export default {
           }
         }
         let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
+        if (msgInfo.quoteMsg) {
+          let member2 = this.regionGroupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+          showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
+        }
         if (!showInfoObj.showName) {
           if (member) {
             showInfoObj.showName = member.aliasName;
@@ -727,6 +750,11 @@ export default {
       if (this.reqQueue.length && !this.isSending) {
         this.isSending = true;
         const reqData = this.reqQueue.shift();
+        if (this.quoteMsgInfo.msgInfo) {
+          reqData.msgInfo.quoteId = this.quoteMsgInfo.msgInfo.id;
+          this.quoteMsgInfo.msgInfo = null;
+          this.quoteMsgInfo.show = false;
+        }
         this.$http({
           url: this.messageAction,
           method: 'post',
@@ -745,6 +773,18 @@ export default {
     generateId(){
       // 生成临时id
       return String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
+    },
+    scrollToTargetMsg(messageId) {
+      const element = this.$refs[`message-${messageId}`][0];
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // 高亮显示源消息
+        this.highlightedMessageId = messageId;
+        setTimeout(() => {
+          this.highlightedMessageId = null;
+        }, 2000);
+      }
     }
   },
   computed: {
@@ -835,6 +875,26 @@ export default {
     }
   }
 
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes highlight {
+    0%, 100% {
+      background-color: transparent;
+    }
+    20%, 80% {
+      background-color: rgba(79, 70, 229, 0.1);
+    }
+  }
+
   .im-chat-main {
     padding: 0;
     border: var(--border-color) solid 1px;
@@ -844,6 +904,15 @@ export default {
 
         li {
           list-style-type: none;
+        }
+
+        .message-wrapper {
+          animation: fadeIn 0.3s ease;
+          margin-bottom: 15px;
+        }
+
+        .message-wrapper[data-highlight="true"] {
+          animation: highlight 2s ease;
         }
       }
     }
