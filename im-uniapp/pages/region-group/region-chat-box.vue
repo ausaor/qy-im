@@ -919,6 +919,28 @@ export default {
       return `/message/regionGroup/send`;
     },
   },
+  watch: {
+    messageSize: function(newSize, oldSize) {
+      // 接收到消息时滚动到底部
+      if (newSize > oldSize) {
+        let pages = getCurrentPages();
+        let curPage = pages[pages.length - 1].route;
+        if (curPage == "pages/region-group/region-chat-box") {
+          this.scrollToBottom();
+        } else {
+          this.needScrollToBottom = true;
+        }
+      }
+    },
+    unreadCount: {
+      handler(newCount, oldCount) {
+        if (newCount > 0) {
+          // 消息已读
+          this.readedMessage()
+        }
+      }
+    }
+  },
   onLoad(options) {
     // 聊天数据
     this.chat = this.regionStore.findRegionChatById(options.regionGroupId);
