@@ -5,6 +5,7 @@
 	},
 	"dependencies": {
 		"pinyin-pro": "^3.23.1",
+		"uuid": "^11.1.0",
 		"vconsole": "^3.15.1"
 	},
 	"devDependencies": {

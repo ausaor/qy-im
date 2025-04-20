@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { MESSAGE_TYPE, MESSAGE_STATUS } from '@/common/enums.js';
 import useUserStore from './userStore';
+import { v4 as uuidv4 } from 'uuid'
 
 let cacheChats = [];
 export default defineStore('chatStore', {
@@ -204,6 +205,7 @@ export default defineStore('chatStore', {
 			// 间隔大于10分钟插入时间显示
 			if (!chat.lastTimeTip || (chat.lastTimeTip < msgInfo.sendTime - 600 * 1000)) {
 				chat.messages.push({
+					uid: uuidv4().split('-')[0],
 					sendTime: msgInfo.sendTime,
 					type: MESSAGE_TYPE.TIP_TIME,
 				});

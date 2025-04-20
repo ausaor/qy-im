@@ -10,6 +10,10 @@ export default defineConfig({
 			symbolId: 'icon-[name]',
 		}),
 	],
+	// 关键配置：指定需要转译的依赖
+	optimizeDeps: {
+		include: ['uuid']
+	},
 	server: {
 		proxy: {
 			'/api': {
