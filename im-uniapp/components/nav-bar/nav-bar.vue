@@ -7,14 +7,14 @@
       <view class="back" @click="handleBackClick" v-if="back">
         <uni-icons type="back" :size="iconFontSize"></uni-icons>
       </view>
-      <view class="back" @click="goHomePage" v-if="backHome">
+      <view class="back" @click="$emit('gotoHome')" v-if="backHome">
         <uni-icons type="back" :size="iconFontSize"></uni-icons>
       </view>
       <view class="title" v-if="title">
         <slot></slot>
       </view>
       <view class="btn">
-        <uni-icons type="home" @click="goHomePage" v-if="home" :size="iconFontSize"></uni-icons>
+        <uni-icons type="home" @click="$emit('gotoHome')" v-if="home" :size="iconFontSize"></uni-icons>
         <uni-icons class="btn-item" v-if="search" type="search" :size="iconFontSize"
           @click="$emit('search')"></uni-icons>
         <uni-icons class="btn-item" v-if="refresh" type="refresh" :size="iconFontSize"
@@ -82,11 +82,6 @@ export default {
         delta: 1
       })
     },
-    goHomePage() {
-      uni.reLaunch({
-        url: '/pages/chat/chat'
-      })
-    }
   }
 }
 </script>

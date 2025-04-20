@@ -1,6 +1,6 @@
 <template>
   <view class="page region-group-info">
-    <nav-bar back home>群聊信息</nav-bar>
+    <nav-bar back home @gotoHome="gotoHome">群聊信息</nav-bar>
     <view v-if="!regionGroup.quit" class="group-members">
       <view class="member-items">
         <view v-for="(member, idx) in regionGroupMembers" :key="idx">
@@ -341,6 +341,11 @@ export default {
         url: "/pages/region-group/region-chat-box?regionGroupId=" + this.regionGroup.id
       })
     },
+    gotoHome() {
+      uni.reLaunch({
+        url: '/pages/region-group/region-group'
+      })
+    }
   },
   computed: {
     mine() {

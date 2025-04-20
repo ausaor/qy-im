@@ -1,6 +1,6 @@
 <template>
 	<view class="page chat-box">
-		<nav-bar backHome more :refresh="chat.type === 'GROUP'" @more="onShowMore" @refresh="refreshChat">{{ title }}</nav-bar>
+		<nav-bar backHome more :refresh="chat.type === 'GROUP'" @more="onShowMore" @refresh="refreshChat" @gotoHome="gotoHome">{{ title }}</nav-bar>
 		<view class="chat-main-box" :style="{height: chatMainHeight+'px'}">
 			<view class="chat-msg" @click="switchChatTabBox('none')">
 				<scroll-view class="scroll-box" scroll-y="true" upper-threshold="200" @scrolltoupper="onScrollToTop"
@@ -1109,6 +1109,11 @@ export default {
     },
     refreshChat() {
       this.loadGroup(this.chat.targetId)
+    },
+    gotoHome() {
+      uni.reLaunch({
+        url: '/pages/chat/chat'
+      })
     },
     quoteMessage(msgInfo) {
       console.log("引用消息", msgInfo);
