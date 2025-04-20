@@ -21,7 +21,7 @@
 			温馨提示：您现在还没有任何聊天消息，快跟您的好友发起聊天吧~
 		</view>
 		<scroll-view class="scroll-bar" v-else scroll-with-animation="true" scroll-y="true">
-			<view v-for="(chat, index) in chatStore.chats" :key="index">
+			<view v-for="(chat, index) in chatStore.chats" :key="index" v-show="!searchText || chat.showName.includes(searchText)">
 				<long-press-menu v-if="isShowChat(chat)" :items="menu.items" @select="onSelectMenu($event, index)">
 					<chat-item :chat="chat" :index="index" :active="menu.chatIdx == index"></chat-item>
 				</long-press-menu>

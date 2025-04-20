@@ -21,7 +21,7 @@
       温馨提示：您现在还没有任何地区群聊消息~
     </view>
     <scroll-view class="scroll-bar" v-else scroll-with-animation="true" scroll-y="true">
-      <view v-for="(regionGroup, index) in regionStore.regionGroups" :key="index">
+      <view v-for="(regionGroup, index) in regionStore.regionGroups" :key="index" v-show="!searchText || regionGroup.remark.includes(searchText)">
         <long-press-menu :items="menu.items" @select="onSelectMenu($event, index)">
           <region-item :region-group="regionGroup" :index="index" :active="menu.chatIdx === index"></region-item>
         </long-press-menu>
@@ -39,7 +39,7 @@ export default {
   data() {
     return {
       showSearch: false,
-      searchText: "",
+      searchText: '',
       menu: {
         show: false,
         style: "",
