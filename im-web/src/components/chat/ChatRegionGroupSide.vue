@@ -85,11 +85,10 @@
       <div class="operation-item banned-time" v-if="myGroupMemberInfo.isLeader">
         <label>禁言时长(小时)：</label>
         <el-input-number size="mini" v-model="bannedTime" :min="1" :max="720"></el-input-number>
-        <el-button type="text" @click="doBanned">确认</el-button>
       </div>
       <div class="operation-item" v-if="myGroupMemberInfo.isLeader">
         <div class="user-banned">
-          <el-button type="text" @click="doBanned('banned')">用户禁言</el-button>
+          <el-button type="text" @click="doBanned('banned')">成员禁言</el-button>
         </div>
         <div class="user-banned">
           <el-button type="text" @click="doBanned('unBanned')">解除禁言</el-button>

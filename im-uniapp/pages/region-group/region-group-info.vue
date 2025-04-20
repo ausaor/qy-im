@@ -31,8 +31,8 @@
         <text @click="leaderTransfer">群主转移</text>
       </view>
       <view class="form-item leader-vote">
-        <text>群主投票</text>
-        <text>群主解除投票</text>
+        <text @click="voteLeader">群主投票</text>
+        <text @click="voteRemoveLeader">群主解除投票</text>
       </view>
       <view class="form-item">
         <view class="label">投票通知</view>
@@ -46,7 +46,7 @@
         <view class="label">全员禁言</view>
         <view class="value" style="display: flex;align-items: center;justify-content: space-between;">
           <text>关闭</text>
-          <up-switch v-model="regionGroup.isBanned" activeColor="#13ce66" inactiveColor="#ff4949"></up-switch>
+          <up-switch v-model="regionGroup.isBanned" activeColor="#13ce66" inactiveColor="#ff4949" @change="doAllBanned"></up-switch>
           <text>开启</text>
         </view>
       </view>
@@ -55,14 +55,16 @@
         <view class="value" style="display: flex;align-items: center;">
           <up-number-box :min="1" :max="720" v-model="bannedTime"></up-number-box>
           <text style="margin-left: 10rpx;">小时</text>
-          <text style="color: #3c9cff;margin-left: 30rpx;">确认</text>
         </view>
       </view>
       <view class="form-item banned-msg" v-if="myGroupMemberInfo.isLeader">
-        <text>用户禁言</text>
-        <text>解除禁言</text>
+        <text @click="doBanned('banned')">成员禁言</text>
+        <text @click="doBanned('unBanned')">解除禁言</text>
       </view>
     </view>
+    <bar-group v-if="!regionGroup.quit">
+      <btn-bar type="primary" title="发送消息" @tap="onSendMessage()"></btn-bar>
+    </bar-group>
     <region-group-members :members="regionGroupMembers" ref="membersPopup" @onConfirm="confirmChooseMember"></region-group-members>
     <up-modal :show="leaderTransferShow" title="群主转移" :content='leaderTransferContent' :showCancelButton="true"
               @confirm="confirmLeaderTransfer" @cancel="() => this.leaderTransferShow = false"></up-modal>
@@ -130,7 +132,7 @@ export default {
       this.leaderTransferShow = true;
     },
     confirmLeaderTransfer() {
-      if (this.choosedMember == null || this.choosedMember.joinType === 0) {
+      if (!this.choosedMember.userId || this.choosedMember.joinType === 0) {
         uni.showToast({
           title: "请先选择一位常驻成员",
           icon: 'none'
@@ -160,6 +162,180 @@ export default {
         });
         this.leaderTransferShow = false;
       });
+    },
+    voteLeader() {
+      if (this.myGroupMemberInfo.joinType === 0) {
+        uni.showToast({
+          title: "您不是当前地区群聊常驻用户",
+          icon: 'none'
+        });
+        return;
+      }
+      if (!this.choosedMember.userId || this.choosedMember.joinType === 0) {
+        uni.showToast({
+          title: "请先选择一位常驻成员",
+          icon: 'none'
+        })
+        return;
+      }
+      let paramVO = {
+        regionGroupId: this.regionGroup.id,
+        userId: this.choosedMember.userId,
+        joinType: this.choosedMember.joinType,
+        announce: this.announce,
+      }
+      uni.showModal({
+        title: '群主投票', // 标题
+        content: `请确认是否投票给群成员【${this.choosedMember.aliasName}】？`,
+        success: (res) => {
+          if (res.confirm) {
+            this.$http({
+              url: '/region/group/vote',
+              method: 'post',
+              data: paramVO
+            }).then(() => {
+              uni.showToast({
+                title: "操作成功",
+                icon: 'none'
+              });
+            });
+          }
+        }
+      });
+    },
+    voteRemoveLeader() {
+      if (this.myGroupMemberInfo.joinType === 0) {
+        uni.showToast({
+          title: "您不是当前地区群聊常驻用户",
+          icon: 'none'
+        });
+        return;
+      }
+      if (!this.choosedMember.userId || this.choosedMember.joinType === 0 || !this.choosedMember.isLeader) {
+        uni.showToast({
+          title: "请先选中群主",
+          icon: 'none'
+        })
+        return;
+      }
+      let paramVO = {
+        regionGroupId: this.regionGroup.id,
+        userId: this.choosedMember.userId,
+        joinType: this.choosedMember.joinType,
+        announce: this.announce,
+      }
+
+      uni.showModal({
+        title: '群主解除投票', // 标题
+        content: `【群主解除投票】请确认是否投票解除群成员【${this.choosedMember.aliasName}】的群主身份？`,
+        success: (res) => {
+          if (res.confirm) {
+            this.$http({
+              url: '/region/group/voteRemove',
+              method: 'post',
+              data: paramVO
+            }).then(() => {
+              uni.showToast({
+                title: "操作成功",
+                icon: 'none'
+              });
+            });
+          }
+        }
+      });
+    },
+    doAllBanned(value) {
+      if (!this.myGroupMemberInfo.isLeader) {
+        uni.showToast({
+          title: "您不是当前地区群聊群主",
+          icon: 'none'
+        });
+        return;
+      }
+      let paramVO = {
+        code: this.regionGroup.code,
+        num: this.regionGroup.num,
+        id: this.regionGroup.id,
+        allBanned: value,
+        banDuration: this.bannedTime,
+        banType: 'master'
+      }
+      let url = "";
+      if (value) {
+        url = '/region/group/banMsg';
+      } else {
+        url = '/region/group/unBanMsg'
+      }
+      this.$http({
+        url: url,
+        method: 'post',
+        data: paramVO
+      }).then(() => {
+        this.regionGroup.isBanned = value;
+        uni.showToast({
+          title: "操作成功",
+          icon: 'none'
+        });
+      }).catch((e) => {
+        this.regionGroup.isBanned = !value;
+      })
+    },
+    doBanned(type) {
+      if (!this.myGroupMemberInfo.isLeader) {
+        uni.showToast({
+          title: "您不是当前地区群聊群主",
+          icon: 'none'
+        });
+        return;
+      }
+      if (!this.choosedMember.userId) {
+        uni.showToast({
+          title: "请先选择群聊成员",
+          icon: 'none'
+        });
+        return;
+      }
+      let paramVO = {
+        code: this.regionGroup.code,
+        num: this.regionGroup.num,
+        id: this.regionGroup.id,
+        userId: this.choosedMember.userId,
+        joinType: this.choosedMember.joinType,
+        aliasName: this.choosedMember.aliasName,
+        banDuration: this.bannedTime,
+        allBanned: false,
+        banType: 'master'
+      }
+      let url = "";
+      if (type === 'banned') {
+        url = "/region/group/banMsg";
+      } else {
+        url = "/region/group/unBanMsg";
+      }
+      this.$http({
+        url: url,
+        method: 'post',
+        data: paramVO
+      }).then(() => {
+        this.loadGroupMembers(this.regionGroup.id);
+        uni.showToast({
+          title: "操作成功",
+          icon: 'none'
+        });
+      }).catch((e) => {
+      })
+    },
+    onSendMessage() {
+      let chat = {
+        type: 'REGION-GROUP',
+        targetId: this.regionGroup.id,
+        showName: this.regionGroup.remark,
+        headImage: this.regionGroup.headImage,
+      };
+      this.regionStore.openRegionChat(chat);
+      uni.navigateTo({
+        url: "/pages/region-group/region-chat-box?regionGroupId=" + this.regionGroup.id
+      })
     },
   },
   computed: {

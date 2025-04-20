@@ -49,6 +49,13 @@ export default {
         })
         return;
       }
+      let chat = {
+        type: 'REGION-GROUP',
+        targetId: this.regionGroup.id,
+        showName: this.regionGroup.remark,
+        headImage: this.regionGroup.headImage,
+      };
+      this.regionStore.openRegionChat(chat);
       uni.navigateTo({
         url: "/pages/region-group/region-chat-box?regionGroupId=" + this.regionGroup.id
       })
