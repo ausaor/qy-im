@@ -171,6 +171,8 @@ export default {
     return {
       category: '',
       groupId: null,
+      regionGroupId: null,
+      regionCode: null,
       uploadProgress: 0,
       uploadingPopup: null,
       form: {
@@ -185,6 +187,8 @@ export default {
         enableCharacterChoose: true,
         groupVisible: true,
         regionVisible: true,
+        groupId: null,
+        regionCode: '',
         files: []
       },
       fileList: [],
@@ -570,7 +574,12 @@ export default {
           console.log("this.uploadProgress", this.uploadProgress)
           this.uploadProgress = 100;
           console.log("form", this.form);
-          this.form.groupId = this.groupId;
+          if (this.groupId) {
+            this.form.groupId = this.groupId;
+          }
+          if (this.regionCode) {
+            this.form.regionCode = this.regionCode;
+          }
 
           let url = "/talk"
           if (this.form.id != null) {
@@ -757,6 +766,9 @@ export default {
     this.category = options.category;
     if (options.groupId) {
       this.groupId = options.groupId;
+    }
+    if (options.regionCode) {
+      this.regionCode = options.regionCode;
     }
     if (options.talkId) {
       this.getTalkDetail(options.talkId);

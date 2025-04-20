@@ -333,6 +333,9 @@ export default {
       if (this.groupId) {
         url += `&groupId=${this.groupId}`;
       }
+      if (this.regionCode) {
+        url += `&regionCode=${this.regionCode}`;
+      }
       uni.navigateTo({
         url: url
       })
