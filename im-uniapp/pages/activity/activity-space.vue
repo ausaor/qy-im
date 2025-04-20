@@ -745,6 +745,12 @@ export default {
     if (options.spaceTitle) {
       this.spaceTitle = options.spaceTitle;
     }
+    if (options.regionGroupId) {
+      this.regionGroupId = options.regionGroupId;
+    }
+    if (options.regionCode) {
+      this.regionCode = options.regionCode;
+    }
     this.pageQueryTalkList();
   },
   onHide() {

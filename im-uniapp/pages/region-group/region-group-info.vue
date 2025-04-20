@@ -116,10 +116,14 @@ export default {
       })
     },
     toRegionGroupSpace() {
-
+      uni.navigateTo({
+        url: `/pages/activity/activity-space?category=region&section=my-region&regionGroupId=${this.regionGroup.id}&regionCode=${this.regionGroup.code}&spaceTitle=群空间动态`
+      })
     },
     onShowMoreMember() {
-
+      uni.navigateTo({
+        url: `/pages/region-group/region-group-member?id=${this.regionGroupId}`
+      })
     },
     chooseMember() {
       this.$refs.membersPopup.open();

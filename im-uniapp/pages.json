@@ -80,6 +80,9 @@
 			"path": "pages/region-group/region-group-info"
 		},
 		{
+			"path": "pages/region-group/region-group-member"
+		},
+		{
 			"path": "pages/mine/mine-edit"
 		},
 		{
