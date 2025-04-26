@@ -37,8 +37,7 @@
       </scroll-view>
 
       <!-- 地图展示区域 -->
-      <view class="map-container" ref="mapContainer">
-      </view>
+      <view class="map-container" ref="mapContainer" id="mapContainer" style="width: 100%; min-height: 200rpx;"></view>
     </view>
   </view>
 </template>
@@ -65,10 +64,31 @@ export default {
         children: 'childList'
       },
       // 示例数据
-      treeData: []
+      treeData: [],
+      map: null,
+      circle: null,
+      lng: 116.397428,
+      lat: 39.90923,
     }
   },
+  mounted() {
+    this.initAMap(this.lng, this.lat)
+  },
+  beforeDestroy() {
+    this.destroyMap(); // 避免内存泄漏
+  },
+  onUnload() {
+    console.log('onUnload')
+    this.map?.destroy();
+  },
   methods: {
+    destroyMap() {
+      console.log('destroyMap')
+      if (this.map) {
+        this.map.destroy()
+        this.map = null
+      }
+    },
     handleNodeClick(node) {
       console.log('点击节点:', node);
       this.curRegion = node;
@@ -90,6 +110,7 @@ export default {
             })
           });
         })
+        this.moveMapToTarget(node);
       }
     },
     handleNodeToggle(node) {
@@ -150,6 +171,127 @@ export default {
       }
       uni.navigateTo({
         url: `/pages/activity/activity-space?category=region&section=region&regionCode=${this.curRegion.code}&spaceTitle=地区空间动态`
+      })
+    },
+    // 初始化地图
+    async initAMap(lng, lat) {
+      if (typeof window.AMap === 'undefined') {
+        await this.loadAMapScript()
+      }
+
+      this.map = new AMap.Map('mapContainer', {
+        zoom: 11, // 初始化地图级别
+        center: [lng, lat], // 初始化地图中心点位置
+        layers: [new AMap.TileLayer()],// new AMap.TileLayer.Satellite()
+        features: ['bg', 'road', 'point', 'building'],
+        showLabel: true,
+        rotateEnable: false,
+        pitchEnable: false,
+        pitch: 45,
+        rotation: 0,
+        zooms: [2, 20],
+      });
+
+      //构造矢量圆形
+      let circle = new AMap.Circle({
+        center: new AMap.LngLat(lng, lat), //圆心位置
+        radius: 5000, //半径 单位:米
+        strokeColor: "#ff8133", //线颜色
+        strokeOpacity: 1, //线透明度
+        strokeWeight: 3, //线粗细度
+        fillColor: "#c87d32", //填充颜色
+        fillOpacity: 0.2, //填充透明度
+      });
+      this.circle = circle;
+      //单独将点标记和矢量圆形添加到地图上
+      //this.map.add(marker);
+      this.map.add(circle);
+    },
+
+    // 动态加载高德JS API
+    loadAMapScript() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        const gaodeMapKey = this.configStore.getGaoDeMapKey();
+        console.log('gaodeMapKey', gaodeMapKey);
+        script.src = `https://webapi.amap.com/maps?v=2.0&key=${gaodeMapKey}&plugin=AMap.Geolocation`
+        script.onload = resolve
+        script.onerror = reject
+        document.head.appendChild(script)
+      })
+    },
+    moveMapToTarget(node) {
+      this.getRegionLngLat(node, (region) => {
+        let circle = new AMap.Circle({
+          center: new AMap.LngLat(region.lng, region.lat), //圆心位置
+          radius: 10000, //半径 单位:米
+          strokeColor: "#ff8133", //线颜色
+          strokeOpacity: 1, //线透明度
+          strokeWeight: 3, //线粗细度
+          fillColor: "#c87d32", //填充颜色
+          fillOpacity: 0.2, //填充透明度
+        });
+        this.map.remove(this.circle);
+        this.circle = circle;
+
+        //单独将点标记和矢量圆形添加到地图上
+        //this.map.add(marker);
+        this.map.add(circle);
+        this.map.setZoomAndCenter(11, [region.lng, region.lat]);
+      })
+    },
+    getRegionLngLat(node, callback) {
+      if (node.lng && node.lat) {
+        callback(node);
+      } else{
+        this.$http({
+          url: "/region/getRegionLonAndLat?code=" + node.code,
+          method: "get",
+        }).then((region) => {
+            node.lng = region.longitude;
+            node.lat = region.latitude;
+            callback(node);
+        })
+      }
+    },
+    // 获取定位
+    getLocation() {
+      const geolocation = new AMap.Geolocation({
+        enableHighAccuracy: true, // 高精度定位
+        timeout: 10000
+      })
+
+      geolocation.getCurrentPosition((status, result) => {
+        if (status === 'complete') {
+          this.handleLocationSuccess(result)
+        } else {
+          this.handleLocationError(result)
+        }
+      })
+    },
+
+    handleLocationSuccess(result) {
+      this.currentPosition = {
+        lng: result.position.lng,
+        lat: result.position.lat,
+        address: result.formattedAddress
+      }
+
+      // 移动地图中心点
+      this.map.setCenter([result.position.lng, result.position.lat])
+      new AMap.Marker({
+        position: [result.position.lng, result.position.lat],
+        map: this.map
+      })
+
+      uni.showToast({ title: '定位成功' })
+    },
+
+    handleLocationError(err) {
+      uni.showModal({
+        title: '定位失败',
+        content: err.message || '无法获取当前位置',
+        showCancel: false
       })
     }
   },
