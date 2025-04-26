@@ -352,26 +352,9 @@ export default {
   max-height: 800rpx;
 }
 
-.container {
-  padding: 20rpx;
-}
-
 .custom-node {
   display: flex;
   align-items: center;
-}
-
-.count {
-  margin-left: 10px;
-  color: #666;
-  font-size: 12px;
-}
-
-.region-item {
-  display: flex;
-  align-items: center;
-  padding: 24rpx 0;
-  border-bottom: 1px solid #f5f5f5;
 }
 
 .region-name {
@@ -380,26 +363,9 @@ export default {
   color: #333333;
 }
 
-.sub-region {
-  padding-left: 40rpx;
-}
-
-.active {
-  background-color: #f0f7ff;
-}
-
 .map-container {
   flex: 1;
   width: 100%;
   position: relative;
-}
-
-.map-image {
-  width: 100%;
-  height: 100%;
-}
-
-.cursor-pointer {
-  cursor: pointer;
 }
 </style>
