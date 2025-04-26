@@ -23,6 +23,13 @@ export default defineStore('regionStore', {
         addRegionGroup(group) {
             this.regionGroups.unshift(group);
         },
+        removeRegionGroup(regionGroupId) {
+            this.regionGroups.forEach((g, idx) => {
+                if (g.id === regionGroupId) {
+                    this.regionGroups.splice(idx, 1);
+                }
+            })
+        },
         activeRegionGroup(index) {
             this.activeRegionIndex = index;
         },
@@ -49,6 +56,18 @@ export default defineStore('regionStore', {
         },
 
         /* region chat start */
+        removeRegionChat(regionGroupId) {
+            let chats = this.curRegionChats;
+            for (let idx in chats) {
+                if (chats[idx].targetId === regionGroupId) {
+                    chats[idx].delete = true;
+                    chats[idx].stored = false;
+                    this.regionSaveToStorage();
+                    break;
+                }
+            }
+        },
+
         activeRegionChat(regionGroupId) {
             let chats = this.curRegionChats;
             if (chats) {

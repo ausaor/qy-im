@@ -1,6 +1,6 @@
 <template>
   <view class="tab-page region-group">
-    <nav-bar search add @search="onSearch()">地区群聊</nav-bar>
+    <nav-bar search add @add="toSelectRegion" @search="onSearch()">地区群聊</nav-bar>
     <view v-if="loading" class="chat-loading">
       <loading :size="50" :mask="false">
         <view>消息接收中...</view>
@@ -22,7 +22,7 @@
     </view>
     <scroll-view class="scroll-bar" v-else scroll-with-animation="true" scroll-y="true">
       <view v-for="(regionGroup, index) in regionStore.regionGroups" :key="index" v-show="!searchText || regionGroup.remark.includes(searchText)">
-        <long-press-menu :items="menu.items" @select="onSelectMenu($event, index)">
+        <long-press-menu :items="menu.items" @select="onSelectMenu($event, regionGroup)">
           <region-item :region-group="regionGroup" :index="index" :active="menu.chatIdx === index"></region-item>
         </long-press-menu>
       </view>
@@ -46,8 +46,8 @@ export default {
         chatIdx: -1,
         isTouchMove: false,
         items: [{
-          key: 'DELETE',
-          name: '删除该聊天',
+          key: 'QUIT',
+          name: '退出群聊',
           icon: 'trash',
           color: '#e64e4e'
         },
@@ -61,6 +61,42 @@ export default {
     }
   },
   methods: {
+    onSelectMenu(item, chatIdx) {
+      switch (item.key) {
+        case 'QUIT':
+          this.quitChat(chatIdx);
+          break;
+        case 'TOP':
+          this.moveToTop(chatIdx);
+          break;
+        default:
+          break;
+      }
+      this.menu.show = false;
+    },
+    quitChat(regionGroup) {
+      let params = {
+        id: regionGroup.id,
+        code: regionGroup.code,
+        num: regionGroup.num,
+        joinType: regionGroup.joinType
+      }
+      this.$http({
+        url: "/region/group/quit",
+        method: "post",
+        data: params
+      }).then(() => {
+        this.regionStore.removeRegionGroup(regionGroup.id);
+        this.regionStore.removeRegionChat(regionGroup.id);
+        uni.showToast({
+          icon: "none",
+          title: '退出成功',
+        })
+      })
+    },
+    moveToTop() {
+
+    },
     onSearch() {
       this.showSearch = !this.showSearch;
       this.searchText = "";
@@ -77,6 +113,11 @@ export default {
           complete: () => {}
         })
       }
+    },
+    toSelectRegion() {
+      uni.navigateTo({
+        url: '/pages/region-group/region-list'
+      })
     }
   },
   computed: {

@@ -83,6 +83,9 @@
 			"path": "pages/region-group/region-group-member"
 		},
 		{
+			"path": "pages/region-group/region-list"
+		},
+		{
 			"path": "pages/mine/mine-edit"
 		},
 		{

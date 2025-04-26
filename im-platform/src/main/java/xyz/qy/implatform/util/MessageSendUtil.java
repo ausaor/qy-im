@@ -127,6 +127,7 @@ public class MessageSendUtil {
         } else {
             sendMessage.setRecvIds(recvIds);
         }
+        sendMessage.setSendToSelf(false);
         sendMessage.setData(msgInfo);
         sendMessage.setSendResult(false);
         imClient.sendRegionGroupMessage(sendMessage);
