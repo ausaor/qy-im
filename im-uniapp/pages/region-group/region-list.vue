@@ -35,6 +35,12 @@
           </template>
         </tree-node>
       </scroll-view>
+      <!-- 拖拽条 -->
+      <view
+          class="drag-bar"
+      >
+        <view class="drag-line"></view>
+      </view>
 
       <!-- 地图展示区域 -->
       <view class="map-container" ref="mapContainer" id="mapContainer" style="width: 100%; min-height: 200rpx;"></view>
@@ -348,8 +354,8 @@ export default {
 .region-list-box {
   flex: 1;
   overflow: auto;
-  padding: 30rpx 0;
-  max-height: 800rpx;
+  padding-top: 30rpx;
+  min-height: 800rpx;
 }
 
 .custom-node {
@@ -361,6 +367,22 @@ export default {
   margin-left: 16rpx;
   font-size: 16px;
   color: #333333;
+}
+
+.drag-bar {
+  height: 40rpx;
+  background-color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: none; /* 禁止默认触摸行为 */
+}
+
+.drag-line {
+  width: 120rpx;
+  height: 8rpx;
+  background-color: #ddd;
+  border-radius: 4rpx;
 }
 
 .map-container {

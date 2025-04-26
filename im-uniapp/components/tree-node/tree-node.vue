@@ -114,6 +114,7 @@ export default {
 }
 
 .arrow {
+  padding-left: 16rpx;
   margin-right: 8px;
   transition: transform 0.2s;
   font-size: 12px;
