@@ -122,7 +122,7 @@ export default {
       }
 
       .active {
-        background-color: #b6e8d9;
+        background-color: #ededed;
       }
     }
   }

@@ -26,9 +26,13 @@
         </div>
         <div class="word-bottom">
           <div class="btn-group">
-            <div class="group-item" :class="wordIndex === 1 ? 'active' : ''" @click="chooseWordGroup(1)">角色</div>
+            <div class="group-item" :class="wordIndex === 1 ? 'active' : ''" @click="chooseWordGroup(1)">
+              <span class="icon iconfont icon-minganci" style="color: #1E90FF;"></span>
+            </div>
             <el-divider direction="vertical"></el-divider>
-            <div class="group-item" :class="wordIndex === 2 ? 'active' : ''" @click="chooseWordGroup(2)">群聊</div>
+            <div class="group-item" :class="wordIndex === 2 ? 'active' : ''" @click="chooseWordGroup(2)">
+              <span class="icon iconfont icon-minganci" style="color: orange"></span>
+            </div>
           </div>
           <div class="btn-group">
             <div class="group-item" style="color: #d42e07;cursor: pointer;" @click="close">关闭</div>
@@ -192,11 +196,15 @@ export default {
       .group-item {
         cursor: pointer;
         height: 25px;
+
+        .icon {
+          font-size: 22px;
+        }
       }
     }
 
     .active {
-      background-color: #b6e8d9;
+      background-color: #ededed;
     }
   }
 }

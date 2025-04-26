@@ -14,9 +14,13 @@
         </div>
         <div class="emotion-bottom">
           <div class="emo-items">
-            <div class="emo-item" :class="emoIndex === 1 ? 'active' : ''" @click="chooseEmo(1)">角色</div>
+            <div class="emo-item" :class="emoIndex === 1 ? 'active' : ''" @click="chooseEmo(1)">
+              <span class="icon iconfont icon-biaoqing" style="color: #1E90FF"></span>
+            </div>
             <el-divider direction="vertical"></el-divider>
-            <div class="emo-item" :class="emoIndex === 2 ? 'active' : ''" @click="chooseEmo(2)">群聊</div>
+            <div class="emo-item" :class="emoIndex === 2 ? 'active' : ''" @click="chooseEmo(2)">
+              <span class="icon iconfont icon-biaoqing" style="color: orange"></span>
+            </div>
             <div class="emo-item" style="float: right;color: red;position: absolute;right: 5px;" @click="close()">关闭</div>
           </div>
         </div>
@@ -123,10 +127,14 @@ export default {
         display: flex;
         align-items: center;
         justify-content: center;
+
+        .icon {
+          font-size: 22px;
+        }
       }
 
       .active {
-        background-color: #b6e8d9;
+        background-color: #ededed;
       }
     }
   }
