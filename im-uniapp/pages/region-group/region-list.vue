@@ -6,6 +6,7 @@
       <!-- 当前选中地区 -->
       <view class="current-location">
         <text>当前选中：{{ curRegion.name }}</text>
+        <svg-icon icon-class="shejiaotubiao-40" style="width: 60rpx;height: 60rpx;" @click="toRegionGroup"></svg-icon>
       </view>
 
       <view class="header-buttons">
@@ -44,8 +45,11 @@
 
 <script>
 
+import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+
 export default {
   components: {
+    SvgIcon
 
   },
   data() {
@@ -136,6 +140,18 @@ export default {
         })
       })
     },
+    toRegionGroup() {
+      if (!this.curRegion.code) {
+        uni.showToast({
+          icon: "none",
+          title: '请选择地区',
+        })
+        return;
+      }
+      uni.navigateTo({
+        url: `/pages/activity/activity-space?category=region&section=region&regionCode=${this.curRegion.code}&spaceTitle=地区空间动态`
+      })
+    }
   },
   onLoad(options) {
     this.getRegionList('');
@@ -178,7 +194,11 @@ export default {
 
 .current-location {
   padding: 20rpx 30rpx;
-  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 40rpx;
+  font-weight: 600;
   color: #666666;
   border-bottom: 1px solid #f0f0f0;
 }

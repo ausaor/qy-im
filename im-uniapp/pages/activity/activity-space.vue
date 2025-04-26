@@ -736,7 +736,7 @@ export default {
     console.log(options.section)
     this.category = options.category;
     this.section = options.section;
-    if (this.section === 'friend') {
+    if (this.section === 'friend' || this.section === 'region') {
       this.showAdd = false;
     }
     if (options.groupId) {
