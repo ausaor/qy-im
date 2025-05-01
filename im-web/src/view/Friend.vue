@@ -187,6 +187,7 @@ export default {
       // store的数据不能直接修改，深拷贝一份store的数据
       friend = JSON.parse(JSON.stringify(friend));
       friend.nickName = user.nickName;
+      friend.headImage = user.headImage;
       this.$http({
         url: "/friend/update",
         method: "put",
@@ -203,7 +204,7 @@ export default {
       }).then((user) => {
         this.userInfo = user;
         // 如果发现好友的头像和昵称改了，进行更新
-        if (user.nickName != friend.nickName) {
+        if (user.nickName != friend.nickName || user.headImage != friend.headImage) {
           this.updateFriendInfo(friend, user, index)
         }
       })

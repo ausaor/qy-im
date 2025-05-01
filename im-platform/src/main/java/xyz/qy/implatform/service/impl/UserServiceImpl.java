@@ -279,17 +279,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             friendService.updateBatchById(friends);
         }
         // 更新群聊中的头像
-//        if (!user.getHeadImage().equals(vo.getHeadImage())) {
-//            List<GroupMember> members = groupMemberService.findByUserId(session.getUserId());
-//            for (GroupMember member : members) {
-//                // 模板群聊不能修改用户聊天头像
-//                if (member.getIsTemplate()) {
-//                    continue;
-//                }
-//                member.setHeadImage(vo.getHeadImage());
-//            }
-//            groupMemberService.updateBatchById(members);
-//        }
+        if (!user.getHeadImage().equals(vo.getHeadImage())) {
+            List<GroupMember> members = groupMemberService.findByUserId(session.getUserId());
+            for (GroupMember member : members) {
+                // 模板角色不修改聊天头像
+                if (member.getIsTemplate()) {
+                    continue;
+                }
+                member.setHeadImage(vo.getHeadImage());
+            }
+            groupMemberService.updateBatchById(members);
+        }
         // 更新用户信息
         user.setNickName(SensitiveUtil.filter(vo.getNickName()));
         user.setSex(vo.getSex());

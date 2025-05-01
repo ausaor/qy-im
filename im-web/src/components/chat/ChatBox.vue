@@ -942,8 +942,13 @@
             }
           }
         } else {
-          msgInfo.sendId == this.mine.id ? showInfoObj.showName = this.mine.nickName : showInfoObj.showName = this.chat.showName;
-          msgInfo.sendId == this.mine.id ? showInfoObj.headImage = this.mine.headImage : showInfoObj.headImage = this.chat.headImage;
+          if (msgInfo.sendId == this.mine.id) {
+            showInfoObj.showName = this.mine.nickName;
+            showInfoObj.headImage = this.friend.myHeadImageToFriend ? this.friend.myHeadImageToFriend : this.mine.headImage;
+          } else {
+            showInfoObj.showName = this.chat.showName;
+            showInfoObj.headImage = this.chat.headImage
+          }
           if (msgInfo.quoteMsg) {
             msgInfo.quoteMsg.sendId == this.mine.id ? showInfoObj.quoteShowName = this.mine.nickName : showInfoObj.quoteShowName = this.chat.showName;
           }

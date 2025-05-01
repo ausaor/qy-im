@@ -142,6 +142,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
 
         f.setFriendNickName(vo.getNickName());
         f.setFriendRemark(vo.getFriendRemark());
+        f.setFriendHeadImage(vo.getHeadImage());
         this.updateById(f);
         if (StringUtils.isNotBlank(vo.getMyHeadImageToFriend())) {
             updateMyInfoToFriend(vo);
