@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="选择模板群聊" :visible.sync="visible"  width="50%" :before-close="handleClose">
+  <el-dialog title="选择群聊模板" :visible.sync="visible"  width="50%" :before-close="handleClose">
     <div class="agm-container">
       <div class="agm-l-box">
         <el-input width="200px" placeholder="搜索模板群聊" class="input-with-select" v-model="searchText" >

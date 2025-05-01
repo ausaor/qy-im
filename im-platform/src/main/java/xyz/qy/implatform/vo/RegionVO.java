@@ -32,6 +32,11 @@ public class RegionVO {
     private String name;
 
     /**
+     * 全称
+     */
+    private String fullName;
+
+    /**
      * 地区领导称呼
      */
     private String leaderCallName;

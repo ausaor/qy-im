@@ -7,12 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.entity.Region;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.RegionMapper;
 import xyz.qy.implatform.service.IRegionService;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.LocationServicesUtil;
+import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.vo.RegionVO;
 
 import javax.annotation.Resource;
@@ -21,6 +23,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -34,6 +37,9 @@ import java.util.stream.Collectors;
 public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> implements IRegionService {
     @Resource
     private LocationServicesUtil locationServicesUtil;
+
+    @Resource
+    private RedisCache redisCache;
 
     @Override
     public Region findRegionByCode(String code) {
@@ -62,6 +68,17 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
         List<Region> parentRegionList = new ArrayList<>();
         findParentRegion(parentRegionList, parentCode);
         return parentRegionList;
+    }
+
+    private String getRegionFullNameByCode(String code) {
+        Region region = this.getById(code);
+        List<Region> parentRegionList = this.findAllParentRegionByParentCode(region.getParentCode());
+        parentRegionList.sort((Comparator.comparingInt(Region::getLevel)));
+        if (CollectionUtils.isEmpty(parentRegionList)) {
+            return region.getName();
+        }
+        parentRegionList.add(region);
+        return parentRegionList.stream().map(Region::getName).collect(Collectors.joining("->"));
     }
 
     private void findParentRegion(List<Region> parentRegionList, String parentCode) {
@@ -95,5 +112,22 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
             this.updateById(region);
         }
         return BeanUtils.copyProperties(region, RegionVO.class);
+    }
+
+    @Override
+    public List<RegionVO> findActivityRegions() {
+        Set<String> regionCodes = redisCache.revRange(RedisKey.REGION_ACTIVITY_RANGE, 0, 99);
+        if (CollectionUtils.isEmpty(regionCodes)) {
+            return Collections.emptyList();
+        }
+        List<Region> regionList = this.listByIds(regionCodes);
+        if (CollectionUtils.isNotEmpty(regionList)) {
+            List<RegionVO> regionVOS = BeanUtils.copyPropertiesList(regionList, RegionVO.class);
+            regionVOS.forEach(regionVO -> {
+                regionVO.setFullName(getRegionFullNameByCode(regionVO.getCode()));
+            });
+            return regionVOS;
+        }
+        return Collections.emptyList();
     }
 }

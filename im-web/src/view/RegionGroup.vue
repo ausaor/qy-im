@@ -30,7 +30,7 @@
                 </span>
                 </el-tree>
               </div>
-              <div class="tree-footer" style="">
+              <div class="tree-footer">
                 <div>当前选中：{{curNode.name}}</div>
                 <div style="display: flex;align-items: center;">
                   <el-button type="text" size="medium" @click="() => joinRegionGroup(curNode, 0)">
@@ -48,6 +48,11 @@
                       <div class="el-icon-question" slot="reference"></div>
                     </el-popover>
                   </div>
+                </div>
+                <div>
+                  <el-button type="text" size="medium" @click="viewActivityRegions">
+                    活跃地区
+                  </el-button>
                 </div>
                 <div class="region-space" @click="openRegionSpace">
                   <svg class="icon svg-icon" aria-hidden="true">
@@ -75,6 +80,20 @@
           </div>
         </template>
       </drawer>
+      <el-dialog  :visible="activityRegionsVisible" width="450px" title="活跃地区" :before-close="closeActivityRegions">
+        <div class="activity-regions">
+          <el-scrollbar style="height: 400px;">
+            <div v-for="(region, index) in activityRegions" :key="index" class="region-item">
+              <div>{{region.fullName}}</div>
+              <el-button size="small" :type="regionActiveIndex === index ? 'success' : ''" icon="el-icon-check" circle @click="chooseActivityRegion(region, index)"></el-button>
+            </div>
+          </el-scrollbar>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="() => joinRegionGroup(activityRegion, 0)">临时加入</el-button>
+          <el-button type="primary" @click="() => joinRegionGroup(activityRegion, 1)">加入常驻</el-button>
+        </span>
+      </el-dialog>
       <region-chat-box v-if="regionGroupStore.activeRegionChat && regionGroupStore.activeRegionChat.targetId === regionGroupStore.activeRegionGroup.id"
                        :chat="regionGroupStore.activeRegionChat"></region-chat-box>
     </el-container>
@@ -117,7 +136,11 @@ export default {
       lngLat: {
         lng: 116.397428,
         lat: 39.90923,
-      }
+      },
+      activityRegion: {},
+      regionActiveIndex: -1,
+      activityRegions: [],
+      activityRegionsVisible: false,
     }
   },
   computed: {
@@ -272,7 +295,26 @@ export default {
     },
     closeDrawer() {
       this.regionSpaceVisible = false;
-    }
+    },
+    viewActivityRegions() {
+      this.$http({
+        url: '/region/findActivityRegions',
+        method: 'get'
+      }).then((data) => {
+        this.activityRegionsVisible = true;
+        this.activityRegions = data;
+      })
+    },
+    chooseActivityRegion(region, index) {
+      this.activityRegion = region;
+      this.regionActiveIndex = index;
+      this.$refs.GaoDeMap.initAMap(region.longitude, region.latitude);
+    },
+    closeActivityRegions() {
+      this.activityRegionsVisible = false;
+      this.activityRegion = {};
+      this.regionActiveIndex = -1;
+    },
   },
 }
 </script>
@@ -318,7 +360,7 @@ export default {
 
         .tree-aside {
           width: 100%;
-          height: 800px;
+          max-height: 750px;
           overscroll-behavior: contain;
           overflow: auto;
           box-sizing: content-box;
@@ -326,12 +368,13 @@ export default {
 
         .tree-footer {
           width: 100%;
-          height: 100px;
+          height: 120px;
           text-align: left;
           margin-top: 5px;
           margin-left: 5px;
           overscroll-behavior: contain;
           overflow: auto;
+          box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
 
           .tips {
             margin-left: 10px;
@@ -347,6 +390,18 @@ export default {
         height: 100%;
         overscroll-behavior: contain;
         overflow: auto;
+      }
+    }
+
+    .activity-regions {
+      .region-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 10px;
+        color: orange;
+        border-bottom: 1px solid lightgray;
+        padding-bottom: 5px;
       }
     }
 

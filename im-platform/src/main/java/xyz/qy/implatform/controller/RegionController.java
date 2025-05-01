@@ -43,4 +43,10 @@ public class RegionController {
     public Result<RegionVO> getRegionLonAndLat(@NotBlank(message = "地区编码为空") String code) {
         return ResultUtils.success(regionService.getRegionLonAndLat(code));
     }
+
+    @ApiOperation(value = "获取活跃地区", notes = "获取活跃地区")
+    @GetMapping("/findActivityRegions")
+    public Result<List<RegionVO>> findActivityRegions() {
+        return ResultUtils.success(regionService.findActivityRegions());
+    }
 }

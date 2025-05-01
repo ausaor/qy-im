@@ -71,7 +71,7 @@ webrtc:
 
 jwt:
   accessToken:
-    expireIn: 1800  #半个小时
+    expireIn: 86400  #一天
     secret: MIIBIjANBgkq
   refreshToken:
     expireIn: 604800 #7天

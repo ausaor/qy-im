@@ -44,4 +44,11 @@ public interface IRegionService extends IService<Region> {
      * @return 地区信息VO
      */
     RegionVO getRegionLonAndLat(String code);
+
+    /**
+     * 获取活跃地区
+     *
+     * @return 地区信息VO
+     */
+    List<RegionVO> findActivityRegions();
 }

@@ -440,6 +440,15 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         regionGroupMember.setAliasName(StringUtils.isNotBlank(regionGroupDTO.getNickname()) ?
                 regionGroupDTO.getNickname() : session.getNickName());
         regionGroupMember.setCreateBy(session.getUserId());
+
+        List<RegionGroupMember> list = regionGroupMemberService.lambdaQuery()
+                .eq(RegionGroupMember::getRegionGroupId, regionGroup.getId())
+                .eq(RegionGroupMember::getUserId, session.getUserId())
+                .eq(RegionGroupMember::getQuit, false).list();
+        if (CollectionUtils.isNotEmpty(list)) {
+            throw new GlobalException("您已加入当前地区群聊");
+        }
+
         regionGroupMemberService.saveOrUpdate(regionGroupMember);
 
         // 删除redis保存的用户临时加入的地区群聊到

@@ -63,7 +63,7 @@
       <el-button type="primary" @click="chooseTemplateCharacterOk">确 定</el-button>
     </span>
     </el-dialog>
-    <el-dialog title="选择模板群聊" :visible.sync="selectCharactersVisible"  width="50%" :before-close="closeCharacterDialog" append-to-body>
+    <el-dialog title="选择群聊模板" :visible.sync="selectCharactersVisible"  width="50%" :before-close="closeCharacterDialog" append-to-body>
       <div class="template-group-container">
         <div class="agm-l-box">
           <el-input width="200px" placeholder="搜索模板群聊" class="input-with-select" v-model="searchText" >
