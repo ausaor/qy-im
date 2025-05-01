@@ -88,6 +88,7 @@ public class MessageSendUtil {
         }
         msgInfo.setGroupChangeType(groupChangeType);
         sendMessage.setData(msgInfo);
+        sendMessage.setSendToSelf(false);
         sendMessage.setSendResult(false);
         imClient.sendGroupMessage(sendMessage);
     }

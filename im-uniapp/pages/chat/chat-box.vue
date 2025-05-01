@@ -1146,6 +1146,12 @@ export default {
       setTimeout(() => {
         this.scrollMsgIdx = 0;
       }, 2000);
+    },
+    handleGroupChangeEvent(msg) {
+      console.log("handleGroupChangeEvent", msg);
+      if (msg.chatType === 'GROUP' && this.group.id === msg.groupId && msg.groupChangeType) {
+        this.loadGroup(this.group.id);
+      }
     }
 	},
 	computed: {
@@ -1226,6 +1232,7 @@ export default {
 		}
 	},
 	onLoad(options) {
+    uni.$on('group-change-event', this.handleGroupChangeEvent);
 		// 聊天数据
 		this.chat = this.chatStore.chats[options.chatIdx];
 		// 初始状态只显示20条消息
@@ -1260,8 +1267,14 @@ export default {
 		});
 	},
 	onUnload() {
+    console.log('chat-box-onUnload')
+    uni.$off('group-change-event', this.handleGroupChangeEvent) // 清理监听
 		this.unListenKeyboard();
 	},
+  onHide() {
+    console.log('chat-box-onHide')
+    uni.$off('group-change-event', this.handleGroupChangeEvent) // 清理监听
+  },
 	onShow() {
 		if (this.needScrollToBottom) {
 			// 页面滚到底部

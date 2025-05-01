@@ -56,15 +56,20 @@ export default {
 					this.exit();
 				} else if (cmd == 3) {
 					// 私聊消息
+          // 插入私聊消息
+          msgInfo.chatType = 'PRIVATE'
 					this.handlePrivateMessage(msgInfo);
 				} else if (cmd == 4) {
 					// 群聊消息
+          msgInfo.chatType = 'GROUP'
 					this.handleGroupMessage(msgInfo);
 				} else if (cmd == 5) {
 					// 系统消息
+          msgInfo.chatType = 'SYSTEM'
 					this.handleSystemMessage(msgInfo);
 				} else if (cmd == 9) {
           // 地区群聊消息
+          msgInfo.chatType = 'REGION-GROUP'
           this.handleRegionGroupMessage(msgInfo);
         }
 			});
@@ -197,6 +202,10 @@ export default {
 				this.chatStore.setLoadingGroupMsg(JSON.parse(msg.content))
 				return;
 			}
+      // 群聊有变更
+      if (msg.type == enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
+        uni.$emit('group-change-event', msg);
+      }
 			// 消息已读处理
 			if (msg.type == enums.MESSAGE_TYPE.READED) {
 				// 我已读对方的消息，清空已读数量
