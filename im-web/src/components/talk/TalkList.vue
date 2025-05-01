@@ -83,9 +83,12 @@
           <div class="interaction">
             <div v-if="item.talkStarVOS"
                  :class="item.talkStarVOS && item.talkCommentVOS ? 'like-container is_border' : 'like-container'">
+              <svg class="icon svg-icon" aria-hidden="true">
+                <use xlink:href="#icon-dianzan1"></use>
+              </svg>
               <span class="star-user" v-for="(user, user_index) in item.talkStarVOS" :key="user_index"
                     @click="showUserInfo($event, user.userId)">
-                <i class="el-icon-star-on" style="color: yellow"></i> {{ user.nickname }}
+                {{ user.nickname }}
                 <span v-if="user_index < item.talkStarVOS.length - 1">，</span>
               </span>
             </div>
@@ -938,8 +941,20 @@ export default {
           border-radius: 5px;
 
           .like-container {
-            text-align: left;
-            padding-left: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: left;
+
+            .icon {
+              margin-right: 5px;
+              display: block;
+              height: 20px;
+              line-height: 20px;
+              font-size: 18px;
+              -webkit-transition: font-size 0.25s linear, width 0.25s linear;
+              -moz-transition: font-size 0.25s linear, width 0.25s linear;
+              transition: font-size 0.25s linear, width 0.25s linear;
+            }
 
             .star-user {
               cursor: pointer;
