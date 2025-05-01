@@ -158,6 +158,7 @@
   import RtcGroupJoin from "../rtc/RtcGroupJoin.vue"
   import CharacterWord from "@/components/common/CharacterWord";
   import CharacterEmotion from "@/components/common/CharacterEmotion";
+  import { EventBus } from '../../api/event-bus';
 
 	export default {
 		name: "chatPrivate",
@@ -215,6 +216,18 @@
 		},
     created() {
       this.friends = this.$store.state.friendStore.friends;
+
+      // 监听事件
+      EventBus.$on('group-change', (msg) => {
+        if (msg.chatType === 'GROUP' && this.group.id === msg.groupId && msg.groupChangeType) {
+          this.loadGroup(this.group.id);
+        }
+      });
+    },
+    beforeDestroy() {
+      // 组件销毁时移除监听，避免内存泄漏
+      console.log('ChatBox beforeDestroy');
+      EventBus.$off('group-change');
     },
     methods: {
       moveChatToTop() {
@@ -888,7 +901,6 @@
 				}
 			},
       showInfo(msgInfo) {
-        console.log("showInfo")
         let showInfoObj = {
           showName: "",
           headImage: "",

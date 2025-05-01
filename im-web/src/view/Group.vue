@@ -664,7 +664,7 @@
           data: paramVO
         }).then((group) => {
           this.$message.success("修改成功");
-          this.$store.commit("updateGroupChat", group);
+          this.$store.commit("updateChatFromGroup", group);
         }).finally(() =>{
           this.loadGroup(this.activeGroup.id)
           this.loadGroupMembers();

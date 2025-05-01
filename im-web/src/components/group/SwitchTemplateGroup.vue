@@ -167,7 +167,7 @@ export default {
         data: paramVO
       }).then((group) => {
         this.$store.commit("updateGroup", group);
-        this.$store.commit("updateGroupChat", group);
+        this.$store.commit("updateChatFromGroup", group);
         this.$message.success("切换成功");
       }).finally(() =>{
         this.groupActiveIndex = -1;

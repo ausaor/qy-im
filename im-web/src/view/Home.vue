@@ -104,6 +104,7 @@
 	import RtcPrivateAcceptor from '../components/rtc/RtcPrivateAcceptor.vue';
 	import Operation from "@/components/operation/Operation";
   import RtcGroupVideo from '../components/rtc/RtcGroupVideo.vue';
+  import { EventBus } from '../api/event-bus.js';
 	
 	export default {
 		components: {
@@ -288,6 +289,10 @@
           console.log("群聊记录加载......", JSON.parse(msg.content))
           this.$store.commit("loadingGroupMsg", JSON.parse(msg.content))
           return;
+        }
+        // 群聊有变更
+        if (msg.type == this.$enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
+          this.eventGroupChange(msg);
         }
         // 消息已读处理
         if (msg.type == this.$enums.MESSAGE_TYPE.READED) {
@@ -529,6 +534,10 @@
             })
           }
         });
+      },
+      eventGroupChange(msg) {
+        console.log('group-change-event')
+        EventBus.$emit('group-change', msg);
       }
 		},
 		computed: {

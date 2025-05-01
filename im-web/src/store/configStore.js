@@ -26,7 +26,6 @@ export default {
 					url: '/system/config',
 					method: 'GET'
 				}).then((config) => {
-					console.log("系统配置",config)
 					context.commit("setConfig",config);
 					resolve();
 				}).catch((res)=>{
