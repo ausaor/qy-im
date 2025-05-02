@@ -7,10 +7,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import xyz.qy.imcommon.contant.IMRedisKey;
-import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.dto.TalkAddDTO;
 import xyz.qy.implatform.dto.TalkDelDTO;
 import xyz.qy.implatform.dto.TalkQueryDTO;
@@ -49,7 +47,6 @@ import xyz.qy.implatform.vo.TalkStarVO;
 import xyz.qy.implatform.vo.TalkVO;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -57,7 +54,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -100,6 +96,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
     @Override
     public void addTalk(TalkAddDTO talkAddDTO) {
+        checkTalkFiles(talkAddDTO.getFiles());
         UserSession session = SessionContext.getSession();
         User user = userService.getById(session.getUserId());
         Talk talk = BeanUtils.copyProperties(talkAddDTO, Talk.class);
@@ -127,6 +124,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
     @Override
     public void updateTalk(TalkUpdateDTO talkUpdateDTO) {
+        checkTalkFiles(talkUpdateDTO.getFiles());
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
         User user = userService.getById(userId);
@@ -159,6 +157,45 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             talk.setFiles(talkUpdateDTO.getFiles().toJSONString());
         }
         this.baseMapper.updateById(talk);
+    }
+
+    private void checkTalkFiles(JSONArray files) {
+        if (CollectionUtils.isEmpty(files)) {
+            return;
+        }
+        if (files.size() > 9) {
+            throw new GlobalException("最多只能上传9个文件");
+        }
+
+        // 判断files中fileType等于2的数量是否大于1
+        long count = files.stream()
+                .filter(file -> file instanceof Map)
+                .map(file -> (Map<?, ?>) file)
+                .filter(map -> "2".equals(String.valueOf(map.get("fileType"))))
+                .count();
+        if (count > 1) {
+            throw new GlobalException("只能上传一个视频文件");
+        }
+
+        // 判断files中fileType等于2的数量是否大于1
+        long count2 = files.stream()
+                .filter(file -> file instanceof Map)
+                .map(file -> (Map<?, ?>) file)
+                .filter(map -> "3".equals(String.valueOf(map.get("fileType"))))
+                .count();
+        if (count2 > 1) {
+            throw new GlobalException("只能上传一个音频文件");
+        }
+
+        // 获取files中fileType属性的所有值
+        Set<String> fileTypeValues = files.stream()
+                .filter(file -> file instanceof Map)
+                .map(file -> (Map<?, ?>) file)
+                .map(map -> String.valueOf(map.get("fileType")))
+                .collect(Collectors.toSet());
+       if (fileTypeValues.size() > 1) {
+           throw new GlobalException("不能同时上传多种类型文件");
+       }
     }
 
     @Override
