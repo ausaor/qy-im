@@ -142,7 +142,7 @@
       <group-member-selector ref="rtcSel" :groupId="group.id" @complete="onInviteOk"></group-member-selector>
       <rtc-group-join ref="rtcJoin" :groupId="group.id"></rtc-group-join>
       <chat-history :visible="showHistory" :chat="chat" :friend="friend" :group="group" :groupMembers="groupMembers" @close="closeHistoryBox"></chat-history>
-      <video-play  ref="videoPlay" :videoUrl="videoUrl" :posterUrl="posterUrl" @close="closeVideoPlay"></video-play>
+      <video-play ref="videoPlay" :videoUrl="videoUrl" :posterUrl="posterUrl" @close="closeVideoPlay"></video-play>
     </el-container>
   </div>
 </template>

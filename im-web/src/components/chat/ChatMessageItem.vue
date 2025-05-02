@@ -15,8 +15,8 @@
         <div v-show="mode==1 && (msgInfo.groupId || msgInfo.regionGroupId)" class="chat-msg-top">
           <span :style="nameColorStyle">{{showInfo.showName}}</span>
           <span v-show="myGroupMemberInfo.showNickName">{{showInfo.nickName}}</span>
-          <span v-if="isOwner && (msgInfo.groupId || msgInfo.regionGroupId)" style="background-color: orange; color: white;">群主</span>
-          <span v-if="msgInfo.sendId===1" style="background-color: #1E90FF; color: white;">博主</span>
+          <span v-if="isOwner && (msgInfo.groupId || msgInfo.regionGroupId)" class="group-master">群主</span>
+          <span v-if="msgInfo.sendId===1" class="blogger">博主</span>
         </div>
 				<div v-show="mode==2" class="chat-msg-top">
 					<span :style="nameColorStyle">{{showInfo.showName}}</span>
@@ -107,7 +107,10 @@
                   <i class="quote-play-icon el-icon-video-play"></i>
                 </div>
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.AUDIO">
-                  <mini-audio :audio-source="JSON.parse(msgInfo.quoteMsg.content).url"></mini-audio>
+                  <div style="display: flex;align-items: center;">
+                    <span>音频消息</span>
+                    <span class="icon iconfont icon-yinpin"></span>
+                  </div>
                 </div>
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.FILE" class="quote-file">
                   <div class="quote-file-info">
@@ -121,7 +124,7 @@
                 </div>
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.WORD_VOICE" class="quote-word-voice">
                   <span class="word" :title="JSON.parse(msgInfo.quoteMsg.content).word">{{JSON.parse(msgInfo.quoteMsg.content).word}}</span>
-                  <span class="voice" @click.stop="playVoice(JSON.parse(msgInfo.quoteMsg.content).voice)">
+                  <span class="voice">
                     <svg class="icon svg-icon" aria-hidden="true">
                       <use xlink:href="#icon-xitongxiaoxi"></use>
                     </svg>
@@ -432,6 +435,20 @@
 					font-size: 14px;
 					line-height: 20px;
 
+          .group-master {
+            background-color: orange;
+            color: white;
+            font-size: 12px;
+            padding: 0 5px;
+            border-radius: 10px;
+          }
+
+          .blogger {
+            background-color: #1E90FF;
+            color: white;
+            font-size: 12px;
+          }
+
 					span {
 						margin-right: 12px;
 					}
@@ -522,7 +539,6 @@
                 transform: translate(-50%, -50%);
                 cursor: pointer;
                 color: #ffffff;
-                z-index: 99;
               }
             }
           }
@@ -679,7 +695,6 @@
                   left: 50%;
                   top: 50%;
                   transform: translate(-50%, -50%);
-                  z-index: 99;
                   color: white;
                   cursor: pointer;
                 }
