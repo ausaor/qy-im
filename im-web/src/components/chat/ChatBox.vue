@@ -29,7 +29,8 @@
                         @delete="deleteMessage"
                         @recall="recallMessage"
                         @quote="quoteMessage"
-                        @scrollToMessage="scrollToTargetMsg">
+                        @scrollToMessage="scrollToTargetMsg"
+                        @playVideo="playVideo">
                     </chat-message-item>
                   </li>
                 </ul>
@@ -141,6 +142,7 @@
       <group-member-selector ref="rtcSel" :groupId="group.id" @complete="onInviteOk"></group-member-selector>
       <rtc-group-join ref="rtcJoin" :groupId="group.id"></rtc-group-join>
       <chat-history :visible="showHistory" :chat="chat" :friend="friend" :group="group" :groupMembers="groupMembers" @close="closeHistoryBox"></chat-history>
+      <video-play  ref="videoPlay" :videoUrl="videoUrl" :posterUrl="posterUrl" @close="closeVideoPlay"></video-play>
     </el-container>
   </div>
 </template>
@@ -159,6 +161,7 @@
   import CharacterWord from "@/components/common/CharacterWord";
   import CharacterEmotion from "@/components/common/CharacterEmotion";
   import { EventBus } from '../../api/event-bus';
+  import VideoPlay  from "../common/VideoPlay.vue";
 
 	export default {
 		name: "chatPrivate",
@@ -175,6 +178,7 @@
       RtcGroupJoin,
       CharacterWord,
       CharacterEmotion,
+      VideoPlay,
 		},
 		props: {
 			chat: {
@@ -212,6 +216,8 @@
           show: false
         },
         highlightedMessageId: null,
+        videoUrl: '',
+        posterUrl: ''
 			}
 		},
     created() {
@@ -1039,6 +1045,14 @@
             this.highlightedMessageId = null;
           }, 2000);
         }
+      },
+      playVideo(data) {
+        this.videoUrl = data.videoUrl;
+        this.posterUrl = data.coverImageUrl;
+        this.$refs.videoPlay.onPlayVideo()
+      },
+      closeVideoPlay() {
+        this.videoUrl = '';
       }
 		},
 		computed: {

@@ -22,7 +22,11 @@ import './utils/directive/dialogDrag';
 import { v4 as uuidv4 } from 'uuid'
 import VueImageSwipe from "vue-image-swipe";
 import "vue-image-swipe/dist/vue-image-swipe.css";
+import VideoPlayer from 'vue-video-player'
+import 'video.js/dist/video-js.css'
+import 'vue-video-player/src/custom-theme.css'
 
+Vue.use(VideoPlayer);
 Vue.use(ElementUI);
 Vue.use(VueImageSwipe);
 Vue.use(VueAudio)

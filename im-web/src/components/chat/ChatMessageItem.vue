@@ -32,7 +32,7 @@
             <div class="chat-msg-image" v-if="msgInfo.type==$enums.MESSAGE_TYPE.IMAGE">
               <div class="img-load-box" v-loading="loading" element-loading-text="上传中.."
                    element-loading-background="rgba(0, 0, 0, 0.4)">
-                <img class="send-image" :src="JSON.parse(msgInfo.content).originUrl"
+                <img class="send-image" :src="JSON.parse(msgInfo.content).originUrl" loading="lazy"
                      @click.stop="showFullImageBox()" />
               </div>
               <span title="发送失败" v-show="loadFail" @click.stop="onSendFail"
@@ -41,7 +41,8 @@
             <div class="chat-msg-video" v-if="msgInfo.type==$enums.MESSAGE_TYPE.VIDEO">
               <div class="video-load-box" v-loading="loading" element-loading-text="上传中.."
                    element-loading-background="rgba(0, 0, 0, 0.4)">
-                <video class="send-video" controls="controls" preload="none" :src="JSON.parse(msgInfo.content).videoUrl" :poster="JSON.parse(msgInfo.content).coverUrl"></video>
+                <img class="video-image" :src="JSON.parse(msgInfo.content).coverUrl" loading="lazy"/>
+                <span class="play-icon el-icon-video-play" @click="onPlayVideo(JSON.parse(msgInfo.content).videoUrl, JSON.parse(msgInfo.content).coverUrl)"></span>
               </div>
               <span title="发送失败" v-show="loadFail" @click="onSendFail"
                     class="send-fail el-icon-warning"></span>
@@ -99,11 +100,11 @@
                 <span v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.TEXT"
                       v-html="htmlQuoteText"></span>
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.IMAGE">
-                  <img class="quote-image" :src="JSON.parse(msgInfo.quoteMsg.content).originUrl"
-                         @click.stop="showQuoteMsgFullImageBox()" />
+                  <img class="quote-image" :src="JSON.parse(msgInfo.quoteMsg.content).originUrl"/>
                 </div>
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.VIDEO">
-                  <video class="quote-video" controls="controls" preload="none" :src="JSON.parse(msgInfo.quoteMsg.content).videoUrl" :poster="JSON.parse(msgInfo.quoteMsg.content).coverUrl"></video>
+                  <img class="quote-video-image" :src="JSON.parse(msgInfo.quoteMsg.content).coverUrl"/>
+                  <i class="quote-play-icon el-icon-video-play"></i>
                 </div>
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.AUDIO">
                   <mini-audio :audio-source="JSON.parse(msgInfo.quoteMsg.content).url"></mini-audio>
@@ -293,6 +294,9 @@
       scrollToMessage(msgId) {
         this.$emit('scrollToMessage', msgId)
       },
+      onPlayVideo(url, coverImageUrl) {
+        this.$emit('playVideo', {videoUrl: url, coverImageUrl: coverImageUrl});
+      },
 		},
 		computed: {
 			loading() {
@@ -476,10 +480,8 @@
               min-height: 150px;
               max-width: 400px;
               max-height: 300px;
-							border: var(--border-color) solid 1px;
-              box-shadow: 2px 2px 2px #c0c0c0;
-              border-radius: 6px;
-							cursor: pointer;
+              border-radius: 8px;
+              cursor: pointer;
 						}
 
 						.send-fail {
@@ -496,15 +498,32 @@
             flex-direction: row;
             align-items: center;
 
-            .send-video {
-              min-width: 200px;
-              max-width: 300px;
-              max-height: 300px;
-              border-radius: 10px;
-              overflow: hidden;
-              cursor: pointer;
-              -o-object-fit: contain;
-              object-fit: contain;
+            .video-load-box {
+              position: relative;
+
+              .video-image {
+                min-width: 200px;
+                max-width: 400px;
+                min-height: 150px;
+                max-height: 300px;
+                border-radius: 8px;
+                cursor: pointer;
+              }
+
+              .play-icon {
+                display: block;
+                position: absolute;
+                font-size: 80px;
+                font-weight: 500;
+                width: 80px;
+                height: 80px;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                cursor: pointer;
+                color: #ffffff;
+                z-index: 99;
+              }
             }
           }
 
@@ -635,12 +654,33 @@
               }
 
               .quote-content {
+                position: relative;
 
                 .quote-image {
                   min-width: 40px;
                   min-height: 30px;
                   max-width: 80px;
                   max-height: 60px;
+                  cursor: pointer;
+                }
+
+                .quote-video-image {
+                  min-width: 40px;
+                  min-height: 30px;
+                  max-width: 80px;
+                  max-height: 60px;
+                  cursor: pointer;
+                }
+
+                .quote-play-icon {
+                  font-size: 30px;
+                  font-weight: 500;
+                  position: absolute;
+                  left: 50%;
+                  top: 50%;
+                  transform: translate(-50%, -50%);
+                  z-index: 99;
+                  color: white;
                   cursor: pointer;
                 }
 
