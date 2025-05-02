@@ -19,6 +19,7 @@
                       :data-highlight="highlightedMessageId === msgInfo.id" class="message-wrapper">
                     <chat-message-item
                         v-if="idx>=showMinIdx"
+                        :ref="`message-item-${msgInfo.id ? msgInfo.id : msgInfo.uid}`"
                         @call="onCall(msgInfo.type)"
                         :mine="msgInfo.sendId == mine.id"
                         :showInfo="showInfo(msgInfo)"
@@ -30,7 +31,8 @@
                         @recall="recallMessage"
                         @quote="quoteMessage"
                         @scrollToMessage="scrollToTargetMsg"
-                        @playVideo="playVideo">
+                        @playVideo="playVideo"
+                        @audioStateChange="onAudioStateChange">
                     </chat-message-item>
                   </li>
                 </ul>
@@ -1053,7 +1055,16 @@
       },
       closeVideoPlay() {
         this.videoUrl = '';
-      }
+      },
+      onAudioStateChange(state, msgInfo) {
+        const playingAudio = this.$refs['message-item-' + msgInfo.id][0]
+        if (state == 'PLAYING' && playingAudio != this.playingAudio) {
+          // 停止之前的录音
+          this.playingAudio && this.playingAudio.stopPlayAudio();
+          // 记录当前正在播放的消息
+          this.playingAudio = playingAudio;
+        }
+      },
 		},
 		computed: {
 			mine() {

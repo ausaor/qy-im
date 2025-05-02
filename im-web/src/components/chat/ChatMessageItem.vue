@@ -69,9 +69,8 @@
             <div class="chat-msg-word-voice" v-if="msgInfo.type==$enums.MESSAGE_TYPE.WORD_VOICE">
               <span class="word" :title="JSON.parse(msgInfo.content).word">{{JSON.parse(msgInfo.content).word}}</span>
               <span class="voice" @click.stop="playVoice(JSON.parse(msgInfo.content).voice)">
-                <svg class="icon svg-icon" aria-hidden="true">
-                  <use xlink:href="#icon-xitongxiaoxi"></use>
-                </svg>
+                <span v-show="!isPlaying"  class="icon iconfont icon-xitongxiaoxi" style="color: orange;"></span>
+                <span v-show="isPlaying"  class="icon iconfont icon-yinpinzanting" style="color: orange;"></span>
               </span>
             </div>
             <div class="chat-action chat-msg-text" v-if="isAction">
@@ -124,11 +123,7 @@
                 </div>
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.WORD_VOICE" class="quote-word-voice">
                   <span class="word" :title="JSON.parse(msgInfo.quoteMsg.content).word">{{JSON.parse(msgInfo.quoteMsg.content).word}}</span>
-                  <span class="voice">
-                    <svg class="icon svg-icon" aria-hidden="true">
-                      <use xlink:href="#icon-xitongxiaoxi"></use>
-                    </svg>
-                  </span>
+                  <span class="voice icon iconfont icon-xitongxiaoxi" style="color: orange;"></span>
                 </div>
               </div>
             </div>
@@ -220,6 +215,8 @@
 		data() {
 			return {
 				audioPlayState: 'STOP',
+        isPlaying: false,
+        audio: null,
 				rightMenu: {
 					show: false,
 					pos: {
@@ -238,8 +235,10 @@
           "#85029b", "#c9b455","#fb2609","#bda818",
           "#af0831","#326eb6"]
 			}
-
 		},
+    beforeDestroy() {
+      // 组件销毁时移除监听
+    },
 		methods: {
       onSendFail() {
 				this.$message.error("该文件已发送失败，目前不支持自动重新发送，建议手动重新发送")
@@ -290,9 +289,54 @@
         this.$refs.chatGroupReadedBox.open(rect);
       },
       playVoice(url) {
-        let audio = new Audio();
-        audio.src = url;
-        audio.play();
+        if (!this.audio) {
+          this.audio = new Audio();
+          this.audio.src = url;
+          // 监听事件
+          this.audio.addEventListener("ended", this.handleEnded);
+          this.audio.addEventListener("pause", this.handlePause);
+        }
+
+        if (this.audioPlayState == 'STOP') {
+          this.audio.play();
+          this.isPlaying = true;
+          this.audioPlayState = "PLAYING";
+        } else if (this.audioPlayState == 'PLAYING') {
+          this.audio.pause();
+          this.audioPlayState = "PAUSE"
+        } else if (this.audioPlayState == 'PAUSE') {
+          this.audio.play();
+          this.isPlaying = true;
+          this.audioPlayState = "PLAYING"
+        }
+        this.$emit("audioStateChange", this.audioPlayState, this.msgInfo);
+      },
+      stopPlayAudio() {
+        if (this.audio) {
+          this.audio.pause();
+          // 移除监听
+          this.audio.removeEventListener("ended", this.handleEnded);
+          this.audio.removeEventListener("pause", this.handlePause);
+          this.isPlaying = false;
+          this.audioPlayState = "STOP";
+          this.audio = null;
+        }
+      },
+      handleEnded() {
+        console.log("播放完成");
+        this.isPlaying = false;
+        this.audioPlayState = "STOP";
+        // 移出监听
+        this.audio.removeEventListener("ended", this.handleEnded);
+        this.audio.removeEventListener("pause", this.handlePause);
+        this.audio = null;
+        this.$emit("audioStateChange", this.audioPlayState, this.msgInfo);
+      },
+      handlePause() {
+        console.log("播放暂停");
+        this.isPlaying = false;
+        this.audioPlayState = "STOP";
+        this.$emit("audioStateChange", this.audioPlayState, this.msgInfo);
       },
       scrollToMessage(msgId) {
         this.$emit('scrollToMessage', msgId)
