@@ -379,6 +379,24 @@ export default {
       talkParam.content = sendText;
       talkParam.files = [];
       if (this.fileList.length > 0) {
+        if (this.fileList.length > 9) {
+          this.$message.warning("最多只能上传9个文件");
+          return;
+        }
+        const values = this.fileList.map(obj => obj.fileType);
+        if (new Set(values).size > 1) {
+          this.$message.warning("不能同时上传多种类型文件");
+          return;
+        }
+        if (this.fileList.filter(item => item.fileType ===  2).length > 1) {
+          this.$message.warning("只能上传一个视频文件");
+          return;
+        }
+        if (this.fileList.filter(item => item.fileType ===  3).length > 1) {
+          this.$message.warning("只能上传一个音频文件");
+          return;
+        }
+
         this.loading = this.$loading({
           lock: true,
           text: '正在上传文件...',
