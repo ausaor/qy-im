@@ -1055,6 +1055,7 @@
       },
       closeVideoPlay() {
         this.videoUrl = '';
+        this.posterUrl = '';
       },
       onAudioStateChange(state, msgInfo) {
         const playingAudio = this.$refs['message-item-' + msgInfo.id][0]

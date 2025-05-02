@@ -3,6 +3,7 @@
       title="视频播放"
       :visible.sync="dialogVisible"
       width="40%"
+      :modal="false"
       :before-close="handleClose">
     <div class="video-container">
 <!--      <video-player

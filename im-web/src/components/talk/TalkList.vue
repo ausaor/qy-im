@@ -21,13 +21,17 @@
                   max-height="200"
                   @click.prevent="previewImg(fileItem.url, [fileItem.url])"
               />
-              <video v-if="fileItem.fileType == 2"
+<!--              <video v-if="fileItem.fileType == 2"
                      class="file-items"
                      :poster="fileItem.coverUrl"
                      :src="fileItem.url"
                      style="object-fit: cover"
                      controls
-              ></video>
+              ></video>-->
+              <div v-if="fileItem.fileType == 2" class="file-items">
+                <img class="video-image" :src="fileItem.coverUrl" loading="lazy"/>
+                <span class="play-icon el-icon-video-play" @click="playVideo(fileItem.url, fileItem.coverUrl)"></span>
+              </div>
               <vue-audio v-if="fileItem.fileType == 3"
                          :audio-source="fileItem.url"
               ></vue-audio>
@@ -193,6 +197,7 @@
           @confirm="confirmChooseCharacter">
       </template-character-choose>
     </el-dialog>
+    <video-play  ref="videoPlay" :videoUrl="videoUrl" :posterUrl="posterUrl" @close="closeVideoPlay"></video-play>
   </div>
 </template>
 
@@ -203,7 +208,8 @@ import BatchFileUpload from "@/components/common/BatchFileUpload";
 import Avatar from "@/components/common/Avatar";
 import Pagination from "@/components/pagination/Pagination";
 import TemplateCharacterChoose from "@/components/template/TemplateCharacterChoose";
-import Emoji from '@/components/emoji'
+import Emoji from '@/components/emoji';
+import VideoPlay  from "../common/VideoPlay.vue";
 /*import ImagePreview from "@/components/imagePreview/ImagePreview";*/
 
 export default {
@@ -216,6 +222,7 @@ export default {
     Pagination,
     TemplateCharacterChoose,
     Emoji,
+    VideoPlay,
     /*ImagePreview*/
   },
   props: {
@@ -277,6 +284,8 @@ export default {
       showCommentBox: false,
       lastEditRange: null,
       showEmoji: false,
+      videoUrl: '',
+      posterUrl: '',
     }
   },
   created() {
@@ -679,6 +688,15 @@ export default {
         }[c];
       });
     },
+    playVideo(videoUrl, coverImageUrl) {
+      this.videoUrl = videoUrl;
+      this.posterUrl = coverImageUrl;
+      this.$refs.videoPlay.onPlayVideo()
+    },
+    closeVideoPlay() {
+      this.videoUrl = '';
+      this.posterUrl = '';
+    },
   },
   watch: {
     section: {
@@ -854,6 +872,26 @@ export default {
             border-radius: 4px;
             height: 100%;
             width: 100%;
+            position: relative;
+
+            .video-image {
+              height: 100%;
+              width: 100%;
+            }
+
+            .play-icon {
+              display: block;
+              position: absolute;
+              font-size: 80px;
+              font-weight: 500;
+              width: 80px;
+              height: 80px;
+              left: 50%;
+              top: 50%;
+              transform: translate(-50%, -50%);
+              cursor: pointer;
+              color: #ffffff;
+            }
           }
 
           .vueAudioBetter {
@@ -885,11 +923,12 @@ export default {
           .operateBtn {
             position: absolute;
             right: 20px;
-            bottom: 0px;
+            bottom: 0;
             display: inline-block;
-            background-color: #6CC6CB;
             padding: 0 5px;
             cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
           }
 
           .operate {

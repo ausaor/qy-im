@@ -3,7 +3,7 @@
     <img :src="require('@/assets/image/friendActivityBg.jpg')" alt="">
     <div class="info">{{name}}</div>
     <a class="operateBtn" @click="add" v-if="showAdd">
-      <i class="el-icon-more"></i>
+      <i class="el-icon-camera-solid"></i>
     </a>
     <a class="refreshBtn" @click="refresh">
       <i class="el-icon-refresh"></i>
@@ -65,6 +65,10 @@ export default {
     background-color: #6CC6CB;
     padding: 0 5px;
     cursor: pointer;
+    color: white;
+    font-weight: bold;
+    font-size: 24px;
+    border-radius: 50%;
   }
 
   .refreshBtn {
@@ -76,6 +80,9 @@ export default {
     padding: 0 5px;
     cursor: pointer;
     color: white;
+    font-weight: bold;
+    font-size: 24px;
+    border-radius: 50%;
   }
 }
 </style>

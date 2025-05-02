@@ -5,21 +5,21 @@
         <img :src="require('@/assets/image/friendActivityBg.jpg')" alt="">
         <div class="info">心语</div>
         <a class="operateBtn" @click="handleShowAddTalk">
-          <i class="el-icon-more"></i>
+          <i class="el-icon-camera-solid"></i>
         </a>
-        <a class="refreshBtn" @click="refreshTalkList">
-          <i class="el-icon-refresh"></i>
-        </a>
-      </div>
-      <div class="tab-box">
-        <el-tabs type="card" @tab-click="handleTabClick" v-model="section">
-          <el-tab-pane label="全部" name="my-friends">
-          </el-tab-pane>
-          <el-tab-pane label="个人" name="my">
-          </el-tab-pane>
-          <el-tab-pane label="好友" name="friends">
-          </el-tab-pane>
-        </el-tabs>
+        <div class="tab-box">
+          <el-tabs @tab-click="handleTabClick" v-model="section">
+            <el-tab-pane label="全部" name="my-friends">
+            </el-tab-pane>
+            <el-tab-pane label="我的" name="my">
+            </el-tab-pane>
+            <el-tab-pane label="好友" name="friends">
+            </el-tab-pane>
+          </el-tabs>
+          <a class="refreshBtn" @click="refreshTalkList">
+            <i class="el-icon-refresh"></i>
+          </a>
+        </div>
       </div>
       <talk-list ref="talkListRef" :category="'private'" :section="section"></talk-list>
     </div>
@@ -164,26 +164,40 @@ export default {
         top: 10px;
         right: 10px;
         display: inline-block;
-        background-color: #6CC6CB;
         padding: 0 5px;
         cursor: pointer;
-      }
-
-      .refreshBtn {
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-        display: inline-block;
-        background-color: #6CC6CB;
-        padding: 0 5px;
-        cursor: pointer;
+        font-weight: bold;
+        font-size: 28px;
         color: white;
+
+        .el-icon-camera-solid {
+          background-color: #6CC6CB;
+          border-radius: 50%;
+        }
       }
     }
 
     .tab-box {
-      width: 72%;
-      margin: 0 auto;
+      padding: 0 15px;
+      position: absolute;
+      bottom: 5px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+
+      .refreshBtn {
+        display: inline-block;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 28px;
+        color: white;
+
+
+        .el-icon-refresh {
+          background-color: #6CC6CB;
+          border-radius: 50%;
+        }
+      }
     }
   }
 }
