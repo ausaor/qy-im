@@ -42,7 +42,7 @@
               <up-parse class="rich-text" :showImgMenu="false" :content="nodesText(item.content)"></up-parse>
             </view>
 
-            <view class="image-grid" v-if="item.fileList && item.fileList.length" v-show="!item.showType || item.showType!=='swiper'">
+            <view class="image-grid" v-if="item.fileList && item.fileList.length  && item.showType==='grid'">
               <view v-for="(fileItem, fileIndex) in item.fileList"
                     :key="fileIndex" class="grid-item">
                 <image v-if="fileItem.fileType === 1"
@@ -71,8 +71,8 @@
             </view>
 
             <!-- 媒体内容区域 -->
-            <view class="media-container" v-show="item.showType==='swiper'">
-              <swiper v-if="item.fileList && item.fileList.length > 0" class="media-swiper" :indicator-dots="true">
+            <view class="media-container" v-if="item.showType==='swiper' && item.fileList && item.fileList.length > 0">
+              <swiper class="media-swiper" :indicator-dots="true">
                 <swiper-item v-for="(media, mediaIndex) in item.fileList" :key="mediaIndex" class="media-item">
                   <image v-if="media.fileType === 1" :src="media.url" mode="aspectFill" class="media-content cursor-pointer" @click="previewImage([media.url], 0)" />
                   <video v-else-if="media.fileType === 2" :src="media.url" :poster="media.coverUrl" class="media-content" :controls="true" />
@@ -438,6 +438,9 @@ export default {
         data: params
       }).then((data) => {
         this.talkList.push(...data.data)
+        this.talkList.forEach((talk) => {
+          talk.showType = 'grid';
+        })
         this.page.totalPage = (data.total - 1) / this.page.pageSize + 1;
       })
     },
