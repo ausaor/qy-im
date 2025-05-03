@@ -11,7 +11,7 @@
                                @call="onRtCall(msgInfo)" :showInfo="showInfo(msgInfo)"
                                @recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
                                @longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
-                               @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg"
+                               @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg" @playVideo="playVideo"
                                @audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
                                :groupMembers="regionGroupMembers" :myGroupMemberInfo="myGroupMemberInfo" :isOwner="regionGroup.leaderId === msgInfo.sendId">
             </chat-message-item>
@@ -96,16 +96,26 @@
     <!-- @用户时选择成员 -->
     <chat-at-box ref="atBox" :ownerId="regionGroup.leaderId" :members="regionGroupMembers"
                  @complete="onAtComplete"></chat-at-box>
+    <!-- 视频弹窗组件 -->
+    <video-play
+        v-if="viewVideo"
+        :video-url="videoSrc"
+        :cover-url="videoCoverImage"
+        :visible.sync="viewVideo"
+        @close="handleVideoClose"
+        @error="handleVideoError"
+    ></video-play>
   </view>
 </template>
 
 <script>
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 import VideoUpload from "../../components/video-upload/video-upload.vue";
+import VideoPlay from "../../components/video-play/video-play.vue";
 
 export default {
   name: "region-chat-box",
-  components: {VideoUpload, SvgIcon},
+  components: {VideoPlay, VideoUpload, SvgIcon},
   data() {
     return {
       chat: {},
@@ -136,6 +146,9 @@ export default {
         quoteContent: '',
         show: false
       },
+      videoSrc: '',
+      videoCoverImage: '',
+      viewVideo: false,
     }
   },
   methods: {
@@ -874,6 +887,25 @@ export default {
       // 生成临时id
       return String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
     },
+    playVideo(data) {
+      this.videoSrc = data.videoUrl;
+      this.videoCoverImage = data.coverImageUrl;
+      this.viewVideo = true;
+    },
+    // 视频弹窗关闭回调
+    handleVideoClose() {
+      console.log('Video popup closed');
+      this.videoSrc = "";
+      this.videoCoverImage = "";
+      this.viewVideo = false;
+    },
+    // 视频错误回调
+    handleVideoError(e) {
+      console.error('Video error in parent component:', e)
+      this.videoSrc = "";
+      this.videoCoverImage = "";
+      this.viewVideo = false;
+    }
   },
   computed: {
     mine() {

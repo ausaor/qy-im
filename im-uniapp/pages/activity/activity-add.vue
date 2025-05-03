@@ -215,15 +215,15 @@ export default {
       return this.fileList.length < 9;
     },
     imageEnabled() {
-      return this.fileList.length < 9;
+      return this.fileList.length < 9 && this.fileList.filter(item => item.fileType === 1).length === this.fileList.length;
     },
     videoEnabled() {
       const videoCount = this.fileList.filter(item => item.fileType === 2).length;
-      return this.fileList.length < 9 && videoCount < 1;
+      return videoCount < 1 && this.fileList.filter(item => item.fileType === 2).length === this.fileList.length;
     },
     audioEnabled() {
       const audioCount = this.fileList.filter(item => item.fileType === 3).length;
-      return this.fileList.length < 9 && audioCount < 1;
+      return audioCount < 1  && this.fileList.filter(item => item.fileType === 3).length === this.fileList.length;
     },
     imageAction() {
       return `/image/upload`;
@@ -295,34 +295,27 @@ export default {
     },
 
     chooseImage() {
-      const isImage = this.fileList.some(item => item.fileType === 1);
+      const isImage = this.fileList.some(item => item.fileType !== 1);
 
-      if (isImage && this.fileList.length >= 9) {
-        uni.showToast({ title: '最多选择9个媒体文件', icon: 'none' });
+      if (isImage || this.fileList.length >= 9) {
+        uni.showToast({ title: '图片类型已不能选择', icon: 'none' });
         return;
       }
       this.chooseMedia('image');
     },
     chooseVideo() {
-      const isVideo = this.fileList.some(item => item.fileType === 2);
-      if (isVideo) {
-        uni.showToast({ title: '最多选择1个视频', icon: 'none' });
+      const isVideo = this.fileList.some(item => item.fileType !== 2);
+      if (isVideo || this.fileList.length >= 1) {
+        uni.showToast({ title: '视频类型已不能选择', icon: 'none' });
         return;
       }
-      if (this.fileList.length >= 9) {
-        uni.showToast({ title: '最多选择9个媒体文件', icon: 'none' });
-        return;
-      }
+
       this.chooseMedia('video');
     },
     chooseAudio() {
-      const isAudio = this.fileList.some(item => item.fileType === 3);
-      if (isAudio) {
-        uni.showToast({ title: '最多选择1个音频', icon: 'none' });
-        return;
-      }
-      if (this.fileList.length >= 9) {
-        uni.showToast({ title: '最多选择9个媒体文件', icon: 'none' });
+      const isAudio = this.fileList.some(item => item.fileType !== 3);
+      if (isAudio || this.fileList >= 1) {
+        uni.showToast({ title: '音频类型已不能选择', icon: 'none' });
         return;
       }
       this.chooseMedia('audio');
