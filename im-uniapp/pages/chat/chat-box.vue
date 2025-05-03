@@ -1129,7 +1129,7 @@ export default {
       } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.FILE) {
         this.quoteMsgInfo.quoteContent += "[文件]";
       } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.AUDIO) {
-        this.quoteMsgInfo.quoteContent += "[语音]" + JSON.parse(msgInfo.content).duration + '"';
+        this.quoteMsgInfo.quoteContent += "[音频]" + (JSON.parse(msgInfo.content).duration ? JSON.parse(msgInfo.content).duration + '"' : JSON.parse(msgInfo.content).originalName);
       } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.WORD_VOICE) {
         //this.quoteMsgInfo.quoteContent += "[语音台词]";
         this.quoteMsgInfo.quoteContent += JSON.parse(msgInfo.content).word;

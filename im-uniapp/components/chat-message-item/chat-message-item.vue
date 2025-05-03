@@ -28,8 +28,9 @@
             <long-press-menu :items="menuItems" @select="onSelectMenu">
               <view class="word-voice-box">
                 <view class="chat-msg-word-voice-text">{{JSON.parse(msgInfo.content).word}}</view>
-                <view class="voice" @click.stop="onPlayWordVoice(JSON.parse(msgInfo.content).voice)">
-                  <svg-icon :icon-class="'xitongxiaoxi'" />
+                <view class="voice" @click.stop="onPlayAudio(JSON.parse(msgInfo.content).voice)">
+                  <svg-icon v-if="!isPlaying" :icon-class="'xitongxiaoxi'" />
+                  <svg-icon v-if="isPlaying" :icon-class="'yinpinzanting'" />
                 </view>
               </view>
             </long-press-menu>
@@ -72,9 +73,9 @@
           </view>
 					<long-press-menu v-if="msgInfo.type == $enums.MESSAGE_TYPE.AUDIO" :items="menuItems"
 						@select="onSelectMenu">
-						<view class="chat-msg-audio chat-msg-text" @click="onPlayAudio()">
-							<text class="iconfont icon-voice-play"></text>
-							<text class="chat-audio-text">{{ JSON.parse(msgInfo.content).duration + '"' }}</text>
+						<view class="chat-msg-audio chat-msg-text" @click.stop="onPlayAudio(JSON.parse(this.msgInfo.content).url)">
+              <svg-icon :icon-class="'yinpin'" />
+							<text class="chat-audio-text">{{ JSON.parse(msgInfo.content).duration ?  JSON.parse(msgInfo.content).duration + '"' : JSON.parse(msgInfo.content).originalName }}</text>
 							<text v-if="audioPlayState == 'PAUSE'" class="iconfont icon-play"></text>
 							<text v-if="audioPlayState == 'PLAYING'" class="iconfont icon-pause"></text>
 						</view>
@@ -97,7 +98,7 @@
                     <rich-text class="quote-text" :nodes="nodesTextQuote"></rich-text>
                   </view>
                   <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.IMAGE">
-                    <image class="quote-image" mode="aspectFill" :src="JSON.parse(msgInfo.quoteMsg.content).originUrl" lazy-load="true" @click.stop="onShowFullImageQuote()"></image>
+                    <image class="quote-image" mode="aspectFill" :src="JSON.parse(msgInfo.quoteMsg.content).originUrl" lazy-load="true"></image>
                   </view>
                   <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.VIDEO">
                     <video class="quote-video" controls="controls" preload="none"
@@ -114,15 +115,13 @@
                       <view class="quote-file-icon iconfont icon-file"></view>
                     </view>
                   </view>
-                  <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.AUDIO" class="quote-msg-audio" @click.stop="onPlayQuoteAudio()">
-                    <text class="iconfont icon-voice-play"></text>
-                    <text class="quote-audio-text">{{ JSON.parse(msgInfo.quoteMsg.content).duration + '"' }}</text>
-                    <text v-if="audioPlayStateQuote == 'PAUSE'" class="iconfont icon-play"></text>
-                    <text v-if="audioPlayStateQuote == 'PLAYING'" class="iconfont icon-pause"></text>
+                  <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.AUDIO" class="quote-msg-audio">
+                    <text class="quote-audio-text">{{ JSON.parse(msgInfo.quoteMsg.content).duration ? (JSON.parse(msgInfo.quoteMsg.content).duration + '"') : JSON.parse(msgInfo.quoteMsg.content).originalName }}</text>
+                    <svg-icon :icon-class="'yinpin'"/>
                   </view>
                   <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.WORD_VOICE" class="quote-msg-word-voice">
                     <view class="word">{{JSON.parse(msgInfo.quoteMsg.content).word}}</view>
-                    <view class="voice" @click.stop="onPlayWordVoice(JSON.parse(msgInfo.quoteMsg.content).voice)">
+                    <view class="voice">
                       <svg-icon :icon-class="'xitongxiaoxi'" />
                     </view>
                   </view>
@@ -149,8 +148,11 @@
 </template>
 
 <script>
+import SvgIcon from "../svg-icon/svg-icon.vue";
+
 export default {
 	name: "chat-message-item",
+  components: {SvgIcon},
 	props: {
     showInfo: {
       type: Object,
@@ -186,6 +188,7 @@ export default {
 	},
 	data() {
 		return {
+      isPlaying: false,
 			audioPlayState: 'STOP',
 			innerAudioContext: null,
       audioContext: null,
@@ -208,19 +211,20 @@ export default {
 				icon: "none"
 			})
 		},
-		onPlayAudio() {
+		onPlayAudio(url) {
 			// 初始化音频播放器
 			if (!this.innerAudioContext) {
 				this.innerAudioContext = uni.createInnerAudioContext();
-				let url = JSON.parse(this.msgInfo.content).url;
 				this.innerAudioContext.src = url;
 				this.innerAudioContext.onEnded((e) => {
 					console.log('停止')
+          this.isPlaying = false;
 					this.audioPlayState = "STOP"
 					this.emit();
 				})
 				this.innerAudioContext.onError((e) => {
-					this.audioPlayState = "STOP"
+					this.audioPlayState = "STOP";
+          this.isPlaying = false;
 					console.log("播放音频出错");
 					console.log(e)
 					this.emit();
@@ -228,12 +232,15 @@ export default {
 			}
 			if (this.audioPlayState == 'STOP') {
 				this.innerAudioContext.play();
+        this.isPlaying = true;
 				this.audioPlayState = "PLAYING";
 			} else if (this.audioPlayState == 'PLAYING') {
 				this.innerAudioContext.pause();
+        this.isPlaying = false;
 				this.audioPlayState = "PAUSE"
 			} else if (this.audioPlayState == 'PAUSE') {
 				this.innerAudioContext.play();
+        this.isPlaying = true;
 				this.audioPlayState = "PLAYING"
 			}
 			this.emit();
@@ -298,7 +305,8 @@ export default {
 			if (this.innerAudioContext) {
 				this.innerAudioContext.stop();
 				this.innerAudioContext = null;
-				this.audioPlayState = "STOP"
+				this.audioPlayState = "STOP";
+        this.isPlaying = false;
 			}
 		},
     onPlayWordVoice(voiceUrl) {

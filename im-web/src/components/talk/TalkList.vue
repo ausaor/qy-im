@@ -130,7 +130,7 @@
                         title="确认删除当前评论吗？"
                         @confirm="delComment(item, comment.id)"
                     >
-                      <el-button slot="reference" icon="el-icon-delete-solid" size="mini" type="danger" circle
+                      <el-button slot="reference" icon="el-icon-delete" size="mini" type="danger" circle
                                  @click.stop></el-button>
                     </el-popconfirm>
                   </div>
