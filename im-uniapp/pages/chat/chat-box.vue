@@ -11,7 +11,7 @@
               @call="onRtCall(msgInfo)" :showInfo="showInfo(msgInfo)"
 							@recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
 							@longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
-              @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg"
+              @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg" @playVideo="playVideo"
 							@audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
 							:groupMembers="groupMembers" :myGroupMemberInfo="myGroupMemberInfo" :isOwner="group.ownerId === msgInfo.sendId">
 						</chat-message-item>
@@ -131,6 +131,15 @@
 		<!-- @用户时选择成员 -->
 		<chat-at-box ref="atBox" :ownerId="group.ownerId" :members="groupMembers"
 			@complete="onAtComplete"></chat-at-box>
+    <!-- 视频弹窗组件 -->
+    <video-play
+        v-if="viewVideo"
+        :video-url="videoSrc"
+        :cover-url="videoCoverImage"
+        :visible.sync="viewVideo"
+        @close="handleVideoClose"
+        @error="handleVideoError"
+    ></video-play>
 		<!-- 群语音通话时选择成员 -->
 		<!-- #ifndef MP-WEIXIN -->
 		<group-member-selector ref="selBox" :members="groupMembers" :maxSize="configStore.webrtc.maxChannel"
@@ -145,9 +154,11 @@ import UNI_APP from '@/.env.js';
 import characterWordList from "../../components/character-word-list/character-word-list.vue";
 import VideoUpload from "../../components/video-upload/video-upload.vue";
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+import VideoPlay from "../../components/video-play/video-play.vue";
 
 export default {
   components: {
+    VideoPlay,
     SvgIcon,
     VideoUpload,
     characterWordList
@@ -191,6 +202,9 @@ export default {
         quoteContent: '',
         show: false
       },
+      videoSrc: '',
+      videoCoverImage: '',
+      viewVideo: false,
 		}
 	},
 	methods: {
@@ -1152,6 +1166,25 @@ export default {
       if (msg.chatType === 'GROUP' && this.group.id === msg.groupId && msg.groupChangeType) {
         this.loadGroup(this.group.id);
       }
+    },
+    playVideo(data) {
+      this.videoSrc = data.videoUrl;
+      this.videoCoverImage = data.coverImageUrl;
+      this.viewVideo = true;
+    },
+    // 视频弹窗关闭回调
+    handleVideoClose() {
+      console.log('Video popup closed');
+      this.videoSrc = "";
+      this.videoCoverImage = "";
+      this.viewVideo = false;
+    },
+    // 视频错误回调
+    handleVideoError(e) {
+      console.error('Video error in parent component:', e)
+      this.videoSrc = "";
+      this.videoCoverImage = "";
+      this.viewVideo = false;
     }
 	},
 	computed: {

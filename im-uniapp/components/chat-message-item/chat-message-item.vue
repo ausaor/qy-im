@@ -66,7 +66,7 @@
             <long-press-menu :items="menuItems" @select="onSelectMenu">
               <view class="video-msg-box">
                 <image class="video-cover-image" mode="heightFix" :src="JSON.parse(msgInfo.content).coverUrl" lazy-load="true"></image>
-                <text class="play-icon iconfont icon-play"></text>
+                <text class="play-icon iconfont icon-play" @click.stop="onPlayVideo(JSON.parse(msgInfo.content).videoUrl, JSON.parse(msgInfo.content).coverUrl)"></text>
                 <loading v-if="loading"></loading>
               </view>
             </long-press-menu>
@@ -327,6 +327,9 @@ export default {
     },
     scrollToMessage(msgId) {
       this.$emit('scrollToMessage', msgId)
+    },
+    onPlayVideo(url, coverImageUrl) {
+      this.$emit('playVideo', {videoUrl: url, coverImageUrl: coverImageUrl});
     },
 	},
 	computed: {
