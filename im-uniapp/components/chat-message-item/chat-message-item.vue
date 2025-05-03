@@ -65,11 +65,13 @@
           <view class="chat-msg-video" v-if="msgInfo.type == $enums.MESSAGE_TYPE.VIDEO">
             <long-press-menu :items="menuItems" @select="onSelectMenu">
               <view class="video-msg-box">
-                <video class="send-video" controls="controls" preload="none"
-                       :src="JSON.parse(msgInfo.content).videoUrl"
-                       :poster="JSON.parse(msgInfo.content).coverUrl"></video>
+                <image class="video-cover-image" mode="heightFix" :src="JSON.parse(msgInfo.content).coverUrl" lazy-load="true"></image>
+                <text class="play-icon iconfont icon-play"></text>
+                <loading v-if="loading"></loading>
               </view>
             </long-press-menu>
+            <text title="发送失败" v-if="loadFail" @click="onSendFail"
+                  class="send-fail iconfont icon-warning-circle-fill"></text>
           </view>
 					<long-press-menu v-if="msgInfo.type == $enums.MESSAGE_TYPE.AUDIO" :items="menuItems"
 						@select="onSelectMenu">
@@ -100,10 +102,9 @@
                   <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.IMAGE">
                     <image class="quote-image" mode="aspectFill" :src="JSON.parse(msgInfo.quoteMsg.content).originUrl" lazy-load="true"></image>
                   </view>
-                  <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.VIDEO">
-                    <video class="quote-video" controls="controls" preload="none"
-                           :src="JSON.parse(msgInfo.quoteMsg.content).videoUrl"
-                           :poster="JSON.parse(msgInfo.quoteMsg.content).coverUrl"></video>
+                  <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.VIDEO" class="quote-video">
+                    <image class="video-cover-image" mode="heightFix" :src="JSON.parse(msgInfo.quoteMsg.content).coverUrl" lazy-load="true"></image>
+                    <text class="play-icon iconfont icon-play"></text>
                   </view>
                   <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.FILE" class="quote-msg-file">
                     <view class="quote-file-box">
@@ -653,6 +654,7 @@ export default {
 
           .video-msg-box {
             width: 100%;
+            position: relative;
 
             .send-video {
               width: 300rpx;
@@ -662,6 +664,23 @@ export default {
               cursor: pointer;
               -o-object-fit: cover;
               object-fit: cover;
+            }
+
+            .video-cover-image {
+              min-width: 200rpx;
+              max-width: 420rpx;
+              height: 350rpx;
+              cursor: pointer;
+              border-radius: 4px;
+            }
+
+            .play-icon {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              font-size: 100rpx;
+              color: white;
             }
           }
         }
@@ -728,11 +747,24 @@ export default {
               }
 
               .quote-video {
-                min-width: 160rpx;
-                max-width: 240rpx;
-                height: 160rpx;
-                cursor: pointer;
-                border-radius: 12rpx;
+                position: relative;
+
+                .video-cover-image {
+                  min-width: 120rpx;
+                  max-width: 160rpx;
+                  height: 120rpx;
+                  cursor: pointer;
+                  border-radius: 12rpx;
+                }
+
+                .play-icon {
+                  position: absolute;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%);
+                  font-size: 60rpx;
+                  color: white;
+                }
               }
 
               .quote-msg-file {
