@@ -14,7 +14,10 @@
         <button class="header-btn primary-btn" @click="joinRegionGroup(curRegion, 1)">加入常驻</button>
       </view>
 
-      <text class="region-name">全部地区</text>
+      <view class="region-name">
+        <text>全部地区</text>
+        <text style="color: #1E90FF;" @click="viewActivityRegions">活跃地区</text>
+      </view>
       <!-- 地区选择区域 -->
       <scroll-view class="region-list-box" scroll-y>
         <tree-node
@@ -44,6 +47,21 @@
 
       <!-- 地图展示区域 -->
       <view class="map-container" ref="mapContainer" id="mapContainer" style="width: 100%; min-height: 200rpx;"></view>
+      <uni-popup ref="activityRegions" type="top">
+        <view class="activity-regions-box">
+          <scroll-view class="scroll-bar" scroll-with-animation="true" scroll-y="true">
+            <view class="title">活跃地区<uni-icons :color="'#4285f4'" type="paperplane-filled"></uni-icons></view>
+            <view class="region-item" v-for="(region, index) in activityRegions" :key="index">
+              <text class="region-full-name">{{region.fullName}}</text>
+              <uni-icons :color="'#3cc51f'" :type="regionActiveIndex === index ? 'circle-filled' : 'circle'" size="20" color="#999" @click="chooseActivityRegion(region, index)"></uni-icons>
+            </view>
+          </scroll-view>
+          <view class="btns">
+            <button type="default" size="mini" @click="closeActivityRegionsPopup">取消</button>
+            <button type="primary" size="mini" @click="confirmActivityRegion">确定</button>
+          </view>
+        </view>
+      </uni-popup>
     </view>
   </view>
 </template>
@@ -55,7 +73,6 @@ import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 export default {
   components: {
     SvgIcon
-
   },
   data() {
     return {
@@ -75,6 +92,8 @@ export default {
       circle: null,
       lng: 116.397428,
       lat: 39.90923,
+      activityRegions: [],
+      regionActiveIndex: -1,
     }
   },
   mounted() {
@@ -299,6 +318,34 @@ export default {
         content: err.message || '无法获取当前位置',
         showCancel: false
       })
+    },
+    viewActivityRegions() {
+      if (this.activityRegions.length > 0) {
+        this.$refs.activityRegions.open();
+      } else {
+        this.$http({
+          url: '/region/findActivityRegions',
+          method: 'get'
+        }).then((data) => {
+          this.activityRegions = data;
+          this.$refs.activityRegions.open();
+        })
+      }
+    },
+    chooseActivityRegion(region, index) {
+      this.regionActiveIndex = index;
+      region.lng = region.longitude;
+      region.lat = region.latitude;
+      this.moveMapToTarget(region);
+    },
+    closeActivityRegionsPopup() {
+      this.regionActiveIndex = -1;
+      this.$refs.activityRegions.close();
+    },
+    confirmActivityRegion() {
+      this.curRegion = this.activityRegions[this.regionActiveIndex];
+      this.regionActiveIndex = -1;
+      this.$refs.activityRegions.close();
     }
   },
   onLoad(options) {
@@ -354,7 +401,7 @@ export default {
 .region-list-box {
   flex: 1;
   overflow: auto;
-  padding-top: 30rpx;
+  padding-top: 20rpx;
   min-height: 800rpx;
 }
 
@@ -364,7 +411,10 @@ export default {
 }
 
 .region-name {
-  margin-left: 16rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10rpx 20rpx;
   font-size: 16px;
   color: #333333;
 }
@@ -389,5 +439,39 @@ export default {
   flex: 1;
   width: 100%;
   position: relative;
+}
+
+.activity-regions-box {
+  min-height: 600rpx;
+  max-height: 1000rpx;
+  background-color: white;
+  display: flex;
+  flex-direction: column;      /* 垂直排列 */
+  justify-content: space-between; /* 两端对齐 */
+  padding-bottom: 10rpx;
+
+  .title {
+    padding-left: 20rpx;
+    color: #4285f4;
+  }
+
+  .btns {
+    display: flex;
+    justify-content: center;
+    gap: 100rpx;
+  }
+}
+
+.region-item {
+  display: flex;
+  padding: 10rpx 20rpx;
+  border-bottom: 1px solid lightgray;
+}
+
+.region-full-name {
+  color: orange;
+  font-size: 30rpx;
+  font-weight: bold;
+  flex: 1;
 }
 </style>

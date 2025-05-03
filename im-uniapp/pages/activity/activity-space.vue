@@ -437,10 +437,10 @@ export default {
         method: "post",
         data: params
       }).then((data) => {
-        this.talkList.push(...data.data)
-        this.talkList.forEach((talk) => {
+        data.data.forEach((talk) => {
           talk.showType = 'grid';
         })
+        this.talkList.push(...data.data)
         this.page.totalPage = (data.total - 1) / this.page.pageSize + 1;
       })
     },

@@ -297,13 +297,17 @@ export default {
       this.regionSpaceVisible = false;
     },
     viewActivityRegions() {
-      this.$http({
-        url: '/region/findActivityRegions',
-        method: 'get'
-      }).then((data) => {
+      if (this.activityRegions.length > 0) {
         this.activityRegionsVisible = true;
-        this.activityRegions = data;
-      })
+      } else {
+        this.$http({
+          url: '/region/findActivityRegions',
+          method: 'get'
+        }).then((data) => {
+          this.activityRegionsVisible = true;
+          this.activityRegions = data;
+        })
+      }
     },
     chooseActivityRegion(region, index) {
       this.activityRegion = region;
