@@ -59,7 +59,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .col-xl,
 .col-xl-auto,
 .col-xl-12,

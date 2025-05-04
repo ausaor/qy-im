@@ -418,7 +418,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 	.agm-container {
 		display: flex;
 

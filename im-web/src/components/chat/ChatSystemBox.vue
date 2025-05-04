@@ -91,7 +91,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .chat-system-box {
   display: flex;
   flex-direction: column;

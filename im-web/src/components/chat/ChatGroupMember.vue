@@ -44,7 +44,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .chat-group-member {
   display: flex;
   margin-bottom: 1px;

@@ -1,6 +1,6 @@
 <template>
   <div  v-show="show">
-    <div class="emotion-box" :style="{'left':x+'px','top':y+'px'}">
+    <div class="emotion-box" :style="{'left': '18.5%','top':y+'px'}">
       <el-scrollbar style="height:250px;position: relative;">
         <div class="emotion-item-list" v-show="emoIndex === 1">
           <el-tooltip class="item" effect="dark" v-for="(emoText, i) in $emo.emoTextList" :key="i"

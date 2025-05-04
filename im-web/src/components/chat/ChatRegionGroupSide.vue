@@ -398,7 +398,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .chat-group-side {
   border-left: 1px solid var(--line-color);
   background-color: var(--bg-color);

@@ -56,7 +56,7 @@ export default {
 }
 </script>
 
-<style scope lang="scss">
+<style scoped lang="scss">
 .friend-item {
   height: 65px;
   display: flex;

@@ -1141,7 +1141,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 	.chat-box {
     position: relative;
     width: 100%;

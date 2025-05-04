@@ -39,7 +39,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .right-menu-mask {
   position: fixed;
   left: 0;

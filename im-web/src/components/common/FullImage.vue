@@ -32,7 +32,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .full-image{
   position: fixed;
   width: 100%;

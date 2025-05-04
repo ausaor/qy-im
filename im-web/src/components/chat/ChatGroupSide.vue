@@ -30,7 +30,7 @@
           <div class="view-member-text">查看</div>
           <el-dialog
               width="25%"
-              title="模板群聊成员信息"
+              title="群成员信息"
               :visible.sync="groupMemberVisible"
               :before-close="closeGroupMemberInfoDialog">
             <el-scrollbar style="height:400px;">
@@ -368,7 +368,7 @@
   }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 	.chat-group-side {
 
 		.group-side-member-list {

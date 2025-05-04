@@ -26,7 +26,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 	.rtc-group-video {
 		height: 300px;
 		background-color: #E8F2FF;

@@ -38,7 +38,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .template-group-member {
   height: 65px;
   display: flex;

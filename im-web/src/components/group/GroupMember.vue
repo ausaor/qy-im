@@ -70,7 +70,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 	.group-member{
 		display: flex;
 		flex-direction: column;

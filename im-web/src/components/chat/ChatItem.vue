@@ -110,7 +110,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .chat-item {
   height: 50px;
   display: flex;

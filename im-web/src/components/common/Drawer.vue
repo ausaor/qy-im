@@ -66,7 +66,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .drawer-box {
   position: fixed;
   right: 0;

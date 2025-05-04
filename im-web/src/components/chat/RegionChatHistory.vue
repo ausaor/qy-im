@@ -199,7 +199,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 	.chat-history {
 		display: flex;
 		height: 100%;

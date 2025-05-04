@@ -564,7 +564,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
   .send-content-area {
     position: relative;
     display: flex;

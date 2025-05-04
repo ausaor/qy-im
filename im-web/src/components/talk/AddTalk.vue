@@ -578,7 +578,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .form-box {
   .form-item {
     .el-form-item__content {

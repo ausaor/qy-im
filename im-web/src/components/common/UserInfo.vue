@@ -98,7 +98,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 	.user-info-mask {
 		background-color: rgba($color: #000000, $alpha: 0);
 		position: absolute;

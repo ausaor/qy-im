@@ -323,7 +323,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
   .chat-page {
     .region-list-box {
       display: flex;

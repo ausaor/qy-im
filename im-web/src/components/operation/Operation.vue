@@ -246,7 +246,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .verify-wrapper {
   display: flex;
   justify-content: space-between;

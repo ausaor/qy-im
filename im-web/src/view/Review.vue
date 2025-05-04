@@ -196,7 +196,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .go-back {
   float: left;
   margin-left: 10px;

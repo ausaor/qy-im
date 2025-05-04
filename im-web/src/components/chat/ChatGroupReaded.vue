@@ -137,7 +137,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .chat-group-readed-mask {
   position: fixed;
   left: 0;

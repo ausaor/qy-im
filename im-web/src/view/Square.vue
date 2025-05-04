@@ -41,7 +41,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .im-box-square {
   .l-square-box {
     display: flex;

@@ -112,7 +112,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 	.group-member-selector {
 		display: flex;
 

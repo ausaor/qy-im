@@ -439,7 +439,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 	.chat-msg-item {
 
 		.chat-msg-tip {

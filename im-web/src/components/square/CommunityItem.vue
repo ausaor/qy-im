@@ -33,7 +33,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .item {
   height: 65px;
   display: flex;

@@ -860,7 +860,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .buttons {
   margin: 0px 10px;
   text-align: left;

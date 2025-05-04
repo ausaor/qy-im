@@ -416,7 +416,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .rtc-private-video {
   position: relative;
 

@@ -44,7 +44,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .group-member-item {
     display: flex;
     margin-bottom: 2px;

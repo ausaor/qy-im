@@ -71,7 +71,7 @@
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 	.chat-page {
 		.chat-list-box {
 			display: flex;
