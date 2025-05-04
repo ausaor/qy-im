@@ -38,8 +38,26 @@ export default {
    z-index: 99999999 !important;
  }
 
+ /* 隐藏全局滚动条 */
+ html::-webkit-scrollbar,
+ body::-webkit-scrollbar {
+   width: 0 !important;
+   height: 0 !important;
+   background: transparent;
+ }
+
+ html {
+   scrollbar-width: none; /* Firefox */
+   -ms-overflow-style: none; /* IE 10+ */
+ }
+
+ body {
+   -ms-overflow-style: none;
+   overflow: auto;
+ }
+
  .el-scrollbar__thumb {
-   background-color: var(--theme-color) !important;
+   //background-color: var(--theme-color) !important;
  }
 
  .el-dialog {
@@ -67,16 +85,16 @@ export default {
 
  .el-input__inner {
    border-radius: 5px !important;
-   border: var(--line-color) 1px solid !important;
+   //border: var(--line-color) 1px solid !important;
  }
 
  .el-textarea__inner{
    border-radius: 5px !important;
-   border: var(--line-color) 1px solid !important;
+   //border: var(--line-color) 1px solid !important;
  }
 
  .el-icon-search {
-   color: var(--line-color) !important;
+   //color: var(--line-color) !important;
  }
 
  .el-checkbox {

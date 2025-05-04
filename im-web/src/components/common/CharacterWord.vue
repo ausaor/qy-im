@@ -63,6 +63,8 @@ export default {
       wordIndex: 1,
       activeIndex: -1,
       activeWord: null,
+      audio: null,
+      audioSrc: '',
     }
   },
   methods: {
@@ -80,9 +82,24 @@ export default {
       this.activeWord = item;
     },
     playVoice(item) {
-      let audio = new Audio();
-      audio.src = item.voice;
-      audio.play();
+      if (!this.audio) {
+        this.audio = new Audio();
+        this.audioSrc = item.voice;
+        this.audio.src = item.voice;
+        this.audio.play();
+      } else {
+        if (item.voice === this.audioSrc) {
+          this.audioSrc = '';
+          this.audio.pause();
+          this.audio = null;
+        } else {
+          this.audio.pause();
+          this.audio = new Audio();
+          this.audioSrc = item.voice;
+          this.audio.src = item.voice;
+          this.audio.play();
+        }
+      }
     },
     send() {
       if (!this.activeWord) {

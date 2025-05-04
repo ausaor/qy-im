@@ -239,6 +239,11 @@
       EventBus.$off('group-change');
     },
     methods: {
+      closePopupBox() {
+        this.$refs.emoBox.close();
+        this.$refs.characterEmoBox.close();
+        this.$refs.wordBox.close();
+      },
       moveChatToTop() {
         let chatIdx = this.$store.getters.findChatIdx(this.chat);
         this.$store.commit("moveTop", chatIdx);
@@ -481,6 +486,8 @@
         let width = this.$refs.emotion.offsetWidth;
         let left = this.$elm.fixLeft(this.$refs.emotion);
         let top = this.$elm.fixTop(this.$refs.emotion);
+        this.$refs.characterEmoBox.close();
+        this.$refs.wordBox.close();
         this.$refs.emoBox.open({
           x: left + width / 2,
           y: top
@@ -494,6 +501,8 @@
           let width = this.$refs.characterWord.offsetWidth;
           let left = this.$elm.fixLeft(this.$refs.characterWord);
           let top = this.$elm.fixTop(this.$refs.characterWord);
+          this.$refs.characterEmoBox.close();
+          this.$refs.emoBox.close();
           this.$refs.wordBox.open({
             x: left + width / 2,
             y: top
@@ -507,6 +516,8 @@
           let width = this.$refs.characterEmo.offsetWidth;
           let left = this.$elm.fixLeft(this.$refs.characterEmo);
           let top = this.$elm.fixTop(this.$refs.characterEmo);
+          this.$refs.wordBox.close();
+          this.$refs.emoBox.close();
           this.$refs.characterEmoBox.open({
             x: left + width / 2,
             y: top
@@ -547,7 +558,8 @@
         this.$refs.chatInputEditor.insertImage(emo);
       },
       showRecordBox() {
-				this.showRecord = true;
+        this.closePopupBox();
+        this.showRecord = true;
 			},
       closeRecordBox() {
         this.showRecord = false;

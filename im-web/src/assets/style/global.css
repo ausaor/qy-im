@@ -55,8 +55,23 @@ section {
 ::-webkit-scrollbar-thumb {
   /*滚动条里面小方块*/
   border-radius: 2px;
-  -webkit-box-shadow: inset 0 0 5px rgb(46, 108, 13);
+  -webkit-box-shadow: inset 0 0 2px rgb(46, 108, 13);
   background: #335328;
+}
+
+::-webkit-scrollbar {
+  width: 0;  /* 垂直滚动条宽度 */
+  height: 0; /* 水平滚动条高度 */
+}
+
+/* 可选：彻底隐藏滚动条轨道 */
+::-webkit-scrollbar-track {
+  display: none;
+}
+
+/* 可选：隐藏滚动条按钮 */
+::-webkit-scrollbar-button {
+  display: none;
 }
 
 ::-webkit-scrollbar-track {
