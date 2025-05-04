@@ -249,9 +249,9 @@
         this.$store.commit("moveTop", chatIdx);
       },
       closeRefBox() {
-        //this.$refs.emoBox.close();
-        // this.$refs.atBox.close();
-        //this.$refs.wordBox.close();
+        // this.$refs.emoBox.close();
+        // this.$refs.wordBox.close();
+        // this.$refs.characterEmoBox.close();
       },
       onCall(type){
         if(type == this.$enums.MESSAGE_TYPE.ACT_RT_VOICE){
