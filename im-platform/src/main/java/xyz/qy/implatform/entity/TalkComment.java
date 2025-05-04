@@ -61,6 +61,12 @@ public class TalkComment extends BaseEntity {
     private Long characterId;
 
     /**
+     * 头像id
+     */
+    @TableField(value = "avatar_id")
+    private Long avatarId;
+
+    /**
      * 回复的评论id
      */
     @TableField(value = "reply_comment_id")

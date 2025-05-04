@@ -33,5 +33,5 @@ public interface ITalkService extends IService<Talk> {
      * @param characterId
      * @return
      */
-    boolean verifyTalkCommentCharacter(Long talkId, Long characterId);
+    boolean verifyTalkCommentCharacter(Long talkId, Long characterId, Long avatarId);
 }

@@ -335,6 +335,7 @@ export default {
         content: this.comment.content,
         userNickname: talk.commentCharacterName,
         characterId: talk.commentCharacterId,
+        avatarId: talk.commentCharacterAvatarId,
         userAvatar: talk.commentCharacterAvatar,
         anonymous: talk.commentAnonymous ? talk.commentAnonymous : false,
         replyCommentId: this.comment.replyCommentId
@@ -346,6 +347,7 @@ export default {
       }).then((data) => {
         if (data.characterId) {
           talk.commentCharacterId = data.characterId;
+          talk.commentCharacterAvatarId = data.avatarId;
           talk.commentCharacterName = data.userNickname;
           talk.commentCharacterAvatar = data.userAvatar;
         }
@@ -450,6 +452,7 @@ export default {
         talkId: talk.id,
         nickname: talk.commentCharacterName,
         characterId: talk.commentCharacterId,
+        avatarId: talk.commentCharacterAvatarId,
         avatar: talk.commentCharacterAvatar,
         anonymous: talk.commentAnonymous ? talk.commentAnonymous : false
       }
@@ -463,6 +466,7 @@ export default {
           talk.commentCharacterId = data.characterId;
           talk.commentCharacterName = data.nickname;
           talk.commentCharacterAvatar = data.avatar;
+          talk.commentCharacterAvatarId = data.avatarId;
         }
         talk.commentAnonymous = data.anonymous;
         talk.talkStarVOS.push(data);
@@ -522,6 +526,7 @@ export default {
       this.commentSetForm.nickName = talk.commentCharacterName ? talk.commentCharacterName : talk.commentUserNickname;
       this.commentSetForm.avatar = talk.commentCharacterAvatar ? talk.commentCharacterAvatar : talk.commentUserAvatar;
       this.commentSetForm.commentCharacterId = talk.commentCharacterId;
+      this.commentSetForm.commentCharacterAvatarId = talk.commentCharacterAvatarId;
       this.commentSetForm.anonymous = talk.commentAnonymous;
       this.curTalk = talk;
       this.curTalkIndex = index;
@@ -532,6 +537,7 @@ export default {
       this.commentSetForm.nickName = '';
       this.commentSetForm.avatar = '';
       this.commentSetForm.commentCharacterId = null;
+      this.commentSetForm.commentCharacterAvatarId = null;
       this.commentSetForm.anonymous = false;
       this.curTalk = {};
       this.curTalkIndex = -1;
@@ -578,6 +584,7 @@ export default {
       this.talkList[this.curTalkIndex].commentCharacterAvatar = this.commentSetForm.avatar;
       this.talkList[this.curTalkIndex].commentCharacterName = this.commentSetForm.nickName;
       this.talkList[this.curTalkIndex].commentAnonymous = this.commentSetForm.anonymous;
+      this.talkList[this.curTalkIndex].commentCharacterAvatarId = this.commentSetForm.commentCharacterAvatarId;
       this.resetCommentCharacter();
       this.curTalk = {};
       this.curTalkIndex = -1;

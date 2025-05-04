@@ -8,12 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.implatform.dto.TalkCommentDTO;
+import xyz.qy.implatform.entity.CharacterAvatar;
 import xyz.qy.implatform.entity.Talk;
 import xyz.qy.implatform.entity.TalkComment;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkCommentMapper;
+import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.ITalkCommentService;
 import xyz.qy.implatform.service.ITalkService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
@@ -24,6 +26,7 @@ import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.TalkCommentVO;
 
+import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -43,6 +46,9 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
     @Autowired
     private ITemplateCharacterService templateCharacterService;
 
+    @Resource
+    private ICharacterAvatarService characterAvatarService;
+
     @Transactional
     @Lock(prefix = "im:talk:comment", key = "#talkCommentDTO.getTalkId()")
     @Override
@@ -58,7 +64,7 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
             throw new GlobalException("当前动态已被删除");
         }
         if (!Objects.isNull(talkCommentDTO.getCharacterId())) {
-            if (talkService.verifyTalkCommentCharacter(talkId, talkCommentDTO.getCharacterId())) {
+            if (talkService.verifyTalkCommentCharacter(talkId, talkCommentDTO.getCharacterId(), talkCommentDTO.getAvatarId())) {
                 throw new GlobalException("只能使用选择过的角色");
             }
         }
@@ -76,8 +82,23 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
                 throw new GlobalException("当前角色不存在");
             }
             talkComment.setCharacterId(templateCharacter.getId());
-            talkComment.setUserNickname(talkCommentDTO.getUserNickname());
-            talkComment.setUserAvatar(talkCommentDTO.getUserAvatar());
+            talkComment.setUserNickname(templateCharacter.getName());
+            talkComment.setUserAvatar(templateCharacter.getAvatar());
+
+            if (ObjectUtil.isNotNull(talkCommentDTO.getAvatarId())) {
+                CharacterAvatar characterAvatar = characterAvatarService.getById(talkCommentDTO.getAvatarId());
+                if (ObjectUtil.isNotNull(characterAvatar)) {
+                    if (!characterAvatar.getTemplateCharacterId().equals(templateCharacter.getId())) {
+                        throw new GlobalException("所选角色头像不属于当前角色");
+                    }
+
+                    talkComment.setAvatarId(characterAvatar.getId());
+                    talkComment.setUserAvatar(characterAvatar.getAvatar());
+                    if (!characterAvatar.getLevel().equals(0)) {
+                        talkComment.setUserNickname(characterAvatar.getName());
+                    }
+                }
+            }
         } else {
             talkComment.setUserAvatar(user.getHeadImage());
             talkComment.setUserNickname(user.getNickName());

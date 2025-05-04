@@ -137,7 +137,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
         Talk talk = this.baseMapper.selectById(talkUpdateDTO.getId());
         if (ObjectUtil.isNotNull(talkUpdateDTO.getCharacterId())) {
-            boolean verified = verifyTalkCommentCharacter(talk.getId(), talkUpdateDTO.getCharacterId());
+            boolean verified = verifyTalkCommentCharacter(talk.getId(), talkUpdateDTO.getCharacterId(), talkUpdateDTO.getAvatarId());
             if (verified) {
                 throw new GlobalException("所选角色不允许");
             }
@@ -380,6 +380,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkVO.getCharacterId())) {
                 characterIds.add(talkVO.getCharacterId());
                 if (obj.getUserId().equals(myUserId)) {
+                    talkVO.setCommentCharacterAvatarId(talkVO.getAvatarId());
                     talkVO.setCommentCharacterId(talkVO.getCharacterId());
                     talkVO.setCommentCharacterName(talkVO.getNickName());
                     talkVO.setCommentCharacterAvatar(talkVO.getAvatar());
@@ -391,6 +392,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 Optional<TalkStarVO> talkStarVOOptional = talkVO.getTalkStarVOS().stream().filter(item -> item.getUserId().equals(myUserId)
                         && ObjectUtil.isNotNull(item.getCharacterId())).findFirst();
                 talkStarVOOptional.ifPresent(talkStarVO -> {
+                    talkVO.setCommentCharacterAvatarId(talkStarVO.getAvatarId());
                     talkVO.setCommentCharacterId(talkStarVO.getCharacterId());
                     talkVO.setCommentCharacterName(talkStarVO.getNickname());
                     talkVO.setCommentCharacterAvatar(talkStarVO.getAvatar());
@@ -414,6 +416,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 Optional<TalkComment> talkCommentOptional = allTalkCommentGroupMap.get(talkVO.getId()).stream().filter(item -> item.getUserId().equals(myUserId)
                         && !Objects.isNull(item.getCharacterId())).findFirst();
                 talkCommentOptional.ifPresent(talkComment -> {
+                    talkVO.setCommentCharacterAvatarId(talkComment.getAvatarId());
                     talkVO.setCommentCharacterId(talkComment.getCharacterId());
                     talkVO.setCommentCharacterName(talkComment.getUserNickname());
                     talkVO.setCommentCharacterAvatar(talkComment.getUserAvatar());
@@ -479,6 +482,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         // 是否有使用过角色用于 编辑、评论、点赞 动态
         boolean hasCharacter = false;
 
+        // 是否有使用过角色头像用于 编辑、评论、点赞 动态
+        boolean hasCharacterAvatar = false;
+
         if (ObjectUtil.isNotNull(talk.getCharacterId())) {
             TemplateCharacter character = characterService.getById(talk.getCharacterId());
             if (ObjectUtil.isNotNull(character)) {
@@ -486,6 +492,18 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 talkVO.setCommentCharacterName(character.getName());
                 talkVO.setCommentCharacterAvatar(character.getAvatar());
                 hasCharacter = true;
+            }
+        }
+
+        if (ObjectUtil.isNotNull(talk.getAvatarId())) {
+            CharacterAvatar characterAvatar = characterAvatarService.getById(talk.getAvatarId());
+            if (ObjectUtil.isNotNull(characterAvatar)) {
+                talkVO.setCommentCharacterAvatarId(characterAvatar.getId());
+                talkVO.setCommentCharacterAvatar(characterAvatar.getAvatar());
+                if (!characterAvatar.getLevel().equals(0)) {
+                    talkVO.setCommentCharacterName(characterAvatar.getName());
+                }
+                hasCharacterAvatar = true;
             }
         }
 
@@ -505,6 +523,28 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                     talkVO.setCommentCharacterName(character.getName());
                     talkVO.setCommentCharacterAvatar(character.getAvatar());
                     hasCharacter = true;
+                }
+            }
+        }
+
+        if (!hasCharacterAvatar) {
+            // 查询当前用户是否在点赞数据使用模板角色头像
+            List<TalkStar> talkStars = talkStarService.lambdaQuery()
+                    .eq(TalkStar::getTalkId, talkId)
+                    .eq(TalkStar::getUserId, userId)
+                    .eq(TalkStar::getDeleted, Boolean.FALSE)
+                    .isNotNull(TalkStar::getAvatarId)
+                    .last("limit 1")
+                    .list();
+            if (CollectionUtils.isNotEmpty(talkStars)) {
+                CharacterAvatar characterAvatar = characterAvatarService.getById(talkStars.get(0).getAvatarId());
+                if (ObjectUtil.isNotNull(characterAvatar)) {
+                    talkVO.setCommentCharacterAvatarId(characterAvatar.getId());
+                    talkVO.setCommentCharacterAvatar(characterAvatar.getAvatar());
+                    if (!characterAvatar.getLevel().equals(0)) {
+                        talkVO.setCommentCharacterName(characterAvatar.getName());
+                    }
+                    hasCharacterAvatar = true;
                 }
             }
         }
@@ -529,6 +569,28 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             }
         }
 
+        if (!hasCharacterAvatar) {
+            // 查询当前用户是否在评论数据使用模板角色头像
+            List<TalkComment> talkComments = talkCommentService.lambdaQuery()
+                    .eq(TalkComment::getTalkId, talkId)
+                    .eq(TalkComment::getUserId, userId)
+                    .eq(TalkComment::getDeleted, Boolean.FALSE)
+                    .isNotNull(TalkComment::getAvatarId)
+                    .last("limit 1")
+                    .list();
+            if (CollectionUtils.isNotEmpty(talkComments)) {
+                CharacterAvatar characterAvatar = characterAvatarService.getById(talkComments.get(0).getAvatarId());
+                if (ObjectUtil.isNotNull(characterAvatar)) {
+                    talkVO.setCommentCharacterAvatarId(characterAvatar.getId());
+                    talkVO.setCommentCharacterAvatar(characterAvatar.getAvatar());
+                    if (!characterAvatar.getLevel().equals(0)) {
+                        talkVO.setCommentCharacterName(characterAvatar.getName());
+                    }
+                    hasCharacterAvatar = true;
+                }
+            }
+        }
+
         if (!hasCharacter) {
             talkVO.setEnableCharacterChoose(Boolean.TRUE);
         }
@@ -537,7 +599,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     }
 
     @Override
-    public boolean verifyTalkCommentCharacter(Long talkId, Long characterId) {
+    public boolean verifyTalkCommentCharacter(Long talkId, Long characterId, Long avatarId) {
         if (Objects.isNull(talkId) || Objects.isNull(characterId)) {
             throw new GlobalException("参数异常");
         }
@@ -555,10 +617,26 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             }
         }
 
+        // 自己选择过的角色头像与入参的角色头像不一致
+        if (userId.equals(talk.getUserId())
+                && !Objects.isNull(talk.getAvatarId())) {
+            if (!talk.getAvatarId().equals(avatarId)) {
+                return true;
+            }
+        }
+
         // 自己选择的角色与其他人选择的角色一样
         if (!userId.equals(talk.getUserId())
                 && !Objects.isNull(talk.getCharacterId())) {
             if (talk.getCharacterId().equals(characterId)) {
+                return true;
+            }
+        }
+
+        // 自己选择的角色头像与其他人选择的角色头像一样
+        if (!userId.equals(talk.getUserId())
+                && !Objects.isNull(talk.getAvatarId())) {
+            if (talk.getAvatarId().equals(avatarId)) {
                 return true;
             }
         }
@@ -575,11 +653,27 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 return true;
             }
 
+            // 自己选择的角色头像与其他人选择的角色头像一样
+            Optional<TalkStar> optional3 = talkStarList.stream().filter(item -> !Objects.isNull(item.getAvatarId())
+                    && avatarId.equals(item.getAvatarId())
+                    && !item.getUserId().equals(userId)).findFirst();
+            if (optional3.isPresent()) {
+                return true;
+            }
+
             // 自己选择过的角色与入参的角色不一致
             Optional<TalkStar> optional2 = talkStarList.stream().filter(item -> !Objects.isNull(item.getCharacterId())
                     && !characterId.equals(item.getCharacterId())
                     && item.getUserId().equals(userId)).findFirst();
             if (optional2.isPresent()) {
+                return true;
+            }
+
+            // 自己选择过的角色头像与入参的角色头像不一致
+            Optional<TalkStar> optional4 = talkStarList.stream().filter(item -> !Objects.isNull(item.getAvatarId())
+                    && !avatarId.equals(item.getAvatarId())
+                    && item.getUserId().equals(userId)).findFirst();
+            if (optional4.isPresent()) {
                 return true;
             }
         }
@@ -595,11 +689,27 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 return true;
             }
 
+            // 自己选择的角色与其他人选择的角色头像一样
+            Optional<TalkComment> optional3 = talkCommentList.stream().filter(item -> !Objects.isNull(item.getAvatarId())
+                    && avatarId.equals(item.getAvatarId())
+                    && !item.getUserId().equals(userId)).findFirst();
+            if (optional3.isPresent()) {
+                return true;
+            }
+
             // 自己选择过的角色与入参的角色不一致
             Optional<TalkComment> optional2 = talkCommentList.stream().filter(item -> !Objects.isNull(item.getCharacterId())
                     && !characterId.equals(item.getCharacterId()) &&
                     item.getUserId().equals(userId)).findFirst();
             if (optional2.isPresent()) {
+                return true;
+            }
+
+            // 自己选择过的角色头像与入参的角色头像不一致
+            Optional<TalkComment> optional4 = talkCommentList.stream().filter(item -> !Objects.isNull(item.getAvatarId())
+                    && !avatarId.equals(item.getAvatarId()) &&
+                    item.getUserId().equals(userId)).findFirst();
+            if (optional4.isPresent()) {
                 return true;
             }
         }

@@ -34,6 +34,9 @@ public class TalkCommentVO {
     @ApiModelProperty(value = "角色id")
     private Long characterId;
 
+    @ApiModelProperty(value = "角色id")
+    private Long avatarId;
+
     @ApiModelProperty(value = "回复的评论id")
     @JsonSerialize(using = ToStringSerializer.class)
     private Long replyCommentId;

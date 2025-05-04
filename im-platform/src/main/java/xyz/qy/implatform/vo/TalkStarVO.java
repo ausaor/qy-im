@@ -31,6 +31,9 @@ public class TalkStarVO {
     @ApiModelProperty(value = "角色id")
     private Long characterId;
 
+    @ApiModelProperty(value = "角色头像id")
+    private Long avatarId;
+
     @ApiModelProperty(value = "是否自己的")
     private Boolean isOwner = Boolean.FALSE;
 }

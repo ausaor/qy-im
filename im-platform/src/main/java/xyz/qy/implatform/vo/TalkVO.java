@@ -28,6 +28,9 @@ public class TalkVO {
     @ApiModelProperty(value = "角色id")
     private Long characterId;
 
+    @ApiModelProperty(value = "角色头像id")
+    private Long avatarId;
+
     @ApiModelProperty(value = "已被选择的角色id")
     private Set<Long> selectedCharacterIds;
 
@@ -45,6 +48,9 @@ public class TalkVO {
 
     @ApiModelProperty(value = "用户评论角色id")
     private Long commentCharacterId;
+
+    @ApiModelProperty(value = "用户评论角色头像id")
+    private Long commentCharacterAvatarId;
 
     @ApiModelProperty(value = "用户昵称")
     private String nickName;

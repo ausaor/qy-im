@@ -22,6 +22,9 @@ public class TalkStarDTO {
     @ApiModelProperty(value = "角色id")
     private Long characterId;
 
+    @ApiModelProperty(value = "角色头像id")
+    private Long avatarId;
+
     @ApiModelProperty(value = "头像")
     private String avatar;
 }

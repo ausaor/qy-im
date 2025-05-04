@@ -53,4 +53,10 @@ public class TalkStar extends BaseEntity{
      */
     @TableField(value = "character_id")
     private Long characterId;
+
+    /**
+     * 角色头像id
+     */
+    @TableField(value = "avatar_id")
+    private Long avatarId;
 }

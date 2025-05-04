@@ -9,12 +9,14 @@ import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.dto.TalkStarDTO;
+import xyz.qy.implatform.entity.CharacterAvatar;
 import xyz.qy.implatform.entity.Talk;
 import xyz.qy.implatform.entity.TalkStar;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkStarMapper;
+import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.ITalkService;
 import xyz.qy.implatform.service.ITalkStarService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
@@ -24,6 +26,7 @@ import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.vo.TalkStarVO;
 
+import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -42,6 +45,9 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
     @Autowired
     private ITemplateCharacterService templateCharacterService;
 
+    @Resource
+    private ICharacterAvatarService characterAvatarService;
+
     @Transactional
     @Lock(prefix = "im:talk:comment", key = "#talkStarDTO.getTalkId()")
     @Override
@@ -57,7 +63,7 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
             throw new GlobalException("当前动态已被删除");
         }
         if (!Objects.isNull(talkStarDTO.getCharacterId())) {
-            if (talkService.verifyTalkCommentCharacter(talkId, talkStarDTO.getCharacterId())) {
+            if (talkService.verifyTalkCommentCharacter(talkId, talkStarDTO.getCharacterId(), talkStarDTO.getAvatarId())) {
                 throw new GlobalException("只能使用选择过的角色或所选角色已被使用");
             }
         }
@@ -71,8 +77,22 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
                 throw new GlobalException("当前角色不存在");
             }
             talkStar.setCharacterId(templateCharacter.getId());
-            talkStar.setNickname(talkStarDTO.getNickname());
-            talkStar.setAvatar(talkStarDTO.getAvatar());
+            talkStar.setNickname(templateCharacter.getName());
+            talkStar.setAvatar(templateCharacter.getAvatar());
+
+            if (ObjectUtil.isNotNull(talkStarDTO.getAvatarId())) {
+                CharacterAvatar characterAvatar = characterAvatarService.getById(talkStarDTO.getAvatarId());
+                if (ObjectUtil.isNotNull(characterAvatar)) {
+                    if (!characterAvatar.getTemplateCharacterId().equals(templateCharacter.getId())) {
+                        throw new GlobalException("所选角色头像不属于当前角色");
+                    }
+                    talkStar.setAvatarId(characterAvatar.getId());
+                    talkStar.setAvatar(characterAvatar.getAvatar());
+                    if (!characterAvatar.getLevel().equals(0)) {
+                        talkStar.setNickname(characterAvatar.getName());
+                    }
+                }
+            }
         } else {
             talkStar.setAvatar(user.getHeadImage());
             talkStar.setNickname(user.getNickName());

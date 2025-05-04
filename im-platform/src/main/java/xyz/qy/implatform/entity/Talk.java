@@ -36,6 +36,12 @@ public class Talk extends BaseEntity{
     private Long characterId;
 
     /**
+     * 头像id
+     */
+    @TableField(value = "avatar_id", updateStrategy = FieldStrategy.IGNORED)
+    private Long avatarId;
+
+    /**
      * 用户昵称
      */
     @TableField("nick_name")

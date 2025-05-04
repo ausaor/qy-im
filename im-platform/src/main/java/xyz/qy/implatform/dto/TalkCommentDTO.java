@@ -29,6 +29,9 @@ public class TalkCommentDTO {
     @ApiModelProperty(value = "角色id")
     private Long characterId;
 
+    @ApiModelProperty(value = "角色头像id")
+    private Long avatarId;
+
     @ApiModelProperty(value = "回复的评论id")
     private Long replyCommentId;
 }
