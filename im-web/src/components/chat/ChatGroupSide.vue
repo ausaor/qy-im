@@ -75,7 +75,7 @@
         <el-form-item label="昵称后缀" v-show="group.groupType!==0">
           <el-input v-model="group.aliasNameSuffix" :disabled="!editing" placeholder="xx" maxlength="10"></el-input>
         </el-form-item>
-        <el-form-item label="群成员名称显示" v-if="group.groupType!==0">
+        <el-form-item label="群成员名称显示" v-if="group.groupType!==0" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
           <el-switch
               style="display: block"
               v-model="myGroupMemberInfo.showNickName"
