@@ -100,52 +100,13 @@
           <el-button @click="resetForm('ruleForm')">清空</el-button>
       </el-form-item>
     </el-form>
-    <el-dialog
-        width="50%"
-        title="选择角色"
-        :visible.sync="chooseCharacterDialogVisible"
-        :before-close="closeChooseCharacterDialog"
-        append-to-body>
-      <div class="agm-container">
-        <div class="agm-l-box">
-          <el-input width="200px" placeholder="搜索模板群聊" class="input-with-select" v-model="searchText" >
-            <el-button slot="append" icon="el-icon-search" ></el-button>
-          </el-input>
-          <el-scrollbar style="height:400px;">
-            <div v-for="(templateGroup,index) in templateGroupList" :key="templateGroup.id"
-                 v-show="templateGroup.groupName.startsWith(searchText)"
-                 class="template-group-box">
-              <template-group-item :templateGroup="templateGroup" class="group-item-left"></template-group-item>
-              <div class="group-item-right">
-                <el-button :type="groupActiveIndex === index ? 'success' : ''" icon="el-icon-check" circle
-                           @click="queryTemplateCharacter(templateGroup, index)" ></el-button>
-              </div>
-              <p style="clear:both;"></p>
-            </div>
-          </el-scrollbar>
-        </div>
-        <div class="agm-r-box">
-          <el-input width="200px" placeholder="搜索模板人物" class="input-with-select" v-model="characterSearchText" >
-            <el-button slot="append" icon="el-icon-search" ></el-button>
-          </el-input>
-          <el-scrollbar style="height:400px;">
-            <div class="template-character-box" v-for="(templateCharacter,index) in templateCharacterList"
-                 :key="templateCharacter.id" v-show="templateCharacter.name.startsWith(characterSearchText)">
-              <template-character-item class="character-item-left" :templateCharacter = "templateCharacter"></template-character-item>
-              <div class="character-item-right">
-                <el-button :type="characterActiveIndex === index ? 'success' : ''" icon="el-icon-check" circle
-                           @click="chooseTemplateCharacter(templateCharacter, index)"></el-button>
-              </div>
-              <p style="clear:both;"></p>
-            </div>
-          </el-scrollbar>
-        </div>
-      </div>
-      <span slot="footer" class="dialog-footer">
-			  <el-button @click="closeChooseCharacterDialog()">取 消</el-button>
-			  <el-button type="primary" @click="handleOk()">确 定</el-button>
-		  </span>
-    </el-dialog>
+    <TemplateCharacterChoose
+        :append-to-body="true"
+        ref="templateCharacterChoose"
+        :visible="chooseCharacterDialogVisible"
+        @close="closeChooseCharacterDialog"
+        @confirm="handleOk">
+    </TemplateCharacterChoose>
   </el-dialog>
 </template>
 
@@ -157,6 +118,7 @@ import TemplateGroupItem from "@/components/group/TemplateGroupItem";
 import TemplateCharacterItem from "@/components/group/TemplateCharacterItem";
 import Emoji from '@/components/emoji';
 import MultiMediaUpload from "@/components/common/MultiMediaUpload";
+import TemplateCharacterChoose  from "../template/TemplateCharacterChoose.vue";
 
 export default {
   name: "AddTalk",
@@ -168,6 +130,7 @@ export default {
     TemplateCharacterItem,
     Emoji,
     MultiMediaUpload,
+    TemplateCharacterChoose,
   },
   props: {
     visible: {
@@ -530,10 +493,10 @@ export default {
       this.characterActiveIndex = index;
       this.templateCharacter = templateCharacter;
     },
-    handleOk() {
-      this.form.nickName = this.templateCharacter.name;
-      this.form.avatar = this.templateCharacter.avatar;
-      this.form.characterId = this.templateCharacter.id;
+    handleOk(data) {
+      this.form.nickName = data.templateCharacter.name;
+      this.form.avatar = data.templateCharacter.avatar;
+      this.form.characterId = data.templateCharacter.id;
       this.closeChooseCharacterDialog();
     },
     removeCharacter() {
