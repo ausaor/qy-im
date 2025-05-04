@@ -106,17 +106,17 @@
 								 @close="onCloseAddGroupMember"></add-group-member>
 							</div>
               <div class="switch-character" v-show="activeGroup.groupType !== 0">
-                <div class="switch-character-btn" title="切换模板人物" @click="switchCharacter()">
+                <div class="switch-character-btn" title="切换角色" @click="switchCharacter()">
                   <i class="el-icon-refresh"></i>
                 </div>
                 <div class="switch-character-text">切换</div>
                 <el-dialog
                     width="30%"
-                    title="请选择模板人物"
+                    title="请选择角色"
                     :visible.sync="selectTemplateCharacterVisible"
                     :before-close="closeSelectCharacter">
                   <div>
-                    <el-input width="200px" placeholder="搜索模板人物" class="input-with-select" v-model="characterSearchText">
+                    <el-input width="200px" placeholder="搜索角色" class="input-with-select" v-model="characterSearchText">
                       <el-button slot="append" icon="el-icon-search"></el-button>
                     </el-input>
                   </div>
@@ -148,7 +148,7 @@
                 </group-template-character-choose>
               </div>
               <div class="switch-character-avatar" v-show="activeGroup.groupType !== 0">
-                <div class="switch-character-avatar-btn" title="切换模板人物头像" @click="switchCharacterAvatar()">
+                <div class="switch-character-avatar-btn" title="切换角色头像" @click="switchCharacterAvatar()">
                   <i class="el-icon-user-solid"></i>
                 </div>
                 <div class="switch-character-avatar-text">选择</div>

@@ -37,7 +37,7 @@
           <head-image class="head-image" :url="templateGroup.avatar" :size="80"></head-image>
           <div class="info">
             <el-descriptions title="群聊信息" :column="2">
-              <el-descriptions-item label="模板人物" span="2">{{ templateGroup.count }}</el-descriptions-item>
+              <el-descriptions-item label="角色" span="2">{{ templateGroup.count }}</el-descriptions-item>
               <el-descriptions-item label="创建人" span="2">{{ templateGroup.creator }}</el-descriptions-item>
               <el-descriptions-item label="创建时间" span="2">{{ templateGroup.createTime }}</el-descriptions-item>
               <el-descriptions-item label="更新时间" span="2">{{ templateGroup.updateTime }}</el-descriptions-item>
@@ -452,7 +452,7 @@ export default {
       });
     },
     deleteTemplateCharacter(templateCharacter, index) {
-      this.$confirm('确认要删除当前模板人物吗?', '请确认?', {
+      this.$confirm('确认要删除当前角色吗?', '请确认?', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -555,7 +555,7 @@ export default {
       });
     },
     deleteCharacterAvatar(characterAvatar, index) {
-      this.$confirm('确认要删除当前模板人物头像吗?', '请确认?', {
+      this.$confirm('确认要删除当前角色头像吗?', '请确认?', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -597,7 +597,7 @@ export default {
     },
     handleAvatarsSubmitForApproval() {
       if (this.curTemplateCharacter.status !== '2') {
-        this.$message.warning("请待当前模板人物审核通过");
+        this.$message.warning("请待当前角色审核通过");
         return false;
       }
       if (this.characterAvatars.length === 0) {

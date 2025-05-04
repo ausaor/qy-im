@@ -24,7 +24,7 @@
         </el-scrollbar>
       </div>
       <div class="agm-r-box">
-        <el-input width="200px" placeholder="搜索模板人物" class="input-with-select" v-model="characterSearchText" >
+        <el-input width="200px" placeholder="搜索角色" class="input-with-select" v-model="characterSearchText" >
           <el-button slot="append" icon="el-icon-search" ></el-button>
         </el-input>
         <el-scrollbar style="height:400px;">

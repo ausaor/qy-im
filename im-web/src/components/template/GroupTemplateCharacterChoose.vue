@@ -59,7 +59,7 @@ export default {
       characterSearchText: "",
       characterList: [],
       characterActiveIndex: -1,
-      activeTemplateCharacter: {},  // 当前选中的模板人物
+      activeTemplateCharacter: {},  // 当前选中的角色
     }
   },
   methods: {
@@ -67,9 +67,9 @@ export default {
       this.$emit("close");
     },
     chooseTemplateCharacter(templateCharacter, index) {
-      // 记录选择的模板人物数组下标
+      // 记录选择的角色数组下标
       this.characterActiveIndex = index;
-      // 记录选择的模板人物
+      // 记录选择的角色
       this.activeTemplateCharacter = templateCharacter;
     },
     chooseTemplateCharacterOk() {

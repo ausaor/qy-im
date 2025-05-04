@@ -35,12 +35,12 @@
     </span>
     <el-dialog
         width="30%"
-        title="请选择模板人物"
+        title="请选择角色"
         :visible.sync="selectTemplateCharacterVisible"
         :before-close="closeSelectCharacter"
         append-to-body>
       <div>
-        <el-input width="200px" placeholder="搜索模板人物" class="input-with-select" v-model="characterSearchText">
+        <el-input width="200px" placeholder="搜索角色" class="input-with-select" v-model="characterSearchText">
           <el-button slot="append" icon="el-icon-search"></el-button>
         </el-input>
       </div>
@@ -83,7 +83,7 @@
           </el-scrollbar>
         </div>
         <div class="agm-r-box">
-          <el-input width="200px" placeholder="搜索模板人物" class="input-with-select" v-model="characterSearchText" >
+          <el-input width="200px" placeholder="搜索角色" class="input-with-select" v-model="characterSearchText" >
             <el-button slot="append" icon="el-icon-search" ></el-button>
           </el-input>
           <el-scrollbar style="height:400px;">
@@ -139,7 +139,7 @@
         selectCharactersVisible: false,
         groupTemplateCharacterVisible: false,
         characterActiveIndex: -1,
-        activeTemplateCharacter: {},  // 当前选中的模板人物
+        activeTemplateCharacter: {},  // 当前选中的角色
         curSelectedFriend: {},
         selectedFriendIndex: -1,
         templateGroupList: [],
@@ -244,7 +244,7 @@
 			},
       onRemoveFriend(friend) {
 				friend.isCheck = false;
-				// 将已选择的模板人物的不可选标识去掉
+				// 将已选择的角色的不可选标识去掉
 				if (friend.choosedCharacterIndex !== undefined &&  friend.choosedCharacterIndex !== null) {
           this.selectableCharacters[friend.choosedCharacterIndex].choosed = false;
         }
@@ -254,7 +254,7 @@
         friend.templateCharacterName = null;
 			},
       onSwitchCheck(friend) {
-        // 取消好友选择，需要将好友已选的模板人物变成可选状态
+        // 取消好友选择，需要将好友已选的角色变成可选状态
         if (this.groupType === 1) {
           if (!friend.disabled) {
             if (friend.isCheck) {
@@ -290,25 +290,25 @@
         this.selectTemplateCharacterVisible = false
       },
       chooseTemplateCharacter(templateCharacter, index) {
-			  // 记录选择的模板人物数组下标
+			  // 记录选择的角色数组下标
         this.characterActiveIndex = index;
-        // 记录选择的模板人物
+        // 记录选择的角色
         this.activeTemplateCharacter = templateCharacter;
       },
       chooseTemplateCharacterOk() {
 			  if (this.characterActiveIndex === -1) {
-          this.$message.warning("请选择一位模板人物");
+          this.$message.warning("请选择一位角色");
 			    return false
         }
-        // 标识当前模板人物已被选择
+        // 标识当前角色已被选择
         this.selectableCharacters[this.characterActiveIndex].choosed = true;
         let friendIndex = this.selectedFriendIndex;
-        // 当前好友之前已选择过模板人物，需要把之前选择的模板人物的不可选标识去掉
+        // 当前好友之前已选择过角色，需要把之前选择的角色的不可选标识去掉
         if (this.friends[friendIndex].choosedCharacterIndex !== undefined
             && this.friends[friendIndex].choosedCharacterIndex !== null) {
           this.selectableCharacters[this.friends[friendIndex].choosedCharacterIndex].choosed = false;
         }
-        // 记录被选择的模板人物的位置下标
+        // 记录被选择的角色的位置下标
         this.friends[friendIndex].choosedCharacterIndex = this.characterActiveIndex;
         this.friends[friendIndex].templateCharacterId = this.activeTemplateCharacter.id;
         this.friends[friendIndex].templateCharacterAvatar = this.activeTemplateCharacter.avatar;
@@ -363,12 +363,12 @@
       },
       handleOk() {
         if (this.characterActiveIndex === -1) {
-          this.$message.warning("请选择一位模板人物");
+          this.$message.warning("请选择一位角色");
           return false
         }
         let friendIndex = this.selectedFriendIndex;
 
-        // 记录被选择的模板人物的位置下标
+        // 记录被选择的角色的位置下标
         this.friends[friendIndex].choosedCharacterIndex = this.characterActiveIndex;
         this.friends[friendIndex].templateCharacterId = this.activeTemplateCharacter.id;
         this.friends[friendIndex].templateCharacterAvatar = this.activeTemplateCharacter.avatar;

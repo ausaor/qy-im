@@ -39,12 +39,12 @@
     </div>
     <el-dialog
         width="30%"
-        title="请选择模板人物"
+        title="请选择角色"
         :visible.sync="selectTemplateCharacterVisible"
         :before-close="closeSelectCharacter"
         append-to-body>
       <div>
-        <el-input width="200px" placeholder="搜索模板人物" class="input-with-select" v-model="characterSearchText">
+        <el-input width="200px" placeholder="搜索角色" class="input-with-select" v-model="characterSearchText">
           <el-button slot="append" icon="el-icon-search"></el-button>
         </el-input>
       </div>
@@ -117,10 +117,10 @@ export default {
       selectTemplateCharacterVisible: false,
       characterChooseVisible: false,
       groupTemplateCharacterChooseVisible: false,
-      selectableCharacters: [], // 可以选择的模板人物
+      selectableCharacters: [], // 可以选择的角色
       characterSearchText: '',
       characterActiveIndex: -1,
-      curChooseCharacter: null, // 当前选择的模板人物
+      curChooseCharacter: null, // 当前选择的角色
       curChooseGroup: {}, // 当前选择的群聊
       groupMemberVisible: false,
       groupMembers: [],

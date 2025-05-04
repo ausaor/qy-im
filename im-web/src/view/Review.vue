@@ -19,7 +19,7 @@
           <head-image class="head-image" :url="templateGroup.avatar" :size="80"></head-image>
           <div class="info">
             <el-descriptions title="群聊信息" :column="2">
-              <el-descriptions-item label="模板人物" span="2">{{ templateGroup.count }}</el-descriptions-item>
+              <el-descriptions-item label="角色" span="2">{{ templateGroup.count }}</el-descriptions-item>
               <el-descriptions-item label="创建人" span="2">{{ templateGroup.creator }}</el-descriptions-item>
               <el-descriptions-item label="创建时间" span="2">{{ templateGroup.createTime }}</el-descriptions-item>
               <el-descriptions-item label="更新时间" span="2">{{ templateGroup.updateTime }}</el-descriptions-item>

@@ -29,7 +29,7 @@
     </div>
     <el-dialog
         width="30%"
-        title="请选择模板人物"
+        title="请选择角色"
         :visible.sync="selectTemplateCharacterVisible"
         :before-close="closeSelectCharacter"
         append-to-body>
@@ -100,7 +100,7 @@ export default {
       selectedFriendIndex: -1,
       curSelectedFriend: {},
       characterActiveIndex: -1,
-      activeTemplateCharacter: {},  // 当前选中的模板人物
+      activeTemplateCharacter: {},  // 当前选中的角色
     }
   },
   created() {
@@ -121,7 +121,7 @@ export default {
     handleOk() {
       let groupMemberList = this.groupMembers.filter(item => !item.quit);
       if (this.toGroupType === 1 || this.toGroupType === 2) {
-        // 判断是否有重复的模板人物
+        // 判断是否有重复的角色
         const templateCharacterIds = groupMemberList.map(item => item["templateCharacterId"]);
         let templateCharacterIdSet = new Set(templateCharacterIds);
         //console.log("templateCharacterIds", templateCharacterIds)
@@ -196,7 +196,7 @@ export default {
       if (this.toGroupType === 1) {
         const count = this.groupMembers.filter(item => !item.quit).length;
         if (templateGroup.count < count) {
-          this.$message.warning("当前模板群聊的模板人物数量小于当前群聊人数，请选择另一个模板群聊");
+          this.$message.warning("当前模板群聊的角色数量小于当前群聊人数，请选择另一个模板群聊");
           return false
         }
       }
