@@ -8,11 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.imcommon.contant.IMRedisKey;
 import xyz.qy.implatform.dto.TalkAddDTO;
 import xyz.qy.implatform.dto.TalkDelDTO;
 import xyz.qy.implatform.dto.TalkQueryDTO;
 import xyz.qy.implatform.dto.TalkUpdateDTO;
+import xyz.qy.implatform.entity.CharacterAvatar;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.Region;
 import xyz.qy.implatform.entity.RegionGroup;
@@ -25,6 +27,7 @@ import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkMapper;
+import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
@@ -77,6 +80,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     private ITemplateCharacterService characterService;
 
     @Resource
+    private ICharacterAvatarService characterAvatarService;
+
+    @Resource
     private ITalkStarService talkStarService;
 
     @Resource
@@ -105,13 +111,12 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         talk.setCreateBy(session.getUserId());
         talk.setAddress(user.getProvince());
         if (!Objects.isNull(talkAddDTO.getCharacterId())) {
-            TemplateCharacter character = characterService.getById(talkAddDTO.getCharacterId());
-            if (Objects.isNull(character)) {
-                throw new GlobalException("角色不存在");
-            }
+            checkCharacterInfo(talkAddDTO.getCharacterId(), talkAddDTO.getAvatarId(), talk);
         }
 
-        talk.setNickName(StringUtils.isNotBlank(talkAddDTO.getNickName()) ? talkAddDTO.getNickName() : user.getNickName());
+        if (StringUtils.isBlank(talk.getNickName())) {
+            talk.setNickName(user.getNickName());
+        }
         if (StringUtils.isBlank(talk.getAvatar())) {
             talk.setAvatar(user.getHeadImage());
         }
@@ -122,6 +127,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         this.baseMapper.insert(talk);
     }
 
+    @Lock(prefix = "im:talk:comment", key = "#talkUpdateDTO.getId()")
     @Override
     public void updateTalk(TalkUpdateDTO talkUpdateDTO) {
         checkTalkFiles(talkUpdateDTO.getFiles());
@@ -136,19 +142,19 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 throw new GlobalException("所选角色不允许");
             }
         }
-        if (!Objects.isNull(talkUpdateDTO.getCharacterId())) {
-            TemplateCharacter character = characterService.getById(talkUpdateDTO.getCharacterId());
-            if (Objects.isNull(character)) {
-                throw new GlobalException("角色不存在");
-            }
-        }
+
         if (!talk.getCategory().equals(talkUpdateDTO.getCategory())) {
             throw new GlobalException("数据异常");
         }
         BeanUtils.copyProperties(talkUpdateDTO, talk);
+        if (!Objects.isNull(talkUpdateDTO.getCharacterId())) {
+            checkCharacterInfo(talkUpdateDTO.getCharacterId(), talkUpdateDTO.getAvatarId(), talk);
+        }
         talk.setAddress(user.getProvince());
         talk.setUpdateBy(userId);
-        talk.setNickName(StringUtils.isNotBlank(talkUpdateDTO.getNickName()) ? talkUpdateDTO.getNickName() : user.getNickName());
+        if (StringUtils.isBlank(talk.getNickName())) {
+            talk.setNickName(user.getNickName());
+        }
         if (StringUtils.isBlank(talk.getAvatar())) {
             talk.setAvatar(user.getHeadImage());
         }
@@ -157,6 +163,31 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             talk.setFiles(talkUpdateDTO.getFiles().toJSONString());
         }
         this.baseMapper.updateById(talk);
+    }
+
+    private void checkCharacterInfo(Long characterId, Long avatarId, Talk talk) {
+        TemplateCharacter character = characterService.getById(characterId);
+        if (Objects.isNull(character)) {
+            throw new GlobalException("角色不存在");
+        }
+        if (avatarId != null) {
+            CharacterAvatar characterAvatar = characterAvatarService.getById(avatarId);
+            if (ObjectUtil.isNull(characterAvatar)) {
+                throw new GlobalException("角色头像不存在");
+            }
+            if (!characterId.equals(characterAvatar.getTemplateCharacterId())) {
+                throw new GlobalException("所选角色头像不属于当前角色");
+            }
+            if (characterAvatar.getLevel().equals(0)) {
+                talk.setNickName(character.getName());
+            } else {
+                talk.setNickName(characterAvatar.getName());
+            }
+            talk.setAvatar(characterAvatar.getAvatar());
+        } else {
+            talk.setNickName(character.getName());
+            talk.setAvatar(character.getAvatar());
+        }
     }
 
     private void checkTalkFiles(JSONArray files) {

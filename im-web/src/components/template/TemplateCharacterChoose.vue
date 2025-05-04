@@ -41,9 +41,19 @@
       </div>
     </div>
     <span slot="footer" class="dialog-footer">
+        <div @click="viewCharacterAvatars">
+          <el-avatar icon="el-icon-user-solid" :src="characterAvatar.avatar"></el-avatar>
+        </div>
 			  <el-button @click="handleClose()">取 消</el-button>
 			  <el-button type="primary" @click="handleOk()">确 定</el-button>
-		  </span>
+    </span>
+    <character-avatar-choose
+        :visible="characterAvatarVisible"
+        :appendToBody="appendToBody"
+        :characterId="templateCharacter.id"
+        @close="closeCharacterAvatarVisible"
+        @confirm="confirmCharacterAvatar">
+    </character-avatar-choose>
   </el-dialog>
 </template>
 
@@ -51,13 +61,15 @@
 import HeadImage from "@/components/common/HeadImage";
 import TemplateGroupItem from "@/components/group/TemplateGroupItem";
 import TemplateCharacterItem from "@/components/group/TemplateCharacterItem";
+import CharacterAvatarChoose from "./CharacterAvatarChoose.vue";
 
 export default {
   name: "TemplateCharacterChoose",
   components: {
     HeadImage,
     TemplateGroupItem,
-    TemplateCharacterItem
+    TemplateCharacterItem,
+    CharacterAvatarChoose,
   },
   props: {
     visible: {
@@ -79,7 +91,8 @@ export default {
       templateGroup: {},
       templateCharacter: {},
       characterAvatar: {},
-      resultData: {}
+      resultData: {},
+      characterAvatarVisible: false
     }
   },
   created() {
@@ -100,6 +113,10 @@ export default {
       })
     },
     queryTemplateCharacter(templateGroup, index) {
+      if (this.templateGroup.id !== templateGroup) {
+        this.characterAvatar = {};
+        this.templateCharacter = {};
+      }
       this.templateGroup = templateGroup;
       this.groupActiveIndex = index;
       this.characterActiveIndex = -1;
@@ -113,6 +130,9 @@ export default {
     chooseTemplateCharacter(templateCharacter, index) {
       this.characterActiveIndex = index;
       this.templateCharacter = templateCharacter;
+      if (this.templateCharacter.id !== this.characterAvatar.templateCharacterId) {
+        this.characterAvatar = {};
+      }
     },
     handleOk() {
       this.groupActiveIndex = -1;
@@ -121,8 +141,23 @@ export default {
       this.templateCharacterList = [];
       this.resultData.templateGroup = this.templateGroup
       this.resultData.templateCharacter = this.templateCharacter
+      this.resultData.characterAvatar = this.characterAvatar
       this.$emit("confirm", this.resultData);
     },
+    confirmCharacterAvatar(data) {
+      this.characterAvatar = data;
+      this.characterAvatarVisible = false;
+    },
+    closeCharacterAvatarVisible() {
+      this.characterAvatarVisible = false;
+    },
+    viewCharacterAvatars() {
+      if (!this.templateCharacter.id) {
+        this.$message.warning('请先选择一个角色');
+        return;
+      }
+      this.characterAvatarVisible = true;
+    }
   },
   watch: {
     visible: function() {
@@ -176,5 +211,12 @@ export default {
       }
     }
   }
+}
+
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  gap: 10px;
 }
 </style>

@@ -176,14 +176,16 @@
       <el-form ref="commentSetForm" label-width="auto"
                :model="commentSetForm" class="form-box">
         <el-form-item label="角色选择：" prop="character" label-width="120px" class="form-item">
-      <span class="character-item" v-on:click="openCharacterChooseDialog">
-        <el-avatar fit="fit" size="medium" icon="el-icon-user-solid" :src="commentSetForm.avatar">
-        </el-avatar>
-      </span>
-          <span class="nick-name">{{ commentSetForm.nickName }} <el-button @click="removeCharacter" class="del-btn"
-                                                                           v-if="commentSetForm.commentCharacterId"
-                                                                           type="danger" icon="el-icon-delete"
-                                                                           size="mini" circle></el-button></span>
+          <div style="display: flex;align-items: center;gap: 10px;">
+            <span class="character-item" v-on:click="openCharacterChooseDialog">
+              <el-avatar fit="fit" size="medium" icon="el-icon-user-solid" :src="commentSetForm.avatar"></el-avatar>
+            </span>
+            <span class="nick-name">{{ commentSetForm.nickName }}</span>
+            <el-button @click="removeCharacter" class="del-btn"
+                       v-if="commentSetForm.commentCharacterId"
+                       type="danger" icon="el-icon-delete"
+                       size="mini" circle></el-button>
+          </div>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="confirmCharacter()">确认</el-button>
@@ -266,6 +268,7 @@ export default {
       curTalkIndex: -1,
       commentSetVisible: false,
       commentSetForm: {
+        commentCharacterAvatarId: null,
         commentCharacterId: null,
         nickName: '',
         avatar: '',
@@ -551,9 +554,17 @@ export default {
       this.chooseCharacterDialogVisible = false;
     },
     confirmChooseCharacter(resultData) {
-      this.commentSetForm.nickName = resultData.templateCharacter.name;
-      this.commentSetForm.avatar = resultData.templateCharacter.avatar;
-      this.commentSetForm.commentCharacterId = resultData.templateCharacter.id;
+      if (resultData?.characterAvatar?.id) {
+        this.commentSetForm.commentCharacterAvatarId = resultData.characterAvatar.id;
+        this.commentSetForm.nickName = resultData.characterAvatar.level === 0 ? resultData.templateCharacter.name : resultData.characterAvatar.name;
+        this.commentSetForm.avatar = resultData.characterAvatar.avatar;
+        this.commentSetForm.commentCharacterId = resultData.templateCharacter.id;
+      } else {
+        this.commentSetForm.nickName = resultData.templateCharacter.name;
+        this.commentSetForm.avatar = resultData.templateCharacter.avatar;
+        this.commentSetForm.commentCharacterId = resultData.templateCharacter.id;
+      }
+
       this.chooseCharacterDialogVisible = false;
     },
     confirmCharacter() {

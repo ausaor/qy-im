@@ -174,6 +174,7 @@ export default {
         nickName: '',
         avatar: '',
         characterId: null,
+        avatarId: null,
         enableCharacterChoose: true,
         groupVisible: true,
         regionVisible: true,
@@ -494,9 +495,18 @@ export default {
       this.templateCharacter = templateCharacter;
     },
     handleOk(data) {
-      this.form.nickName = data.templateCharacter.name;
-      this.form.avatar = data.templateCharacter.avatar;
-      this.form.characterId = data.templateCharacter.id;
+      console.log("handleOk", data);
+      if (data?.characterAvatar?.id) {
+        this.form.avatarId = data.characterAvatar.id;
+        this.form.nickName = data.characterAvatar.level === 0 ? data.templateCharacter.name : data.characterAvatar.name;
+        this.form.avatar = data.characterAvatar.avatar;
+        this.form.characterId = data.templateCharacter.id;
+      } else {
+        this.form.nickName = data.templateCharacter.name;
+        this.form.avatar = data.templateCharacter.avatar;
+        this.form.characterId = data.templateCharacter.id;
+      }
+
       this.closeChooseCharacterDialog();
     },
     removeCharacter() {
