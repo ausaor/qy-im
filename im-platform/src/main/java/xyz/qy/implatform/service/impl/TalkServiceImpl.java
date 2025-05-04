@@ -655,7 +655,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
             // 自己选择的角色头像与其他人选择的角色头像一样
             Optional<TalkStar> optional3 = talkStarList.stream().filter(item -> !Objects.isNull(item.getAvatarId())
-                    && avatarId.equals(item.getAvatarId())
+                    && item.getAvatarId().equals(avatarId)
                     && !item.getUserId().equals(userId)).findFirst();
             if (optional3.isPresent()) {
                 return true;
@@ -671,7 +671,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
             // 自己选择过的角色头像与入参的角色头像不一致
             Optional<TalkStar> optional4 = talkStarList.stream().filter(item -> !Objects.isNull(item.getAvatarId())
-                    && !avatarId.equals(item.getAvatarId())
+                    && !item.getAvatarId().equals(avatarId)
                     && item.getUserId().equals(userId)).findFirst();
             if (optional4.isPresent()) {
                 return true;
@@ -691,7 +691,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
             // 自己选择的角色与其他人选择的角色头像一样
             Optional<TalkComment> optional3 = talkCommentList.stream().filter(item -> !Objects.isNull(item.getAvatarId())
-                    && avatarId.equals(item.getAvatarId())
+                    && item.getAvatarId().equals(avatarId)
                     && !item.getUserId().equals(userId)).findFirst();
             if (optional3.isPresent()) {
                 return true;
@@ -707,7 +707,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
             // 自己选择过的角色头像与入参的角色头像不一致
             Optional<TalkComment> optional4 = talkCommentList.stream().filter(item -> !Objects.isNull(item.getAvatarId())
-                    && !avatarId.equals(item.getAvatarId()) &&
+                    && !item.getAvatarId().equals(avatarId) &&
                     item.getUserId().equals(userId)).findFirst();
             if (optional4.isPresent()) {
                 return true;

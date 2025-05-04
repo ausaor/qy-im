@@ -272,7 +272,6 @@ export default {
         commentCharacterId: null,
         nickName: '',
         avatar: '',
-        anonymous: false
       },
       chooseCharacterDialogVisible: false,
       commentLastIndex: null,
@@ -337,7 +336,6 @@ export default {
         characterId: talk.commentCharacterId,
         avatarId: talk.commentCharacterAvatarId,
         userAvatar: talk.commentCharacterAvatar,
-        anonymous: talk.commentAnonymous ? talk.commentAnonymous : false,
         replyCommentId: this.comment.replyCommentId
       }
       this.$http({
@@ -351,7 +349,6 @@ export default {
           talk.commentCharacterName = data.userNickname;
           talk.commentCharacterAvatar = data.userAvatar;
         }
-        talk.commentAnonymous = data.anonymous;
         talk.talkCommentVOS.push(data);
         this.$message.success("评论成功");
         this.comment = {}
@@ -454,7 +451,6 @@ export default {
         characterId: talk.commentCharacterId,
         avatarId: talk.commentCharacterAvatarId,
         avatar: talk.commentCharacterAvatar,
-        anonymous: talk.commentAnonymous ? talk.commentAnonymous : false
       }
       this.$http({
         url: "/talk/like",
@@ -468,7 +464,6 @@ export default {
           talk.commentCharacterAvatar = data.avatar;
           talk.commentCharacterAvatarId = data.avatarId;
         }
-        talk.commentAnonymous = data.anonymous;
         talk.talkStarVOS.push(data);
         this.$message.success("点赞成功");
       }).finally(() => {
@@ -527,7 +522,6 @@ export default {
       this.commentSetForm.avatar = talk.commentCharacterAvatar ? talk.commentCharacterAvatar : talk.commentUserAvatar;
       this.commentSetForm.commentCharacterId = talk.commentCharacterId;
       this.commentSetForm.commentCharacterAvatarId = talk.commentCharacterAvatarId;
-      this.commentSetForm.anonymous = talk.commentAnonymous;
       this.curTalk = talk;
       this.curTalkIndex = index;
       this.commentSetVisible = true;
@@ -538,7 +532,6 @@ export default {
       this.commentSetForm.avatar = '';
       this.commentSetForm.commentCharacterId = null;
       this.commentSetForm.commentCharacterAvatarId = null;
-      this.commentSetForm.anonymous = false;
       this.curTalk = {};
       this.curTalkIndex = -1;
     },
@@ -554,7 +547,6 @@ export default {
       this.commentSetForm.commentCharacterId = null;
       this.commentSetForm.nickName = '';
       this.commentSetForm.avatar = '';
-      this.commentSetForm.anonymous = false;
     },
     closeChooseCharacterDialog() {
       this.chooseCharacterDialogVisible = false;
@@ -583,7 +575,6 @@ export default {
       this.talkList[this.curTalkIndex].commentCharacterId = this.commentSetForm.commentCharacterId;
       this.talkList[this.curTalkIndex].commentCharacterAvatar = this.commentSetForm.avatar;
       this.talkList[this.curTalkIndex].commentCharacterName = this.commentSetForm.nickName;
-      this.talkList[this.curTalkIndex].commentAnonymous = this.commentSetForm.anonymous;
       this.talkList[this.curTalkIndex].commentCharacterAvatarId = this.commentSetForm.commentCharacterAvatarId;
       this.resetCommentCharacter();
       this.curTalk = {};
