@@ -122,7 +122,7 @@
                   </div>
                   <el-scrollbar style="height:400px;">
                     <div v-for="(templateCharacter, index) in selectableCharacters" :key="index"
-                         v-show="templateCharacter.name.startsWith(characterSearchText)">
+                         v-show="templateCharacter.name.startsWith(characterSearchText)" style="display: flex;justify-content: space-between;align-items: center;padding-right: 10px;">
                       <template-character-item class="character-item-left" :templateCharacter="templateCharacter"></template-character-item>
                       <div class="character-item-right">
                         <el-button :disabled="!templateCharacter.selectable ||templateCharacter.choosed "
@@ -131,7 +131,6 @@
                                    circle
                                    @click="chooseTemplateCharacter(templateCharacter, index)"></el-button>
                       </div>
-                      <p style="clear:both;"></p>
                     </div>
                   </el-scrollbar>
                   <span slot="footer" class="dialog-footer">
