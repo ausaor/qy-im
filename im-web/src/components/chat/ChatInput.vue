@@ -16,9 +16,11 @@
           <div v-if="quoteMessage.msgInfo?.type===$enums.MESSAGE_TYPE.IMAGE">
             <img :src="JSON.parse(quoteMessage.msgInfo?.content).originUrl" class="quote-image">
           </div>
-          <div v-if="quoteMessage.msgInfo?.type===$enums.MESSAGE_TYPE.VIDEO">
-            <video controls="controls" preload="none" :src="JSON.parse(quoteMessage.msgInfo?.content).videoUrl"
-                   :poster="JSON.parse(quoteMessage.msgInfo?.content).coverUrl" class="quote-video"></video>
+          <div v-if="quoteMessage.msgInfo?.type===$enums.MESSAGE_TYPE.VIDEO" class="quote-video-box">
+<!--            <video controls="controls" preload="none" :src="JSON.parse(quoteMessage.msgInfo?.content).videoUrl"
+                   :poster="JSON.parse(quoteMessage.msgInfo?.content).coverUrl" class="quote-video"></video>-->
+            <img :src="JSON.parse(quoteMessage.msgInfo?.content).coverUrl" class="quote-video-image">
+            <span class="play-icon el-icon-video-play"></span>
           </div>
           <div v-if="quoteMessage.msgInfo?.type===$enums.MESSAGE_TYPE.AUDIO">
             <mini-audio :audio-source="JSON.parse(quoteMessage.msgInfo?.content).url"></mini-audio>
@@ -704,12 +706,38 @@
             cursor: pointer;
           }
 
+          .quote-video-box {
+            position: relative;
+          }
+
           .quote-video {
             min-width: 80px;
             min-height: 60px;
             max-width: 160px;
             max-height: 120px;
             cursor: pointer;
+          }
+
+          .quote-video-image {
+            min-width: 40px;
+            min-height: 30px;
+            max-width: 80px;
+            max-height: 60px;
+            cursor: pointer;
+          }
+
+          .play-icon {
+            display: block;
+            position: absolute;
+            font-size: 32px;
+            font-weight: 500;
+            width: 32px;
+            height: 32px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            color: #ffffff;
           }
 
           .quote-file {

@@ -219,7 +219,8 @@
         },
         highlightedMessageId: null,
         videoUrl: '',
-        posterUrl: ''
+        posterUrl: '',
+        playingAudio: null,
 			}
 		},
     created() {

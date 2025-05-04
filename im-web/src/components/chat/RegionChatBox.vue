@@ -29,7 +29,9 @@
                         @delete="deleteMessage"
                         @recall="recallMessage"
                         @quote="quoteMessage"
-                        @scrollToMessage="scrollToTargetMsg">
+                        @playVideo="playVideo"
+                        @scrollToMessage="scrollToTargetMsg"
+                        @audioStateChange="onAudioStateChange">
                     </chat-message-item>
                   </li>
                 </ul>
@@ -114,6 +116,7 @@
       <chat-record :visible="showRecord" @close="closeRecordBox" @send="onSendRecord"></chat-record>
       <region-chat-history :visible="showHistory" :chat="chat" :regionGroup="regionGroup" :groupMembers="regionGroupMembers" :myGroupMemberInfo="myGroupMemberInfo"
                            @close="closeHistoryBox"></region-chat-history>
+      <video-play ref="videoPlay" :videoUrl="videoUrl" :posterUrl="posterUrl" @close="closeVideoPlay"></video-play>
     </el-container>
   </div>
 </template>
@@ -126,10 +129,12 @@ import ChatRecord from "@/components/chat/ChatRecord";
 import ChatMessageItem from "./ChatMessageItem.vue";
 import RegionChatHistory from "@/components/chat/RegionChatHistory";
 import ChatRegionGroupSide from "@/components/chat/ChatRegionGroupSide";
+import VideoPlay from "../common/VideoPlay.vue";
 
 export default {
   name: "RegionChatBox",
   components: {
+    VideoPlay,
     ChatInput,
     FileUpload,
     Emotion,
@@ -166,6 +171,8 @@ export default {
         show: false
       },
       highlightedMessageId: null,
+      videoUrl: '',
+      posterUrl: ''
     }
   },
   created() {
@@ -785,7 +792,25 @@ export default {
           this.highlightedMessageId = null;
         }, 2000);
       }
-    }
+    },
+    playVideo(data) {
+      this.videoUrl = data.videoUrl;
+      this.posterUrl = data.coverImageUrl;
+      this.$refs.videoPlay.onPlayVideo()
+    },
+    closeVideoPlay() {
+      this.videoUrl = '';
+      this.posterUrl = '';
+    },
+    onAudioStateChange(state, msgInfo) {
+      const playingAudio = this.$refs['message-item-' + msgInfo.id][0]
+      if (state == 'PLAYING' && playingAudio != this.playingAudio) {
+        // 停止之前的录音
+        this.playingAudio && this.playingAudio.stopPlayAudio();
+        // 记录当前正在播放的消息
+        this.playingAudio = playingAudio;
+      }
+    },
   },
   computed: {
     mine() {

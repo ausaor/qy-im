@@ -50,10 +50,10 @@
             </span>
             <div class="operate" ref="operate">
               <span class="like" v-if="!item.isLike" @click="sayLike(item)">
-                <i class="el-icon-star-on"></i> 赞
+                <span class="icon iconfont icon-dianzan1"></span>
               </span>
               <span class="like" v-else @click="cancelLike(item)">
-                <i class="el-icon-star-on" style="color: yellow"></i> 取消
+                <span class="icon iconfont icon-dianzan1" style="color: orange;"></span>
               </span>
               <span class="fgx"></span>
               <span class="commentBtn" @click="handleShowCommentBox(null, item.id, index)">
@@ -85,7 +85,7 @@
             </a>
           </div>
           <div class="interaction">
-            <div v-if="item.talkStarVOS"
+            <div v-if="item.talkStarVOS && item.talkStarVOS.length"
                  :class="item.talkStarVOS && item.talkCommentVOS ? 'like-container is_border' : 'like-container'">
               <svg class="icon svg-icon" aria-hidden="true">
                 <use xlink:href="#icon-dianzan1"></use>
