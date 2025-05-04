@@ -344,6 +344,8 @@ export default {
       showEditWordDialog: false,
       showEditEmoDialog: false,
       activeWordIndex: -1,
+      audio: null,
+      audioSrc: '',
     }
   },
   created() {
@@ -775,9 +777,24 @@ export default {
       }
     },
     playWordVoice(url) {
-      let audio = new Audio();
-      audio.src = url;
-      audio.play();
+      if (!this.audio) {
+        this.audio = new Audio();
+        this.audioSrc = url;
+        this.audio.src = url;
+        this.audio.play();
+      } else {
+        if (url === this.audioSrc) {
+          this.audioSrc = '';
+          this.audio.pause();
+          this.audio = null;
+        } else {
+          this.audio.pause();
+          this.audio = new Audio();
+          this.audioSrc = url;
+          this.audio.src = url;
+          this.audio.play();
+        }
+      }
     },
     onUploadVoiceSuccess(data) {
       if (this.activeWordIndex === -1) {
@@ -862,7 +879,7 @@ export default {
 
 <style scoped lang="scss">
 .buttons {
-  margin: 0px 10px;
+  margin: 0 10px;
   text-align: left;
 }
 
@@ -1078,12 +1095,12 @@ export default {
 .edit-character-word {
   .character-word {
 
-    .el-form-item__content {
+    ::v-deep .el-form-item__content {
       display: flex;
       justify-content: left;
 
       .el-input {
-        width: 65%;
+        width: 64%;
       }
     }
 
