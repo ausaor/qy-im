@@ -905,7 +905,13 @@ export default {
       this.videoSrc = "";
       this.videoCoverImage = "";
       this.viewVideo = false;
-    }
+    },
+    handleGroupChangeEvent(msg) {
+      console.log("handleRegionGroupChangeEvent", msg);
+      if (msg.chatType === 'REGION-GROUP' && this.regionGroup.id === msg.regionGroupId && msg.groupChangeType) {
+        this.loadRegionGroupMembers(this.regionGroup.id);
+      }
+    },
   },
   computed: {
     mine() {
@@ -979,6 +985,7 @@ export default {
     }
   },
   onLoad(options) {
+    uni.$on('region-group-change-event', this.handleGroupChangeEvent);
     // 聊天数据
     this.chat = this.regionStore.findRegionChatById(options.regionGroupId);
     console.log("regionChat", this.chat)
@@ -1011,7 +1018,13 @@ export default {
     });
   },
   onUnload() {
+    console.log('region-chat-box-onUnload')
+    uni.$off('region-group-change-event', this.handleGroupChangeEvent) // 清理监听
     this.unListenKeyboard();
+  },
+  onHide() {
+    console.log('region-chat-box-onHide')
+    uni.$off('region-group-change-event', this.handleGroupChangeEvent) // 清理监听
   },
   onShow() {
     if (this.needScrollToBottom) {

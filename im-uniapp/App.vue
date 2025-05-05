@@ -245,6 +245,11 @@ export default {
         this.regionStore.setLoadingRegionGroupMsg(JSON.parse(msg.content))
         return;
       }
+
+      // 群聊有变更
+      if (msg.type == enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,3].includes(msg.groupChangeType)) {
+        uni.$emit('region-group-change-event', msg);
+      }
       // 消息已读处理
       if (msg.type == enums.MESSAGE_TYPE.READED) {
         // 我已读对方的消息，清空已读数量
