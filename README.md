@@ -15,7 +15,7 @@ GitHub：https://github.com/ausaor/qy-im
 
 ### 演示视频
 
-web端：https://www.bilibili.com/video/BV1LzfzYdEuk/?vd_source=2578ac860d7d3e326b54e4fa654bdb04
+web端：https://www.bilibili.com/video/BV1YwV6znE29/?vd_source=2578ac860d7d3e326b54e4fa654bdb04
 
 移动端：https://www.bilibili.com/video/BV1W3ZPYNETx/?vd_source=2578ac860d7d3e326b54e4fa654bdb04
 
@@ -43,7 +43,7 @@ web端：https://www.bilibili.com/video/BV1LzfzYdEuk/?vd_source=2578ac860d7d3e32
 
 --2.8 所有群聊模式支持群动态发布功能
 
-3、聊天消息支持发送文字，表情，图片，视频，音频，文件消息；（文字消息支持敏感词过滤；图片消息支持图片内容是否违禁检测，需开通百度图片内容检测功能）
+3、聊天消息支持发送文字，表情，图片，视频，音频，文件消息，消息引用；（文字消息支持敏感词过滤；图片消息支持图片内容是否违禁检测，需开通百度图片内容检测功能）
 
 4、群聊创建、删除和群成员管理、群公告、@群成员等
 
@@ -71,7 +71,7 @@ web端：https://www.bilibili.com/video/BV1LzfzYdEuk/?vd_source=2578ac860d7d3e32
 
 ### 开发环境
 
-后端：jdk1.8
+后端：jdk11
 
 前端：nodejs-14
 
