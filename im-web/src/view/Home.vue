@@ -104,8 +104,7 @@
 	import RtcPrivateAcceptor from '../components/rtc/RtcPrivateAcceptor.vue';
 	import Operation from "@/components/operation/Operation";
   import RtcGroupVideo from '../components/rtc/RtcGroupVideo.vue';
-  import { EventBus } from '../api/event-bus.js';
-	
+
 	export default {
 		components: {
 			HeadImage,
@@ -355,6 +354,11 @@
           this.$store.commit("loadingRegionGroupMsg", JSON.parse(msg.content))
           return;
         }
+        // 群聊有变更
+        if (msg.type == this.$enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,3].includes(msg.groupChangeType)) {
+          this.eventRegionGroupChange(msg);
+        }
+
         // 消息已读处理
         if (msg.type == this.$enums.MESSAGE_TYPE.READED) {
           // 我已读对方的消息，清空已读数量
@@ -537,7 +541,11 @@
       },
       eventGroupChange(msg) {
         console.log('group-change-event')
-        EventBus.$emit('group-change', msg);
+        this.$eventBus.$emit('group-change', msg);
+      },
+      eventRegionGroupChange(msg) {
+        console.log('region-group-change-event')
+        this.$eventBus.$emit('region-group-change', msg);
       }
 		},
 		computed: {

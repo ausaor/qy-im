@@ -177,6 +177,18 @@ export default {
   },
   created() {
     this.friends = this.$store.state.friendStore.friends;
+
+    // 监听事件
+    this.$eventBus.$on('region-group-change', (msg) => {
+      if (msg.chatType === 'REGION-GROUP' && this.regionGroup.id === msg.regionGroupId && msg.groupChangeType) {
+        this.loadRegionGroupMembers(this.regionGroup.id);
+      }
+    });
+  },
+  beforeDestroy() {
+    // 组件销毁时移除监听，避免内存泄漏
+    console.log('RegionChatBox beforeDestroy');
+    this.$eventBus.$off('region-group-change');
   },
   methods: {
     moveChatToTop() {

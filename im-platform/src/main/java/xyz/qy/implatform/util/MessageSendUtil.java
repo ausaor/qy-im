@@ -94,7 +94,7 @@ public class MessageSendUtil {
     }
 
     public void sendRegionGroupTipMsg(Long regionGroupId, Long sendId, String sendNickName,
-                               List<Long> recvIds, String content) {
+                               List<Long> recvIds, String content, Integer groupChangeType) {
         // 消息入库
         RegionGroupMessage message = new RegionGroupMessage();
         message.setContent(content);
@@ -108,6 +108,7 @@ public class MessageSendUtil {
         regionGroupMessageMapper.insert(message);
         // 推送
         RegionGroupMessageVO msgInfo = BeanUtils.copyProperties(message, RegionGroupMessageVO.class);
+        msgInfo.setGroupChangeType(groupChangeType);
         IMRegionGroupMessage<RegionGroupMessageVO> sendMessage = new IMRegionGroupMessage<>();
         sendMessage.setSender(new IMUserInfo(sendId, IMTerminalType.WEB.code()));
         if (CollUtil.isEmpty(recvIds)) {

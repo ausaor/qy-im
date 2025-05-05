@@ -162,7 +162,6 @@
   import RtcGroupJoin from "../rtc/RtcGroupJoin.vue"
   import CharacterWord from "@/components/common/CharacterWord";
   import CharacterEmotion from "@/components/common/CharacterEmotion";
-  import { EventBus } from '../../api/event-bus';
   import VideoPlay  from "../common/VideoPlay.vue";
 
 	export default {
@@ -227,7 +226,7 @@
       this.friends = this.$store.state.friendStore.friends;
 
       // 监听事件
-      EventBus.$on('group-change', (msg) => {
+      this.$eventBus.$on('group-change', (msg) => {
         if (msg.chatType === 'GROUP' && this.group.id === msg.groupId && msg.groupChangeType) {
           this.loadGroup(this.group.id);
         }
@@ -236,7 +235,7 @@
     beforeDestroy() {
       // 组件销毁时移除监听，避免内存泄漏
       console.log('ChatBox beforeDestroy');
-      EventBus.$off('group-change');
+      this.$eventBus.$off('group-change');
     },
     methods: {
       closePopupBox() {
