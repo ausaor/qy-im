@@ -154,7 +154,8 @@
       </view>
     </uni-popup>
     <group-template-list ref="groupTemplateList" :group-templates="templateGroupList" @confirm="chooseGroupTemplate"></group-template-list>
-    <character-list ref="characterList" :characters="characterList" @confirm="chooseCharacter"></character-list>
+    <character-list ref="characterList" :characters="characterList" @confirm="chooseCharacter" @more="moreCharacterAvatars"></character-list>
+    <character-avatar-list ref="characterAvatarList" :characterAvatars="characterAvatarList" @confirm="chooseCharacterAvatar"></character-avatar-list>
   </view>
 </template>
 
@@ -164,9 +165,10 @@ import HeadImage from "../../components/head-image/head-image.vue";
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
 import CharacterList from "../../components/character-list/character-list.vue";
+import CharacterAvatarList from "../../components/character-avatar-list/character-avatar-list.vue";
 
 export default {
-  components: {CharacterList, GroupTemplateList, SvgIcon, HeadImage},
+  components: {CharacterAvatarList, CharacterList, GroupTemplateList, SvgIcon, HeadImage},
   data() {
     return {
       category: '',
@@ -184,6 +186,7 @@ export default {
         nickName: '',
         avatar: '',
         characterId: null,
+        avatarId: null,
         enableCharacterChoose: true,
         groupVisible: true,
         regionVisible: true,
@@ -199,6 +202,7 @@ export default {
       playingAudio: null,
       templateGroupList: [],
       characterList: [],
+      characterAvatarList: [],
       editorCtx: null, // 编辑器上下文
       isEmpty: true, // 编辑器是否为空
       isFocus: false, // 编辑器是否焦点
@@ -752,6 +756,28 @@ export default {
       this.form.nickName = character.name;
       this.form.avatar = character.avatar;
       this.form.characterId = character.id;
+    },
+    async moreCharacterAvatars(character) {
+      this.form.nickName = character.name;
+      this.form.avatar = character.avatar;
+      this.form.characterId = character.id;
+      await this.queryCharacterAvatars(character.id);
+      this.$refs.characterAvatarList.open();
+    },
+    async queryCharacterAvatars(templateCharacterId) {
+      await this.$http({
+        url: `/characterAvatar/list/${templateCharacterId}`,
+        method: 'get'
+      }).then((data) => {
+        this.characterAvatarList = data;
+      });
+    },
+    chooseCharacterAvatar(characterAvatar) {
+      this.form.avatar = characterAvatar.avatar;
+      this.form.avatarId = characterAvatar.id;
+      if (characterAvatar.level !== 0) {
+        this.form.nickName = characterAvatar.name;
+      }
     }
   },
   onLoad(options) {

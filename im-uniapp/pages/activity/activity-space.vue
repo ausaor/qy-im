@@ -194,7 +194,8 @@
       </view>
     </uni-popup>
     <group-template-list ref="groupTemplateListRef" :group-templates="groupTemplates" @confirm="chooseGroupTemplate"></group-template-list>
-    <character-list ref="characterListRef" :characters="characters" @confirm="chooseCharacter"></character-list>
+    <character-list ref="characterListRef" :characters="characters" @confirm="chooseCharacter" @more="moreCharacterAvatars"></character-list>
+    <character-avatar-list  ref="characterAvatarListRef" :character-avatars="characterAvatars" @confirm="chooseCharacterAvatar"></character-avatar-list>
   </view>
 </template>
 
@@ -204,9 +205,10 @@ import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
 import CharacterList from "../../components/character-list/character-list.vue";
 import {throttle} from "../../common/throttle";
+import CharacterAvatarList from "../../components/character-avatar-list/character-avatar-list.vue";
 
 export default {
-  components: {CharacterList, GroupTemplateList, SvgIcon, HeadImage},
+  components: {CharacterAvatarList, CharacterList, GroupTemplateList, SvgIcon, HeadImage},
   data() {
     return {
       showAdd: true,
@@ -240,6 +242,7 @@ export default {
       },
       commentSetForm: {
         commentCharacterId: null,
+        commentCharacterAvatarId: null,
         nickName: '',
         avatar: '',
       },
@@ -252,6 +255,7 @@ export default {
       playingAudio: null,
       groupTemplates: [],
       characters: [],
+      characterAvatars: [],
       isRefreshing: false,
       showEmo: false,
       editorCtx: null, // 编辑器上下文
@@ -462,6 +466,7 @@ export default {
           talkId: talk.id,
           nickname: talk.commentCharacterName,
           characterId: talk.commentCharacterId,
+          avatarId: talk.commentCharacterAvatarId,
           avatar: talk.commentCharacterAvatar,
         }
         this.$http({
@@ -472,6 +477,7 @@ export default {
           talk.isLike = true
           if (data.characterId) {
             talk.commentCharacterId = data.characterId;
+            talk.commentCharacterAvatarId = data.avatarId;
             talk.commentCharacterName = data.nickname;
             talk.commentCharacterAvatar = data.avatar;
           }
@@ -563,6 +569,7 @@ export default {
             content: this.comment.content,
             userNickname: talk.commentCharacterName,
             characterId: talk.commentCharacterId,
+            avatarId: talk.commentCharacterAvatarId,
             userAvatar: talk.commentCharacterAvatar,
             replyCommentId: this.comment.replyCommentId
           }
@@ -573,6 +580,7 @@ export default {
           }).then((data) => {
             if (data.characterId) {
               talk.commentCharacterId = data.characterId;
+              talk.commentCharacterAvatarId = data.avatarId;
               talk.commentCharacterName = data.userNickname;
               talk.commentCharacterAvatar = data.userAvatar;
             }
@@ -728,6 +736,34 @@ export default {
     chooseEmoji() {
       this.showEmo = !this.showEmo;
     },
+    async moreCharacterAvatars(character) {
+      this.commentSetForm.commentCharacterId = character.id;
+      this.commentSetForm.nickName = character.name;
+      this.commentSetForm.avatar = character.avatar;
+      this.curTalk.commentCharacterId = character.id;
+      this.curTalk.commentCharacterAvatar = character.avatar;
+      this.curTalk.commentCharacterName = character.name;
+      await this.queryCharacterAvatars(character.id);
+      this.$refs.characterAvatarListRef.open();
+    },
+    async queryCharacterAvatars(templateCharacterId) {
+      await this.$http({
+        url: `/characterAvatar/list/${templateCharacterId}`,
+        method: 'get'
+      }).then((data) => {
+        this.characterAvatars = data;
+      });
+    },
+    chooseCharacterAvatar(characterAvatar) {
+      this.commentSetForm.avatar = characterAvatar.avatar;
+      this.commentSetForm.commentCharacterAvatarId = characterAvatar.id;
+      this.curTalk.commentCharacterAvatar = characterAvatar.avatar;
+      this.curTalk.commentCharacterAvatarId = characterAvatar.id;
+      if (characterAvatar.level !== 0) {
+        this.commentSetForm.nickName = characterAvatar.name;
+        this.curTalk.commentCharacterName = characterAvatar.name;
+      }
+    }
   },
   computed: {
     mine() {

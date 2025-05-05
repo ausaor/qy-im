@@ -63,9 +63,9 @@ export default {
         return;
       }
       this.$emit("confirm", this.activeAvatar);
-      this.$refs.popup.close();
       this.activeIndex = -1;
       this.activeAvatar = {};
+      this.$refs.popup.close();
     }
   },
 }

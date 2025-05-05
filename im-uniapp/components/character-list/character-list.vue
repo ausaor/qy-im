@@ -2,8 +2,13 @@
   <uni-popup ref="popup" type="bottom">
     <view class="character-list-box">
       <view class="choosed-character">
-        <character-avatar :size="70" :url="activeCharacter.avatar" :name="activeCharacter.name"></character-avatar>
-        <view class="character-name">{{ activeCharacter.name }}</view>
+        <view class="center">
+          <character-avatar :size="70" :url="activeCharacter.avatar" :name="activeCharacter.name"></character-avatar>
+          <view class="character-name">{{ activeCharacter.name }}</view>
+        </view>
+        <view class="right" v-show="activeCharacter.id" @click="chooseCharacterAvatar">
+          更多
+        </view>
       </view>
       <view class="btns">
         <up-button text="取消" :custom-style="{width: '30%'}" @click="cancel"></up-button>
@@ -63,6 +68,12 @@ export default {
         return;
       }
       this.$emit("confirm", this.activeCharacter);
+      this.activeIndex = -1;
+      this.activeCharacter = {};
+      this.$refs.popup.close();
+    },
+    chooseCharacterAvatar() {
+      this.$emit("more", this.activeCharacter);
       this.$refs.popup.close();
       this.activeIndex = -1;
       this.activeCharacter = {};
@@ -77,13 +88,27 @@ export default {
   padding: 10rpx;
 
   .choosed-character {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr; /* 创建三等分列 */
     align-items: center;
-    justify-content: center;
     margin-bottom: 20rpx;
 
-    .character-name {
-      margin-left: 20rpx;
+    .center {
+      display: flex;
+      align-items: center;
+      grid-column: 2; /* 放置在中间列 */
+      justify-self: center;
+
+      .character-name {
+        margin-left: 20rpx;
+      }
+    }
+
+    .right {
+      grid-column: 3; /* 放置在右侧列 */
+      justify-self: end;
+      padding-right: 20rpx;
+      color: #1E90FF;
     }
   }
 
