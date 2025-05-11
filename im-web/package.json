@@ -12,6 +12,7 @@
     "axios": "1.7.7",
     "core-js": "3.38.1",
     "element-ui": "2.15.14",
+    "event-source-polyfill": "^1.0.31",
     "highlight.js": "^11.8.0",
     "js-audio-recorder": "^1.0.7",
     "localforage": "^1.10.0",

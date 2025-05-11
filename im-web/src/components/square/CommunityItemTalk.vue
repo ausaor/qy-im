@@ -1,12 +1,20 @@
 <template>
   <div class="item" :class="active ? 'active' : ''">
     <div class="avatar">
-      <svg class="icon svg-icon" aria-hidden="true">
-        <use :xlink:href="community.iconId"></use>
-      </svg>
+      <el-badge :value="''" :max="99" class="badge-tip">
+        <svg class="icon svg-icon" aria-hidden="true">
+          <use :xlink:href="community.iconId"></use>
+        </svg>
+      </el-badge>
     </div>
     <div class="text">
       <div>{{community.name}}</div>
+      <div class="new-talk-info">
+        <div v-show="unreadUserCount">{{unreadUserCount}}人新发表</div>
+        <div v-show="talkList.length" class="new-talk-user">
+          <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="24"></head-image>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -28,6 +36,14 @@ export default {
     },
     active: {
       type: Boolean
+    }
+  },
+  computed: {
+    unreadUserCount() {
+      return this.$store.state.talkStore.unreadUserList.length;
+    },
+    talkList() {
+      return this.$store.state.talkStore.lastTalks;
     }
   }
 }
@@ -78,14 +94,26 @@ export default {
   .text {
     position: relative;
     display: flex;
-    flex-direction: column;
-    justify-content: space-around;
     flex: 1;
+    align-items: center;
+    justify-content: space-between;
     margin-left: 10px;
     height: 100%;
-    flex-shrink: 0;
     overflow: hidden;
     text-align: left;
+
+    .new-talk-info {
+      color: red;
+      font-size: 14px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+
+      .new-talk-user {
+        display: flex;
+        align-items: center;
+      }
+    }
   }
 }
 </style>

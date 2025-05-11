@@ -18,6 +18,7 @@ import xyz.qy.imcommon.model.IMRecvInfo;
 import xyz.qy.imcommon.model.IMRegionGroupMessage;
 import xyz.qy.imcommon.model.IMSendResult;
 import xyz.qy.imcommon.model.IMSystemMessage;
+import xyz.qy.imcommon.model.IMTalkMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 
 import javax.annotation.Resource;
@@ -304,6 +305,46 @@ public class IMSender {
                 results.add(result);
             }
             listenerMulticaster.multicast(IMListenerType.SYSTEM_MESSAGE, results);
+        }
+    }
+
+    public<T> void sendTalkMessage(IMTalkMessage<T> message){
+        // 根据群聊每个成员所连的IM-server，进行分组
+        Map<String, IMUserInfo> sendMap = new HashMap<>();
+        for (Integer terminal : message.getRecvTerminals()) {
+            message.getRecvIds().forEach(id -> {
+                String key = String.join(":", IMRedisKey.IM_USER_SERVER_ID, id.toString(), terminal.toString());
+                sendMap.put(key,new IMUserInfo(id, terminal));
+            });
+        }
+        // 批量拉取
+        List<Object> serverIds = redisTemplate.opsForValue().multiGet(sendMap.keySet());
+        // 格式:map<服务器id,list<接收方>>
+        Map<Integer, List<IMUserInfo>> serverMap = new HashMap<>();
+        List<IMUserInfo> offLineUsers = new LinkedList<>();
+        int idx = 0;
+        for (Map.Entry<String,IMUserInfo> entry : sendMap.entrySet()) {
+            Integer serverId = (Integer)serverIds.get(idx++);
+            if (!Objects.isNull(serverId)) {
+                List<IMUserInfo> list = serverMap.computeIfAbsent(serverId, o -> new LinkedList<>());
+                list.add(entry.getValue());
+            } else {
+                // 加入离线列表
+                offLineUsers.add(entry.getValue());
+            }
+        }
+        // 逐个server发送
+        for (Map.Entry<Integer, List<IMUserInfo>> entry : serverMap.entrySet()) {
+            IMRecvInfo recvInfo = new IMRecvInfo();
+            recvInfo.setCmd(IMCmdType.TALK_MESSAGE.code());
+            recvInfo.setReceivers(new LinkedList<>(entry.getValue()));
+            recvInfo.setServiceName(appName);
+            recvInfo.setSendResult(message.getSendResult());
+            recvInfo.setData(message.getData());
+            // 推送至队列
+            String key = String.join(":", IMRedisKey.IM_MESSAGE_TALK_QUEUE, entry.getKey().toString());
+            redisTemplate.opsForList().rightPush(key, recvInfo);
+            redisTemplate.convertAndSend(IMConstant.TALK_MSG_TOPIC, key);
         }
     }
 

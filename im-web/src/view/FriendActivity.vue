@@ -50,6 +50,7 @@ export default {
       this.$refs.talkListRef.handleShowAddTalk();
     },
     refreshTalkList() {
+      this.$store.commit("resetUnreadTalkInfo")
       this.$refs.talkListRef.refreshTalkList();
     },
     handleTabClick(tab, event) {

@@ -1,5 +1,6 @@
 package xyz.qy.implatform.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.qy.implatform.dto.TalkAddDTO;
 import xyz.qy.implatform.dto.TalkDelDTO;
@@ -34,4 +35,11 @@ public interface ITalkService extends IService<Talk> {
      * @return
      */
     boolean verifyTalkCommentCharacter(Long talkId, Long characterId, Long avatarId);
+
+    /**
+     * 拉取离线未读动态数量
+     *
+     * @param minId 最小id
+     */
+    JSONObject pullOfflineTalks(Long minId);
 }

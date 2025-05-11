@@ -8,6 +8,7 @@ import xyz.qy.imcommon.model.IMGroupMessage;
 import xyz.qy.imcommon.model.IMPrivateMessage;
 import xyz.qy.imcommon.model.IMRegionGroupMessage;
 import xyz.qy.imcommon.model.IMSystemMessage;
+import xyz.qy.imcommon.model.IMTalkMessage;
 
 import java.util.List;
 import java.util.Map;
@@ -82,5 +83,14 @@ public class IMClient {
      */
     public<T> void sendSystemMessage(IMSystemMessage<T> message){
         imSender.sendSystemMessage(message);
+    }
+
+    /**
+     * 发送动态消息（发送结果通过MessageListener接收）
+     *
+     * @param message 动态消息
+     */
+    public<T> void sendTalkMessage(IMTalkMessage<T> message){
+        imSender.sendTalkMessage(message);
     }
 }

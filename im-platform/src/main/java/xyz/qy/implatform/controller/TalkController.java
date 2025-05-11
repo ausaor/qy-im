@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.dto.TalkAddDTO;
 import xyz.qy.implatform.dto.TalkCommentDTO;
@@ -95,5 +96,11 @@ public class TalkController {
     @PostMapping("/addTalkComment")
     public Result addTalkComment(@Valid @RequestBody TalkCommentDTO talkCommentDTO) {
         return ResultUtils.success(talkCommentService.addTalkComment(talkCommentDTO));
+    }
+
+    @ApiModelProperty(value = "拉取未读的动态信息", notes = "拉取未读的动态信息")
+    @GetMapping("/pullOfflineTalks")
+    public Result pullOfflineTalks(@RequestParam Long minId) {
+        return ResultUtils.success(talkService.pullOfflineTalks(minId));
     }
 }

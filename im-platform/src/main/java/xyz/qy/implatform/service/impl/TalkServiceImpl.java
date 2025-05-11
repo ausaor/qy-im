@@ -2,19 +2,26 @@ package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
+import xyz.qy.imclient.IMClient;
 import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.imcommon.contant.IMRedisKey;
+import xyz.qy.imcommon.model.IMGroupMessage;
+import xyz.qy.imcommon.model.IMTalkMessage;
+import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.dto.TalkAddDTO;
 import xyz.qy.implatform.dto.TalkDelDTO;
 import xyz.qy.implatform.dto.TalkQueryDTO;
 import xyz.qy.implatform.dto.TalkUpdateDTO;
 import xyz.qy.implatform.entity.CharacterAvatar;
+import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.Region;
 import xyz.qy.implatform.entity.RegionGroup;
@@ -46,11 +53,15 @@ import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.TalkCommentVO;
+import xyz.qy.implatform.vo.TalkMessageVO;
 import xyz.qy.implatform.vo.TalkStarVO;
 import xyz.qy.implatform.vo.TalkVO;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -100,6 +111,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     @Resource
     private RedisCache redisCache;
 
+    @Resource
+    private IMClient imClient;
+
     @Override
     public void addTalk(TalkAddDTO talkAddDTO) {
         checkTalkFiles(talkAddDTO.getFiles());
@@ -125,6 +139,22 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             talk.setFiles(talkAddDTO.getFiles().toJSONString());
         }
         this.baseMapper.insert(talk);
+
+        TalkMessageVO msgInfo = new TalkMessageVO();
+        msgInfo.setType(1);
+        msgInfo.setTalk(talk);
+        // 查询用户好友
+        List<Long> userIds = friendService.findFriendByUserId(session.getUserId()).stream()
+                .map(Friend::getFriendId)
+                .collect(Collectors.toList());
+
+        IMTalkMessage<TalkMessageVO> sendMessage = new IMTalkMessage<>();
+        sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        sendMessage.setRecvIds(userIds);
+        sendMessage.setSendResult(false);
+        sendMessage.setData(msgInfo);
+
+        imClient.sendTalkMessage(sendMessage);
     }
 
     @Lock(prefix = "im:talk:comment", key = "#talkUpdateDTO.getId()")
@@ -714,5 +744,59 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             }
         }
         return false;
+    }
+
+    @Override
+    public JSONObject pullOfflineTalks(Long minId) {
+        JSONObject jsonObject = new JSONObject();
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
+        // 查询好友列表
+        List<Long> friendIds = friendService.lambdaQuery()
+                .eq(Friend::getUserId, userId)
+                .select(Friend::getFriendId).list()
+                .stream().map(Friend::getFriendId).collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(friendIds)) {
+            return jsonObject;
+        }
+        Date minDate = DateUtils.addMonths(new Date(), -1);
+
+        // 查询未读的好友一个月内发布的动态数量
+        List<Talk> talkList = this.lambdaQuery()
+                .in(Talk::getUserId, friendIds)
+                .in(Talk::getScope, Arrays.asList(2, 9))
+                .eq(Talk::getCategory, "private")
+                .eq(Talk::getDeleted, false)
+                .ge(Talk::getCreateTime, minDate)
+                .gt(Objects.nonNull(minId), Talk::getId, minId)
+                .orderByDesc(Talk::getId)
+                .last("limit 100")
+                .list();
+        if (CollectionUtils.isEmpty(talkList)) {
+            return jsonObject;
+        }
+
+        // 获取最大id
+        Long maxId = talkList.get(0).getId();
+
+        // 统计用户数量
+        Set<Long> userIds = talkList.stream().map(Talk::getUserId).collect(Collectors.toSet());
+
+        // 将talkList根据用户id去重，并保留id最大的一条
+        talkList = talkList.stream().collect(Collectors.groupingBy(Talk::getUserId))
+                .entrySet().stream().map(item -> {
+                    List<Talk> list = item.getValue();
+                    return list.get(0);
+                }).collect(Collectors.toList());
+
+        // 获取talkList前两条数据
+        List<Talk> lastTwoTalkList = talkList.stream().sorted(Comparator.comparing(Talk::getId).reversed()).limit(2).collect(Collectors.toList());
+
+        jsonObject.put("maxId", maxId);
+        jsonObject.put("userList", userIds);
+        jsonObject.put("talkList", lastTwoTalkList);
+        return jsonObject;
     }
 }

@@ -7,6 +7,7 @@ import groupStore from './groupStore.js';
 import regionGroupStore from './regionGroupStore.js';
 import configStore from './configStore.js';
 import uiStore from './uiStore.js';
+import talkStore from './talkStore.js';
 // import VuexPersistence from 'vuex-persist'
 //
 //
@@ -18,7 +19,7 @@ import uiStore from './uiStore.js';
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-	modules: {chatStore,friendStore,userStore,groupStore,regionGroupStore,configStore,uiStore},
+	modules: {chatStore,friendStore,userStore,groupStore,regionGroupStore,configStore,uiStore,talkStore},
 	state: {},
 	//plugins: [vuexLocal.plugin],
 	mutations: {
@@ -32,6 +33,7 @@ export default new Vuex.Store({
 				promises.push(this.dispatch("loadRegionGroup"));
 				promises.push(this.dispatch("loadChat"));
 				promises.push(this.dispatch("loadRegionChat"));
+				promises.push(this.dispatch("loadTalkInfo"));
 				promises.push(this.dispatch("loadConfig"));
 				return Promise.all(promises);
 			})

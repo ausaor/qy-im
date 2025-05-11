@@ -25,6 +25,9 @@ public class ProcessorFactory {
             case SYSTEM_MESSAGE:
                 processor = SpringContextHolder.getApplicationContext().getBean(SystemMessageProcessor.class);
                 break;
+            case TALK_MESSAGE:
+                processor = SpringContextHolder.getApplicationContext().getBean(TalkMessageProcessor.class);
+                break;
             default:
                 break;
         }
