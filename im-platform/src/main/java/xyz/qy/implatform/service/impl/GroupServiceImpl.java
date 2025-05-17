@@ -190,6 +190,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         groupMemberService.updateById(member);
         log.info("修改群聊，群聊id:{},群聊名称:{}", group.getId(), group.getName());
+
+        messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
+                null, "群资料更新了", GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
         return vo;
     }
 

@@ -3,6 +3,7 @@ package xyz.qy.implatform.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import xyz.qy.imclient.IMClient;
 import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.imcommon.contant.IMRedisKey;
-import xyz.qy.imcommon.model.IMGroupMessage;
 import xyz.qy.imcommon.model.IMTalkMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.dto.TalkAddDTO;
@@ -28,10 +28,12 @@ import xyz.qy.implatform.entity.RegionGroup;
 import xyz.qy.implatform.entity.RegionGroupMember;
 import xyz.qy.implatform.entity.Talk;
 import xyz.qy.implatform.entity.TalkComment;
+import xyz.qy.implatform.entity.TalkNotify;
 import xyz.qy.implatform.entity.TalkStar;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.ResultCode;
+import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
@@ -41,6 +43,7 @@ import xyz.qy.implatform.service.IRegionGroupMemberService;
 import xyz.qy.implatform.service.IRegionGroupService;
 import xyz.qy.implatform.service.IRegionService;
 import xyz.qy.implatform.service.ITalkCommentService;
+import xyz.qy.implatform.service.ITalkNotifyService;
 import xyz.qy.implatform.service.ITalkService;
 import xyz.qy.implatform.service.ITalkStarService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
@@ -110,6 +113,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
     @Resource
     private RedisCache redisCache;
+
+    @Resource
+    private ITalkNotifyService talkNotifyService;
 
     @Resource
     private IMClient imClient;
@@ -793,6 +799,14 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
         // 获取talkList前两条数据
         List<Talk> lastTwoTalkList = talkList.stream().sorted(Comparator.comparing(Talk::getId).reversed()).limit(2).collect(Collectors.toList());
+
+        // 获取未读点赞和评论数据数量
+        LambdaQueryWrapper<TalkNotify> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TalkNotify::getUserId, userId);
+        wrapper.eq(TalkNotify::getIsRead, false);
+        wrapper.eq(TalkNotify::getDeleted, false);
+        wrapper.in(TalkNotify::getActionType, Arrays.asList(TalkNotifyActionTypeEnum.COMMENT.getCode(),  TalkNotifyActionTypeEnum.LIKE.getCode()));
+
 
         jsonObject.put("maxId", maxId);
         jsonObject.put("userList", userIds);
