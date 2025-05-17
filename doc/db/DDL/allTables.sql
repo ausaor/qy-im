@@ -638,3 +638,19 @@ create table t_hero_word
     comment '英雄台词表';
 
 
+create table im_talk_notify
+(
+    id          bigint auto_increment comment '主键'
+        primary key,
+    user_id     bigint               not null comment '接收提醒的用户ID',
+    talk_id     bigint               not null comment '动态id',
+    comment_id  bigint               null comment '评论id',
+    star_id     bigint               null comment '点赞id',
+    action_type tinyint(1)           not null comment '提醒类型（点赞、评论、@提及）',
+    category    varchar(100)         not null comment '分类',
+    is_read     tinyint(1) default 0 not null comment '是否已读',
+    deleted     tinyint(1) default 0 not null comment '删除标识',
+    create_time datetime             not null comment '提醒生成的时间',
+    update_time datetime             null comment '更新时间'
+)
+    comment '朋友圈动态通知表';
