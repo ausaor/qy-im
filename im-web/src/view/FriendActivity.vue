@@ -43,19 +43,30 @@ export default {
 
   },
   computed: {
-
+    notifyCount() {
+      return this.$store.state.talkStore.notifyCount;
+    },
   },
   methods: {
     handleShowAddTalk() {
       this.$refs.talkListRef.handleShowAddTalk();
     },
     refreshTalkList() {
+      if (this.notifyCount > 0) {
+        this.readedTalkNotify();
+      }
       this.$store.commit("resetUnreadTalkInfo")
       this.$refs.talkListRef.refreshTalkList();
     },
     handleTabClick(tab, event) {
       this.section = tab.name;
     },
+    readedTalkNotify() {
+      this.$http({
+        url: `/talk-notify/readed?category=private`,
+        method: 'post'
+      }).then(() => {})
+    }
   }
 }
 </script>

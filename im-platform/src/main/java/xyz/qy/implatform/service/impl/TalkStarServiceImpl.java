@@ -127,7 +127,7 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
             talkNotifyService.save(talkNotify);
 
             TalkMessageVO msgInfo = new TalkMessageVO();
-            msgInfo.setType(2);
+            msgInfo.setType(3);
             msgInfo.setTalk(talk);
             msgInfo.setTalkStar(talkStar);
 

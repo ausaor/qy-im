@@ -473,6 +473,8 @@
       handleTalkMessage(msg) {
         if (msg.type === 1) {
           this.$store.commit("addNewTalk", msg.talk);
+        } else if (msg.type === 2 ||  msg.type === 3) {
+          this.$store.commit("addNotifyCount", msg);
         }
       },
       insertSystemMessage(msg) {

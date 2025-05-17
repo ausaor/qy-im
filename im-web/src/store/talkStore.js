@@ -41,6 +41,10 @@ export default {
 
             this.commit("saveTalkToStorage");
         },
+        addNotifyCount(state, msg) {
+            state.notifyCount += 1;
+            this.commit("saveTalkToStorage");
+        },
         saveTalkToStorage(state) {
             let userId = userStore.state.userInfo.id;
             let key = "talk-" + userId;
