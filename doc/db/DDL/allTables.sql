@@ -212,8 +212,8 @@ create table im_user
 (
     id               bigint auto_increment comment 'id'
         primary key,
-    user_name        varchar(255)                              not null comment '用户名',
-    nick_name        varchar(255)                              not null comment '用户昵称',
+    user_name        varchar(100)                              not null comment '用户名',
+    nick_name        varchar(100)                              not null comment '用户昵称',
     head_image       varchar(255)  default ''                  null comment '用户头像',
     head_image_thumb varchar(255)  default ''                  null comment '用户头像缩略图',
     password         varchar(255)                              not null comment '密码(明文)',
@@ -404,7 +404,7 @@ create table im_region
     comment '地区表';
 
 create index pcode_idx
-    on t_region (parent_code);
+    on im_region (parent_code);
 
 
 create table im_region_group
