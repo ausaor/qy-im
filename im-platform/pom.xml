@@ -77,11 +77,11 @@
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
         <!--minio-->
-        <dependency>
+        <!--<dependency>
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
             <version>8.4.3</version>
-        </dependency>
+        </dependency>-->
         <!-- 七牛云oss -->
         <dependency>
             <groupId>com.qiniu</groupId>
@@ -99,11 +99,11 @@
             <artifactId>thumbnailator</artifactId>
             <version>0.4.8</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-generator</artifactId>
             <version>3.3.2</version>
-        </dependency>
+        </dependency>-->
         <!-- 验证码 -->
         <dependency>
             <groupId>pro.fessional</groupId>
@@ -144,20 +144,20 @@
             <artifactId>selenium-java</artifactId>
             <version>3.141.59</version>
         </dependency>-->
-        <dependency>
+        <!--<dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
             <version>4.25.0</version>
-        </dependency>
+        </dependency>-->
 
         <!-- ChromeDriver 需要的依赖 -->
-        <dependency>
+        <!--<dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
             <version>5.2.0</version>
-        </dependency>
+        </dependency>-->
 
-        <dependency>
+        <!--<dependency>
             <groupId>us.codecraft</groupId>
             <artifactId>webmagic-core</artifactId>
             <version>0.7.4</version>
@@ -166,7 +166,7 @@
             <groupId>us.codecraft</groupId>
             <artifactId>webmagic-extension</artifactId>
             <version>0.7.4</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
