@@ -758,6 +758,18 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
 
+        // 获取未读点赞和评论数据数量
+        LambdaQueryWrapper<TalkNotify> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TalkNotify::getUserId, userId);
+        wrapper.eq(TalkNotify::getIsRead, false);
+        wrapper.eq(TalkNotify::getDeleted, false);
+        wrapper.eq(TalkNotify::getCategory, "private");
+        wrapper.in(TalkNotify::getActionType, Arrays.asList(TalkNotifyActionTypeEnum.COMMENT.getCode(),  TalkNotifyActionTypeEnum.LIKE.getCode()));
+
+        int notifyCount = talkNotifyService.count(wrapper);
+
+        jsonObject.put("notifyCount", notifyCount);
+
         // 查询好友列表
         List<Long> friendIds = friendService.lambdaQuery()
                 .eq(Friend::getUserId, userId)
@@ -799,13 +811,6 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
         // 获取talkList前两条数据
         List<Talk> lastTwoTalkList = talkList.stream().sorted(Comparator.comparing(Talk::getId).reversed()).limit(2).collect(Collectors.toList());
-
-        // 获取未读点赞和评论数据数量
-        LambdaQueryWrapper<TalkNotify> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(TalkNotify::getUserId, userId);
-        wrapper.eq(TalkNotify::getIsRead, false);
-        wrapper.eq(TalkNotify::getDeleted, false);
-        wrapper.in(TalkNotify::getActionType, Arrays.asList(TalkNotifyActionTypeEnum.COMMENT.getCode(),  TalkNotifyActionTypeEnum.LIKE.getCode()));
 
 
         jsonObject.put("maxId", maxId);

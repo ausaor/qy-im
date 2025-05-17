@@ -4,6 +4,7 @@ import localForage from 'localforage';
 export default {
     state: {
         privateTalkMaxId: 0,
+        notifyCount: 0,
         unreadUserList: [],
         lastTalks: [],
         groupsTalkMaxIdMap: new Map(),
@@ -20,12 +21,13 @@ export default {
             state.privateTalkMaxId = talkInfo.maxId || state.privateTalkMaxId;
             state.unreadUserList = talkInfo.userList || [];
             state.lastTalks = talkInfo.talkList || [];
-
+            state.notifyCount = talkInfo.notifyCount || 0;
             this.commit("saveTalkToStorage")
         },
         resetUnreadTalkInfo(state) {
             state.unreadUserList = [];
             state.lastTalks = [];
+            state.notifyCount = 0;
             this.commit("saveTalkToStorage")
         },
         addNewTalk(state, talk) {
@@ -46,7 +48,8 @@ export default {
             let talkInfo = {
                 maxId: state.privateTalkMaxId,
                 userList: state.unreadUserList,
-                talkList: state.lastTalks
+                talkList: state.lastTalks,
+                notifyCount: state.notifyCount
             };
 
             localForage.setItem(key, talkInfo).then(() => {

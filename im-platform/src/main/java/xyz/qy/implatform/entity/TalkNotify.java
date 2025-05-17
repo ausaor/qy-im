@@ -67,4 +67,10 @@ public class TalkNotify {
      */
     @TableField("create_time")
     private LocalDateTime createTime;
+
+    /**
+     * 更新时间
+     */
+    @TableField("update_time")
+    private LocalDateTime updateTime;
 }

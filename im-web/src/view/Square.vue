@@ -35,9 +35,13 @@ export default {
   },
   methods: {
     gotoTalkSpace(community) {
-      if (this.unreadUserCount > 0) {
+      if (this.unreadUserCount > 0 || this.notifyCount > 0) {
+        if (this.notifyCount > 0) {
+          this.readedTalkNotify();
+        }
         this.$store.commit("resetUnreadTalkInfo")
       }
+
       this.activeIndex = community.sort;
       this.$router.push(community.route);
     },
@@ -45,11 +49,20 @@ export default {
       //console.log("community", community)
       this.activeIndex = community.sort;
       this.$router.push(community.route);
+    },
+    readedTalkNotify() {
+      this.$http({
+        url: `/talk-notify/readed?category=private`,
+        method: 'post'
+      }).then(() => {})
     }
   },
   computed: {
     unreadUserCount() {
       return this.$store.state.talkStore.unreadUserList.length;
+    },
+    notifyCount() {
+      return this.$store.state.talkStore.notifyCount;
     },
   }
 }

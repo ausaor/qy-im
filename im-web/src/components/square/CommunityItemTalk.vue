@@ -1,11 +1,10 @@
 <template>
   <div class="item" :class="active ? 'active' : ''">
     <div class="avatar">
-      <el-badge :value="''" :max="99" class="badge-tip">
-        <svg class="icon svg-icon" aria-hidden="true">
-          <use :xlink:href="community.iconId"></use>
-        </svg>
-      </el-badge>
+      <svg class="icon svg-icon" aria-hidden="true">
+        <use :xlink:href="community.iconId"></use>
+      </svg>
+      <div v-show="notifyCount>0" class="unread-text">{{notifyCount}}</div>
     </div>
     <div class="text">
       <div>{{community.name}}</div>
@@ -41,6 +40,9 @@ export default {
   computed: {
     unreadUserCount() {
       return this.$store.state.talkStore.unreadUserList.length;
+    },
+    notifyCount() {
+      return this.$store.state.talkStore.notifyCount;
     },
     talkList() {
       return this.$store.state.talkStore.lastTalks;
@@ -88,6 +90,21 @@ export default {
       -webkit-transition: font-size 0.25s linear, width 0.25s linear;
       -moz-transition: font-size 0.25s linear, width 0.25s linear;
       transition: font-size 0.25s linear, width 0.25s linear;
+    }
+
+    .unread-text {
+      position: absolute;
+      line-height: 16px;
+      background-color: #f56c6c;
+      left: 36px;
+      top: 4px;
+      color: white;
+      border-radius: 16px;
+      padding: 0 5px;
+      font-size: 10px;
+      text-align: center;
+      white-space: nowrap;
+      border: 1px solid #f1e5e5;
     }
   }
 
