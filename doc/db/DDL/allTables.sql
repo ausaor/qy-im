@@ -97,17 +97,19 @@ create table im_group_message
 (
     id             bigint auto_increment comment 'id'
         primary key,
-    group_id       bigint                                   not null comment '群id',
-    send_id        bigint                                   not null comment '发送用户id',
-    send_nick_name varchar(200) default ''                  null comment '发送用户昵称',
-    recv_ids       varchar(1000) default ''                 null comment '接收用户id,逗号分隔，为空表示发给所有成员',
-    content        text                                     null comment '发送内容',
-    at_user_ids    varchar(1000)                            null comment '@的用户id列表',
-    receipt        tinyint      default 0                   not null comment '是否回执消息',
-    receipt_ok     tinyint      default 0                   not null comment '回执消息是否完成',
-    type           tinyint(1)                               not null comment '消息类型 0:文字 1:图片 2:文件 3:音频 4:视频 10:系统提示',
-    status         tinyint(1)   default 0                   null comment '状态 0:未发出 1:已送达  2:撤回 3:已读',
-    send_time      datetime     default current_timestamp() null comment '发送时间'
+    group_id       bigint                                    not null comment '群id',
+    send_id        bigint                                    not null comment '发送用户id',
+    send_nick_name varchar(200)  default ''                  null comment '发送用户昵称',
+    recv_ids       varchar(1000) default ''                  null comment '接收用户id,逗号分隔，为空表示发给所有成员',
+    content        text                                      null comment '发送内容',
+    quote_id       bigint                                    null comment '引用消息id',
+    quote_msg      text                                      null comment '引用消息',
+    at_user_ids    varchar(1000)                             null comment '@的用户id列表',
+    receipt        tinyint       default 0                   not null comment '是否回执消息',
+    receipt_ok     tinyint       default 0                   not null comment '回执消息是否完成',
+    type           tinyint(1)                                not null comment '消息类型 0:文字 1:图片 2:文件 3:语音 4:视频 10:系统提示',
+    status         tinyint(1)    default 0                   null comment '状态 0:未发出 1:已送达  2:撤回 3:已读',
+    send_time      datetime      default current_timestamp() null comment '发送时间'
 )
     comment '群消息表';
 
@@ -163,8 +165,10 @@ create table im_private_message
     send_id   bigint                               not null comment '发送用户id',
     recv_id   bigint                               not null comment '接收用户id',
     content   text                                 null comment '发送内容',
-    type      tinyint(1)                           not null comment '消息类型 0:文字 1:图片 2:文件 3:音频 10:系统提示',
-    status    tinyint(1)                           not null comment '状态 0:未读 1:已读 2:撤回',
+    quote_id  bigint                               null comment '引用消息id',
+    quote_msg text                                 null comment '引用消息',
+    type      tinyint(1)                           not null comment '消息类型 0:文字 1:图片 2:文件 3:语音 10:系统提示',
+    status    tinyint(1)                           not null comment '状态 0:未送达 1:送达 2:撤回 3:已读',
     send_time datetime default current_timestamp() null comment '发送时间'
 )
     comment '私聊消息';
@@ -465,6 +469,8 @@ create table im_region_group_message
     send_nick_name  varchar(200) default ''                  null comment '发送用户昵称',
     recv_ids        varchar(1000)                            null comment '接收用户id,逗号分隔，为空表示发给所有成员',
     content         text                                     null comment '发送内容',
+    quote_id        bigint                                   null comment '引用消息id',
+    quote_msg       text                                     null comment '引用消息',
     at_user_ids     varchar(1000)                            null comment '@的用户id列表',
     receipt         tinyint      default 0                   not null comment '是否回执消息',
     receipt_ok      tinyint      default 0                   not null comment '回执消息是否完成',
