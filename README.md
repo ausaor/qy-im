@@ -81,7 +81,7 @@ web端：https://www.bilibili.com/video/BV1YwV6znE29/?vd_source=2578ac860d7d3e32
 
 群聊模板相关图片：https://share.weiyun.com/1UgHOyll
 
-地区&角色台词数据：https://share.weiyun.com/TOJa1qYv
+群聊模板&地区数据SQL：https://share.weiyun.com/Yi8oh22S
 
 
 
