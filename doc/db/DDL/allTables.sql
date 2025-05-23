@@ -441,7 +441,9 @@ create table im_region_group_member
     id              bigint auto_increment comment 'id'
         primary key,
     region_group_id bigint               not null comment '地区群聊id',
+    code            varchar(50)          null comment '地区编码',
     user_id         bigint               not null comment '用户id',
+    alias_name      varchar(255)         null comment '用户聊天名称',
     chat_name       varchar(255)         null comment '用户聊天名称',
     head_image      varchar(1000)        null comment '用户头像',
     quit            tinyint(1)           null comment '是否退出',
@@ -654,6 +656,8 @@ create table im_talk_notify
     star_id     bigint               null comment '点赞id',
     action_type tinyint(1)           not null comment '提醒类型（点赞、评论、@提及）',
     category    varchar(100)         not null comment '分类',
+    group_id    bigint               null comment '群聊id',
+    region_code varchar(50)          null comment '地区编码',
     is_read     tinyint(1) default 0 not null comment '是否已读',
     deleted     tinyint(1) default 0 not null comment '删除标识',
     create_time datetime             not null comment '提醒生成的时间',

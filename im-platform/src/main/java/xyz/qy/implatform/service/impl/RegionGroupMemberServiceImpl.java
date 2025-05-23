@@ -57,4 +57,12 @@ public class RegionGroupMemberServiceImpl extends ServiceImpl<RegionGroupMemberM
         List<RegionGroupMember> members = this.list(memberWrapper);
         return members.stream().map(RegionGroupMember::getUserId).collect(Collectors.toList());
     }
+
+    @Override
+    public List<Long> findUserIdsByCode(String regionCode) {
+        return this.lambdaQuery().eq(RegionGroupMember::getCode, regionCode)
+                .eq(RegionGroupMember::getQuit, false)
+                .select(RegionGroupMember::getUserId)
+                .list().stream().map(RegionGroupMember::getUserId).collect(Collectors.toList());
+    }
 }

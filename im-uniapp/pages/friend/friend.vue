@@ -9,7 +9,7 @@
 			</view>
 		</view>
     <view class="socializes">
-      <view class="socializes-item">
+      <view class="socializes-item" @click.stop="onAddNewFriends">
         <view class="item-icon">
           <svg-icon class="svg-icon" icon-class="xindepengyou"></svg-icon>
         </view>

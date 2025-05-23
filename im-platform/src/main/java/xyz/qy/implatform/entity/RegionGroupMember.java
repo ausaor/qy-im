@@ -38,6 +38,12 @@ public class RegionGroupMember extends Model<RegionGroupMember> {
     private Long regionGroupId;
 
     /**
+     * 地区编码
+     */
+    @TableField("code")
+    private String code;
+
+    /**
      * 用户id
      */
     @TableField("user_id")

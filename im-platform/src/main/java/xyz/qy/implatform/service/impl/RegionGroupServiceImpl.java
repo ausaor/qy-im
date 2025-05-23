@@ -193,6 +193,8 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         regionGroupMember.setHeadImage(dto.getHeadImage());
         regionGroupMemberService.updateById(regionGroupMember);
 
+        messageSendUtil.sendRegionGroupTipMsg(regionGroupMember.getRegionGroupId(), session.getUserId(), session.getNickName(), null,
+                "地区群聊数据有更新", GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
         return BeanUtils.copyProperties(regionGroupMember, RegionGroupMemberVO.class);
     }
 
@@ -436,6 +438,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
     private void saveRegionGroupMember(RegionGroupMember regionGroupMember, RegionGroupDTO regionGroupDTO,
                                        RegionGroup regionGroup, UserSession session) {
         regionGroupMember.setQuit(false);
+        regionGroupMember.setCode(regionGroup.getCode());
         regionGroupMember.setUserId(session.getUserId());
         regionGroupMember.setRegionGroupId(regionGroup.getId());
         regionGroupMember.setAliasName(StringUtils.isNotBlank(regionGroupDTO.getNickname()) ?

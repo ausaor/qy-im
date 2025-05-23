@@ -4,9 +4,11 @@ import io.swagger.annotations.ApiModelProperty;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.dto.TalkNotifyQueryDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.ITalkNotifyService;
@@ -26,5 +28,11 @@ public class TalkNotifyController {
     public Result readedTalkNotify(@RequestParam @NotBlank(message = "入参异常") String category) {
         talkNotifyService.readedTalkNotify(category);
         return ResultUtils.success();
+    }
+
+    @ApiModelProperty(value = "查询动态通知消息", notes = "查询动态通知消息")
+    @PostMapping("/pageQueryTalkNotify")
+    public Result pageQueryTalkNotify(@RequestBody TalkNotifyQueryDTO dto) {
+        return ResultUtils.success(talkNotifyService.pageQueryTalkNotify(dto));
     }
 }

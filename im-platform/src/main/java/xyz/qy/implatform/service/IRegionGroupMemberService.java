@@ -52,4 +52,12 @@ public interface IRegionGroupMemberService extends IService<RegionGroupMember> {
      * @return 用户id列表
      */
     List<Long> findUserIdsByRegionGroupId(Long regionGroupId);
+
+    /**
+     * 根据地区编码查询地区群聊成员id列表
+     *
+     * @param regionCode 地区编码
+     * @return 地区群聊成员id列表
+     */
+    List<Long> findUserIdsByCode(String regionCode);
 }

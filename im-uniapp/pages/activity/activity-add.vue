@@ -10,141 +10,144 @@
     </view>
 
     <!-- 主体内容区 -->
-    <view class="content">
-      <!-- 用户信息 -->
-      <view class="user-info">
-        <head-image class="avatar" :name="form.nickName" :url="form.avatar" :size="80" @click="openCharacterChoosePopup"></head-image>
-        <text class="nickname">{{form.nickName}}</text>
-      </view>
-
-      <!-- 文本输入区 -->
-<!--      <textarea
-          v-model="form.content"
-          class="input-area"
-          placeholder="想记录点什么"
-          placeholder-class="placeholder"
-          maxlength="2000"
-      />-->
-
-      <editor id="editor" class="input-area" ref="myEditor" placeholder="想记录点什么"
-              :read-only="isReadOnly" @focus="onEditorFocus" @blur="onEditorBlur" @ready="onEditorReady" @input="onTextInput">
-      </editor>
-
-      <!-- 功能按钮区 -->
-      <view class="function-bar">
-        <view class="function-item cursor-pointer" @click="chooseImage">
-          <uni-icons type="image" size="24" :color="imageEnabled ? '#07C160' : '#cccccc'"/>
+    <scroll-view class="content-area"
+                 scroll-y>
+      <view class="content">
+        <!-- 用户信息 -->
+        <view class="user-info">
+          <head-image class="avatar" :name="form.nickName" :url="form.avatar" :size="80" @click="openCharacterChoosePopup"></head-image>
+          <text class="nickname">{{form.nickName}}</text>
         </view>
-        <view class="function-item cursor-pointer" @click="chooseVideo">
-          <uni-icons type="videocam" size="24" :color="videoEnabled ? '#07C160' : '#cccccc'"/>
-        </view>
-        <view class="function-item cursor-pointer" @click="chooseAudio">
-          <uni-icons type="sound" size="24" :color="audioEnabled ? '#07C160' : '#cccccc'"/>
-        </view>
-        <view class="function-item cursor-pointer" @click="chooseEmoji">
-          <uni-icons custom-prefix="iconfont" type="icon-icon_emoji" size="24" :color="showEmo ? '#07C160' : '#cccccc'"/>
-        </view>
-<!--        <view class="function-item cursor-pointer" @click="handleLocation">
-          <uni-icons  type="location" size="24" color="#666"/>
-        </view>-->
-      </view>
 
-      <view >
+        <!-- 文本输入区 -->
+        <!--      <textarea
+                  v-model="form.content"
+                  class="input-area"
+                  placeholder="想记录点什么"
+                  placeholder-class="placeholder"
+                  maxlength="2000"
+              />-->
 
-      </view>
-      <scroll-view class="emo-box" scroll-y="true" v-show="showEmo">
-        <view class="emotion-item-list">
-          <image class="emotion-item emoji-large" :title="emoText" :src="$emo.textToPathOriginal(emoText)"
-                 v-for="(emoText, i) in $emo.originalEmoTextList" :key="i" @click="selectEmoji(emoText)" mode="aspectFit"
-                 lazy-load="true"></image>
+        <editor id="editor" class="input-area" ref="myEditor" placeholder="想记录点什么"
+                :read-only="isReadOnly" @focus="onEditorFocus" @blur="onEditorBlur" @ready="onEditorReady" @input="onTextInput">
+        </editor>
+
+        <!-- 功能按钮区 -->
+        <view class="function-bar">
+          <view class="function-item cursor-pointer" @click="chooseImage">
+            <uni-icons type="image" size="24" :color="imageEnabled ? '#07C160' : '#cccccc'"/>
+          </view>
+          <view class="function-item cursor-pointer" @click="chooseVideo">
+            <uni-icons type="videocam" size="24" :color="videoEnabled ? '#07C160' : '#cccccc'"/>
+          </view>
+          <view class="function-item cursor-pointer" @click="chooseAudio">
+            <uni-icons type="sound" size="24" :color="audioEnabled ? '#07C160' : '#cccccc'"/>
+          </view>
+          <view class="function-item cursor-pointer" @click="chooseEmoji">
+            <uni-icons custom-prefix="iconfont" type="icon-icon_emoji" size="24" :color="showEmo ? '#07C160' : '#cccccc'"/>
+          </view>
+          <!--        <view class="function-item cursor-pointer" @click="handleLocation">
+                    <uni-icons  type="location" size="24" color="#666"/>
+                  </view>-->
         </view>
-      </scroll-view>
 
-      <!-- 媒体展示区 -->
-      <view class="media-grid" v-if="fileList.length > 0">
-        <view
-            v-for="(item, index) in fileList"
-            :key="index"
-            class="media-item"
-        >
-          <image
-              v-if="item.fileType === 1"
-              :src="item.url"
-              mode="aspectFill"
-              class="media-content"
-              @click="previewMedia(index)"
-          />
-          <video
-              v-if="item.fileType === 2"
-              :poster="item.coverUrl"
-              :src="item.url"
-              class="media-content"
-              @click="previewMedia(index)"
-          />
-          <view class="media-content" v-if="item.fileType === 3" @click="toggleAudio(item)">
-            <svg-icon v-show="!item.isPlaying" :icon-class="'yinpinbofang'" style="width: 220rpx;height: 220rpx;" :class-name="'yinpinColor'"></svg-icon>
-            <view class="rc-wave" v-show="item.isPlaying">
-              <text class="note" style="--d: 0"></text>
-              <text class="note" style="--d: 1"></text>
-              <text class="note" style="--d: 2"></text>
-              <text class="note" style="--d: 3"></text>
-              <text class="note" style="--d: 4"></text>
-              <text class="note" style="--d: 5"></text>
-              <text class="note" style="--d: 6"></text>
-              <text class="note" style="--d: 7"></text>
-              <text class="note" style="--d: 8"></text>
-              <text class="note" style="--d: 9"></text>
+        <view >
+
+        </view>
+        <scroll-view class="emo-box" scroll-y="true" v-show="showEmo">
+          <view class="emotion-item-list">
+            <image class="emotion-item emoji-large" :title="emoText" :src="$emo.textToPathOriginal(emoText)"
+                   v-for="(emoText, i) in $emo.originalEmoTextList" :key="i" @click="selectEmoji(emoText)" mode="aspectFit"
+                   lazy-load="true"></image>
+          </view>
+        </scroll-view>
+
+        <!-- 媒体展示区 -->
+        <view class="media-grid" v-if="fileList.length > 0">
+          <view
+              v-for="(item, index) in fileList"
+              :key="index"
+              class="media-item"
+          >
+            <image
+                v-if="item.fileType === 1"
+                :src="item.url"
+                mode="aspectFill"
+                class="media-content"
+                @click="previewMedia(index)"
+            />
+            <video
+                v-if="item.fileType === 2"
+                :poster="item.coverUrl"
+                :src="item.url"
+                class="media-content"
+                @click="previewMedia(index)"
+            />
+            <view class="media-content" v-if="item.fileType === 3" @click="toggleAudio(item)">
+              <svg-icon v-show="!item.isPlaying" :icon-class="'yinpinbofang'" style="width: 220rpx;height: 220rpx;" :class-name="'yinpinColor'"></svg-icon>
+              <view class="rc-wave" v-show="item.isPlaying">
+                <text class="note" style="--d: 0"></text>
+                <text class="note" style="--d: 1"></text>
+                <text class="note" style="--d: 2"></text>
+                <text class="note" style="--d: 3"></text>
+                <text class="note" style="--d: 4"></text>
+                <text class="note" style="--d: 5"></text>
+                <text class="note" style="--d: 6"></text>
+                <text class="note" style="--d: 7"></text>
+                <text class="note" style="--d: 8"></text>
+                <text class="note" style="--d: 9"></text>
+              </view>
+            </view>
+            <view class="delete-btn cursor-pointer" @click="deleteMedia(index)">
+              <uni-icons type="closeempty" size="20" color="#fff"/>
             </view>
           </view>
-          <view class="delete-btn cursor-pointer" @click="deleteMedia(index)">
-            <uni-icons type="closeempty" size="20" color="#fff"/>
+
+          <!-- 上传按钮 -->
+          <view class="upload-btn cursor-pointer" v-if="showUploadBtn" @click="showUploadActionSheet">
+            <uni-icons type="camera" size="30" color="#999"/>
           </view>
         </view>
 
-        <!-- 上传按钮 -->
-        <view class="upload-btn cursor-pointer" v-if="showUploadBtn" @click="showUploadActionSheet">
-          <uni-icons type="camera" size="30" color="#999"/>
+        <!-- 权限设置 -->
+        <view class="permission-section" v-show="category === 'private'">
+          <radio-group class="permission-group" @change="handlePermissionChange">
+            <label class="permission-item">
+              <radio value="9" :checked="form.scope === 9" color="#07C160"/>
+              <text>公开</text>
+            </label>
+            <label class="permission-item">
+              <radio value="1" :checked="form.scope === 1" color="#07C160"/>
+              <text>自己可见</text>
+            </label>
+            <label class="permission-item">
+              <radio value="2" :checked="form.scope === 2" color="#07C160"/>
+              <text>好友可见</text>
+            </label>
+            <!--          <label class="permission-item">
+                        <radio value="exclude" :checked="permission === 'exclude'" color="#07C160"/>
+                        <text>部分不可见</text>
+                        <uni-icons type="right" size="16" color="#999"/>
+                      </label>-->
+          </radio-group>
+        </view>
+        <view class="visible-range" v-show="category === 'private'">
+          <view class="visible-range-item" style="border-bottom: 1px solid #eee;">
+            <text style="margin-right: 20rpx;">群聊空间可见</text>
+            <up-switch v-model="form.groupVisible" activeColor="#13ce66" inactiveColor="#ff4949"></up-switch>
+          </view>
+          <view class="visible-range-item">
+            <text style="margin-right: 20rpx;">地区空间可见</text>
+            <up-switch v-model="form.regionVisible" activeColor="#13ce66" inactiveColor="#ff4949"></up-switch>
+          </view>
         </view>
       </view>
 
-      <!-- 权限设置 -->
-      <view class="permission-section" v-show="category === 'private'">
-        <radio-group class="permission-group" @change="handlePermissionChange">
-          <label class="permission-item">
-            <radio value="9" :checked="form.scope === 9" color="#07C160"/>
-            <text>公开</text>
-          </label>
-          <label class="permission-item">
-            <radio value="1" :checked="form.scope === 1" color="#07C160"/>
-            <text>自己可见</text>
-          </label>
-          <label class="permission-item">
-            <radio value="2" :checked="form.scope === 2" color="#07C160"/>
-            <text>好友可见</text>
-          </label>
-<!--          <label class="permission-item">
-            <radio value="exclude" :checked="permission === 'exclude'" color="#07C160"/>
-            <text>部分不可见</text>
-            <uni-icons type="right" size="16" color="#999"/>
-          </label>-->
-        </radio-group>
+      <!-- 底部发布按钮 -->
+      <view class="publish-btn-container">
+        <button class="publish-btn" :disabled="!canPublish" @click="handlePublish">发布</button>
       </view>
-      <view class="visible-range" v-show="category === 'private'">
-        <view class="visible-range-item" style="border-bottom: 1px solid #eee;">
-          <text style="margin-right: 20rpx;">群聊空间可见</text>
-          <up-switch v-model="form.groupVisible" activeColor="#13ce66" inactiveColor="#ff4949"></up-switch>
-        </view>
-        <view class="visible-range-item">
-          <text style="margin-right: 20rpx;">地区空间可见</text>
-          <up-switch v-model="form.regionVisible" activeColor="#13ce66" inactiveColor="#ff4949"></up-switch>
-        </view>
-      </view>
-    </view>
-
-    <!-- 底部发布按钮 -->
-    <view class="publish-btn-container">
-      <button class="publish-btn" :disabled="!canPublish" @click="handlePublish">发布</button>
-    </view>
+    </scroll-view>
 
     <!-- 上传进度弹窗 -->
     <uni-popup ref="uploadingPopup" type="center">

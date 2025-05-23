@@ -11,6 +11,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.imclient.IMClient;
 import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.imcommon.contant.IMRedisKey;
@@ -33,7 +34,9 @@ import xyz.qy.implatform.entity.TalkStar;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.ResultCode;
+import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
+import xyz.qy.implatform.enums.ViewScopeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
@@ -61,6 +64,7 @@ import xyz.qy.implatform.vo.TalkStarVO;
 import xyz.qy.implatform.vo.TalkVO;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -120,6 +124,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     @Resource
     private IMClient imClient;
 
+    @Transactional
     @Override
     public void addTalk(TalkAddDTO talkAddDTO) {
         checkTalkFiles(talkAddDTO.getFiles());
@@ -127,6 +132,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         User user = userService.getById(session.getUserId());
         Talk talk = BeanUtils.copyProperties(talkAddDTO, Talk.class);
         assert talk != null;
+        // 检查动态数据
+        checkTalkData(talk);
         talk.setUserId(session.getUserId());
         talk.setCreateBy(session.getUserId());
         talk.setAddress(user.getProvince());
@@ -146,23 +153,49 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         }
         this.baseMapper.insert(talk);
 
-        TalkMessageVO msgInfo = new TalkMessageVO();
-        msgInfo.setType(1);
-        msgInfo.setTalk(talk);
-        // 查询用户好友
-        List<Long> userIds = friendService.findFriendByUserId(session.getUserId()).stream()
-                .map(Friend::getFriendId)
-                .collect(Collectors.toList());
+        // 自己可见的不通知
+        if (!talk.getScope().equals(1)) {
+            List<Long> userIds = new ArrayList<>();
+            // 个人动态通知好友列表
+            if (TalkCategoryEnum.PRIVATE.getCode().equals(talk.getCategory())) {
+                // 查询用户好友
+                userIds = friendService.findFriendByUserId(session.getUserId()).stream()
+                        .map(Friend::getFriendId)
+                        .collect(Collectors.toList());
+            } else if (TalkCategoryEnum.GROUP.getCode().equals(talk.getCategory())) {
+                userIds = groupMemberService.findUserIdsByGroupId(talk.getGroupId());
+                if (!userIds.contains(session.getUserId())) {
+                    throw new GlobalException("您不是当前群聊用户");
+                }
+                // 排除自己的userId
+                userIds.remove(session.getUserId());
+            } else if (TalkCategoryEnum.REGION.getCode().equals(talk.getCategory())) {
+                // 查询地区群聊的常驻用户
+                userIds = regionGroupMemberService.findUserIdsByCode(talk.getRegionCode());
+                if (userIds.contains(session.getUserId())) {
+                    throw new GlobalException("您不是当前地区群聊用户");
+                }
+                // 排除自己的userId
+                userIds.remove(session.getUserId());
+            }
 
-        IMTalkMessage<TalkMessageVO> sendMessage = new IMTalkMessage<>();
-        sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
-        sendMessage.setRecvIds(userIds);
-        sendMessage.setSendResult(false);
-        sendMessage.setData(msgInfo);
+            if (CollectionUtils.isNotEmpty(userIds)) {
+                TalkMessageVO msgInfo = new TalkMessageVO();
+                msgInfo.setType(1);
+                msgInfo.setTalk(talk);
 
-        imClient.sendTalkMessage(sendMessage);
+                IMTalkMessage<TalkMessageVO> sendMessage = new IMTalkMessage<>();
+                sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+                sendMessage.setRecvIds(userIds);
+                sendMessage.setSendResult(false);
+                sendMessage.setData(msgInfo);
+
+                imClient.sendTalkMessage(sendMessage);
+            }
+        }
     }
 
+    @Transactional
     @Lock(prefix = "im:talk:comment", key = "#talkUpdateDTO.getId()")
     @Override
     public void updateTalk(TalkUpdateDTO talkUpdateDTO) {
@@ -183,6 +216,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             throw new GlobalException("数据异常");
         }
         BeanUtils.copyProperties(talkUpdateDTO, talk);
+        // 检查动态数据
+        checkTalkData(talk);
         if (!Objects.isNull(talkUpdateDTO.getCharacterId())) {
             checkCharacterInfo(talkUpdateDTO.getCharacterId(), talkUpdateDTO.getAvatarId(), talk);
         }
@@ -199,6 +234,16 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             talk.setFiles(talkUpdateDTO.getFiles().toJSONString());
         }
         this.baseMapper.updateById(talk);
+    }
+
+    private void checkTalkData(Talk talk) {
+        if (!ViewScopeEnum.contains(talk.getScope())) {
+            throw new GlobalException("可见范围异常");
+        }
+
+        if (!TalkCategoryEnum.contains(talk.getCategory())) {
+            throw new GlobalException("动态分类异常");
+        }
     }
 
     private void checkCharacterInfo(Long characterId, Long avatarId, Talk talk) {
