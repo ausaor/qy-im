@@ -30,6 +30,10 @@ export default {
             state.notifyCount = 0;
             this.commit("saveTalkToStorage")
         },
+        resetUnreadTalkNotify(state) {
+            state.notifyCount = 0;
+            this.commit("saveTalkToStorage")
+        },
         addNewTalk(state, talk) {
             if (!state.unreadUserList.includes(talk.userId)) {
                 state.unreadUserList.push(talk.userId);

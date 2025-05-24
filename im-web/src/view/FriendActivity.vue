@@ -16,11 +16,18 @@
             <el-tab-pane label="好友" name="friends">
             </el-tab-pane>
           </el-tabs>
-          <a class="refreshBtn" @click="refreshTalkList">
-            <i class="el-icon-refresh"></i>
-          </a>
+          <div class="btns">
+            <span class="talk-notify-msg" @click="showTalkNotify">
+              <i class="el-icon-chat-dot-round"></i>
+              <span v-if="notifyCount > 0" class="unread-text">{{notifyCount}}</span>
+            </span>
+            <span class="refreshBtn" @click="refreshTalkList">
+              <i class="el-icon-refresh"></i>
+            </span>
+          </div>
         </div>
       </div>
+      <talk-notify ref="talkNotify" :category="'private'"></talk-notify>
       <talk-list ref="talkListRef" :category="'private'" :section="section"></talk-list>
     </div>
   </div>
@@ -28,11 +35,13 @@
 
 <script>
 import TalkList from "@/components/talk/TalkList";
+import TalkNotify from "../components/talk/TalkNotify.vue";
 
 export default {
   name: "FriendActivity",
   components: {
     TalkList,
+    TalkNotify,
   },
   data() {
     return {
@@ -66,7 +75,14 @@ export default {
         url: `/talk-notify/readed?category=private`,
         method: 'post'
       }).then(() => {})
-    }
+    },
+    showTalkNotify() {
+      if (this.notifyCount > 0) {
+        this.readedTalkNotify();
+        this.$store.commit("resetUnreadTalkNotify");
+      }
+      this.$refs.talkNotify.show();
+    },
   }
 }
 </script>
@@ -197,17 +213,46 @@ export default {
       display: flex;
       justify-content: space-between;
 
-      .refreshBtn {
-        display: inline-block;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 28px;
-        color: white;
+      .btns {
+        display: flex;
+        align-items: center;
+        gap: 16px;
 
+        .talk-notify-msg {
+          position: relative;
+          display: inline-block;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 28px;
+          color: white;
 
-        .el-icon-refresh {
-          background-color: #6CC6CB;
-          border-radius: 50%;
+          .unread-text {
+            position: absolute;
+            line-height: 20px;
+            background-color: #f56c6c;
+            left: 20px;
+            top: -5px;
+            color: white;
+            border-radius: 50%;
+            padding: 0 5px;
+            font-size: 10px;
+            text-align: center;
+            white-space: nowrap;
+            border: 1px solid #f1e5e5;
+          }
+        }
+
+        .refreshBtn {
+          display: inline-block;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 28px;
+          color: white;
+
+          .el-icon-refresh {
+            background-color: #6CC6CB;
+            border-radius: 50%;
+          }
         }
       }
     }

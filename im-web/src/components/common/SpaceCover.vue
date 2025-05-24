@@ -5,9 +5,14 @@
     <a class="operateBtn" @click="add" v-if="showAdd">
       <i class="el-icon-camera-solid"></i>
     </a>
-    <a class="refreshBtn" @click="refresh">
-      <i class="el-icon-refresh"></i>
-    </a>
+    <div class="bottom-btns">
+      <a class="talk-notify-msg" @click="showTalkNotify">
+        <i class="el-icon-chat-dot-round"></i>
+      </a>
+      <a class="refreshBtn" @click="refresh">
+        <i class="el-icon-refresh"></i>
+      </a>
+    </div>
   </div>
 </template>
 
@@ -30,6 +35,9 @@ export default {
     refresh() {
       this.$emit("refresh");
     },
+    showTalkNotify() {
+      this.$emit("showTalkNotify");
+    }
   }
 
 }
@@ -71,18 +79,35 @@ export default {
     border-radius: 50%;
   }
 
-  .refreshBtn {
+  .bottom-btns {
     position: absolute;
     bottom: 10px;
     right: 10px;
-    display: inline-block;
-    background-color: #6CC6CB;
-    padding: 0 5px;
-    cursor: pointer;
-    color: white;
-    font-weight: bold;
-    font-size: 24px;
-    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .talk-notify-msg {
+      display: inline-block;
+      background-color: #6CC6CB;
+      padding: 0 3px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      font-size: 24px;
+      border-radius: 50%;
+    }
+
+    .refreshBtn {
+      display: inline-block;
+      background-color: #6CC6CB;
+      padding: 0 3px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      font-size: 24px;
+      border-radius: 50%;
+    }
   }
 }
 </style>

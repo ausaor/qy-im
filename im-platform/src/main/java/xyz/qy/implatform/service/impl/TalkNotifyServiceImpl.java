@@ -1,6 +1,7 @@
 package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -78,6 +79,7 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
         wrapper.eq(TalkNotify::getCategory, dto.getCategory());
         wrapper.eq(ObjectUtil.isNotNull(dto.getGroupId()), TalkNotify::getGroupId, dto.getGroupId());
         wrapper.eq(StringUtils.isNotBlank(dto.getRegionCode()), TalkNotify::getRegionCode, dto.getRegionCode());
+        wrapper.orderByDesc(TalkNotify::getCreateTime);
         Page<TalkNotify> selectPage = this.baseMapper.selectPage(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
 
         if (CollectionUtils.isNotEmpty(selectPage.getRecords())) {
@@ -106,19 +108,28 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
             for (TalkNotifyVO talkNotifyVO : talkNotifyVOS) {
                 if (ObjectUtil.isNotNull(talkNotifyVO.getTalkId())) {
                     Talk talk = talkMap.get(talkNotifyVO.getTalkId());
-                    talkNotifyVO.setTalk(BeanUtils.copyProperties(talk, TalkVO.class));
+                    TalkVO talkVO = BeanUtils.copyProperties(talk, TalkVO.class);
+                    if (StringUtils.isNotBlank(talk.getFiles())) {
+                        talkVO.setFileList(JSONArray.parseArray(talk.getFiles()));
+                    }
+                    talkNotifyVO.setTalk(talkVO);
                 }
                 if (ObjectUtil.isNotNull(talkNotifyVO.getCommentId())) {
                     TalkComment talkComment = talkCommentMap.get(talkNotifyVO.getCommentId());
+                    talkNotifyVO.setCommentUserId(talkComment.getUserId());
+                    talkNotifyVO.setAvatar(talkComment.getUserAvatar());
+                    talkNotifyVO.setNickname(talkComment.getUserNickname());
                     talkNotifyVO.setTalkComment(BeanUtils.copyProperties(talkComment, TalkCommentVO.class));
                     if (ObjectUtil.isNotNull(talkComment.getReplyCommentId())) {
                         TalkComment replytalkComment = talkCommentService.getById(talkComment.getReplyCommentId());
-                        talkNotifyVO.setReplyTalkComment(BeanUtils.copyProperties(replytalkComment, TalkCommentVO.class));
+                        talkNotifyVO.setReplyTalkComment(Collections.singletonList(BeanUtils.copyProperties(replytalkComment, TalkCommentVO.class)));
                     }
-                }
-                if (ObjectUtil.isNotNull(talkNotifyVO.getStarId())) {
+                } else if (ObjectUtil.isNotNull(talkNotifyVO.getStarId())) {
                     TalkStar talkStar = talkStarMap.get(talkNotifyVO.getStarId());
+                    talkNotifyVO.setCommentUserId(talkStar.getUserId());
                     talkNotifyVO.setTalkStar(BeanUtils.copyProperties(talkStar, TalkStarVO.class));
+                    talkNotifyVO.setAvatar(talkStar.getAvatar());
+                    talkNotifyVO.setNickname(talkStar.getNickname());
                 }
             }
 

@@ -1,8 +1,10 @@
 package xyz.qy.implatform.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class TalkNotifyVO {
@@ -61,18 +63,35 @@ public class TalkNotifyVO {
     /**
      * 提醒生成的时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime createTime;
+
+    /**
+     * 评论用户头像
+     */
+    private String avatar;
+
+    /**
+     * 评论用户昵称
+     */
+    private String nickname;
+
+    /**
+     * 评论用户id
+     */
+    private Long commentUserId;
 
     /**
      * 更新时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime updateTime;
 
     private TalkVO talk;
 
     private TalkCommentVO talkComment;
 
-    private TalkCommentVO replyTalkComment;
+    private List<TalkCommentVO> replyTalkComment;
 
     private TalkStarVO talkStar;
 }

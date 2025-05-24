@@ -1,0 +1,388 @@
+<template>
+    <!-- 抽屉组件 -->
+    <el-drawer
+        :visible.sync="drawerVisible"
+        direction="rtl"
+        :with-header="false"
+        :show-close="false"
+        class="qq-message-drawer"
+    >
+      <!-- 自定义头部 -->
+      <div class="drawer-header">
+        <i class="el-icon-arrow-left back-btn" @click="drawerVisible = false"></i>
+        <span class="header-title">空间消息</span>
+        <i class="el-icon-view eye-icon"></i>
+      </div>
+
+      <!-- 消息列表 -->
+      <div class="message-list">
+        <div
+            v-for="(message, index) in messages"
+            :key="message.id"
+            class="message-item"
+            :class="{ 'message-divider': index < messages.length - 1 }"
+        >
+          <!-- 用户头部信息 -->
+          <div class="message-header">
+            <div class="user-info">
+              <head-image :id="message.commentUserId" :size="45" :url="message.avatar" :name="message.nickname"></head-image>
+              <div class="user-details">
+                <span class="username">{{ message.nickname }}</span>
+                <div class="timestamp">{{ message.createTime }}</div>
+              </div>
+            </div>
+            <div class="action-area">
+              <span v-if="message.actionType===1" class="reply-btn">回复</span>
+              <i v-if="message.actionType===2" class="el-icon-thumb-up like-hand"></i>
+            </div>
+          </div>
+
+          <!-- 消息内容 -->
+          <div class="message-content">
+            <!-- 点赞通知 -->
+            <div v-if="message.actionType===2" class="like-notification">
+              <i class="el-icon-thumb-up like-icon"></i>
+              <span class="like-text">赞了我</span>
+            </div>
+            <!-- 原始内容 -->
+            <div class="original-text" v-if="message.actionType===1" v-html="$emo.transform(message.talkComment.content)"></div>
+
+            <div class="talk-content">
+              <!-- 图片内容 -->
+              <div class="media-section" v-if="message.talk.fileList && message.talk.fileList.length > 0">
+                <img v-if="message.talk.fileList[0].fileType === 1" :src="message.talk.fileList[0].url" alt="动态图片" class="dynamic-image">
+              </div>
+              <!-- 引用框 -->
+              <div class="talk-text-box">
+                <span class="talk-author">雾：</span>
+                <span v-html="$emo.transform(message.talk.content)"></span>
+              </div>
+            </div>
+            <!-- 回复内容 -->
+            <div v-if="message.replyTalkComment && message.replyTalkComment.length" class="replies-section">
+              <div v-for="reply in message.replyTalkComment" :key="reply.id" class="reply-item">
+                <span class="reply-author">{{ reply.userNickname }}：</span>
+                <span v-html="$emo.transform(reply.content)"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <pagination :totalPage="page.totalPage" :pageNo="page.pageNo" @changePage="handlePage"></pagination>
+    </el-drawer>
+</template>
+
+<script>
+import HeadImage from "@components/common/HeadImage.vue";
+import Pagination from "@components/pagination/Pagination.vue";
+
+export default {
+  name: 'QQMessageDrawer',
+  components: {
+    Pagination,
+    HeadImage
+  },
+  props: {
+    category: {
+      type: String,
+      required: true
+    },
+    groupId: {
+      type: Number,
+      default: null,
+    },
+    regionCode: {
+      type: String,
+      default: null,
+    }
+  },
+  data() {
+    return {
+      drawerVisible: false,
+      page: {
+        pageNo: 1,
+        pageSize: 10,
+        totalPage: 0,
+      },
+      messages: []
+    }
+  },
+  methods: {
+    show() {
+      this.drawerVisible = true
+    },
+    handleClose() {
+      this.drawerVisible = false
+    },
+    queryTalkNotify() {
+      let params = {
+        category: this.category,
+        groupId: this.groupId,
+        regionCode: this.regionCode
+      };
+
+      this.$http({
+        url: `/talk-notify/pageQueryTalkNotify?pageNo=${this.page.pageNo}&pageSize=${this.page.pageSize}`,
+        method: 'post',
+        data: params
+      }).then((data) => {
+        this.messages.push(...data.data);
+        this.page.totalPage = (data.total - 1) / this.page.pageSize + 1;
+      }).finally(() => {
+
+      })
+    },
+    handlePage(pageNo) {
+      this.page.pageNo = pageNo;
+      this.queryTalkNotify();
+    },
+  },
+  watch: {
+    drawerVisible(newValue) {
+      if (newValue) {
+        this.page.pageNo = 1;
+        this.page.totalPage = 0;
+        this.messages = [];
+        this.queryTalkNotify();
+      }
+    }
+  }
+}
+</script>
+
+<style scoped lang="scss">
+/* 抽屉样式重置 */
+.qq-message-drawer >>> .el-drawer {
+  background-color: #ffffff;
+}
+
+.qq-message-drawer >>> .el-drawer__body {
+  padding: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* 头部样式 */
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-btn, .eye-icon {
+  font-size: 20px;
+  color: #333333;
+  cursor: pointer;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333333;
+}
+
+/* 消息列表 */
+.message-list {
+  background-color: #ffffff;
+}
+
+.message-item {
+  padding: 20px;
+  background-color: #ffffff;
+}
+
+.message-divider {
+  border-bottom: 8px solid #f5f5f5;
+}
+
+/* 消息头部 */
+.message-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.user-info {
+  display: flex;
+  align-items: flex-start;
+}
+
+.user-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+}
+
+.user-details {
+  margin-left: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333333;
+  margin-bottom: 2px;
+  text-align: left;
+}
+
+.timestamp {
+  font-size: 12px;
+  color: #999999;
+}
+
+.action-area {
+  display: flex;
+  align-items: center;
+}
+
+.reply-btn {
+  color: #1890ff;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.like-hand {
+  font-size: 18px;
+  color: #666666;
+}
+
+/* 消息内容 */
+.message-content {
+  margin-left: 57px;
+}
+
+.original-text {
+  font-size: 16px;
+  color: #333333;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.talk-content {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.talk-text-box {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding-left: 12px;
+  font-size: 14px;
+  color: #666666;
+  height: 90px;
+  width: 100%;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+}
+
+.talk-author {
+  color: #1890ff;
+}
+
+.media-section {
+  display: flex;
+}
+
+.dynamic-image {
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
+.image-quote {
+  background-color: #f5f5f5;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #666666;
+  display: inline-block;
+}
+
+.replies-section {
+  font-size: 14px;
+  color: #666666;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+.reply-item {
+  margin-bottom: 4px;
+}
+
+.reply-author {
+  color: #333333;
+  font-weight: 500;
+}
+
+.reply-to-reply {
+  margin-bottom: 8px;
+}
+
+.reply-prefix {
+  color: #1890ff;
+}
+
+.reply-input-placeholder {
+  color: #cccccc;
+  margin-top: 8px;
+}
+
+.like-notification {
+  display: flex;
+  align-items: center;
+  background-color: #f0f8ff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.like-icon {
+  color: #1890ff;
+  font-size: 16px;
+  margin-right: 6px;
+}
+
+.like-text {
+  color: #1890ff;
+  font-size: 14px;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .drawer-header {
+    padding: 12px 16px;
+  }
+
+  .message-item {
+    padding: 16px;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .message-content {
+    margin-left: 52px;
+  }
+}
+</style>

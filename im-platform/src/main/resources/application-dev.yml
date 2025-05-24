@@ -82,7 +82,7 @@ upload:
   mode: local
   local:
     # nginx映射本地文件路径
-    url: http://im.timemory.xyz/files/
+    url: http://localhost:8300/
     # 本地文件存储路径
     path: F:/upload/qy-im/
   oss:

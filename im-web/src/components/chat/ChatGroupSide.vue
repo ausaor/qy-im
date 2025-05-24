@@ -114,12 +114,13 @@
         @close="closeDrawer"
         :width=60>
       <template v-slot:header>
-        <space-cover :name="'群空间'" @refresh="refreshTalkList" @add="handleShowAddTalk"></space-cover>
+        <space-cover :name="'群空间'" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify"></space-cover>
       </template>
       <template v-slot:main>
         <talk-list ref="talkListRef" :category="'group'" :section="'group'" :group-id="group.id"></talk-list>
       </template>
     </drawer>
+    <talk-notify ref="talkNotifyRef"></talk-notify>
 	</div>
 </template>
 
@@ -130,6 +131,7 @@
 	import TalkList from "@/components/talk/TalkList";
 	import Drawer from "@/components/common/Drawer";
 	import SpaceCover from "@/components/common/SpaceCover";
+  import TalkNotify from "../talk/TalkNotify.vue";
 
 	export default {
 		name: "chatGroupSide",
@@ -140,6 +142,7 @@
       TalkList,
       Drawer,
       SpaceCover,
+      TalkNotify,
 		},
 		data() {
 			return {
@@ -265,6 +268,9 @@
       },
       refreshTalkList() {
         this.$refs.talkListRef.refreshTalkList();
+      },
+      showTalkNotify() {
+        this.$refs.talkNotifyRef.show();
       },
       doAllBanned(value) {
         let paramVO = {
