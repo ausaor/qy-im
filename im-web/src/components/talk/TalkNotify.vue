@@ -51,6 +51,11 @@
               <!-- 图片内容 -->
               <div class="media-section" v-if="message.talk.fileList && message.talk.fileList.length > 0">
                 <img v-if="message.talk.fileList[0].fileType === 1" :src="message.talk.fileList[0].url" alt="动态图片" class="dynamic-image">
+                <img v-if="message.talk.fileList[0].fileType === 2" class="video-image" :src="message.talk.fileList[0].coverUrl" loading="lazy"/>
+                <span v-if="message.talk.fileList[0].fileType === 2" class="play-icon el-icon-video-play"></span>
+                <svg v-if="message.talk.fileList[0].fileType === 3" class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-yinpin"></use>
+                </svg>
               </div>
               <!-- 引用框 -->
               <div class="talk-text-box">
@@ -296,6 +301,12 @@ export default {
 
 .media-section {
   display: flex;
+  position: relative;
+
+  .icon {
+    width: 90px;
+    height: 90px;
+  }
 }
 
 .dynamic-image {
@@ -304,6 +315,28 @@ export default {
   border-radius: 8px;
   object-fit: cover;
   display: block;
+}
+
+.video-image {
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
+.play-icon {
+  display: block;
+  position: absolute;
+  font-size: 40px;
+  font-weight: 500;
+  width: 40px;
+  height: 40px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  color: #ffffff;
 }
 
 .image-quote {
