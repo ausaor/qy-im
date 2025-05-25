@@ -339,6 +339,9 @@
         if (msg.type == this.$enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
           this.eventGroupChange(msg);
         }
+        if (msg.type == this.$enums.MESSAGE_TYPE.WORD_VOICE) {
+          this.eventGroupPlayAudio(msg);
+        }
         // 消息已读处理
         if (msg.type == this.$enums.MESSAGE_TYPE.READED) {
           // 我已读对方的消息，清空已读数量
@@ -611,6 +614,9 @@
       eventRegionGroupChange(msg) {
         console.log('region-group-change-event')
         this.$eventBus.$emit('region-group-change', msg);
+      },
+      eventGroupPlayAudio(msg) {
+        this.$eventBus.$emit('play-group-audio', msg);
       }
 		},
 		computed: {

@@ -220,6 +220,8 @@
         videoUrl: '',
         posterUrl: '',
         playingAudio: null,
+        playingAudioState: 'STOP',
+        playAudios: [],
 			}
 		},
     created() {
@@ -231,11 +233,32 @@
           this.loadGroup(this.group.id);
         }
       });
+
+      this.$eventBus.$on('play-group-audio', (msg) => {
+        console.log("on... play-group-audio")
+        if (msg.chatType === 'GROUP' && this.group.id === msg.groupId) {
+          this.playAudios.push(msg);
+          setTimeout(() => {
+            if (this.playingAudioState === 'STOP') {
+              if (this.$refs[`message-item-${msg.id}`][0]) {
+                this.playAudios.shift();
+                this.$refs[`message-item-${msg.id}`][0].playVoice(JSON.parse(msg.content).voice);
+              }
+            }
+          }, 2000);
+        }
+      });
+    },
+    beforeUnmount() {
+      console.log('chatbox beforeUnmount');
+      this.playingAudio && this.playingAudio.stopPlayAudio();
     },
     beforeDestroy() {
       // 组件销毁时移除监听，避免内存泄漏
       console.log('ChatBox beforeDestroy');
+      this.playingAudio && this.playingAudio.stopPlayAudio();
       this.$eventBus.$off('group-change');
+      this.$eventBus.$off('play-group-audio');
     },
     methods: {
       closePopupBox() {
@@ -1070,12 +1093,20 @@
         this.posterUrl = '';
       },
       onAudioStateChange(state, msgInfo) {
+        this.playingAudioState = state;
         const playingAudio = this.$refs['message-item-' + msgInfo.id][0]
         if (state == 'PLAYING' && playingAudio != this.playingAudio) {
           // 停止之前的录音
           this.playingAudio && this.playingAudio.stopPlayAudio();
           // 记录当前正在播放的消息
           this.playingAudio = playingAudio;
+        } else if (state === 'STOP') {
+          if (this.playAudios.length > 0) {
+            const msg = this.playAudios.shift();
+            this.$refs[`message-item-${msg.id}`][0].playVoice(JSON.parse(msg.content).voice);
+          }
+        } else if (state === 'PAUSE') {
+          this.playAudios = [];
         }
       },
 		},
@@ -1112,6 +1143,8 @@
         handler(newChat, oldChat) {
           if (newChat.targetId > 0 && (!oldChat || newChat.type != oldChat.type ||
               newChat.targetId != oldChat.targetId)) {
+            // 停止之前的录音
+            this.playingAudio && this.playingAudio.stopPlayAudio();
             if (this.chat.type == "GROUP") {
               this.loadGroup(this.chat.targetId);
             } else {

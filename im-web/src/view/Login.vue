@@ -151,6 +151,7 @@ import BIRDS from "vanta/src/vanta.birds";
                 sessionStorage.setItem("refreshToken",data.refreshToken);
                 this.$message.success("天青色等烟雨，而我在等你！");
                 this.$router.push("/home/chat");
+                this.playAudio();
 							})
 
 					}
@@ -159,6 +160,13 @@ import BIRDS from "vanta/src/vanta.birds";
 			resetForm(formName) {
 				this.$refs[formName].resetFields();
 			},
+      playAudio() {
+        // 谷歌浏览器提示音需要用户主动交互才能播放，登录入口主动交互一次，后面消息提示音就能正常播放了
+        let audio = new Audio();
+        let url = require(`@/assets/audio/tip.wav`);
+        audio.src = url;
+        audio.play();
+      },
 			// 获取cookie、
 			getCookie(name) {
 				let reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
