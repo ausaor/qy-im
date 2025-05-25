@@ -51,6 +51,13 @@
           <use xlink:href="#icon-shejiaotubiao-40"></use>
         </svg>
         <span style="color: orange;margin-left: 10px;font-size: 16px;">群空间</span>
+        <div class="new-talk-info">
+          <div v-show="unreadTalkCount" class="new-talk-text">{{unreadTalkCount}}条新动态</div>
+          <div v-show="talkList.length" class="new-talk-list">
+            <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="24"></head-image>
+          </div>
+        </div>
+        <div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
       </div>
       <el-divider v-if="!group.quit" content-position="center"></el-divider>
 			<el-form labelPosition="top" class="group-side-form" :model="group">
@@ -114,13 +121,13 @@
         @close="closeDrawer"
         :width=60>
       <template v-slot:header>
-        <space-cover :name="'群空间'" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify"></space-cover>
+        <space-cover :name="'群空间'" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify" :notify-count="unreadNotifyCount"></space-cover>
       </template>
       <template v-slot:main>
         <talk-list ref="talkListRef" :category="'group'" :section="'group'" :group-id="group.id"></talk-list>
       </template>
     </drawer>
-    <talk-notify ref="talkNotifyRef"></talk-notify>
+    <talk-notify ref="talkNotifyRef" :category="'group'"></talk-notify>
 	</div>
 </template>
 
@@ -132,10 +139,12 @@
 	import Drawer from "@/components/common/Drawer";
 	import SpaceCover from "@/components/common/SpaceCover";
   import TalkNotify from "../talk/TalkNotify.vue";
+  import HeadImage from "@components/common/HeadImage.vue";
 
 	export default {
 		name: "chatGroupSide",
 		components: {
+      HeadImage,
 			AddGroupMember,
 			GroupMember,
       TemplateGroupMember,
@@ -222,7 +231,7 @@
 				})
 			},
       querySelectableTemplateCharacter(group) {
-			  if (group == null || group === {}) {
+			  if (group == null) {
           return false;
         }
 			  if (group.id === undefined || group.id === null) {
@@ -259,6 +268,8 @@
       },
       openGroupSpace() {
         this.groupSpaceVisible = true;
+        this.$store.commit("resetGroupTalk", this.group.id);
+        this.$store.commit("resetGroupNotify", this.group.id);
       },
       closeDrawer() {
         this.groupSpaceVisible = false;
@@ -268,9 +279,12 @@
       },
       refreshTalkList() {
         this.$refs.talkListRef.refreshTalkList();
+        this.$store.commit("resetGroupTalk", this.group.id);
+        this.$store.commit("resetGroupNotify", this.group.id);
       },
       showTalkNotify() {
         this.$refs.talkNotifyRef.show();
+        this.$store.commit("resetGroupNotify", this.group.id);
       },
       doAllBanned(value) {
         let paramVO = {
@@ -348,7 +362,32 @@
 			},
 			isOwner() {
 				return this.group.ownerId == this.$store.state.userStore.userInfo.id;
-			}
+			},
+      talkList() {
+        let talkMap =this.$store.state.talkStore.groupsTalks;
+        console.log('talkMap', talkMap);
+        let talks = talkMap.get(this.group.id)
+        if (talks && talks.length > 2) {
+          return talks.slice(0, 2);
+        }
+        return talks ? talks : [];
+      },
+      unreadTalkCount() {
+        let talkMap =this.$store.state.talkStore.groupsTalks;
+        let talks = talkMap.get(this.group.id);
+        if (talks) {
+          return talks.length;
+        }
+        return 0;
+      },
+      unreadNotifyCount() {
+        let notifyMap =this.$store.state.talkStore.groupNotify;
+        let count = notifyMap.get(this.group.id);
+        if (count) {
+          return count;
+        }
+        return 0;
+      },
 		},
     watch: {
 		  group: {
@@ -461,6 +500,7 @@
     }
 
     .group-space {
+      position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -475,6 +515,40 @@
         -webkit-transition: font-size 0.25s linear, width 0.25s linear;
         -moz-transition: font-size 0.25s linear, width 0.25s linear;
         transition: font-size 0.25s linear, width 0.25s linear;
+      }
+
+      .new-talk-info {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+
+        .new-talk-text {
+          font-size: 12px;
+          color: red;
+        }
+
+        .new-talk-list {
+          display: flex;
+          align-items: center;
+        }
+      }
+
+      .unread-text {
+        position: absolute;
+        line-height: 16px;
+        background-color: #f56c6c;
+        left: 44%;
+        top: 0;
+        color: white;
+        border-radius: 16px;
+        padding: 0 5px;
+        font-size: 10px;
+        text-align: center;
+        white-space: nowrap;
+        border: 1px solid #f1e5e5;
       }
     }
 

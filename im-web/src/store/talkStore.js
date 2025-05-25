@@ -7,8 +7,10 @@ export default {
         notifyCount: 0,
         unreadUserList: [],
         lastTalks: [],
-        groupsTalkMaxIdMap: new Map(),
-        regionTalkMaxIdMap: new Map(),
+        groupsTalks: new Map(),
+        regionTalks: new Map(),
+        groupNotify: new Map(),
+        regionNotify: new Map()
     },
     mutations: {
         initTalkInfo(state, talkInfo) {
@@ -45,9 +47,47 @@ export default {
 
             this.commit("saveTalkToStorage");
         },
+        addGroupTalk(state, talk) {
+            const newMap = new Map(state.groupsTalks); // 创建副本
+            if (!newMap.has(talk.groupId)) {
+                newMap.set(talk.groupId, [talk]);
+            } else {
+                let talks = newMap.get(talk.groupId);
+                talks.unshift(talk);
+            }
+            state.groupsTalks = newMap;
+            console.log("群组动态数据", state.groupsTalks)
+        },
+        resetGroupTalk(state, groupId) {
+            const newMap = new Map(state.groupsTalks); // 创建副本
+            if (newMap.has(groupId)) {
+                newMap.set(groupId, []);
+                state.groupsTalks = newMap;
+                console.log("重置群组动态数据", state.groupsTalks)
+            }
+        },
         addNotifyCount(state, msg) {
             state.notifyCount += 1;
             this.commit("saveTalkToStorage");
+        },
+        addGroupNotifyCount(state, talk) {
+            const newMap = new Map(state.groupNotify); // 创建副本
+            if (!newMap.has(talk.groupId)) {
+                newMap.set(talk.groupId, 1);
+            } else {
+                let count = newMap.get(talk.groupId);
+                newMap.set(talk.groupId, count + 1);
+            }
+            state.groupNotify = newMap;
+            console.log("群组动态提醒数据", state.groupNotify)
+        },
+        resetGroupNotify(state, groupId) {
+            const newMap = new Map(state.groupNotify);
+            if (newMap.has(groupId)) {
+                newMap.set(groupId, 0);
+                state.groupNotify = newMap;
+                console.log("重置群组动态提醒数据", state.groupNotify);
+            }
         },
         saveTalkToStorage(state) {
             let userId = userStore.state.userInfo.id;
@@ -65,6 +105,11 @@ export default {
             }).catch((e) => {
                 console.log("保存动态数据失败")
             })
+        }
+    },
+    getters: {
+        getGroupTalkList: (state, getters) =>  (groupId) => {
+            return state.groupsTalks.get(groupId) || [];
         }
     },
     actions: {

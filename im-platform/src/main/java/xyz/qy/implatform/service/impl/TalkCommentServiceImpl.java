@@ -142,6 +142,8 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
             talkNotify.setTalkId(talkId);
             talkNotify.setUserId(talkComment.getReplyUserId() != null ? talkComment.getReplyUserId() : talk.getUserId());
             talkNotify.setCommentId(talkComment.getId());
+            talkNotify.setGroupId(talk.getGroupId());
+            talkNotify.setRegionCode(talk.getRegionCode());
             talkNotify.setActionType(TalkNotifyActionTypeEnum.COMMENT.getCode());
             talkNotify.setCategory(talk.getCategory());
             talkNotify.setCreateTime(LocalDateTime.now());

@@ -122,6 +122,8 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
             talkNotify.setUserId(talk.getUserId());
             talkNotify.setStarId(talkStar.getId());
             talkNotify.setCategory(talk.getCategory());
+            talkNotify.setGroupId(talk.getGroupId());
+            talkNotify.setRegionCode(talk.getRegionCode());
             talkNotify.setActionType(TalkNotifyActionTypeEnum.LIKE.getCode());
             talkNotify.setCreateTime(LocalDateTime.now());
             talkNotifyService.save(talkNotify);

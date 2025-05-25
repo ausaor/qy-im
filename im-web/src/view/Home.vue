@@ -472,9 +472,17 @@
       },
       handleTalkMessage(msg) {
         if (msg.type === 1) {
-          this.$store.commit("addNewTalk", msg.talk);
+          if (msg.talk.category === 'private') {
+            this.$store.commit("addNewTalk", msg.talk);
+          } else if (msg.talk.category === 'group') {
+            this.$store.commit("addGroupTalk", msg.talk);
+          }
         } else if (msg.type === 2 ||  msg.type === 3) {
-          this.$store.commit("addNotifyCount", msg);
+          if (msg.talk.category === 'private') {
+            this.$store.commit("addNotifyCount", msg);
+          } else if (msg.talk.category === 'group') {
+            this.$store.commit("addGroupNotifyCount", msg.talk);
+          }
         }
       },
       insertSystemMessage(msg) {

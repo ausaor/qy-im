@@ -6,12 +6,13 @@
       <i class="el-icon-camera-solid"></i>
     </a>
     <div class="bottom-btns">
-      <a class="talk-notify-msg" @click="showTalkNotify">
+      <div class="talk-notify-msg" @click="showTalkNotify">
         <i class="el-icon-chat-dot-round"></i>
-      </a>
-      <a class="refreshBtn" @click="refresh">
+        <div v-show="notifyCount>0" class="unread-text">{{notifyCount}}</div>
+      </div>
+      <div class="refreshBtn" @click="refresh">
         <i class="el-icon-refresh"></i>
-      </a>
+      </div>
     </div>
   </div>
 </template>
@@ -26,6 +27,10 @@ export default {
     showAdd: {
       type: Boolean,
       default: true,
+    },
+    notifyCount: {
+      type: Number,
+      default: 0
     }
   },
   methods: {
@@ -88,6 +93,7 @@ export default {
     gap: 16px;
 
     .talk-notify-msg {
+      position: relative;
       display: inline-block;
       background-color: #6CC6CB;
       padding: 0 3px;
@@ -96,6 +102,21 @@ export default {
       font-weight: bold;
       font-size: 24px;
       border-radius: 50%;
+
+      .unread-text {
+        position: absolute;
+        line-height: 16px;
+        background-color: #f56c6c;
+        left: 20px;
+        top: -6px;
+        color: white;
+        border-radius: 16px;
+        padding: 0 5px;
+        font-size: 10px;
+        text-align: center;
+        white-space: nowrap;
+        border: 1px solid #f1e5e5;
+      }
     }
 
     .refreshBtn {
