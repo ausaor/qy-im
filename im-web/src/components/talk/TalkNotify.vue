@@ -41,7 +41,9 @@
           <div class="message-content">
             <!-- 点赞通知 -->
             <div v-if="message.actionType===2" class="like-notification">
-              <i class="el-icon-thumb-up like-icon"></i>
+              <svg class="icon svg-icon" aria-hidden="true">
+                <use xlink:href="#icon-dianzan1"></use>
+              </svg>
               <span class="like-text">赞了我</span>
             </div>
             <!-- 原始内容 -->
@@ -386,6 +388,17 @@ export default {
   border-radius: 6px;
   margin-top: 12px;
   margin-bottom: 12px;
+
+  .icon {
+    margin-right: 5px;
+    display: block;
+    height: 20px;
+    line-height: 20px;
+    font-size: 18px;
+    -webkit-transition: font-size 0.25s linear, width 0.25s linear;
+    -moz-transition: font-size 0.25s linear, width 0.25s linear;
+    transition: font-size 0.25s linear, width 0.25s linear;
+  }
 }
 
 .like-icon {

@@ -268,6 +268,7 @@
       },
       openGroupSpace() {
         this.groupSpaceVisible = true;
+        this.$refs.talkListRef.refreshTalkList();
         this.$store.commit("resetGroupTalk", this.group.id);
         this.$store.commit("resetGroupNotify", this.group.id);
       },
@@ -365,7 +366,6 @@
 			},
       talkList() {
         let talkMap =this.$store.state.talkStore.groupsTalks;
-        console.log('talkMap', talkMap);
         let talks = talkMap.get(this.group.id)
         if (talks && talks.length > 2) {
           return talks.slice(0, 2);

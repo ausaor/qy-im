@@ -82,7 +82,7 @@
         :width="60"
         @close="closeDrawer">
       <template v-slot:header>
-        <space-cover :name="'好友空间'" @refresh="refreshTalkList" :show-add="false"></space-cover>
+        <space-cover :name="'好友空间'" @refresh="refreshTalkList" :show-add="false" :show-notify="false"></space-cover>
       </template>
       <template v-slot:main>
         <talk-list ref="talkListRef" :category="'private'" :section="'friend'" :friend-id="userInfo.id"></talk-list>

@@ -22,6 +22,13 @@
           <use xlink:href="#icon-shejiaotubiao-40"></use>
         </svg>
         <span style="color: orange;margin-left: 10px;font-size: 16px;">地区空间</span>
+        <div class="new-talk-info">
+          <div v-show="unreadTalkCount" class="new-talk-text">{{unreadTalkCount}}条新动态</div>
+          <div v-show="talkList.length" class="new-talk-list">
+            <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="24"></head-image>
+          </div>
+        </div>
+        <div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
       </div>
       <div class="operation-item" v-if="myGroupMemberInfo.isLeader">
         <div class="leader-transfer">
@@ -100,12 +107,14 @@
         @close="closeDrawer"
         :width=60>
       <template v-slot:header>
-        <space-cover :name="'地区空间'" @refresh="refreshTalkList" @add="handleShowAddTalk"></space-cover>
+        <space-cover :name="'地区空间'" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify" :notify-count="unreadNotifyCount"></space-cover>
       </template>
       <template v-slot:main>
-        <talk-list ref="talkListRef" :category="'region'" :section="'my-region'" :region-group-id="regionGroup.id" :region-code="regionGroup.code"></talk-list>
+        <talk-list ref="talkListRef" :category="'region'" :section="'my-region'" :region-group-id="regionGroup.id" :region-code="regionGroup.code"
+                   :new-talk-list="talkList" :new-talk-count="unreadTalkCount"></talk-list>
       </template>
     </drawer>
+    <talk-notify ref="talkNotifyRef" :category="'region'"></talk-notify>
   </div>
 </template>
 
@@ -115,10 +124,14 @@ import TalkList from "@/components/talk/TalkList";
 import SpaceCover from "@/components/common/SpaceCover";
 import Drawer from "@/components/common/Drawer";
 import FileUpload from "@/components/common/FileUpload";
+import HeadImage from "@components/common/HeadImage.vue";
+import TalkNotify from "@components/talk/TalkNotify.vue";
 
 export default {
   name: "ChatRegionGroupSide",
   components: {
+    TalkNotify,
+    HeadImage,
     RegionGroupMemberItem,
     TalkList,
     SpaceCover,
@@ -348,6 +361,9 @@ export default {
     },
     openRegionSpace() {
       this.regionSpaceVisible = true;
+      this.$store.commit("resetRegionTalk", this.regionGroup.code);
+      this.$store.commit("resetRegionNotify", this.regionGroup.code);
+      this.$refs.talkListRef.refreshTalkList();
     },
     closeDrawer() {
       this.regionSpaceVisible = false;
@@ -356,7 +372,13 @@ export default {
       this.$refs.talkListRef.handleShowAddTalk();
     },
     refreshTalkList() {
+      this.$store.commit("resetRegionTalk", this.regionGroup.code);
+      this.$store.commit("resetRegionNotify", this.regionGroup.code);
       this.$refs.talkListRef.refreshTalkList();
+    },
+    showTalkNotify() {
+      this.$refs.talkNotifyRef.show();
+      this.$store.commit("resetRegionNotify", this.regionGroup.code);
     },
     onUploadMemberAvatarSuccess(data) {
       this.myGroupMemberInfo.headImage = data.originUrl;
@@ -383,6 +405,30 @@ export default {
     },
     imageAction(){
       return `/image/upload`;
+    },
+    talkList() {
+      let talkMap =this.$store.state.talkStore.regionTalks;
+      let talks = talkMap.get(this.regionGroup.code)
+      if (talks && talks.length > 2) {
+        return talks.slice(0, 2);
+      }
+      return talks ? talks : [];
+    },
+    unreadTalkCount() {
+      let talkMap =this.$store.state.talkStore.regionTalks;
+      let talks = talkMap.get(this.regionGroup.code);
+      if (talks) {
+        return talks.length;
+      }
+      return 0;
+    },
+    unreadNotifyCount() {
+      let notifyMap =this.$store.state.talkStore.regionNotify;
+      let count = notifyMap.get(this.regionGroup.code);
+      if (count) {
+        return count;
+      }
+      return 0;
     },
   },
   watch: {
@@ -443,9 +489,10 @@ export default {
     }
 
     .group-space {
-      justify-content: center;
+      justify-content: left;
       align-items: center;
       cursor: pointer;
+      position: relative;
 
       .icon {
         display: block;
@@ -456,6 +503,40 @@ export default {
         -webkit-transition: font-size 0.25s linear, width 0.25s linear;
         -moz-transition: font-size 0.25s linear, width 0.25s linear;
         transition: font-size 0.25s linear, width 0.25s linear;
+      }
+
+      .new-talk-info {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+
+        .new-talk-text {
+          font-size: 12px;
+          color: red;
+        }
+
+        .new-talk-list {
+          display: flex;
+          align-items: center;
+        }
+      }
+
+      .unread-text {
+        position: absolute;
+        line-height: 16px;
+        background-color: #f56c6c;
+        left: 30px;
+        top: 0;
+        color: white;
+        border-radius: 16px;
+        padding: 0 5px;
+        font-size: 10px;
+        text-align: center;
+        white-space: nowrap;
+        border: 1px solid #f1e5e5;
       }
     }
 

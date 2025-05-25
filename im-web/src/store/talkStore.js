@@ -56,14 +56,29 @@ export default {
                 talks.unshift(talk);
             }
             state.groupsTalks = newMap;
-            console.log("群组动态数据", state.groupsTalks)
         },
         resetGroupTalk(state, groupId) {
             const newMap = new Map(state.groupsTalks); // 创建副本
             if (newMap.has(groupId)) {
                 newMap.set(groupId, []);
                 state.groupsTalks = newMap;
-                console.log("重置群组动态数据", state.groupsTalks)
+            }
+        },
+        addRegionTalk(state, talk) {
+            const newMap = new Map(state.regionTalks); // 创建副本
+            if (!newMap.has(talk.regionCode)) {
+                newMap.set(talk.regionCode, [talk]);
+            } else {
+                let talks = newMap.get(talk.regionCode);
+                talks.unshift(talk);
+            }
+            state.regionTalks = newMap;
+        },
+        resetRegionTalk(state, regionCode) {
+            const newMap = new Map(state.regionTalks); // 创建副本
+            if (newMap.has(regionCode)) {
+                newMap.set(regionCode, []);
+                state.regionTalks = newMap;
             }
         },
         addNotifyCount(state, msg) {
@@ -79,14 +94,29 @@ export default {
                 newMap.set(talk.groupId, count + 1);
             }
             state.groupNotify = newMap;
-            console.log("群组动态提醒数据", state.groupNotify)
         },
         resetGroupNotify(state, groupId) {
             const newMap = new Map(state.groupNotify);
             if (newMap.has(groupId)) {
                 newMap.set(groupId, 0);
                 state.groupNotify = newMap;
-                console.log("重置群组动态提醒数据", state.groupNotify);
+            }
+        },
+        addRegionNotifyCount(state, talk) {
+            const newMap = new Map(state.regionNotify); // 创建副本
+            if (!newMap.has(talk.regionCode)) {
+                newMap.set(talk.regionCode, 1);
+            } else {
+                let count = newMap.get(talk.regionCode);
+                newMap.set(talk.regionCode, count + 1);
+            }
+            state.regionNotify = newMap;
+        },
+        resetRegionNotify(state, regionCode) {
+            const newMap = new Map(state.regionNotify);
+            if (newMap.has(regionCode)) {
+                newMap.set(regionCode, 0);
+                state.regionNotify = newMap;
             }
         },
         saveTalkToStorage(state) {

@@ -6,7 +6,7 @@
       <i class="el-icon-camera-solid"></i>
     </a>
     <div class="bottom-btns">
-      <div class="talk-notify-msg" @click="showTalkNotify">
+      <div class="talk-notify-msg" @click="showTalkNotify" v-show="showNotify">
         <i class="el-icon-chat-dot-round"></i>
         <div v-show="notifyCount>0" class="unread-text">{{notifyCount}}</div>
       </div>
@@ -31,6 +31,10 @@ export default {
     notifyCount: {
       type: Number,
       default: 0
+    },
+    showNotify: {
+      type: Boolean,
+      default: true
     }
   },
   methods: {

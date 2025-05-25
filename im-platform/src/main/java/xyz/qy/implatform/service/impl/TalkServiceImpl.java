@@ -172,7 +172,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             } else if (TalkCategoryEnum.REGION.getCode().equals(talk.getCategory())) {
                 // 查询地区群聊的常驻用户
                 userIds = regionGroupMemberService.findUserIdsByCode(talk.getRegionCode());
-                if (userIds.contains(session.getUserId())) {
+                if (!userIds.contains(session.getUserId())) {
                     throw new GlobalException("您不是当前地区群聊用户");
                 }
                 // 排除自己的userId

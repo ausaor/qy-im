@@ -226,6 +226,11 @@ export default {
           font-size: 28px;
           color: white;
 
+          .el-icon-chat-dot-round {
+            background-color: #6CC6CB;
+            border-radius: 50%;
+          }
+
           .unread-text {
             position: absolute;
             line-height: 20px;
