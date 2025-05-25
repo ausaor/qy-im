@@ -1,6 +1,12 @@
 <template>
   <div class="talk-list">
     <div class="contentBox">
+      <div class="talk-notice" v-show="newTalkCount > 0">
+        <div class="new-talk-content">
+          <head-image v-for="(talk, index) in newTalkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="24"></head-image>
+          <span class="new-talk-text">{{newTalkCount}}条新动态</span>
+        </div>
+      </div>
       <div class="sayItem" v-for="(item, index) in talkList" :key="index">
         <head-image :url="item.avatar" :id="item.userId" :name="item.nickName" :size="45"></head-image>
         <div class="rightBox">
@@ -251,6 +257,16 @@ export default {
     regionCode: {
       type: String,
       default: null,
+    },
+    newTalkList: {
+      type: Array,
+      default: () => {
+        return []
+      }
+    },
+    newTalkCount: {
+      type: Number,
+      default: 0
     }
   },
   data() {
@@ -833,6 +849,28 @@ export default {
     width: 72%;
     margin: 20px auto;
     color: #5fb878;
+
+    .talk-notice {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .new-talk-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 8px 16px;
+        background-color: #f5f5f5;
+        border-radius: 20px;
+        cursor: pointer;
+
+        .new-talk-text {
+          font-size: 14px;
+          color: red;
+          margin-left: 5px;
+        }
+      }
+    }
 
     .sayItem {
       padding: 10px;

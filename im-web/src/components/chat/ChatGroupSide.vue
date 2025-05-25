@@ -124,7 +124,7 @@
         <space-cover :name="'群空间'" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify" :notify-count="unreadNotifyCount"></space-cover>
       </template>
       <template v-slot:main>
-        <talk-list ref="talkListRef" :category="'group'" :section="'group'" :group-id="group.id"></talk-list>
+        <talk-list ref="talkListRef" :category="'group'" :section="'group'" :group-id="group.id" :new-talk-list="talkList" :new-talk-count="unreadTalkCount"></talk-list>
       </template>
     </drawer>
     <talk-notify ref="talkNotifyRef" :category="'group'"></talk-notify>
