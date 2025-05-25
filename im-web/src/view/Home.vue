@@ -53,7 +53,8 @@
               <svg class="icon svg-icon" aria-hidden="true">
                <use xlink:href="#icon-fenleiorguangchangorqitatianchong"></use>
               </svg>
-          </span>
+            </span>
+            <div v-show="unreadUserCount > 0 || notifyCount > 0" class="unread-text">{{unreadUserCount + notifyCount}}</div>
           </router-link>
         </el-menu-item>
 
@@ -637,7 +638,13 @@
           });
         }
         return unreadCount;
-      }
+      },
+      unreadUserCount() {
+        return this.$store.state.talkStore.unreadUserList.length;
+      },
+      notifyCount() {
+        return this.$store.state.talkStore.notifyCount;
+      },
 		},
 		watch: {
 			unreadCount: {
