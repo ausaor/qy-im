@@ -167,10 +167,28 @@
             <artifactId>webmagic-extension</artifactId>
             <version>0.7.4</version>
         </dependency>-->
-        <dependency>
+        <!--<dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv-platform</artifactId>
             <version>1.5.9</version>
+        </dependency>-->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv</artifactId>
+            <version>1.5.9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>opencv</artifactId>
+            <version>4.7.0-1.5.9</version>
+            <classifier>windows-x86_64</classifier> <!-- 按平台修改 -->
+            <!--<classifier>linux-x86_64</classifier>-->
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>ffmpeg</artifactId>
+            <version>6.0-1.5.9</version>
+            <classifier>windows-x86_64</classifier> <!-- 按平台修改 -->
         </dependency>
 
         <!-- IP定位 -->
