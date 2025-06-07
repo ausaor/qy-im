@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -112,6 +113,14 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
                     if (StringUtils.isNotBlank(talk.getFiles())) {
                         talkVO.setFileList(JSONArray.parseArray(talk.getFiles()));
                     }
+
+                    // 当前用户是动态作者
+                    if (userId.equals(talk.getUserId()) && ObjectUtil.isNotNull(talk.getCharacterId())) {
+                        talkVO.setCommentCharacterName(talk.getNickName());
+                        talkVO.setCommentCharacterAvatar(talk.getAvatar());
+                        talkVO.setCommentCharacterId(talk.getCharacterId());
+                        talkVO.setCommentCharacterAvatarId(talk.getAvatarId());
+                    }
                     talkNotifyVO.setTalk(talkVO);
                 }
                 if (ObjectUtil.isNotNull(talkNotifyVO.getCommentId())) {
@@ -124,10 +133,16 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
                     // 查询当前评论的回复
                     if (ObjectUtil.isNotNull(talkComment.getReplyCommentId())) {
                         TalkComment replytalkComment = talkCommentService.getById(talkComment.getReplyCommentId());
-                        List<TalkCommentVO> replyTalkComment = new ArrayList<>();
+                        List<TalkCommentVO> replyTalkCommentList = new ArrayList<>();
                         TalkCommentVO talkCommentVO = BeanUtils.copyProperties(replytalkComment, TalkCommentVO.class);
-                        replyTalkComment.add(talkCommentVO);
-                        talkNotifyVO.setReplyTalkComment(replyTalkComment);
+                        replyTalkCommentList.add(talkCommentVO);
+                        talkNotifyVO.setReplyTalkComment(replyTalkCommentList);
+                        if (replytalkComment.getUserId().equals(userId)) {
+                            talkNotifyVO.getTalk().setCommentCharacterId(replytalkComment.getCharacterId());
+                            talkNotifyVO.getTalk().setCommentCharacterName(replytalkComment.getUserNickname());
+                            talkNotifyVO.getTalk().setCommentCharacterAvatar(replytalkComment.getUserAvatar());
+                            talkNotifyVO.getTalk().setCommentCharacterAvatarId(replytalkComment.getAvatarId());
+                        }
                     }
                     // 查询当前用户对当前评论的所有评论
                     List<TalkComment> talkCommentList = talkCommentService.lambdaQuery().eq(TalkComment::getReplyCommentId, talkComment.getId())
@@ -140,6 +155,16 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
                         } else {
                             talkNotifyVO.setReplyTalkComment(talkCommentVOS);
                         }
+
+                        // 找到当前用户评论，并且角色id不为空的数据
+                        Optional<TalkComment> talkCommentOptional = talkCommentList.stream().filter(item -> item.getUserId().equals(userId)
+                                && ObjectUtil.isNotNull(item.getCharacterId())).findFirst();
+                        talkCommentOptional.ifPresent(talkComment1 -> {
+                            talkNotifyVO.getTalk().setCommentCharacterAvatarId(talkComment1.getAvatarId());
+                            talkNotifyVO.getTalk().setCommentCharacterId(talkComment1.getCharacterId());
+                            talkNotifyVO.getTalk().setCommentCharacterName(talkComment1.getUserNickname());
+                            talkNotifyVO.getTalk().setCommentCharacterAvatar(talkComment1.getUserAvatar());
+                        });
                     }
                 } else if (ObjectUtil.isNotNull(talkNotifyVO.getStarId())) {
                     TalkStar talkStar = talkStarMap.get(talkNotifyVO.getStarId());

@@ -1,5 +1,5 @@
 <template>
-  <div class="input-box" v-show="show">
+  <div class="input-box" v-show="show" :style="{width: width}">
     <div class="content-input-box">
       <div ref="textareaRef" contenteditable="true" @input="onInput"
            @paste="optimizePasteEvent" :data-placeholder="placeholder"
@@ -28,6 +28,10 @@
         type: String,
         default: ''
       },
+      width: {
+        type: String,
+        default: '50%'
+      }
     },
     data() {
       return {
@@ -145,7 +149,6 @@
 
 <style scoped lang="scss">
 .input-box {
-  width: 50%;
   border: 1px solid #67C23A;
   border-radius: 5px;
   background-color: #fff;
@@ -169,6 +172,7 @@
   .biaoqing-point {
     cursor: pointer;
     display: inline-block;
+    color: #5fb878;
   }
 
   i {

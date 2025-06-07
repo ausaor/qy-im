@@ -32,7 +32,7 @@
               </div>
             </div>
             <div class="action-area">
-              <span v-if="message.actionType===1" class="reply-btn">回复</span>
+              <span v-if="message.actionType===1" class="reply-btn" @click="handleShowCommentBox(message.talkComment, index)">回复</span>
               <i v-if="message.actionType===2" class="el-icon-thumb-up like-hand"></i>
             </div>
           </div>
@@ -61,7 +61,7 @@
               </div>
               <!-- 引用框 -->
               <div class="talk-text-box">
-                <span class="talk-author">雾：</span>
+                <span class="talk-author">{{message.talk.nickName}}：</span>
                 <span v-html="$emo.transform(message.talk.content)"></span>
               </div>
             </div>
@@ -75,6 +75,7 @@
                 <span v-html="$emo.transform(reply.content)" class="comment-content"></span>
               </div>
             </div>
+            <input-box ref="contentInputBox" :placeholder="placeholder" :width="'100%'" @send="(...args) => sayComment(message, ...args)"></input-box>
           </div>
         </div>
       </div>
@@ -85,10 +86,12 @@
 <script>
 import HeadImage from "@components/common/HeadImage.vue";
 import Pagination from "@components/pagination/Pagination.vue";
+import InputBox from "@components/common/InputBox.vue";
 
 export default {
   name: 'QQMessageDrawer',
   components: {
+    InputBox,
     Pagination,
     HeadImage
   },
@@ -114,7 +117,9 @@ export default {
         pageSize: 10,
         totalPage: 0,
       },
-      messages: []
+      messages: [],
+      commentLastIndex: null,
+      placeholder: "请输入内容",
     }
   },
   methods: {
@@ -141,6 +146,53 @@ export default {
       }).finally(() => {
 
       })
+    },
+    sayComment(message, sendText) {
+      if (!sendText.trim()) {
+        return
+      }
+      let talk = message.talk;
+      let params = {
+        talkId: talk.id,
+        content: sendText,
+        userNickname: talk.commentCharacterName,
+        characterId: talk.commentCharacterId,
+        avatarId: talk.commentCharacterAvatarId,
+        userAvatar: talk.commentCharacterAvatar,
+        replyCommentId: message.commentId
+      }
+      this.$http({
+        url: "/talk/addTalkComment",
+        method: 'post',
+        data: params
+      }).then((data) => {
+        if (message.replyTalkComment && message.replyTalkComment.length) {
+          message.replyTalkComment.push(data);
+        } else {
+          message.replyTalkComment = [data];
+        }
+        this.$message.success("评论成功");
+        this.$refs.contentInputBox[this.commentLastIndex].hide();
+      }).finally(() => {
+        this.placeholder = '请输入内容';
+      })
+    },
+    handleShowCommentBox(comment, index) {
+      if (this.commentLastIndex != null && this.commentLastIndex != index) {
+        this.$refs.contentInputBox[this.commentLastIndex].hide();
+      }
+      if (this.commentLastIndex == index) {
+        if (this.$refs.contentInputBox[index].show) {
+          this.$refs.contentInputBox[index].hide();
+        } else {
+          this.$refs.contentInputBox[index].view();
+        }
+      } else {
+        this.$refs.contentInputBox[index].view();
+      }
+      this.commentLastIndex = index
+
+      this.placeholder = "回复" + comment.userNickname + ":"
     },
     handlePage(pageNo) {
       this.page.pageNo = pageNo;

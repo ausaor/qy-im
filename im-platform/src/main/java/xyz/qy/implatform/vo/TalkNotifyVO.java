@@ -1,6 +1,8 @@
 package xyz.qy.implatform.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -23,11 +25,13 @@ public class TalkNotifyVO {
     /**
      * 评论id
      */
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long commentId;
 
     /**
      * 点赞id
      */
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long starId;
 
     /**
