@@ -32,7 +32,7 @@ import xyz.qy.implatform.vo.TalkVO;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -120,9 +120,26 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
                     talkNotifyVO.setAvatar(talkComment.getUserAvatar());
                     talkNotifyVO.setNickname(talkComment.getUserNickname());
                     talkNotifyVO.setTalkComment(BeanUtils.copyProperties(talkComment, TalkCommentVO.class));
+
+                    // 查询当前评论的回复
                     if (ObjectUtil.isNotNull(talkComment.getReplyCommentId())) {
                         TalkComment replytalkComment = talkCommentService.getById(talkComment.getReplyCommentId());
-                        talkNotifyVO.setReplyTalkComment(Collections.singletonList(BeanUtils.copyProperties(replytalkComment, TalkCommentVO.class)));
+                        List<TalkCommentVO> replyTalkComment = new ArrayList<>();
+                        TalkCommentVO talkCommentVO = BeanUtils.copyProperties(replytalkComment, TalkCommentVO.class);
+                        replyTalkComment.add(talkCommentVO);
+                        talkNotifyVO.setReplyTalkComment(replyTalkComment);
+                    }
+                    // 查询当前用户对当前评论的所有评论
+                    List<TalkComment> talkCommentList = talkCommentService.lambdaQuery().eq(TalkComment::getReplyCommentId, talkComment.getId())
+                            .eq(TalkComment::getUserId, userId)
+                            .eq(TalkComment::getDeleted, Boolean.FALSE).list();
+                    if (CollectionUtils.isNotEmpty(talkCommentList)) {
+                        List<TalkCommentVO> talkCommentVOS = BeanUtils.copyPropertiesList(talkCommentList, TalkCommentVO.class);
+                        if (CollectionUtils.isNotEmpty(talkNotifyVO.getReplyTalkComment())) {
+                            talkNotifyVO.getReplyTalkComment().addAll(talkCommentVOS);
+                        } else {
+                            talkNotifyVO.setReplyTalkComment(talkCommentVOS);
+                        }
                     }
                 } else if (ObjectUtil.isNotNull(talkNotifyVO.getStarId())) {
                     TalkStar talkStar = talkStarMap.get(talkNotifyVO.getStarId());

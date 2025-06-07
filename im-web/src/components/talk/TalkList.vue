@@ -331,7 +331,6 @@ export default {
         this.comment = {}
         this.$refs.contentInputBox[this.commentLastIndex].hide();
         this.showCommentBox = false
-        el.innerHTML = '';
       }).finally(() => {
         this.placeholder = '请输入内容';
       })

@@ -68,8 +68,11 @@
             <!-- 回复内容 -->
             <div v-if="message.replyTalkComment && message.replyTalkComment.length" class="replies-section">
               <div v-for="reply in message.replyTalkComment" :key="reply.id" class="reply-item">
-                <span class="reply-author">{{ reply.userNickname }}：</span>
-                <span v-html="$emo.transform(reply.content)"></span>
+                <span class="reply-author">{{ reply.userNickname }}</span>
+                <span v-if="reply.replyCommentId" style="margin: 0 10px;" class="reply-author reply-prefix">回复</span>
+                <span v-if="reply.replyCommentId" class="reply-author">{{ reply.replyUserNickname }}</span>
+                <span>：</span>
+                <span v-html="$emo.transform(reply.content)" class="comment-content"></span>
               </div>
             </div>
           </div>
@@ -353,13 +356,13 @@ export default {
 .replies-section {
   font-size: 14px;
   color: #666666;
-  display: flex;
-  align-items: center;
-  justify-content: left;
 }
 
 .reply-item {
   margin-bottom: 4px;
+  display: flex;
+  justify-content: left;
+  align-items: center;
 }
 
 .reply-author {
@@ -373,6 +376,11 @@ export default {
 
 .reply-prefix {
   color: #1890ff;
+}
+
+.comment-content {
+  display: flex;
+  align-items: center;
 }
 
 .reply-input-placeholder {

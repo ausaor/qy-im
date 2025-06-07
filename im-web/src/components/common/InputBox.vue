@@ -131,6 +131,7 @@
           return
         }
          this.$emit('send', sendText)
+        el.innerHTML = '';
       },
       view() {
         this.show = true;
