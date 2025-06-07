@@ -55,4 +55,10 @@ public class UserVO {
 
     @ApiModelProperty(value = "与好友聊天头像")
     private String myHeadImageToFriend;
+
+    @ApiModelProperty(value = "语音自动播放")
+    private Boolean autoPlay;
+
+    @ApiModelProperty(value = "消息提示音")
+    private Boolean soundPlay;
 }

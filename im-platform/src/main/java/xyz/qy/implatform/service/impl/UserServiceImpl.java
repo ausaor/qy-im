@@ -296,6 +296,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setSignature(SensitiveUtil.filter(vo.getSignature()));
         user.setHeadImage(vo.getHeadImage());
         user.setHeadImageThumb(vo.getHeadImageThumb());
+        user.setAutoPlay(vo.getAutoPlay());
+        user.setSoundPlay(vo.getSoundPlay());
         this.updateById(user);
         log.info("用户信息更新，用户:{}", user);
     }

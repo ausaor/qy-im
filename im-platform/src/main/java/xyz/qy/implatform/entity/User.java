@@ -135,6 +135,18 @@ public class User extends Model<User> {
     private Boolean isBanned;
 
     /**
+     * 语音自动播放
+     */
+    @TableField("auto_play")
+    private Boolean autoPlay;
+
+    /**
+     * 消息提示音
+     */
+    @TableField("sound_play")
+    private Boolean soundPlay;
+
+    /**
      * 最后登录时间
      */
     @TableField("last_login_time")

@@ -17,6 +17,22 @@
                 inactive-text="关">
             </el-switch></el-col>
           </el-row>
+          <el-row>
+            <el-col :span="24"><label>消息提示音：</label><el-switch
+                v-model="userInfo.soundPlay"
+                @change="changeSoundPlay"
+                active-text="开启"
+                inactive-text="关闭">
+            </el-switch></el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24"><label>语音自动播放：</label><el-switch
+                v-model="userInfo.autoPlay"
+                @change="changeAutoPlay"
+                active-text="开启"
+                inactive-text="关闭">
+            </el-switch></el-col>
+          </el-row>
         </el-tab-pane>
         <el-tab-pane label="修改密码" name="modifyPwd">
           <el-form :model="pwdForm" status-icon :rules="rules" ref="pwdForm" label-width="80px">
@@ -188,7 +204,8 @@ export default {
           validator: checkPassword,
           trigger: 'blur'
         }],
-      }
+      },
+      userInfo: {}
     }
   },
   methods: {
@@ -241,6 +258,31 @@ export default {
     },
     resetPwd() {
 
+    },
+    changeSoundPlay(value) {
+      this.userInfo.soundPlay = value;
+      this.updateUserInfo();
+    },
+    changeAutoPlay(value) {
+      this.userInfo.autoPlay = value;
+      this.updateUserInfo();
+    },
+    updateUserInfo() {
+      this.$http({
+        url: "/user/update",
+        method: "put",
+        data: this.userInfo
+      }).then(()=>{
+        this.$store.commit("setUserInfo",this.userInfo);
+        this.$message.success("操作成功");
+      })
+    }
+  },
+  watch: {
+    visible: function(newData, oldData) {
+      // 深拷贝
+      let mine = this.$store.state.userStore.userInfo;
+      this.userInfo = JSON.parse(JSON.stringify(mine));
     }
   }
 }

@@ -339,7 +339,7 @@
         if (msg.type == this.$enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
           this.eventGroupChange(msg);
         }
-        if (msg.type == this.$enums.MESSAGE_TYPE.WORD_VOICE) {
+        if (msg.type == this.$enums.MESSAGE_TYPE.WORD_VOICE && this.mine.autoPlay) {
           this.eventGroupPlayAudio(msg);
         }
         // 消息已读处理
@@ -539,7 +539,7 @@
           return;
         }
         // 防止过于密集播放
-        if (new Date().getTime() - this.lastPlayAudioTime > 1000) {
+        if ((new Date().getTime() - this.lastPlayAudioTime > 1000) && this.mine.soundPlay) {
           this.lastPlayAudioTime = new Date().getTime();
           let audio = new Audio();
           let url = require(`@/assets/audio/tip.wav`);
@@ -620,6 +620,9 @@
       }
 		},
 		computed: {
+      mine() {
+        return this.$store.state.userStore.userInfo;
+      },
 			uiStore() {
 				return this.$store.state.uiStore;
 			},
