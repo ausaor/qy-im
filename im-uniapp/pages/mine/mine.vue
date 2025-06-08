@@ -35,7 +35,18 @@
 		</uni-card>
 		<bar-group>
 			<arrow-bar title="修改密码" icon="icon-modify-pwd"  @tap="onModifyPassword()"></arrow-bar>
-			<arrow-bar title="动态空间" icon="icon-shejiaotubiao-40" :in-color="'#f5be3f'" @tap="onActivitySpace()"></arrow-bar>
+      <view class="activity-space" @tap="onActivitySpace()">
+        <text class="icon iconfont icon-shejiaotubiao-40" style="color: #f5be3f"></text>
+        <text class="title">
+          动态空间
+          <uni-badge v-show="notifyCount" class="uni-badge-left-margin" :text="notifyCount" type="primary"
+                     :customStyle="{background: '#f56c6c'}" /></text>
+        <text class="count" v-show="unreadUserCount">{{ unreadUserCount }}人新发表</text>
+        <view class="new-talk-user">
+          <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="45"></head-image>
+        </view>
+        <uni-icons class="arrow" type="right" size="16"></uni-icons>
+      </view>
 		</bar-group>
 		<bar-group>
 			<btn-bar title="退出登录" type="danger" @tap="onQuit()"></btn-bar>
@@ -60,8 +71,22 @@ export default {
 			})
 		},
     onActivitySpace() {
+      if (this.unreadUserCount > 0 || this.notifyCount > 0) {
+        if (this.notifyCount > 0) {
+          this.readedTalkNotify();
+        }
+        this.talkStore.resetUnreadTalkInfo();
+      }
       uni.navigateTo({
         url: "/pages/activity/activity-space?category=private&section=my-friends"
+      })
+    },
+    readedTalkNotify() {
+      this.$http({
+        url: `/talk-notify/readed?category=private`,
+        method: 'post'
+      }).then(() => {
+
       })
     },
 		onQuit() {
@@ -79,10 +104,17 @@ export default {
 	computed: {
 		userInfo() {
 			return this.userStore.userInfo;
-		}
+		},
+    unreadUserCount() {
+      return this.talkStore.unreadUserList.length;
+    },
+    notifyCount() {
+      return this.talkStore.notifyCount;
+    },
+    talkList() {
+      return this.talkStore.lastTalks;
+    }
 	}
-
-
 }
 </script>
 
@@ -148,5 +180,43 @@ export default {
 		}
 	}
 
+  .activity-space {
+    width: 100%;
+    height: 90rpx;
+    font-size: $im-font-size;
+    color: $im-text-color;
+    margin-top: 5rpx;
+    background-color: white;
+    line-height: 90rpx;
+    display: flex;
+
+    .icon {
+      margin-left: 40rpx;
+    }
+
+    .title {
+      flex: 1;
+      margin-left: 10rpx;
+    }
+
+    .notifyCount {
+      margin-right: 10rpx;
+      display: flex;
+      align-items: center;
+    }
+
+    .count {
+      color: red;
+    }
+
+    .new-talk-user {
+      display: flex;
+      align-items: center;
+    }
+
+    .arrow {
+      margin-right: 40rpx;
+    }
+  }
 }
 </style>

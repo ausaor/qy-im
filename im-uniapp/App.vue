@@ -44,7 +44,8 @@ export default {
 				// 加载离线消息
 				this.pullPrivateOfflineMessage(this.chatStore.privateMsgMaxId);
 				this.pullGroupOfflineMessage(this.chatStore.groupMsgMaxId);
-        this.pullRegionGroupOfflineMessage(this.regionStore.regionGroupMsgMaxId)
+        this.pullRegionGroupOfflineMessage(this.regionStore.regionGroupMsgMaxId);
+        this.pullOfflineTalks(this.talkStore.privateTalkMaxId);
 			});
 			wsApi.onMessage((cmd, msgInfo) => {
 				if (cmd == 2) {
@@ -67,7 +68,10 @@ export default {
 					// 系统消息
           msgInfo.chatType = 'SYSTEM'
 					this.handleSystemMessage(msgInfo);
-				} else if (cmd == 9) {
+				} else if (cmd == 6) {
+          // 处理动态消息
+          this.handleTalkMessage(msgInfo);
+        } else if (cmd == 9) {
           // 地区群聊消息
           msgInfo.chatType = 'REGION-GROUP'
           this.handleRegionGroupMessage(msgInfo);
@@ -88,6 +92,7 @@ export default {
 				promises.push(this.regionStore.loadRegionGroup());
 				promises.push(this.chatStore.loadChat());
 				promises.push(this.regionStore.loadRegionChat());
+				promises.push(this.talkStore.loadTalkInfo());
 				promises.push(this.configStore.loadConfig());
 				return Promise.all(promises);
 			})
@@ -125,6 +130,16 @@ export default {
         method: 'GET'
       }).catch(() => {
         this.regionStore.setLoadingRegionGroupMsg(false)
+      })
+    },
+    pullOfflineTalks(minId) {
+      http({
+        url: "/talk/pullOfflineTalks?minId=" + minId,
+        method: 'GET'
+      }).then((data) => {
+        this.talkStore.setUnreadTalkInfo(data);
+      }).catch(() => {
+
       })
     },
 		handlePrivateMessage(msg) {
@@ -282,6 +297,25 @@ export default {
         // 插入群聊消息
         this.insertRegionGroupMessage(group, msg);
       })
+    },
+    handleTalkMessage(msg) {
+      if (msg.type === 1) {
+        if (msg.talk.category === 'private') {
+          this.talkStore.addNewTalk(msg.talk);
+        } else if (msg.talk.category === 'group') {
+          this.talkStore.addGroupTalk(msg.talk);
+        } else if (msg.talk.category === 'region') {
+          this.talkStore.addRegionTalk(msg.talk);
+        }
+      } else if (msg.type === 2 ||  msg.type === 3) {
+        if (msg.talk.category === 'private') {
+          this.talkStore.addNotifyCount(msg);
+        } else if (msg.talk.category === 'group') {
+          this.talkStore.addGroupNotifyCount(msg.talk);
+        } else if (msg.talk.category === 'region') {
+          this.talkStore.addRegionNotifyCount(msg.talk);
+        }
+      }
     },
 		handleSystemMessage(msg) {
 			if (msg.type == enums.MESSAGE_TYPE.USER_BANNED) {

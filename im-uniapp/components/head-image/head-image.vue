@@ -90,12 +90,14 @@ export default {
 .head-image {
 	position: relative;
 	cursor: pointer;
+  display: flex;
+  align-items: center;
 
 	.avatar-image {
 		position: relative;
 		overflow: hidden;
 		border-radius: 50%;
-		vertical-align: bottom;
+		vertical-align: center;
 	}
 
 	.avatar-text {
