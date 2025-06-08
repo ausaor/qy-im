@@ -20,6 +20,17 @@
         <image class="bg-image" src="@/static/image/activity-bg.jpg" mode="aspectFill"/>
         <head-image class="my-head-image" :url="mine.headImage" :name="mine.nickName" size="small"></head-image>
         <uni-icons class="refresh-btn" type="refresh" color="white" size="24" @click="refreshTalkList"></uni-icons>
+        <text class="chatbubble-btn">
+          <uni-badge class="uni-badge-left-margin" :text="notifyCount" :offset="[3, 3]" absolute="rightTop" size="small">
+            <uni-icons type="chatbubble" color="white" size="24" @click="refreshTalkList"></uni-icons>
+          </uni-badge>
+        </text>
+      </view>
+      <view class="talk-notice" v-show="newTalkList.length > 0">
+        <view class="new-talk-notify">
+          <head-image v-for="(talk, index) in newTalkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="45"></head-image>
+          <text class="new-talk-text">有新的动态</text>
+        </view>
       </view>
 
       <!-- 动态列表 -->
@@ -689,10 +700,31 @@ export default {
 
     },
     refreshTalkList() {
+      if (this.notifyCount > 0) {
+        if (this.category === 'private') {
+          this.readedTalkNotify();
+        }
+      }
+      if (this.category === 'private') {
+        this.talkStore.resetUnreadTalkInfo();
+      } else if (this.category === 'group') {
+        this.talkStore.resetGroupTalk(Number(this.groupId));
+        this.talkStore.resetGroupNotify(Number(this.groupId));
+      } else if (this.category === 'region') {
+        this.talkStore.resetRegionTalk(this.regionCode);
+        this.talkStore.resetRegionNotify(this.regionCode);
+      }
       this.page.pageNo = 1;
       this.page.totalPage = 0;
       this.talkList = [];
       this.pageQueryTalkList();
+    },
+    readedTalkNotify() {
+      this.$http({
+        url: `/talk-notify/readed?category=private`,
+        method: 'post'
+      }).then(() => {
+      })
     },
     showGroupTemplatesPopup() {
       if (!this.groupTemplates || this.groupTemplates.length === 0) {
@@ -768,6 +800,45 @@ export default {
   computed: {
     mine() {
       return this.userStore.userInfo;
+    },
+    notifyCount() {
+      if (this.category === 'private') {
+        return this.talkStore.notifyCount;
+      } else if (this.category === 'group') {
+        let notifyMap =this.talkStore.groupNotify;
+        let count = notifyMap.get(Number(this.groupId));
+        if (count) {
+          return count;
+        }
+      } else if (this.category === 'region') {
+        let notifyMap =this.talkStore.regionNotify;
+        let count = notifyMap.get(this.regionCode);
+        if (count) {
+          return count;
+        }
+      }
+
+      return 0;
+    },
+    newTalkList() {
+      if (this.category === 'private') {
+        return this.talkStore.lastTalks;
+      } else if (this.category === 'group') {
+        let talkMap =this.talkStore.groupsTalks;
+        let talks = talkMap.get(Number(this.groupId));
+        if (talks && talks.length > 2) {
+          return talks.slice(0, 2);
+        }
+        return talks ? talks : [];
+      } else if (this.category === 'region') {
+        let talkMap =this.talkStore.regionTalks;
+        let talks = talkMap.get(this.regionCode)
+        if (talks && talks.length > 2) {
+          return talks.slice(0, 2);
+        }
+        return talks ? talks : [];
+      }
+      return [];
     }
   },
   onLoad(options) {
@@ -878,6 +949,15 @@ export default {
   z-index: 5;
 }
 
+.chatbubble-btn {
+  position: absolute;
+  width: 48rpx;
+  height: 48rpx;
+  right: 100rpx;
+  bottom: 10rpx;
+  z-index: 5;
+}
+
 .content-area {
   position: relative;
   height: 100vh;
@@ -889,10 +969,35 @@ export default {
   height: 400rpx;
 }
 
+.talk-notice {
+  margin-top: 10rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background-color: #ffffff;
+
+  .new-talk-notify {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8rpx 16rpx;
+    background-color: #f3f2f7;
+    border-radius: 45rpx;
+    cursor: pointer;
+    border: 1rpx solid rgba(0, 0, 0, 0.16);
+
+    .new-talk-text {
+      font-size: 20rpx;
+      color: red;
+      margin-left: 10rpx;
+    }
+  }
+}
+
 .moments-list {
   background-color: #ffffff;
   border-radius: 20rpx 20rpx 0 0;
-  margin-top: 20rpx;
   position: relative;
 }
 
