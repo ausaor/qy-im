@@ -22,7 +22,7 @@
         <uni-icons class="refresh-btn" type="refresh" color="white" size="24" @click="refreshTalkList"></uni-icons>
         <text class="chatbubble-btn">
           <uni-badge class="uni-badge-left-margin" :text="notifyCount" :offset="[3, 3]" absolute="rightTop" size="small">
-            <uni-icons type="chatbubble" color="white" size="24" @click="refreshTalkList"></uni-icons>
+            <uni-icons type="chatbubble" color="white" size="24" @click="toNotifyPage"></uni-icons>
           </uni-badge>
         </text>
       </view>
@@ -795,6 +795,17 @@ export default {
         this.commentSetForm.nickName = characterAvatar.name;
         this.curTalk.commentCharacterName = characterAvatar.name;
       }
+    },
+    toNotifyPage() {
+      let url = `/pages/activity/activity-notify?category=${this.category}`;
+      if (this.category === 'group') {
+        url += `&groupId=${this.groupId}`;
+      } else if (this.category === 'region') {
+        url += `&regionCode=${this.regionCode}`;
+      }
+      uni.navigateTo({
+        url: url
+      })
     }
   },
   computed: {

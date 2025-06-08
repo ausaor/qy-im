@@ -103,6 +103,9 @@
 		},
 		{
 			"path": "pages/activity/activity-add"
+		},
+		{
+			"path": "pages/activity/activity-notify"
 		}
 	],
 	"globalStyle": {
