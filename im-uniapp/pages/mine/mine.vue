@@ -82,9 +82,13 @@ export default {
       })
     },
     readedTalkNotify() {
+      let params = {
+        category: 'private'
+      }
       this.$http({
-        url: `/talk-notify/readed?category=private`,
-        method: 'post'
+        url: `/talk-notify/readed`,
+        method: 'post',
+        data: params
       }).then(() => {
 
       })

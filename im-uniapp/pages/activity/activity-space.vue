@@ -701,9 +701,7 @@ export default {
     },
     refreshTalkList() {
       if (this.notifyCount > 0) {
-        if (this.category === 'private') {
-          this.readedTalkNotify();
-        }
+        this.readedTalkNotify();
       }
       if (this.category === 'private') {
         this.talkStore.resetUnreadTalkInfo();
@@ -720,9 +718,15 @@ export default {
       this.pageQueryTalkList();
     },
     readedTalkNotify() {
+      let params = {
+        category: this.category,
+        groupId: this.groupId,
+        regionCode: this.regionCode
+      }
       this.$http({
-        url: `/talk-notify/readed?category=private`,
-        method: 'post'
+        url: `/talk-notify/readed`,
+        method: 'post',
+        data: params
       }).then(() => {
       })
     },
@@ -797,6 +801,9 @@ export default {
       }
     },
     toNotifyPage() {
+      if (this.notifyCount > 0) {
+        this.readedTalkNotify();
+      }
       let url = `/pages/activity/activity-notify?category=${this.category}`;
       if (this.category === 'group') {
         url += `&groupId=${this.groupId}`;

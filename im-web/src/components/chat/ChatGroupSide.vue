@@ -286,6 +286,18 @@
       showTalkNotify() {
         this.$refs.talkNotifyRef.show();
         this.$store.commit("resetGroupNotify", this.group.id);
+        this.readedTalkNotify();
+      },
+      readedTalkNotify() {
+        let params = {
+          category: 'group',
+          groupId: this.group.id
+        };
+        this.$http({
+          url: `/talk-notify/readed`,
+          method: 'post',
+          data: params
+        }).then(() => {})
       },
       doAllBanned(value) {
         let paramVO = {

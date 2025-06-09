@@ -379,6 +379,18 @@ export default {
     showTalkNotify() {
       this.$refs.talkNotifyRef.show();
       this.$store.commit("resetRegionNotify", this.regionGroup.code);
+      this.readedTalkNotify();
+    },
+    readedTalkNotify() {
+      let params = {
+        category: 'region',
+        regionCode: this.regionGroup.code
+      };
+      this.$http({
+        url: `/talk-notify/readed`,
+        method: 'post',
+        data: params
+      }).then(() => {})
     },
     onUploadMemberAvatarSuccess(data) {
       this.myGroupMemberInfo.headImage = data.originUrl;

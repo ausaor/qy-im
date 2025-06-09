@@ -11,10 +11,13 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import xyz.qy.implatform.dto.TalkNotifyQueryDTO;
+import xyz.qy.implatform.dto.TalkNotifyUpdateDTO;
 import xyz.qy.implatform.entity.Talk;
 import xyz.qy.implatform.entity.TalkComment;
 import xyz.qy.implatform.entity.TalkNotify;
 import xyz.qy.implatform.entity.TalkStar;
+import xyz.qy.implatform.enums.TalkCategoryEnum;
+import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkNotifyMapper;
 import xyz.qy.implatform.service.ITalkCommentService;
 import xyz.qy.implatform.service.ITalkNotifyService;
@@ -56,13 +59,21 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
     private ITalkStarService  talkStarService;
 
     @Override
-    public void readedTalkNotify(String category) {
+    public void readedTalkNotify(TalkNotifyUpdateDTO dto) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
+        if (TalkCategoryEnum.GROUP.getCode().equals(dto.getCategory()) && ObjectUtil.isNull(dto.getGroupId())) {
+            throw new GlobalException("群聊Id不能为空");
+        } else if (TalkCategoryEnum.REGION.getCode().equals(dto.getCategory()) && StringUtils.isBlank(dto.getRegionCode())) {
+            throw new GlobalException("地区编码不能为空");
+        }
 
         LambdaUpdateWrapper<TalkNotify> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(TalkNotify::getUserId, userId);
-        updateWrapper.eq(TalkNotify::getCategory, category);
+        updateWrapper.eq(TalkNotify::getCategory, dto.getCategory());
+        updateWrapper.eq(TalkNotify::getIsRead, false);
+        updateWrapper.eq(ObjectUtil.isNotNull(dto.getGroupId()), TalkNotify::getGroupId, dto.getGroupId());
+        updateWrapper.eq(StringUtils.isNotBlank(dto.getRegionCode()), TalkNotify::getRegionCode, dto.getRegionCode());
         updateWrapper.set(TalkNotify::getIsRead, true);
         updateWrapper.set(TalkNotify::getUpdateTime, LocalDateTime.now());
 

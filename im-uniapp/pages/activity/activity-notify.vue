@@ -3,10 +3,10 @@
     <!-- 顶部导航栏 -->
     <view class="header">
       <view class="header-left" @tap="goBack">
-        <uni-icons class="back-icon" type="back" size="24" @tap="goBack"/>
+        <uni-icons class="back-icon" type="back" size="24"/>
       </view>
       <view class="header-title">空间消息</view>
-      <view class="header-right" @tap="toggleVisibility">
+      <view class="header-right">
         <uni-icons class="back-icon" type="eye" size="24"/>
       </view>
     </view>
@@ -45,9 +45,11 @@
           </view>
 
           <!-- 图片内容 -->
-          <view class="image-wrapper">
+          <view class="media-wrapper">
             <view class="media-section" v-if="item.talk.fileList && item.talk.fileList.length > 0">
               <image v-if="item.talk.fileList[0].fileType === 1" class="content-image" :src="item.talk.fileList[0].url" mode="aspectFill"></image>
+              <image v-if="item.talk.fileList[0].fileType === 2" class="content-image" :src="item.talk.fileList[0].coverUrl" mode="aspectFill"></image>
+              <svg-icon v-if="item.talk.fileList[0].fileType === 3" :icon-class="'yinpin'" class="media-icon"></svg-icon>
             </view>
             <view class="image-caption">
               <text class="caption-prefix">{{item.talk.nickName}}：</text>
@@ -90,12 +92,6 @@ export default {
       regionCode: null,
       isRefreshing: false,
       isLoading: false,
-      currentTab: 1,
-      tabs: [
-        { icon: '☰', name: '菜单' },
-        { icon: '⌂', name: '主页' },
-        { icon: '◁', name: '返回' }
-      ],
       page: {
         pageNo: 1,
         pageSize: 10,
@@ -106,18 +102,11 @@ export default {
   },
   methods: {
     goBack() {
-      uni.navigateBack({
-        delta: 1
-      });
-    },
-    toggleVisibility() {
-      uni.showToast({
-        title: '切换可见性',
-        icon: 'none'
-      });
+      uni.navigateBack();
     },
     loadMore() {
       if (this.isLoading) return;
+      if (this.page.pageNo >= this.page.totalPage) return;
 
       this.isLoading = true;
       this.page.pageNo += 1;
@@ -130,15 +119,6 @@ export default {
       this.page.pageNo  = 1;
       this.queryTalkNotify();
       this.isRefreshing = false;
-    },
-    formatCurrentTime() {
-      const now = new Date();
-      const month = (now.getMonth() + 1).toString().padStart(2, '0');
-      const day = now.getDate().toString().padStart(2, '0');
-      const hours = now.getHours().toString().padStart(2, '0');
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-
-      return `${month}月${day}日${hours}:${minutes}`;
     },
     replyMessage(item) {
       // 关闭所有其他回复框
@@ -153,19 +133,6 @@ export default {
       if (index !== -1) {
         this.$set(this.messageList[index], 'showReplyInput', !item.showReplyInput);
       }
-    },
-    previewImage(url) {
-      uni.previewImage({
-        urls: [url],
-        current: url
-      });
-    },
-    switchTab(index) {
-      this.currentTab = index;
-      uni.showToast({
-        title: `切换到${this.tabs[index].name}`,
-        icon: 'none'
-      });
     },
     queryTalkNotify() {
       let params = {
@@ -301,7 +268,7 @@ export default {
   margin-bottom: 16rpx;
 }
 
-.image-wrapper {
+.media-wrapper {
   display: flex;
   position: relative;
   margin: 16rpx 0;
@@ -310,11 +277,18 @@ export default {
   overflow: hidden;
 }
 
+.media-section {
+  position: relative;
+}
+
 .content-image {
   width: 180rpx;
   height: 180rpx;
-  border-radius: 12rpx;
-  background-color: #f0f0f0;
+}
+
+.media-icon {
+  width: 180rpx;
+  height: 180rpx;
 }
 
 .image-caption {
