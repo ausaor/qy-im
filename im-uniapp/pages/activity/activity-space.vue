@@ -45,7 +45,6 @@
             <view class="more-action cursor-pointer" @click.stop="moreAction(item)">
               <uni-icons type="more-filled" size="30"></uni-icons>
             </view>
-<!--            <text class="delete-btn cursor-pointer" @click="deleteMoment(index)" v-if="item.isOwner">删除</text>-->
           </view>
 
           <view class="content">
@@ -1183,6 +1182,7 @@ export default {
   margin-top: 10rpx;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .like-comment {
@@ -1214,24 +1214,22 @@ export default {
 }
 
 .comment {
+  width: 100%;
   margin-bottom: 12rpx;
   display: flex;
-  align-items: flex-end;
-  height: 38rpx;
+  align-items: flex-start;
 }
 
 .comment-user {
   font-size: 28rpx;
   color: #576b95;
   font-weight: 500;
-  height: 38rpx;
 }
 
 .reply-user {
   font-size: 28rpx;
   color: #576b95;
   font-weight: 500;
-  height: 38rpx;
 }
 
 .comment-text {
@@ -1239,8 +1237,7 @@ export default {
   font-size: 28rpx;
   color: #333333;
   display: flex;
-  align-items: flex-end;
-  height: 38rpx;
+  align-items: flex-start;
 }
 
 .comment-rich-text {
