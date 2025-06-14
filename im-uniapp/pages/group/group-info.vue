@@ -31,13 +31,22 @@
         <view class="view-btn" v-if="group.groupType!==0" @click="switchCharacterAvatar">
           <uni-icons type="person" size="20" color="#888888"></uni-icons>
         </view>
-        <view class="view-btn" @click="toGroupSpace">
-          <svg-icon icon-class="shejiaotubiao-40" style="width: 86rpx;height: 86rpx;"></svg-icon>
-        </view>
 			</view>
 			<view class="member-more" @click="onShowMoreMmeber()">{{ `查看全部群成员${groupMembers.length}人` }}></view>
 		</view>
 		<view class="form">
+      <view class="form-item" style="padding-top: 15rpx;" @click="toGroupSpace">
+        <view class="form-item-left">
+          <svg-icon icon-class="shejiaotubiao-40" style="width: 60rpx;height: 60rpx;"></svg-icon>
+          <text style="margin-left: 10rpx;margin-right: 10rpx;">群空间</text>
+          <view v-show="unreadNotifyCount > 0" class="notify-count">{{unreadNotifyCount}}</view>
+        </view>
+        <view class="form-item-right">
+          <text class="unread-talk-count" v-show="unreadTalkCount > 0">{{unreadTalkCount}}条新动态</text>
+          <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="45"></head-image>
+          <uni-icons type="right" size="20" color="#888888"></uni-icons>
+        </view>
+      </view>
 			<view class="form-item">
 				<view class="label">群聊名称</view>
 				<view class="value">{{group.name}}</view>
@@ -145,6 +154,8 @@ export default {
 			})
 		},
     toGroupSpace() {
+      this.talkStore.resetGroupNotify(Number(this.groupId));
+      this.talkStore.resetGroupTalk(Number(this.groupId));
       uni.navigateTo({
         url: `/pages/activity/activity-space?category=group&section=group&groupId=${this.groupId}&spaceTitle=群空间动态`
       })
@@ -401,6 +412,30 @@ export default {
     mine() {
       return this.userStore.userInfo;
     },
+    talkList() {
+      let talkMap =this.talkStore.groupsTalks;
+      let talks = talkMap.get(this.group.id);
+      if (talks && talks.length > 2) {
+        return talks.slice(0, 2);
+      }
+      return talks ? talks : [];
+    },
+    unreadTalkCount() {
+      let talkMap =this.talkStore.groupsTalks;
+      let talks = talkMap.get(this.group.id);
+      if (talks) {
+        return talks.length;
+      }
+      return 0;
+    },
+    unreadNotifyCount() {
+      let notifyMap =this.talkStore.groupNotify;
+      let count = notifyMap.get(this.group.id);
+      if (count) {
+        return count;
+      }
+      return 0;
+    },
 	},
 	onLoad(options) {
 		this.groupId = options.id;
@@ -527,6 +562,36 @@ export default {
 			background: white;
 			align-items: center;
 			margin-top: 2rpx;
+
+      .form-item-left {
+        display: flex;
+        flex: 1;
+        align-items: center;
+
+        .notify-count {
+          background-color: #f56c6c;
+          color: white;
+          font-size: 20rpx;
+          font-weight: 500;
+          width: 30rpx;
+          height: 30rpx;
+          line-height: 30rpx;
+          border-radius: 50%;
+          text-align: center;
+        }
+      }
+
+      .form-item-right {
+        display: flex;
+        align-items: center;
+
+        .unread-talk-count {
+          margin-right: 10rpx;
+          font-size: 20rpx;
+          font-weight: 500;
+          color: red;
+        }
+      }
 			
 			.label {
 				width: 220rpx;

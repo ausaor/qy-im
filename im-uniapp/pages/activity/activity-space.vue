@@ -20,7 +20,7 @@
         <image class="bg-image" src="@/static/image/activity-bg.jpg" mode="aspectFill"/>
         <head-image class="my-head-image" :url="mine.headImage" :name="mine.nickName" size="small"></head-image>
         <uni-icons class="refresh-btn" type="refresh" color="white" size="24" @click="refreshTalkList"></uni-icons>
-        <text class="chatbubble-btn">
+        <text class="chatbubble-btn" v-if="showNotify">
           <uni-badge class="uni-badge-left-margin" :text="notifyCount" :offset="[3, 3]" absolute="rightTop" size="small">
             <uni-icons type="chatbubble" color="white" size="24" @click="toNotifyPage"></uni-icons>
           </uni-badge>
@@ -202,6 +202,7 @@ export default {
   components: {CommentBox, CharacterAvatarList, CharacterList, GroupTemplateList, SvgIcon, HeadImage},
   data() {
     return {
+      showNotify: true,
       showAdd: true,
       spaceTitle: '空间动态',
       headerBgColor: 'rgba(239, 244, 255, 0)', // 初始透明
@@ -781,6 +782,7 @@ export default {
     this.section = options.section;
     if (this.section === 'friend' || this.section === 'region') {
       this.showAdd = false;
+      this.showNotify = false;
     }
     if (options.groupId) {
       this.groupId = options.groupId;

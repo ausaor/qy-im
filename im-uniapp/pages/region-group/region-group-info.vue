@@ -12,13 +12,22 @@
             </view>
           </view>
         </view>
-        <view class="view-btn" @click="toRegionGroupSpace">
-          <svg-icon icon-class="shejiaotubiao-40" style="width: 86rpx;height: 86rpx;"></svg-icon>
-        </view>
       </view>
       <view class="member-more" @click="onShowMoreMember()">{{ `查看全部群成员${regionGroupMembers.length}人` }}></view>
     </view>
     <view class="form">
+      <view class="form-item" @click="toRegionGroupSpace">
+        <view class="form-item-left">
+          <svg-icon icon-class="shejiaotubiao-40" style="width: 60rpx;height: 60rpx;"></svg-icon>
+          <text style="margin-left: 10rpx;margin-right: 10rpx;">地区空间</text>
+          <view v-show="unreadNotifyCount > 0" class="notify-count">{{unreadNotifyCount}}</view>
+        </view>
+        <view class="form-item-right">
+          <text class="unread-talk-count" v-show="unreadTalkCount > 0">{{unreadTalkCount}}条新动态</text>
+          <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="45"></head-image>
+          <uni-icons type="right" size="20" color="#888888"></uni-icons>
+        </view>
+      </view>
       <view class="form-item">
         <view class="label" style="color: #3c9cff;" @click="chooseMember">选择成员</view>
         <view class="value" style="display: flex;align-items: center;">
@@ -116,6 +125,8 @@ export default {
       })
     },
     toRegionGroupSpace() {
+      this.talkStore.resetRegionTalk(this.regionGroup.code);
+      this.talkStore.resetRegionNotify(this.regionGroup.code);
       uni.navigateTo({
         url: `/pages/activity/activity-space?category=region&section=my-region&regionGroupId=${this.regionGroup.id}&regionCode=${this.regionGroup.code}&spaceTitle=地区空间动态`
       })
@@ -351,6 +362,30 @@ export default {
     mine() {
       return this.userStore.userInfo;
     },
+    talkList() {
+      let talkMap =this.talkStore.regionTalks;
+      let talks = talkMap.get(this.regionGroup.code)
+      if (talks && talks.length > 2) {
+        return talks.slice(0, 2);
+      }
+      return talks ? talks : [];
+    },
+    unreadTalkCount() {
+      let talkMap =this.talkStore.regionTalks;
+      let talks = talkMap.get(this.regionGroup.code);
+      if (talks) {
+        return talks.length;
+      }
+      return 0;
+    },
+    unreadNotifyCount() {
+      let notifyMap =this.talkStore.regionNotify;
+      let count = notifyMap.get(this.regionGroup.code);
+      if (count) {
+        return count;
+      }
+      return 0;
+    }
   },
   onLoad(options) {
     this.regionGroupId = options.id;
@@ -478,6 +513,36 @@ export default {
       background: white;
       align-items: center;
       margin-top: 2rpx;
+
+      .form-item-left {
+        display: flex;
+        flex: 1;
+        align-items: center;
+
+        .notify-count {
+          background-color: #f56c6c;
+          color: white;
+          font-size: 20rpx;
+          font-weight: 500;
+          width: 30rpx;
+          height: 30rpx;
+          line-height: 30rpx;
+          border-radius: 50%;
+          text-align: center;
+        }
+      }
+
+      .form-item-right {
+        display: flex;
+        align-items: center;
+
+        .unread-talk-count {
+          margin-right: 10rpx;
+          font-size: 20rpx;
+          font-weight: 500;
+          color: red;
+        }
+      }
 
       .label {
         width: 220rpx;
