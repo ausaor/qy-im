@@ -766,16 +766,15 @@ export default {
 			});
 		},
 		onScrollToTop() {
-			if (this.showMinIdx == 0) {
-				console.log("消息已滚动到顶部")
-				return;
-			}
-			//  #ifndef H5
-			// 防止滚动条定格在顶部，不能一直往上滚
-			this.scrollToMsgIdx(this.showMinIdx);
-			// #endif
-			// 多展示20条信息
-			this.showMinIdx = this.showMinIdx > 20 ? this.showMinIdx - 20 : 0;
+      console.log("onScrollToTop")
+      if (this.showMinIdx > 0) {
+        //  #ifndef H5
+        // 防止滚动条定格在顶部，不能一直往上滚
+        this.scrollToMsgIdx(this.showMinIdx);
+        // #endif
+        // 多展示20条信息
+        this.showMinIdx = this.showMinIdx > 20 ? this.showMinIdx - 20 : 0;
+      }
 		},
 		onShowMore() {
 			if (this.chat.type == "GROUP") {

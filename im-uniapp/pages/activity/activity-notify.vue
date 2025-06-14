@@ -16,19 +16,18 @@
         class="message-list"
         scroll-y="true"
         @scrolltolower="loadMore"
-        @refresherrefresh="onRefresh"
         refresher-enabled="true"
         :refresher-triggered="isRefreshing"
     >
       <view class="message-item" v-for="(item, index) in messageList" :key="index">
         <!-- 用户信息 -->
         <view class="user-info">
-          <image class="avatar" :src="item.avatar" mode="aspectFill"></image>
+          <head-image :url="item.avatar" :name="item.nickname" size="small" :id="item.commentUserId"></head-image>
           <view class="user-meta">
             <text class="username">{{ item.nickname }}</text>
             <text class="time">{{ item.createTime }}</text>
           </view>
-          <view class="reply-btn" @tap="replyMessage(item)">
+          <view class="reply-btn" v-if="item.actionType===1" @tap="replyMessage(item)">
             <text>回复</text>
           </view>
         </view>
@@ -50,6 +49,7 @@
               <image v-if="item.talk.fileList[0].fileType === 1" class="content-image" :src="item.talk.fileList[0].url" mode="aspectFill"></image>
               <image v-if="item.talk.fileList[0].fileType === 2" class="content-image" :src="item.talk.fileList[0].coverUrl" mode="aspectFill"></image>
               <svg-icon v-if="item.talk.fileList[0].fileType === 3" :icon-class="'yinpin'" class="media-icon"></svg-icon>
+              <text v-if="item.talk.fileList[0].fileType === 2" class="play-icon iconfont icon-play"></text>
             </view>
             <view class="image-caption">
               <text class="caption-prefix">{{item.talk.nickName}}：</text>
@@ -61,7 +61,7 @@
           <view class="replies" v-if="item.replyTalkComment && item.replyTalkComment.length > 0">
             <view class="reply-item" v-for="(reply, rIndex) in item.replyTalkComment" :key="rIndex">
               <text class="reply-username">{{ reply.userNickname }}</text>
-              <text v-if="reply.replyCommentId" style="margin: 0 5rpx;color: #1890ff;">回复</text>
+              <text v-if="reply.replyCommentId" style="margin: 0 5rpx;color: #1890ff;font-size: 28rpx;">回复</text>
               <text class="reply-username" v-if="reply.replyCommentId">{{ reply.replyUserNickname }}</text>
               <text>：</text>
               <up-parse class="reply-content" :showImgMenu="false" :content="nodesText(reply.content)"></up-parse>
@@ -69,8 +69,8 @@
           </view>
 
           <!-- 回复输入框 -->
-          <view class="reply-input-box">
-            <text class="reply-to">回复{{ item.nickname }}:</text>
+          <view class="reply-input-box" v-if="item.actionType===1">
+            <text class="reply-to" @click="replyMessage(item)">回复{{ item.nickname }}:</text>
           </view>
         </view>
       </view>
@@ -80,11 +80,16 @@
         <text>加载中...</text>
       </view>
     </scroll-view>
+    <comment-box  ref="commentBox" @submit="submitComment" :comment-placeholder="commentPlaceholder"></comment-box>
   </view>
 </template>
 
 <script>
+import CommentBox from "../../components/comment-box/comment-box.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
+
 export default {
+  components: {HeadImage, CommentBox},
   data() {
     return {
       category: null,
@@ -97,6 +102,8 @@ export default {
         pageSize: 10,
         totalPage: 0,
       },
+      commentPlaceholder:  '说点什么...',
+      curMessage: {},
       messageList: []
     }
   },
@@ -121,18 +128,9 @@ export default {
       this.isRefreshing = false;
     },
     replyMessage(item) {
-      // 关闭所有其他回复框
-      this.messageList.forEach(msg => {
-        if (msg.id !== item.id) {
-          msg.showReplyInput = false;
-        }
-      });
-
-      // 切换当前消息的回复框
-      const index = this.messageList.findIndex(msg => msg.id === item.id);
-      if (index !== -1) {
-        this.$set(this.messageList[index], 'showReplyInput', !item.showReplyInput);
-      }
+      this.curMessage = item;
+      this.commentPlaceholder = `回复${item.nickname}：`;
+      this.$refs.commentBox.open();
     },
     queryTalkNotify() {
       let params = {
@@ -157,13 +155,39 @@ export default {
       let text = this.$url.replaceURLWithHTMLLinks(content, color)
       return this.$emo.transform(text, 'emoji-small').replace(/\n/g, '<br>');
     },
+    submitComment(sendText) {
+      let talk = this.curMessage.talk;
+      let params = {
+        talkId: talk.id,
+        content: sendText,
+        userNickname: talk.commentCharacterName,
+        characterId: talk.commentCharacterId,
+        avatarId: talk.commentCharacterAvatarId,
+        userAvatar: talk.commentCharacterAvatar,
+        replyCommentId: this.curMessage.commentId
+      }
+      this.$http({
+        url: "/talk/addTalkComment",
+        method: 'post',
+        data: params
+      }).then((data) => {
+        if (this.curMessage.replyTalkComment && this.curMessage.replyTalkComment.length) {
+          this.curMessage.replyTalkComment.push(data);
+        } else {
+          this.curMessage.replyTalkComment = [data];
+        }
+      }).finally(() => {
+        this.$refs.commentBox.cancel();
+        this.commentPlaceholder = '说点什么...';
+      })
+    }
   },
   onLoad(options) {
     this.category = options.category;
     this.groupId = options.groupId;
     this.regionCode = options.regionCode;
     this.queryTalkNotify();
-  }
+  },
 }
 </script>
 
@@ -274,6 +298,7 @@ export default {
   margin: 16rpx 0;
   width: 100%;
   border-radius: 12rpx;
+  background-color: #f5f5f5;
   overflow: hidden;
 }
 
@@ -292,11 +317,19 @@ export default {
 }
 
 .image-caption {
-  background-color: #f5f5f5;
   flex: 1;
   padding: 16rpx;
   display: flex;
   align-items: center;
+}
+
+.play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 100rpx;
+  color: white;
 }
 
 .caption-prefix {
@@ -356,6 +389,8 @@ export default {
 .like-info {
   display: flex;
   align-items: center;
+  width: 100%;
+  background-color: #f0f8ff;
 }
 
 .like-icon {

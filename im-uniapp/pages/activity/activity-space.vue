@@ -131,8 +131,8 @@
 
             <view class="star-user">
               <uni-icons v-if="item.talkStarVOS && item.talkStarVOS.length > 0" type="hand-up-filled" size="20" :color="'#666'"/>
-              <text v-for="(user, user_index) in item.talkStarVOS" :key="user_index">
-                {{ user.nickname }}
+              <text v-for="(star, user_index) in item.talkStarVOS" :key="user_index">
+                <text @click.stop="showUserInfo(star.userId)">{{ star.nickname }}</text>
                 {{user_index < item.talkStarVOS.length - 1 ? '、' : ''}}
               </text>
             </view>
@@ -161,28 +161,7 @@
     </scroll-view>
 
     <!-- 评论输入框 -->
-    <uni-popup ref="commentPopup" type="bottom" @change="commentPopupChange">
-      <view class="comment-input-box">
-<!--        <input
-            class="input"
-            v-model="commentText"
-            :placeholder="commentPlaceholder"
-            @confirm="submitComment"
-        />-->
-        <editor id="editor" class="comment-input" ref="myEditor" :placeholder="commentPlaceholder"
-                :read-only="isReadOnly" @focus="onEditorFocus" @blur="onEditorBlur" @ready="onEditorReady" @input="onTextInput">
-        </editor>
-        <uni-icons @click="chooseEmoji" custom-prefix="iconfont" type="icon-icon_emoji" size="32" :color="showEmo ? '#07C160' : '#cccccc'"/>
-        <view class="send-btn cursor-pointer" size="mini" @click="submitComment">发送</view>
-      </view>
-      <scroll-view class="emo-box" scroll-y="true" v-show="showEmo">
-        <view class="emotion-item-list">
-          <image class="emotion-item emoji-large" :title="emoText" :src="$emo.textToPathOriginal(emoText)"
-                 v-for="(emoText, i) in $emo.originalEmoTextList" :key="i" @click="selectEmoji(emoText)" mode="aspectFit"
-                 lazy-load="true"></image>
-        </view>
-      </scroll-view>
-    </uni-popup>
+    <comment-box  ref="commentBox" @submit="submitComment" :comment-placeholder="commentPlaceholder"></comment-box>
     <uni-popup ref="talkSetPopup" type="bottom" background-color="#fff" @change="talkSetPopupChange">
       <view style="font-size: 28rpx;">
         <view style="background-color: white;padding: 20rpx 0;display: flex;justify-content: center;align-items: center;gap: 20rpx;">
@@ -217,9 +196,10 @@ import GroupTemplateList from "../../components/group-template-list/group-templa
 import CharacterList from "../../components/character-list/character-list.vue";
 import {throttle} from "../../common/throttle";
 import CharacterAvatarList from "../../components/character-avatar-list/character-avatar-list.vue";
+import CommentBox from "../../components/comment-box/comment-box.vue";
 
 export default {
-  components: {CharacterAvatarList, CharacterList, GroupTemplateList, SvgIcon, HeadImage},
+  components: {CommentBox, CharacterAvatarList, CharacterList, GroupTemplateList, SvgIcon, HeadImage},
   data() {
     return {
       showAdd: true,
@@ -296,44 +276,6 @@ export default {
       }
       this.headerBgColor = `rgba(239, 244, 255, ${opacity})`;
     }, 150),
-    selectEmoji(emoText) {
-      let path = this.$emo.textToPathOriginal(emoText)
-      // 先把键盘禁用了，否则会重新弹出键盘
-      this.isReadOnly = true;
-      this.isEmpty = false;
-      this.$nextTick(() => {
-        this.editorCtx.insertImage({
-          src: path,
-          alt: emoText,
-          extClass: 'emoji-small',
-          nowrap: true,
-          complete: () => {
-            this.isReadOnly = false;
-            this.editorCtx.blur();
-          }
-        });
-      })
-    },
-    onTextInput(e) {
-      //const content = e.detail.html; // 获取富文本 HTML
-      //const text = e.detail.text;    // 获取纯文本
-      //this.form.content = content;
-      this.isEmpty = e.detail.html == '<p><br></p>'
-    },
-    onEditorReady() {
-      console.log("编辑器已初始化")
-      const query = uni.createSelectorQuery().in(this);
-      query.select('#editor').context((res) => {
-        this.editorCtx = res.context
-      }).exec()
-    },
-    onEditorFocus(e) {
-      this.isFocus = true;
-      this.showEmo = false;
-    },
-    onEditorBlur(e) {
-      this.isFocus = false;
-    },
     goBack() {
       uni.navigateBack();
     },
@@ -548,73 +490,44 @@ export default {
       }
       this.curTalk = talk;
       this.comment.talkId = talk.id
-      this.$refs.commentPopup.open();
+      this.$refs.commentBox.open();
     },
-    submitComment() {
-      this.editorCtx.getContents({
-        success: async (e) => {
-          let commentText = "";
-          e.delta.ops.forEach((op) => {
-            if (op.insert.image) {
-              // emo表情
-              commentText += `#${op.attributes.alt};`
-            } else (
-                // 文字
-                commentText += op.insert
-            )
-          })
-          if (!commentText.trim()) {
-            return uni.showToast({
-              title: "不能发送空白信息",
-              icon: "none"
-            });
-          }
-          let sendText = commentText;
-          if (!sendText.trim()) {
-            return
-          }
-          this.comment.content = sendText
-          let talk = this.curTalk;
-          let params = {
-            talkId: talk.id,
-            content: this.comment.content,
-            userNickname: talk.commentCharacterName,
-            characterId: talk.commentCharacterId,
-            avatarId: talk.commentCharacterAvatarId,
-            userAvatar: talk.commentCharacterAvatar,
-            replyCommentId: this.comment.replyCommentId
-          }
-          this.$http({
-            url: "/talk/addTalkComment",
-            method: 'post',
-            data: params
-          }).then((data) => {
-            if (data.characterId) {
-              talk.commentCharacterId = data.characterId;
-              talk.commentCharacterAvatarId = data.avatarId;
-              talk.commentCharacterName = data.userNickname;
-              talk.commentCharacterAvatar = data.userAvatar;
-            }
-            talk.talkCommentVOS.push(data);
-            uni.showToast({
-              title: "评论成功",
-              icon: 'none'
-            });
-          }).finally(() => {
-            this.$refs.commentPopup.close();
-            this.comment = {}
-            this.commentPlaceholder = '说点什么...';
-            this.curTalk = {};
-            this.commentText = '';
-            this.showEmo = false;
-          })
-        }
-      })
-    },
-    commentPopupChange(e) {
-      if (!e.show) {
-        this.commentPlaceholder = "说点什么...";
+    submitComment(sendText) {
+      this.comment.content = sendText
+      let talk = this.curTalk;
+      let params = {
+        talkId: talk.id,
+        content: this.comment.content,
+        userNickname: talk.commentCharacterName,
+        characterId: talk.commentCharacterId,
+        avatarId: talk.commentCharacterAvatarId,
+        userAvatar: talk.commentCharacterAvatar,
+        replyCommentId: this.comment.replyCommentId
       }
+      this.$http({
+        url: "/talk/addTalkComment",
+        method: 'post',
+        data: params
+      }).then((data) => {
+        if (data.characterId) {
+          talk.commentCharacterId = data.characterId;
+          talk.commentCharacterAvatarId = data.avatarId;
+          talk.commentCharacterName = data.userNickname;
+          talk.commentCharacterAvatar = data.userAvatar;
+        }
+        talk.talkCommentVOS.push(data);
+        uni.showToast({
+          title: "评论成功",
+          icon: 'none'
+        });
+      }).finally(() => {
+        this.$refs.commentBox.cancel();
+        this.comment = {}
+        this.commentPlaceholder = '说点什么...';
+        this.curTalk = {};
+        this.commentText = '';
+        this.showEmo = false;
+      })
     },
     doDeleteComment() {
       let talk = this.curTalk;
@@ -769,9 +682,6 @@ export default {
       this.curTalk.commentCharacterAvatar = character.avatar;
       this.curTalk.commentCharacterName = character.name;
     },
-    chooseEmoji() {
-      this.showEmo = !this.showEmo;
-    },
     async moreCharacterAvatars(character) {
       this.commentSetForm.commentCharacterId = character.id;
       this.commentSetForm.nickName = character.name;
@@ -804,11 +714,16 @@ export default {
       if (this.notifyCount > 0) {
         this.readedTalkNotify();
       }
+
       let url = `/pages/activity/activity-notify?category=${this.category}`;
-      if (this.category === 'group') {
+      if (this.category === 'private') {
+        this.talkStore.resetUnreadTalkInfo();
+      } else if (this.category === 'group') {
         url += `&groupId=${this.groupId}`;
+        this.talkStore.resetGroupNotify(Number(this.groupId));
       } else if (this.category === 'region') {
         url += `&regionCode=${this.regionCode}`;
+        this.talkStore.resetRegionNotify(this.regionCode);
       }
       uni.navigateTo({
         url: url

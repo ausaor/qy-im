@@ -96,9 +96,9 @@
               <svg class="icon svg-icon" aria-hidden="true">
                 <use xlink:href="#icon-dianzan1"></use>
               </svg>
-              <span class="star-user" v-for="(user, user_index) in item.talkStarVOS" :key="user_index"
-                    @click="showUserInfo($event, user.userId)">
-                {{ user.nickname }}
+              <span class="star-user" v-for="(star, user_index) in item.talkStarVOS" :key="user_index"
+                    @click="showUserInfo($event, star.userId)">
+                {{ star.nickname }}
                 <span v-if="user_index < item.talkStarVOS.length - 1">，</span>
               </span>
             </div>
