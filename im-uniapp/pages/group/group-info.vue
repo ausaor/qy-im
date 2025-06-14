@@ -154,7 +154,6 @@ export default {
 			})
 		},
     toGroupSpace() {
-      this.talkStore.resetGroupNotify(Number(this.groupId));
       this.talkStore.resetGroupTalk(Number(this.groupId));
       uni.navigateTo({
         url: `/pages/activity/activity-space?category=group&section=group&groupId=${this.groupId}&spaceTitle=群空间动态`

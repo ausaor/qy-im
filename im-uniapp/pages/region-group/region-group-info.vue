@@ -126,7 +126,6 @@ export default {
     },
     toRegionGroupSpace() {
       this.talkStore.resetRegionTalk(this.regionGroup.code);
-      this.talkStore.resetRegionNotify(this.regionGroup.code);
       uni.navigateTo({
         url: `/pages/activity/activity-space?category=region&section=my-region&regionGroupId=${this.regionGroup.id}&regionCode=${this.regionGroup.code}&spaceTitle=地区空间动态`
       })

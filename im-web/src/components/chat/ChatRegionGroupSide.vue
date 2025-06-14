@@ -362,7 +362,6 @@ export default {
     openRegionSpace() {
       this.regionSpaceVisible = true;
       this.$store.commit("resetRegionTalk", this.regionGroup.code);
-      this.$store.commit("resetRegionNotify", this.regionGroup.code);
       this.$refs.talkListRef.refreshTalkList();
     },
     closeDrawer() {
@@ -379,7 +378,9 @@ export default {
     showTalkNotify() {
       this.$refs.talkNotifyRef.show();
       this.$store.commit("resetRegionNotify", this.regionGroup.code);
-      this.readedTalkNotify();
+      if (this.unreadNotifyCount > 0) {
+        this.readedTalkNotify();
+      }
     },
     readedTalkNotify() {
       let params = {

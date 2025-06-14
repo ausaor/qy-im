@@ -270,7 +270,6 @@
         this.groupSpaceVisible = true;
         this.$refs.talkListRef.refreshTalkList();
         this.$store.commit("resetGroupTalk", this.group.id);
-        this.$store.commit("resetGroupNotify", this.group.id);
       },
       closeDrawer() {
         this.groupSpaceVisible = false;
@@ -286,7 +285,9 @@
       showTalkNotify() {
         this.$refs.talkNotifyRef.show();
         this.$store.commit("resetGroupNotify", this.group.id);
-        this.readedTalkNotify();
+        if (this.unreadNotifyCount > 0) {
+          this.readedTalkNotify();
+        }
       },
       readedTalkNotify() {
         let params = {
