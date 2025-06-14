@@ -75,7 +75,7 @@ export default {
         if (this.notifyCount > 0) {
           this.readedTalkNotify();
         }
-        this.talkStore.resetUnreadTalkInfo();
+        this.talkStore.resetTalkList();
       }
       uni.navigateTo({
         url: "/pages/activity/activity-space?category=private&section=my-friends"

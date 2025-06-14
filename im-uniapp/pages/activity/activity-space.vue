@@ -717,7 +717,7 @@ export default {
 
       let url = `/pages/activity/activity-notify?category=${this.category}`;
       if (this.category === 'private') {
-        this.talkStore.resetUnreadTalkInfo();
+        this.talkStore.resetUnreadTalkNotify();
       } else if (this.category === 'group') {
         url += `&groupId=${this.groupId}`;
         this.talkStore.resetGroupNotify(Number(this.groupId));

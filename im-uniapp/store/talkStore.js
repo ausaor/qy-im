@@ -36,7 +36,13 @@ export default defineStore('talkStore', {
             this.notifyCount = 0;
             this.saveTalkToStorage();
         },
+        resetTalkList() {
+            this.unreadUserList = [];
+            this.lastTalks = [];
+            this.saveTalkToStorage();
+        },
         addNewTalk(talk) {
+            this.privateTalkMaxId = talk.id;
             if (!this.unreadUserList.includes(talk.userId)) {
                 this.unreadUserList.push(talk.userId);
             }
