@@ -189,6 +189,8 @@ export default {
 			isFocus: false, // 编辑器是否焦点
 			isReadOnly: false, // 编辑器是否只读
 			playingAudio: null, // 当前正在播放的录音消息
+      playAudios: [],
+      playingAudioState: 'STOP',
       words: {
         group: [],
         character: []
@@ -808,13 +810,21 @@ export default {
 			this.isFocus = false;
 		},
 		onAudioStateChange(state, msgInfo) {
+      this.playingAudioState = state;
 			const playingAudio = this.$refs['message' + msgInfo.id][0]
 			if (state == 'PLAYING' && playingAudio != this.playingAudio) {
 				// 停止之前的录音
 				this.playingAudio && this.playingAudio.stopPlayAudio();
 				// 记录当前正在播放的消息
 				this.playingAudio = playingAudio;
-			}
+			} else if (state === 'STOP') {
+        if (this.playAudios.length > 0) {
+          const msg = this.playAudios.shift();
+          this.$refs[`message${msg.id}`][0].onPlayAudio(JSON.parse(msg.content).voice);
+        }
+      } else if (state === 'PAUSE') {
+        this.playAudios = [];
+      }
 		},
 		loadReaded(fid) {
 			this.$http({
@@ -1166,6 +1176,20 @@ export default {
         this.loadGroup(this.group.id);
       }
     },
+    handleGroupAudioEvent(msg) {
+      console.log("handleGroupAudioEvent", msg);
+      if (msg.chatType === 'GROUP' && this.group.id === msg.groupId) {
+        this.playAudios.push(msg);
+        setTimeout(() => {
+          if (this.playingAudioState === 'STOP') {
+            if (this.$refs[`message${msg.id}`][0]) {
+              this.playAudios.shift();
+              this.$refs[`message${msg.id}`][0].onPlayAudio(JSON.parse(msg.content).voice);
+            }
+          }
+        }, 2000);
+      }
+    },
     playVideo(data) {
       this.videoSrc = data.videoUrl;
       this.videoCoverImage = data.coverImageUrl;
@@ -1265,6 +1289,7 @@ export default {
 	},
 	onLoad(options) {
     uni.$on('group-change-event', this.handleGroupChangeEvent);
+    uni.$on('group-audio-event', this.handleGroupAudioEvent);
 		// 聊天数据
 		this.chat = this.chatStore.chats[options.chatIdx];
 		// 初始状态只显示20条消息
@@ -1301,11 +1326,13 @@ export default {
 	onUnload() {
     console.log('chat-box-onUnload')
     uni.$off('group-change-event', this.handleGroupChangeEvent) // 清理监听
+    uni.$off('group-audio-event', this.handleGroupAudioEvent) // 清理监听
 		this.unListenKeyboard();
 	},
   onHide() {
     console.log('chat-box-onHide')
     uni.$off('group-change-event', this.handleGroupChangeEvent) // 清理监听
+    uni.$off('group-audio-event', this.handleGroupAudioEvent) // 清理监听
   },
 	onShow() {
 		if (this.needScrollToBottom) {

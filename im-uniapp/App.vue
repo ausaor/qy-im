@@ -221,6 +221,9 @@ export default {
       if (msg.type == enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
         uni.$emit('group-change-event', msg);
       }
+      if (msg.type == this.$enums.MESSAGE_TYPE.WORD_VOICE && this.mine.autoPlay) {
+        uni.$emit('group-audio-event', msg);
+      }
 			// 消息已读处理
 			if (msg.type == enums.MESSAGE_TYPE.READED) {
 				// 我已读对方的消息，清空已读数量
@@ -530,6 +533,11 @@ export default {
 			// #endif
 		}
 	},
+  computed: {
+    mine() {
+      return this.userStore.userInfo;
+    },
+  },
 	onLaunch() {
 		this.$mountStore();
 		// 延迟1s，避免用户看到页面跳转
