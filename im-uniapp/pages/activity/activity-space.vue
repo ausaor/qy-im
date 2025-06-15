@@ -137,7 +137,7 @@
             </view>
 
             <view class="comments" v-if="item.talkCommentVOS.length">
-              <view v-for="(comment, cIndex) in item.talkCommentVOS" :key="cIndex" class="comment">
+              <view v-for="(comment, cIndex) in getDisplayComments(item)" :key="cIndex" class="comment">
                 <view class="comment-user" @click.stop="showUserInfo(comment.userId)">
                   <text>{{comment.userNickname}}</text>
                 </view>
@@ -149,6 +149,19 @@
                 <view class="comment-text" @click.stop="doComment(comment, item)">
                   <up-parse class="comment-rich-text" :showImgMenu="false" :content="nodesText(comment.content)"></up-parse>
                 </view>
+              </view>
+              <!-- 展开更多评论按钮 -->
+              <view class="expand-comments"
+                  v-if="item.talkCommentVOS.length > getDisplayCount(item.id)"
+                  @tap="expandComments(item.id)"
+              >
+                <text class="expand-text">展开更多评论({{ item.talkCommentVOS.length - getDisplayCount(item.id) }}条)</text>
+              </view>
+              <!-- Collapse Comments -->
+              <view class="collapse-comments"
+                   v-if="getDisplayCount(item.id) > 5"
+                   @click="collapseComments(item.id)">
+                <text class="collapse-text">收起评论</text>
               </view>
             </view>
           </view>
@@ -253,6 +266,7 @@ export default {
       isEmpty: true, // 编辑器是否为空
       isFocus: false, // 编辑器是否焦点
       isReadOnly: false, // 编辑器是否只读
+      commentDisplayCounts: {}, // 记录每个动态显示的评论数量
     };
   },
   methods: {
@@ -728,7 +742,21 @@ export default {
       uni.navigateTo({
         url: url
       })
-    }
+    },
+    getDisplayComments(talk) {
+      const displayCount = this.commentDisplayCounts[talk.id] || 5
+      return talk.talkCommentVOS.slice(0, displayCount)
+    },
+    getDisplayCount(talkId) {
+      return this.commentDisplayCounts[talkId] || 5
+    },
+    expandComments(talkId) {
+      const currentCount = this.commentDisplayCounts[talkId] || 5
+      this.$set(this.commentDisplayCounts, talkId, currentCount + 10)
+    },
+    collapseComments(talkId) {
+      this.$set(this.commentDisplayCounts, talkId, 5)
+    },
   },
   computed: {
     mine() {
@@ -1243,6 +1271,17 @@ export default {
 .comment-rich-text {
   display: flex;
   align-items: flex-end;
+}
+
+.expand-comments,.collapse-comments {
+  text-align: center;
+  padding: 10rpx 0;
+  border-top: 1rpx solid #eee;
+}
+
+.expand-text,.collapse-text {
+  color: #576b95;
+  font-size: 26rpx;
 }
 
 .comment-input-box {
