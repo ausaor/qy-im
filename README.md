@@ -15,10 +15,6 @@ GitHub：https://github.com/ausaor/qy-im
 
 ### 演示视频
 
-web端：https://www.bilibili.com/video/BV1YwV6znE29/?vd_source=2578ac860d7d3e326b54e4fa654bdb04
-
-移动端：https://www.bilibili.com/video/BV1W3ZPYNETx/?vd_source=2578ac860d7d3e326b54e4fa654bdb04
-
 
 
 ### 支持功能
@@ -82,8 +78,10 @@ web端：https://www.bilibili.com/video/BV1YwV6znE29/?vd_source=2578ac860d7d3e32
 登录页
 
 <img src="img/image-20250125205609962.png" alt="image-20250125205609962" style="zoom: 33%;float:left;" />
+
 <p style="clear:both;"></p>
 
+[QY项目截图](https://www.yuque.com/polaris-9eoq3/gy6t86/dxkffdcfelsrlc1g#uggvv)
 
 ### 联系方式
 
