@@ -132,8 +132,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         User user = userService.getById(session.getUserId());
         Talk talk = BeanUtils.copyProperties(talkAddDTO, Talk.class);
         assert talk != null;
-        // 检查动态数据
-        checkTalkData(talk);
+
         talk.setUserId(session.getUserId());
         talk.setCreateBy(session.getUserId());
         talk.setAddress(user.getProvince());
@@ -216,8 +215,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             throw new GlobalException("数据异常");
         }
         BeanUtils.copyProperties(talkUpdateDTO, talk);
-        // 检查动态数据
-        checkTalkData(talk);
+
         if (CollectionUtils.isNotEmpty(talkUpdateDTO.getFiles())) {
             talk.setFiles(talkUpdateDTO.getFiles().toJSONString());
         }
@@ -234,16 +232,6 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         }
         talk.setContent(SensitiveUtil.filter(talk.getContent()));
         this.baseMapper.updateById(talk);
-    }
-
-    private void checkTalkData(Talk talk) {
-        if (!ViewScopeEnum.contains(talk.getScope())) {
-            throw new GlobalException("可见范围异常");
-        }
-
-        if (!TalkCategoryEnum.contains(talk.getCategory())) {
-            throw new GlobalException("动态分类异常");
-        }
     }
 
     private void checkCharacterInfo(Long characterId, Long avatarId, Talk talk) {
@@ -418,10 +406,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             return PageResultVO.builder().data(Collections.emptyList()).build();
         }
 
-        List<Long> userIds = records.stream().map(Talk::getUserId).collect(Collectors.toList());
-        List<User> userList = userService.findUserByIds(userIds);
-
-        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, user -> user));
+        Set<Long> userIds = records.stream().map(Talk::getUserId).collect(Collectors.toSet());
 
         // 查询当前用户数据
         User user = userService.getById(myUserId);
@@ -434,10 +419,19 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 .eq(TalkStar::getDeleted, false)
                 .orderByAsc(TalkStar::getCreateTime)
                 .list();
+        userIds.addAll(talkStarList.stream().map(TalkStar::getUserId).collect(Collectors.toList()));
 
         // 动态评论数据(包含删除的)
         List<TalkComment> allTalkCommentList = talkCommentService.lambdaQuery().in(TalkComment::getTalkId, talkIds)
                 .orderByAsc(TalkComment::getCreateTime).list();
+
+        userIds.addAll(allTalkCommentList.stream().map(TalkComment::getUserId).collect(Collectors.toList()));
+        userIds.addAll(allTalkCommentList.stream().map(TalkComment::getReplyUserId)
+                .filter(ObjectUtil::isNotNull).collect(Collectors.toList()));
+
+        List<User> userList = userService.listByIds(userIds);
+        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, userItem -> userItem));
+
         // 根据动态id分组
         Map<Long, List<TalkComment>> allTalkCommentGroupMap = allTalkCommentList.stream().collect(Collectors.groupingBy(TalkComment::getTalkId));
 
@@ -447,6 +441,23 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         List<TalkStarVO> talkStarVOS = BeanUtils.copyProperties(talkStarList, TalkStarVO.class);
 
         List<TalkCommentVO> talkCommentVOS = BeanUtils.copyProperties(talkCommentList, TalkCommentVO.class);
+
+        talkCommentVOS.forEach(item -> {
+            if (ObjectUtil.isNull(item.getCharacterId())) {
+                item.setUserAvatar(userMap.get(item.getUserId()).getHeadImage());
+                item.setUserNickname(userMap.get(item.getUserId()).getNickName());
+            }
+            if (ObjectUtil.isNull(item.getReplyUserCharacterId()) && ObjectUtil.isNotNull(item.getReplyUserId())) {
+                item.setReplyUserAvatar(userMap.get(item.getReplyUserId()).getHeadImage());
+                item.setReplyUserNickname(userMap.get(item.getReplyUserId()).getNickName());
+            }
+        });
+        talkStarVOS.forEach(item -> {
+            if (ObjectUtil.isNull(item.getCharacterId())) {
+                item.setAvatar(userMap.get(item.getUserId()).getHeadImage());
+                item.setNickname(userMap.get(item.getUserId()).getNickName());
+            }
+        });
 
         Map<Long, List<TalkStarVO>> talkStarMap = talkStarVOS.stream().collect(Collectors.groupingBy(TalkStarVO::getTalkId));
         Map<Long, List<TalkCommentVO>> talkCommentMap = talkCommentVOS.stream().collect(Collectors.groupingBy(TalkCommentVO::getTalkId));

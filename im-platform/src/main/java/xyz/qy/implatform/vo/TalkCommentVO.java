@@ -50,6 +50,9 @@ public class TalkCommentVO {
     @ApiModelProperty(value = "回复用户昵称")
     private String replyUserNickname;
 
+    @ApiModelProperty(value = "回复用户角色id")
+    private Long replyUserCharacterId;
+
     @ApiModelProperty(value = "IP")
     private String ip;
 

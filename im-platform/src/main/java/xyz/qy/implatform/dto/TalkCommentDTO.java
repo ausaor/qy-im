@@ -2,6 +2,7 @@ package xyz.qy.implatform.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
 
@@ -18,6 +19,7 @@ public class TalkCommentDTO {
 
     @ApiModelProperty(value = "评论内容")
     @NotNull(message = "评论内容不能为空")
+    @Length(min = 1, max = 100, message = "评论内容长度不能超过100")
     private String content;
 
     @ApiModelProperty(value = "用户昵称")

@@ -3,6 +3,10 @@ package xyz.qy.implatform.dto;
 import com.alibaba.fastjson.JSONArray;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
+import xyz.qy.implatform.enums.TalkCategoryEnum;
+import xyz.qy.implatform.enums.ValidEnum;
+import xyz.qy.implatform.enums.ViewScopeEnum;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -35,6 +39,7 @@ public class TalkUpdateDTO {
     @ApiModelProperty(value = "头像")
     private String avatar;
 
+    @Length(min = 1, max = 200, message = "动态内容长度不能超过200")
     @NotBlank(message = "动态内容为空")
     @ApiModelProperty(value = "内容")
     private String content;
@@ -46,6 +51,7 @@ public class TalkUpdateDTO {
     @ApiModelProperty(value = "视频URL")
     private String videoUrl;
 
+    @ValidEnum(enumClass = ViewScopeEnum.class, property = "code", message = "无效的公布范围")
     @NotNull(message = "未选择公布范围")
     @ApiModelProperty(value = "公布范围")
     private Integer scope;
@@ -54,6 +60,8 @@ public class TalkUpdateDTO {
     private String address;
 
     @ApiModelProperty(value = "分类（private：个人，group：群聊，region：地区）")
+    @NotBlank(message = "未选择分类")
+    @ValidEnum(enumClass = TalkCategoryEnum.class, property = "code", message = "无效的分类")
     private String category;
 
     @ApiModelProperty(value = "群聊空间可见")
@@ -69,5 +77,6 @@ public class TalkUpdateDTO {
     private String regionCode;
 
     @ApiModelProperty(value = "文件列表")
+    @Size(max = 9, message = "最多只能上传9个文件")
     private JSONArray files;
 }

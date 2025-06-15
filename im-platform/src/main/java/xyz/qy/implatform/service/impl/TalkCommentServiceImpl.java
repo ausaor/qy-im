@@ -121,13 +121,14 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
         }
 
         TalkComment replyTalkComment = null;
-        if (!Objects.isNull(talkCommentDTO.getReplyCommentId())) {
+        if (ObjectUtil.isNotNull(talkCommentDTO.getReplyCommentId())) {
             replyTalkComment = baseMapper.selectById(talkCommentDTO.getReplyCommentId());
             if (!Objects.isNull(replyTalkComment)) {
                 if (myUserId.equals(replyTalkComment.getUserId())) {
                     throw new GlobalException("不能回复自己的评论");
                 }
-                talkComment.setReplyCommentId(talkCommentDTO.getReplyCommentId());
+                talkComment.setReplyUserCharacterId(replyTalkComment.getCharacterId());
+                talkComment.setReplyCommentId(replyTalkComment.getId());
                 talkComment.setReplyUserId(replyTalkComment.getUserId());
                 talkComment.setReplyUserNickname(replyTalkComment.getUserNickname());
                 talkComment.setReplyUserAvatar(replyTalkComment.getUserAvatar());

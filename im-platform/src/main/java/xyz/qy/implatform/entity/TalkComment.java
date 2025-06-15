@@ -85,6 +85,12 @@ public class TalkComment extends BaseEntity {
     private String replyUserAvatar;
 
     /**
+     * 回复用户角色id
+     */
+    @TableField(value = "reply_user_character_id")
+    private Long replyUserCharacterId;
+
+    /**
      * 回复用户昵称
      */
     @TableField(value = "reply_user_nickname")
