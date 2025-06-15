@@ -325,6 +325,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return vo;
     }
 
+    @Override
+    public List<User> findUserByIds(List<Long> ids) {
+        return this.listByIds(ids);
+    }
+
     private Friend findFriend(Long friendId) {
         UserSession session = SessionContext.getSession();
         if (session.getUserId().equals(friendId)) {

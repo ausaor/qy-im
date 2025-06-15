@@ -218,6 +218,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         BeanUtils.copyProperties(talkUpdateDTO, talk);
         // 检查动态数据
         checkTalkData(talk);
+        if (CollectionUtils.isNotEmpty(talkUpdateDTO.getFiles())) {
+            talk.setFiles(talkUpdateDTO.getFiles().toJSONString());
+        }
         if (!Objects.isNull(talkUpdateDTO.getCharacterId())) {
             checkCharacterInfo(talkUpdateDTO.getCharacterId(), talkUpdateDTO.getAvatarId(), talk);
         }
@@ -230,9 +233,6 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             talk.setAvatar(user.getHeadImage());
         }
         talk.setContent(SensitiveUtil.filter(talk.getContent()));
-        if (CollectionUtils.isNotEmpty(talkUpdateDTO.getFiles())) {
-            talk.setFiles(talkUpdateDTO.getFiles().toJSONString());
-        }
         this.baseMapper.updateById(talk);
     }
 
@@ -417,6 +417,12 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         if (CollectionUtils.isEmpty(records)) {
             return PageResultVO.builder().data(Collections.emptyList()).build();
         }
+
+        List<Long> userIds = records.stream().map(Talk::getUserId).collect(Collectors.toList());
+        List<User> userList = userService.findUserByIds(userIds);
+
+        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, user -> user));
+
         // 查询当前用户数据
         User user = userService.getById(myUserId);
 
@@ -466,6 +472,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                     talkVO.setCommentCharacterName(talkVO.getNickName());
                     talkVO.setCommentCharacterAvatar(talkVO.getAvatar());
                 }
+            } else {
+                talkVO.setAvatar(userMap.get(obj.getUserId()).getHeadImage());
+                talkVO.setNickName(userMap.get(obj.getUserId()).getNickName());
             }
             if (talkStarMap.containsKey(talkVO.getId())) {
                 talkVO.setTalkStarVOS(talkStarMap.get(talkVO.getId()));
