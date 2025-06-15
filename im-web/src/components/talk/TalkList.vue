@@ -100,7 +100,7 @@
                    :key="comment_index">
                 <div class="comment-content">
                   <head-image class="comment-avatar" :url="comment.userAvatar" :id="comment.userId" :name="comment.userNickname" :size="24"/>
-                  <span class="username" v-if="!comment.replyCommentId" @click="showUserInfo($event, comment.userId)">
+                  <span class="username" @click="showUserInfo($event, comment.userId)">
                       {{ comment.userNickname }}：
                   </span>
                   <span style="margin-left: 5px; margin-right: 5px;" v-if="comment.replyCommentId">回复</span>

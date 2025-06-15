@@ -733,6 +733,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         UserSession session = SessionContext.getSession();
         User user = userService.getById(session.getUserId());
         Group group = baseMapper.selectById(vo.getGroupId());
+        if (ObjectUtil.isNotNull(group.getTemplateGroupId())
+                && group.getTemplateGroupId().equals(vo.getTemplateGroupId())) {
+            throw new GlobalException("清选择其他群聊模板");
+        }
         if (!user.getId().equals(group.getOwnerId())) {
             throw new GlobalException("您不是群主");
         }
@@ -1073,8 +1077,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         UserSession session = SessionContext.getSession();
         User user = userService.getById(session.getUserId());
         Group group = baseMapper.selectById(vo.getGroupId());
-        if (GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(group.getGroupType())) {
-            throw new GlobalException("当前群聊已是模板角色群聊");
+        if (ObjectUtil.isNotNull(group.getTemplateGroupId())
+                && group.getTemplateGroupId().equals(vo.getTemplateGroupId())) {
+            throw new GlobalException("清选择其他群聊模板");
         }
         if (!user.getId().equals(group.getOwnerId())) {
             throw new GlobalException("您不是群主");
