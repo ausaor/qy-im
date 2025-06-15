@@ -27,13 +27,6 @@
                   max-height="200"
                   @click.prevent="previewImg(fileItem.url, [fileItem.url])"
               />
-<!--              <video v-if="fileItem.fileType == 2"
-                     class="file-items"
-                     :poster="fileItem.coverUrl"
-                     :src="fileItem.url"
-                     style="object-fit: cover"
-                     controls
-              ></video>-->
               <div v-if="fileItem.fileType == 2" class="file-items">
                 <img class="video-image" :src="fileItem.coverUrl" loading="lazy"/>
                 <span class="play-icon el-icon-video-play" @click="playVideo(fileItem.url, fileItem.coverUrl)"></span>
@@ -103,27 +96,16 @@
               </span>
             </div>
             <div class="commentBox">
-              <div class="commentItem" v-for="(comment, comment_index) in item.talkCommentVOS"
+              <div class="commentItem" v-for="(comment, comment_index) in getVisibleComments(item)"
                    :key="comment_index">
                 <div class="comment-content">
-<!--                  <avatar :url="comment.userAvatar" :userId="comment.userId" :size="'small'"
-                          class="comment-avatar"></avatar>-->
-                  <head-image class="comment-avatar" :url="comment.userAvatar" :id="comment.userId" :name="comment.userNickname" :size="32"/>
+                  <head-image class="comment-avatar" :url="comment.userAvatar" :id="comment.userId" :name="comment.userNickname" :size="24"/>
                   <span class="username" v-if="!comment.replyCommentId" @click="showUserInfo($event, comment.userId)">
                       {{ comment.userNickname }}：
                   </span>
-
-                  <div v-else style="display: flex;align-items: flex-end;">
-                    <span class="username" @click="showUserInfo($event, comment.userId)">{{
-                        comment.userNickname
-                      }}</span>
-                      <span style="margin-left: 5px; margin-right: 5px;">回复</span>
-<!--                    <avatar :url="comment.replyUserAvatar" :userId="comment.replyUserId" :size="'small'"
-                            class="comment-avatar"></avatar>-->
-                    <head-image class="comment-avatar" :url="comment.replyUserAvatar" :id="comment.replyUserId" :name="comment.replyUserNickname" :size="32"/>
-                    <span class="username"
-                          @click="showUserInfo($event, comment.replyUserId)">{{ comment.replyUserNickname }}：</span>
-                  </div>
+                  <span style="margin-left: 5px; margin-right: 5px;" v-if="comment.replyCommentId">回复</span>
+                  <head-image v-if="comment.replyCommentId" class="comment-avatar" :url="comment.replyUserAvatar" :id="comment.replyUserId" :name="comment.replyUserNickname" :size="24"/>
+                  <span class="username" v-if="comment.replyCommentId" @click="showUserInfo($event, comment.replyUserId)">{{ comment.replyUserNickname }}：</span>
                   <span class="content point" v-html="$emo.transform(comment.content)"
                         @click="handleShowCommentBox(comment, item.id, index)">
                   </span>
@@ -136,11 +118,25 @@
                         title="确认删除当前评论吗？"
                         @confirm="delComment(item, comment.id)"
                     >
-                      <el-button slot="reference" icon="el-icon-delete" size="mini" type="danger" circle
-                                 @click.stop></el-button>
+                      <el-button slot="reference" size="mini" type="text" @click.stop style="color: #d42e07">删除</el-button>
                     </el-popconfirm>
                   </div>
                 </div>
+              </div>
+              <div class="load-more-comments"
+                  v-if="item.talkCommentVOS.length > getVisibleCommentsCount(item.id)"
+                  @click="loadMoreComments(item.id)">
+                <span class="load-more-text">
+                  展开更多评论 ({{ item.talkCommentVOS.length - getVisibleCommentsCount(item.id) }}条)
+                </span>
+                <i class="el-icon-arrow-down"></i>
+              </div>
+              <!-- Collapse Comments -->
+              <div class="collapse-comments"
+                  v-if="getVisibleCommentsCount(item.id) > 5"
+                  @click="collapseComments(item.id)">
+                <span class="collapse-text">收起评论</span>
+                <i class="el-icon-arrow-up"></i>
               </div>
               <input-box ref="contentInputBox" :placeholder="placeholder" @send="(...args) => sayComment(item, ...args)"></input-box>
             </div>
@@ -292,6 +288,7 @@ export default {
       showEmoji: false,
       videoUrl: '',
       posterUrl: '',
+      visibleCommentsCount: {},
     }
   },
   created() {
@@ -301,6 +298,20 @@ export default {
   },
   computed: {},
   methods: {
+    getVisibleComments(talk) {
+      const count = this.visibleCommentsCount[talk.id] || 5
+      return talk.talkCommentVOS.slice(0, count)
+    },
+    getVisibleCommentsCount(talkId) {
+      return this.visibleCommentsCount[talkId] || 5
+    },
+    loadMoreComments(talkId) {
+      const currentCount = this.visibleCommentsCount[talkId] || 5
+      this.$set(this.visibleCommentsCount, talkId, currentCount + 10)
+    },
+    collapseComments(talkId) {
+      this.$set(this.visibleCommentsCount, talkId, 5)
+    },
     sayComment(talk, sendText) {
       if (!sendText.trim()) {
         return
@@ -793,12 +804,6 @@ export default {
         .nickname {
           text-align: left;
           color: #f56c6c;
-
-          /*svg {
-            width: 18px;
-            height: 18px;
-            vertical-align: -3px;
-          }*/
         }
 
         .content {
@@ -964,10 +969,6 @@ export default {
                 align-items: flex-end;
               }
 
-              span {
-
-              }
-
               .comment-avatar {
                 display: inline-block;
               }
@@ -991,6 +992,29 @@ export default {
                 position: absolute;
                 right: 5px;
               }
+            }
+
+            .load-more-comments,
+            .collapse-comments {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 8px;
+              color: #409eff;
+              cursor: pointer;
+              font-size: 13px;
+              border-top: 1px solid #f0f0f0;
+              margin-top: 8px;
+            }
+
+            .load-more-comments:hover,
+            .collapse-comments:hover {
+              background-color: #f8f9fa;
+            }
+
+            .load-more-text,
+            .collapse-text {
+              margin-right: 4px;
             }
           }
         }
