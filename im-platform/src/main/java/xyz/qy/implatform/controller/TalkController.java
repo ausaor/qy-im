@@ -3,7 +3,6 @@ package xyz.qy.implatform.controller;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +25,7 @@ import xyz.qy.implatform.service.ITalkService;
 import xyz.qy.implatform.service.ITalkStarService;
 import xyz.qy.implatform.vo.TalkVO;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -38,13 +38,13 @@ import javax.validation.constraints.NotNull;
 @RestController
 @RequestMapping("/talk")
 public class TalkController {
-    @Autowired
+    @Resource
     private ITalkService talkService;
 
-    @Autowired
+    @Resource
     private ITalkStarService talkStarService;
 
-    @Autowired
+    @Resource
     private ITalkCommentService talkCommentService;
 
     @ApiOperation(value = "新增动态", notes = "新增动态")

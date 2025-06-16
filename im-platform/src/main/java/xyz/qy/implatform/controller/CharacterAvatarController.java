@@ -4,7 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +19,7 @@ import xyz.qy.implatform.vo.CharacterAvatarVO;
 import xyz.qy.implatform.vo.ReviewVO;
 import xyz.qy.implatform.vo.TemplateCharacterVO;
 
+import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -27,7 +27,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/characterAvatar")
 public class CharacterAvatarController {
-    @Autowired
+    @Resource
     private ICharacterAvatarService characterAvatarService;
 
     @ApiOperation(value = "根据模板人物id查询已发布模板人物头像", notes = "根据模板人物id查询已发布模板人物头像")

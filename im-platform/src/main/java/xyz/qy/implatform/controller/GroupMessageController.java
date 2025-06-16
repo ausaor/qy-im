@@ -2,7 +2,6 @@ package xyz.qy.implatform.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +19,7 @@ import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IGroupMessageService;
 import xyz.qy.implatform.vo.GroupMessageVO;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -29,7 +29,7 @@ import java.util.List;
 @RequestMapping("/message/group")
 public class GroupMessageController {
 
-    @Autowired
+    @Resource
     private IGroupMessageService groupMessageService;
 
     @BanSendMsg(msgType = "group")

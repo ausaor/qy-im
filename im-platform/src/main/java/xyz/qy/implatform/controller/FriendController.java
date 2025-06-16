@@ -20,6 +20,7 @@ import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.vo.FriendVO;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/friend")
 public class FriendController {
 
-    @Autowired
+    @Resource
     private IFriendService friendService;
 
     @GetMapping("/list")

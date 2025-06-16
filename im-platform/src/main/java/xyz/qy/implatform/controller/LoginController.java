@@ -2,7 +2,6 @@ package xyz.qy.implatform.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,13 +14,14 @@ import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.vo.LoginVO;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 
 @Api(tags = "用户登录和注册")
 @RestController
 public class LoginController {
 
-    @Autowired
+    @Resource
     private IUserService userService;
 
     @PostMapping("/login")

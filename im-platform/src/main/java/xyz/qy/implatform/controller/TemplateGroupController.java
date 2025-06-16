@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -32,7 +33,7 @@ import java.util.List;
 @RequestMapping("/templateGroup")
 public class TemplateGroupController {
 
-    @Autowired
+    @Resource
     private ITemplateGroupService templateGroupService;
 
     @PostMapping("/addOrModify")

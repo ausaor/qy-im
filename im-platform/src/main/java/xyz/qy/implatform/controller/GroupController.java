@@ -2,7 +2,6 @@ package xyz.qy.implatform.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +25,7 @@ import xyz.qy.implatform.vo.MultCharacterGroupVO;
 import xyz.qy.implatform.vo.SwitchTemplateGroupVO;
 import xyz.qy.implatform.vo.TemplateGroupCreateVO;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -34,8 +34,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/group")
 public class GroupController {
-
-    @Autowired
+    @Resource
     private IGroupService groupService;
 
     @RepeatSubmit

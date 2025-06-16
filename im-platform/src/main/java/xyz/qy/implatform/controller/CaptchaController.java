@@ -9,7 +9,6 @@ import xyz.qy.implatform.util.IdUtils;
 import xyz.qy.implatform.util.RandImageUtil;
 import xyz.qy.implatform.util.RedisCache;
 import com.google.code.kaptcha.Producer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.FastByteArrayOutputStream;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +32,7 @@ public class CaptchaController {
     @Resource(name = "captchaProducer")
     private Producer captchaProducer;
 
-    @Autowired
+    @Resource
     private RedisCache redisCache;
     /**
      * 生成验证码

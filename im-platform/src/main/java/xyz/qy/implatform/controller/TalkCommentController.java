@@ -2,16 +2,15 @@ package xyz.qy.implatform.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.ITalkCommentService;
 
+import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -23,7 +22,7 @@ import javax.validation.constraints.NotNull;
 @RestController
 @RequestMapping("/talkComment")
 public class TalkCommentController {
-    @Autowired
+    @Resource
     private ITalkCommentService talkCommentService;
 
     @ApiModelProperty(value = "删除动态", notes = "删除动态")
