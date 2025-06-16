@@ -57,6 +57,9 @@ public final class RedisKey {
     // 用户文件上传次数key
     public final static String IM_USER_UPLOAD_FILE = IM_CACHE + "file:upload:userid:";
 
+    // 用户操作次数key
+    public final static String IM_USER_OPERATION = IM_CACHE + "operation:";
+
     // 系统聊天功能开关key
     public final static String IM_SYSTEM_MSG_SWITCH = IM_CACHE + "ban:msg:system:switch:";
 

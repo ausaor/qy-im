@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.imclient.annotation.BanSendMsg;
+import xyz.qy.imclient.annotation.CountLimit;
 import xyz.qy.implatform.dto.RegionGroupMessageDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -39,6 +40,7 @@ public class RegionGroupMessageController {
 
     @BanSendMsg(msgType = "regionGroup")
     @PostMapping("/send")
+    @CountLimit(limitType = "regionGroup-msg:", count = 500, time = 24, description = "发送地区群聊消息")
     @ApiOperation(value = "发送群聊消息", notes = "发送群聊消息")
     public Result<RegionGroupMessageVO> sendMessage(@Valid @RequestBody RegionGroupMessageDTO dto) {
         return ResultUtils.success(regionGroupMessageService.sendMessage(dto));

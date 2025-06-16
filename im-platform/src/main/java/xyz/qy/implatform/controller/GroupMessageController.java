@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.imclient.annotation.BanSendMsg;
+import xyz.qy.imclient.annotation.CountLimit;
 import xyz.qy.implatform.dto.GroupMessageDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -33,6 +34,7 @@ public class GroupMessageController {
 
     @BanSendMsg(msgType = "group")
     @PostMapping("/send")
+    @CountLimit(limitType = "group-msg:", count = 500, time = 24, description = "发送群聊消息")
     @ApiOperation(value = "发送群聊消息", notes = "发送群聊消息")
     public Result<GroupMessageVO> sendMessage(@Valid @RequestBody GroupMessageDTO vo) {
         return ResultUtils.success(groupMessageService.sendMessage(vo));

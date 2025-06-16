@@ -15,7 +15,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface FileUploadLimit {
+public @interface CountLimit {
     String limitType() default "";
     int count() default 150;
+    int time() default 24;
+    String description() default "";
 }

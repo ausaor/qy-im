@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.imclient.annotation.CountLimit;
 import xyz.qy.implatform.dto.TalkAddDTO;
 import xyz.qy.implatform.dto.TalkCommentDTO;
 import xyz.qy.implatform.dto.TalkDelDTO;
@@ -47,6 +48,7 @@ public class TalkController {
     private ITalkCommentService talkCommentService;
 
     @ApiOperation(value = "新增动态", notes = "新增动态")
+    @CountLimit(limitType = "talk:", count = 5, time = 24, description = "发布动态")
     @PostMapping("/add")
     public Result add(@Valid @RequestBody TalkAddDTO talkAddDTO) {
         talkService.addTalk(talkAddDTO);
