@@ -95,6 +95,7 @@ public class TalkController {
     }
 
     @ApiModelProperty(value = "新增动态评论", notes = "新增动态评论")
+    @CountLimit(limitType = "talk-comment:", count = 50, time = 24, description = "发布动态评论")
     @PostMapping("/addTalkComment")
     public Result addTalkComment(@Valid @RequestBody TalkCommentDTO talkCommentDTO) {
         return ResultUtils.success(talkCommentService.addTalkComment(talkCommentDTO));
