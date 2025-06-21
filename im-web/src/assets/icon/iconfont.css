@@ -1,11 +1,11 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4728505 */
-  src: url('iconfont.eot?t=1746171568071'); /* IE9 */
-  src: url('iconfont.eot?t=1746171568071#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1746171568071') format('woff2'),
-       url('iconfont.woff?t=1746171568071') format('woff'),
-       url('iconfont.ttf?t=1746171568071') format('truetype'),
-       url('iconfont.svg?t=1746171568071#iconfont') format('svg');
+  src: url('iconfont.eot?t=1750470176264'); /* IE9 */
+  src: url('iconfont.eot?t=1750470176264#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1750470176264') format('woff2'),
+       url('iconfont.woff?t=1750470176264') format('woff'),
+       url('iconfont.ttf?t=1750470176264') format('truetype'),
+       url('iconfont.svg?t=1750470176264#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,6 +14,22 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-zhinengduihua:before {
+  content: "\e607";
+}
+
+.icon-AIzhushou:before {
+  content: "\e615";
+}
+
+.icon-deepseek:before {
+  content: "\e603";
+}
+
+.icon-qianwen:before {
+  content: "\e60b";
 }
 
 .icon-yinpinzanting:before {

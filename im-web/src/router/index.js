@@ -50,6 +50,11 @@ export default new VueRouter({
           component: () => import("../view/RegionGroup"),
         },
         {
+          name: "AIChat",
+          path: "/home/ai-chat",
+          component: () => import("../view/AIChat"),
+        },
+        {
           name: "Square",
           path: "/home/square",
           component: () => import("../view/Square"),

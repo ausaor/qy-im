@@ -47,6 +47,15 @@
               <div v-show="unreadRegionCount>0" class="unread-text">{{unreadRegionCount}}</div>
           </router-link>
         </el-menu-item>
+        <el-menu-item title="AI对话">
+          <router-link v-bind:to="'/home/ai-chat'">
+            <span>
+              <svg class="icon svg-icon" aria-hidden="true">
+                <use xlink:href="#icon-AIzhushou"></use>
+              </svg>
+            </span>
+          </router-link>
+        </el-menu-item>
         <el-menu-item title="广场">
           <router-link v-bind:to="'/home/square'">
             <span>
