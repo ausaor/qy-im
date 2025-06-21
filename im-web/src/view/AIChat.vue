@@ -275,7 +275,7 @@ export default {
       } catch (error) {
         console.error('发送消息失败:', error)
         this.$message.error('发送消息失败，请重试')
-        aiMessage.content = '抱歉，发生了错误，请重试。'
+        aiMessage.content += '抱歉，发生了错误，请重试。'
       } finally {
         this.isTyping = false
         this.scrollToBottom()
@@ -283,27 +283,41 @@ export default {
     },
 
     async streamResponse(message, aiMessage) {
+      // 模拟EventSource流式响应
       return new Promise((resolve, reject) => {
-        const responses = [
-          '我理解您的问题。',
-          '让我为您详细解答：\n\n',
-          '1. 首先，我们需要考虑...\n',
-          '2. 其次，重要的是...\n',
-          '3. 最后，建议您...\n\n',
-          '希望这个回答对您有帮助！如果您还有其他问题，请随时告诉我。'
-        ]
+        //let accessToken = sessionStorage.getItem("accessToken");
 
-        let index = 0
-        const interval = setInterval(() => {
-          if (index < responses.length && this.isTyping) {
-            aiMessage.content += responses[index]
-            index++
-            this.scrollToBottom()
-          } else {
-            clearInterval(interval)
-            resolve()
+        // 真实的EventSource实现示例：
+        this.eventSource = new EventSource(`http://127.0.0.1:8181/chat/stream/msg/${this.currentChatId}?content=${encodeURIComponent(message)}&role=user&maxTokens=2000&temperature=0.7`)
+
+        this.eventSource.onmessage = (event) => {
+          const response = JSON.parse(event.data)
+          // 获取流式响应的文本内容
+          const text = response.result?.output?.text || response.results?.[0]?.output?.text || ''
+          if (text) {
+            aiMessage.content += text
+            this.scrollToBottom();
           }
-        }, 500)
+        }
+
+        this.eventSource.onerror = (error) => {
+          if (this.eventSource.readyState === EventSource.CLOSED) {
+            console.log('this.eventSource.close()')
+            this.eventSource.close();
+            resolve();
+          } else {
+            console.log('this.eventSource.error.close()')
+            this.eventSource.close()
+            //reject(error)
+            resolve();
+          }
+        }
+
+        this.eventSource.addEventListener('end', () => {
+          console.log('EventSource end event received')
+          this.eventSource.close()
+          resolve()
+        })
       })
     },
 
@@ -696,6 +710,8 @@ export default {
   color: #2f4f4f;
   line-height: 1.7;
   font-size: 15px;
+  text-align: left;
+  padding: 0 10px;
 }
 
 /* Markdown样式 */
