@@ -1167,6 +1167,7 @@
             // 滚到底部
             this.scrollToBottom();
             this.showSide = false;
+            this.isInBottom = true;
             // 消息已读
             this.readedMessage()
             // 初始状态只显示30条消息
@@ -1182,12 +1183,14 @@
 			},
       messageSize: {
         handler(newSize, oldSize) {
-          if (this.isInBottom) {
-            // 拉至底部
-            this.scrollToBottom();
-          } else {
-            // 增加新消息提醒
-            this.newMessageSize++;
+          if (newSize > oldSize) {
+            if (this.isInBottom) {
+              // 拉至底部
+              this.scrollToBottom();
+            } else {
+              // 增加新消息提醒
+              this.newMessageSize++;
+            }
           }
         }
       }
