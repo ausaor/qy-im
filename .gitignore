@@ -8,6 +8,7 @@ target/
 /im-platform/im-platform.iml
 
 /im-platform/src/main/resources/logback-prod.xml
+/im-platform/src/main/resources/application-prod-bak.yml
 /im-server/src/main/resources/logback-prod.xml
 /im-uniapp/node_modules/
 /im-uniapp/package-lock.json

@@ -101,11 +101,12 @@
                 <div class="comment-content">
                   <head-image class="comment-avatar" :url="comment.userAvatar" :id="comment.userId" :name="comment.userNickname" :size="24"/>
                   <span class="username" @click="showUserInfo($event, comment.userId)">
-                      {{ comment.userNickname }}：
+                      {{ comment.userNickname }}
                   </span>
                   <span style="margin-left: 5px; margin-right: 5px;" v-if="comment.replyCommentId">回复</span>
                   <head-image v-if="comment.replyCommentId" class="comment-avatar" :url="comment.replyUserAvatar" :id="comment.replyUserId" :name="comment.replyUserNickname" :size="24"/>
-                  <span class="username" v-if="comment.replyCommentId" @click="showUserInfo($event, comment.replyUserId)">{{ comment.replyUserNickname }}：</span>
+                  <span class="username" v-if="comment.replyCommentId" @click="showUserInfo($event, comment.replyUserId)">{{ comment.replyUserNickname }}</span>
+                  <span>：</span>
                   <span class="content point" v-html="$emo.transform(comment.content)"
                         @click="handleShowCommentBox(comment, item.id, index)">
                   </span>
