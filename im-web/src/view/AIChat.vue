@@ -288,16 +288,16 @@ export default {
         //let accessToken = sessionStorage.getItem("accessToken");
 
         // 真实的EventSource实现示例：
-        this.eventSource = new EventSource(`http://127.0.0.1:8181/chat/sse/msg/${this.currentChatId}?content=${encodeURIComponent(message)}&model=${this.selectedModel}&role=user&maxTokens=2000&temperature=0.7`)
+        this.eventSource = new EventSource(`http://127.0.0.1:8181/chat/flux/msg/${this.currentChatId}?content=${encodeURIComponent(message)}&model=${this.selectedModel}&role=user&maxTokens=2000&temperature=0.7`)
 
         this.eventSource.onmessage = (event) => {
-          // 后端SseEmitter返回格式处理
+          // 后端SseEmitter|Flux<String>返回格式处理
           if (event.data) {
             aiMessage.content += event.data
             this.scrollToBottom();
           }
 
-          // 后端Flux返回格式处理
+          // 后端Flux<ChatResponse>返回格式处理
           // const response = JSON.parse(event.data)
           // // 获取流式响应的文本内容
           // const text = response.result?.output?.text || response.results?.[0]?.output?.text || ''
