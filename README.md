@@ -51,6 +51,8 @@ GitHub：https://github.com/ausaor/qy-im
 
 8、支持配置系统推送消息，并支持配置不同推送主题（推送消息支持图片，音频，视频类型）
 
+9、支持AI对话（deepseek、通义千问）
+
 
 
 ### 技术栈
@@ -80,6 +82,8 @@ GitHub：https://github.com/ausaor/qy-im
 <img src="img/image-20250125205609962.png" alt="image-20250125205609962" style="zoom: 33%;float:left;" />
 
 <p style="clear:both;"></p>
+
+更多项目截图
 
 [QY项目截图](https://www.yuque.com/polaris-9eoq3/gy6t86/dxkffdcfelsrlc1g#uggvv)
 
