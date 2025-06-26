@@ -17,6 +17,9 @@
             </el-tab-pane>
           </el-tabs>
           <div class="btns">
+             <span class="play-music-play" @click="showMusicPlay">
+              <i class="el-icon-headset"></i>
+            </span>
             <span class="talk-notify-msg" @click="showTalkNotify">
               <i class="el-icon-chat-dot-round"></i>
               <span v-if="notifyCount > 0" class="unread-text">{{notifyCount}}</span>
@@ -29,6 +32,7 @@
       </div>
       <talk-notify ref="talkNotify" :category="'private'"></talk-notify>
       <talk-list ref="talkListRef" :category="'private'" :section="section"></talk-list>
+      <music-play ref="musicPlayRef"></music-play>
     </div>
   </div>
 </template>
@@ -36,12 +40,14 @@
 <script>
 import TalkList from "@/components/talk/TalkList";
 import TalkNotify from "../components/talk/TalkNotify.vue";
+import MusicPlay from "@components/common/musicPlay.vue";
 
 export default {
   name: "FriendActivity",
   components: {
     TalkList,
     TalkNotify,
+    MusicPlay,
   },
   data() {
     return {
@@ -87,6 +93,9 @@ export default {
       }
       this.$refs.talkNotify.show();
     },
+    showMusicPlay() {
+      this.$refs.musicPlayRef.show();
+    }
   }
 }
 </script>
@@ -221,6 +230,19 @@ export default {
         display: flex;
         align-items: center;
         gap: 16px;
+
+        .play-music-play {
+          display: inline-block;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 28px;
+          color: white;
+
+          .el-icon-headset {
+            background-color: #6CC6CB;
+            border-radius: 50%;
+          }
+        }
 
         .talk-notify-msg {
           position: relative;
