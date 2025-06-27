@@ -32,7 +32,7 @@
       </div>
       <talk-notify ref="talkNotify" :category="'private'"></talk-notify>
       <talk-list ref="talkListRef" :category="'private'" :section="section"></talk-list>
-      <music-play ref="musicPlayRef"></music-play>
+      <music-play ref="musicPlayRef" :category="'private'" :section="'my'"></music-play>
     </div>
   </div>
 </template>

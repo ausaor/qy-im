@@ -16,13 +16,16 @@
             <i class="el-icon-headset"></i>
             <span>QY MUSIC</span>
           </div>
-          <el-button
+          <div class="upload-btn" @click="showUploadDialog()">
+            <i class="el-icon-upload2"></i>
+          </div>
+<!--          <el-button
               type="text"
               @click="drawerVisible = false"
               class="close-btn"
           >
             <i class="el-icon-close"></i>
-          </el-button>
+          </el-button>-->
         </div>
 
         <!-- 当前播放歌曲 -->
@@ -36,13 +39,13 @@
                   class="like-btn"
                   :class="{ liked: currentSong.liked }"
               >
-                <i class="el-icon-star-off"></i>
+                <i class="el-icon-star-on"></i>
               </el-button>
             </div>
           </div>
           <div class="song-info">
             <h3>{{ currentSong.name }}</h3>
-            <p>{{ currentSong.artist }}</p>
+            <p>{{ currentSong.singer }}</p>
           </div>
         </div>
 
@@ -140,7 +143,7 @@
 
               <div class="song-item-info">
                 <div class="song-name">{{ song.name }}</div>
-                <div class="song-artist">{{ song.artist }}</div>
+                <div class="song-artist">{{ song.singer }}</div>
               </div>
 
               <div class="song-item-actions">
@@ -151,7 +154,7 @@
                     class="like-btn-small"
                     :class="{ liked: song.liked }"
                 >
-                  <i class="el-icon-star-off"></i>
+                  <i class="el-icon-star-on"></i>
                   <span v-if="song.likeCount > 0">{{ song.likeCount }}</span>
                 </el-button>
               </div>
@@ -166,12 +169,28 @@
           @loadedmetadata="updateDuration"
           @ended="onSongEnd"
       ></audio>
+      <music-upload ref="musicUploadRef" :category="category" @add="addMusic"></music-upload>
     </el-drawer>
 </template>
 
 <script>
+import MusicUpload from "@components/common/musicUpload.vue";
+
 export default {
   name: 'MusicPlayer',
+  props: {
+    category: {
+      type: String,
+      default: true
+    },
+    section: {
+      type: String,
+      default: true
+    }
+  },
+  components: {
+    MusicUpload
+  },
   data() {
     return {
       drawerVisible: false,
@@ -182,65 +201,13 @@ export default {
       currentSongIndex: 0,
       playMode: 'sequence', // sequence, random
       isRepeat: false,
-
-      playlist: [
-        {
-          id: 1,
-          name: '夏日微风',
-          artist: '林晓风',
-          duration: '3:45',
-          cover: 'http://localhost:8300/image/01de69620c3bda155b59b87bebd0a50b.jpg',
-          src: 'http://localhost:8300/audio/0d5fbca7252cc2adfbb7e85eeaa3fef2.mp3', // 实际项目中应该是真实的音频文件路径
-          liked: true,
-          likeCount: 1024
-        },
-        {
-          id: 2,
-          name: '城市星光',
-          artist: '陈夜明',
-          duration: '4:20',
-          cover: 'http://localhost:8300/image/01de69620c3bda155b59b87bebd0a50b.jpg',
-          src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-          liked: true,
-          likeCount: 856
-        },
-        {
-          id: 3,
-          name: '雨后彩虹',
-          artist: '张雨菲',
-          duration: '3:15',
-          cover: 'http://localhost:8300/image/01de69620c3bda155b59b87bebd0a50b.jpg',
-          src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-          liked: false,
-          likeCount: 432
-        },
-        {
-          id: 4,
-          name: '山间小径',
-          artist: '王远山',
-          duration: '5:10',
-          cover: 'http://localhost:8300/image/01de69620c3bda155b59b87bebd0a50b.jpg',
-          src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-          liked: false,
-          likeCount: 678
-        },
-        {
-          id: 5,
-          name: '海边日落',
-          artist: '李海燕',
-          duration: '4:35',
-          cover: 'http://localhost:8300/image/01de69620c3bda155b59b87bebd0a50b.jpg',
-          src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-          liked: true,
-          likeCount: 1205
-        }
-      ]
+      playlist: []
     }
   },
 
   computed: {
     currentSong() {
-      return this.playlist[this.currentSongIndex] || {};;
+      return this.playlist[this.currentSongIndex] || {};
     },
 
     playModeIcon() {
@@ -251,13 +218,17 @@ export default {
       return this.playMode === 'random' ? '随机播放' : '顺序播放'
     }
   },
+  watch: {
+    drawerVisible(newValue) {
+      if (newValue) {
+        this.listMusic();
+      }
+    }
+  },
 
   methods: {
     show() {
       this.drawerVisible = true
-      this.$nextTick(() => {
-        this.$refs.audioPlayer.src = this.playlist[this.currentSongIndex].src;
-      })
     },
     togglePlay() {
       if (this.isPlaying) {
@@ -271,8 +242,8 @@ export default {
     playSong(index) {
       this.currentSongIndex = index
       this.$nextTick(() => {
-        if (this.currentSong.src) {
-          this.$refs.audioPlayer.src = this.currentSong.src
+        if (this.currentSong.url) {
+          this.$refs.audioPlayer.src = this.currentSong.url
           this.$refs.audioPlayer.play()
           this.isPlaying = true
         }
@@ -349,6 +320,25 @@ export default {
       const mins = Math.floor(seconds / 60)
       const secs = Math.floor(seconds % 60)
       return `${mins}:${secs.toString().padStart(2, '0')}`
+    },
+    showUploadDialog() {
+      this.$refs.musicUploadRef.open();
+    },
+    addMusic(data) {
+      this.playlist.push(data)
+    },
+    listMusic() {
+      let params = {
+        category: this.category,
+        section: this.section
+      }
+      this.$http({
+        url: `/music/list`,
+        method: "post",
+        data: params
+      }).then((data) => {
+        this.playlist = data
+      })
     }
   }
 }
@@ -411,6 +401,15 @@ export default {
 .logo i {
   margin-right: 8px;
   font-size: 24px;
+}
+
+.upload-btn {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: #00bcd4;
+  cursor: pointer;
 }
 
 .close-btn {

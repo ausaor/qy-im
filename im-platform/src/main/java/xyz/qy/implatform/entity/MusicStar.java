@@ -10,30 +10,14 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("im_music")
-public class Music extends Model<Music> {
+@TableName("im_music_star")
+public class MusicStar extends Model<MusicStar> {
     @TableId(type = IdType.AUTO)
     private Long id;
 
     private Long userId;
 
-    private String singer;
-
-    private String name;
-
-    private String url;
-
-    private String cover;
-
-    private Integer duration;
-
-    private Integer playCount;
-
-    private String category;
-
-    private Long groupId;
-
-    private String regionCode;
+    private Long musicId;
 
     private Boolean deleted;
 

@@ -48,11 +48,6 @@ public class CommonScheduledTask {
         mediaMaterialService.generateRandomSort();
     }
 
-    @Scheduled(cron = "0 0 3 * * ?", zone = "Asia/Shanghai")
-    public void crawlMusic() {
-        musicService.crawlMusic(null);
-    }
-
     /**
      * 记录用户群聊消息已读位置
      */

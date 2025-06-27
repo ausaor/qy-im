@@ -53,11 +53,4 @@ public class WebSiteController {
         mediaMaterialService.generateRandomSort();
         return ResultUtils.success();
     }
-
-    @ApiOperation(value = "爬取音乐资源", notes = "爬取音乐资源")
-    @RequestMapping("/crawlMusic")
-    public Result crawlMusic(Integer id) {
-        musicService.crawlMusic(id);
-        return ResultUtils.success();
-    }
 }

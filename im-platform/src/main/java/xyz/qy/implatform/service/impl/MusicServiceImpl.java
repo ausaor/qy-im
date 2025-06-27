@@ -1,86 +1,181 @@
 package xyz.qy.implatform.service.impl;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.http.HttpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import xyz.qy.implatform.contant.Constant;
-import xyz.qy.implatform.entity.MediaMaterial;
-import xyz.qy.implatform.entity.Music;
-import xyz.qy.implatform.enums.FilePathEnum;
-import xyz.qy.implatform.mapper.MusicMapper;
-import xyz.qy.implatform.service.IMediaMaterialService;
-import xyz.qy.implatform.service.IMusicService;
-import xyz.qy.implatform.strategy.impl.QiNiuUploadStrategyImpl;
-import xyz.qy.implatform.util.FileUtils;
-import xyz.qy.implatform.vo.MockMultipartFile;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.entity.ContentType;
-import org.springframework.beans.factory.annotation.Autowired;
+import xyz.qy.implatform.dto.MusicAddDTO;
+import xyz.qy.implatform.dto.MusicQueryDTO;
+import xyz.qy.implatform.entity.Group;
+import xyz.qy.implatform.entity.Music;
+import xyz.qy.implatform.entity.MusicStar;
+import xyz.qy.implatform.enums.TalkCategoryEnum;
+import xyz.qy.implatform.exception.GlobalException;
+import xyz.qy.implatform.mapper.MusicMapper;
+import xyz.qy.implatform.service.IFriendService;
+import xyz.qy.implatform.service.IGroupMemberService;
+import xyz.qy.implatform.service.IGroupService;
+import xyz.qy.implatform.service.IMusicService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import xyz.qy.implatform.service.IMusicStarService;
+import xyz.qy.implatform.service.IRegionGroupMemberService;
+import xyz.qy.implatform.session.SessionContext;
+import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.vo.FriendVO;
+import xyz.qy.implatform.vo.MusicVO;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * @description:
- * @author: Polaris
- * @create: 2023-07-16 15:43
- **/
 @Slf4j
 @Service
 public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements IMusicService {
-    @Autowired
-    private QiNiuUploadStrategyImpl qiNiuUpload;
+    @Resource
+    private IGroupMemberService groupMemberService;
 
-    @Autowired
-    private IMediaMaterialService mediaMaterialService;
+    @Resource
+    private IGroupService groupService;
+
+    @Resource
+    private IRegionGroupMemberService regionGroupMemberService;
+
+    @Resource
+    private IMusicStarService musicStarService;
+
+    @Resource
+    private IFriendService friendService;
 
     @Override
-    public void crawlMusic(Integer id) {
-        LambdaQueryWrapper<Music> queryWrapper = new LambdaQueryWrapper<>();
-        if (id != null) {
-            queryWrapper.eq(Music::getId, id);
-        }
-        queryWrapper.eq(Music::getHasCrawl, Constant.NO);
-        queryWrapper.last("limit 1");
-        Music music = baseMapper.selectOne(queryWrapper);
-        if (ObjectUtil.isNull(music)) {
-            return;
-        }
-        byte[] bytes = HttpUtil.downloadBytes(music.getMusicUrl());
-        try (InputStream inputStream = new ByteArrayInputStream(bytes)){
-            MultipartFile file = new MockMultipartFile(ContentType.APPLICATION_OCTET_STREAM.toString(), inputStream);
-            // 获取文件扩展名
-            String extName = FileUtils.getExtName(music.getMusicUrl());
-            // 重新生成文件名
-            String fileName = music.getMusicName() + extName;
-            String url = qiNiuUpload.uploadFile(FilePathEnum.AUDIO.getPath()+"box-im/", fileName, file);
+    public List<MusicVO> listMusic(MusicQueryDTO dto) {
+        long userId = SessionContext.getSession().getUserId();
 
-            if (StringUtils.isBlank(url)) {
-                return;
+        List<Music> musics = null;
+        if (StringUtils.equalsAny(dto.getCategory(), TalkCategoryEnum.GROUP.getCode(), TalkCategoryEnum.REGION.getCode())) {
+            LambdaQueryWrapper<Music> wrapper = Wrappers.lambdaQuery();
+            wrapper.eq(Music::getDeleted, false)
+                    .eq(Music::getCategory, dto.getCategory())
+                    .eq(StringUtils.isNotBlank(dto.getRegionCode()), Music::getRegionCode, dto.getRegionCode())
+                    .eq(ObjectUtil.isNotNull(dto.getGroupId()), Music::getGroupId, dto.getGroupId())
+                    .orderByDesc(Music::getCreateTime)
+                    .last("limit 100");
+            musics = this.list(wrapper);
+        } else if (StringUtils.equals(dto.getCategory(), TalkCategoryEnum.PRIVATE.getCode())) {
+            Long queryUserId = null;
+            if ("friend".equals(dto.getSection())) {
+                // 判断是否好友
+                FriendVO friendVO = friendService.findFriend(dto.getFriendId());
+                queryUserId = friendVO.getId();
+            } else if ("my".equals(dto.getSection())) {
+                queryUserId = userId;
             }
-            music.setUpdateTime(DateUtil.date());
-            music.setHasCrawl(Constant.YES);
-            baseMapper.updateById(music);
-            MediaMaterial mediaMaterial = new MediaMaterial();
-            mediaMaterial.setTitle(music.getMusicName());
-            mediaMaterial.setUrl(url);
-            mediaMaterial.setType("audio");
-            mediaMaterial.setFormat(extName.substring(1));
-            mediaMaterial.setDisplayDuration(180);
-            mediaMaterial.setStatus(Constant.YES);
-            mediaMaterial.setSort(mediaMaterialService.getMaxSort() + 1);
-            mediaMaterial.setCreateTime(DateUtil.date());
-            mediaMaterial.setUpdateTime(DateUtil.date());
-            mediaMaterialService.save(mediaMaterial);
-            log.info("url:{}", url);
-        } catch (IOException e) {
-            log.error("error:{}", e.getMessage());
+
+            LambdaQueryWrapper<Music> wrapper = Wrappers.lambdaQuery();
+            wrapper.eq(Music::getDeleted, false)
+                    .eq(Music::getCategory, dto.getCategory())
+                    .eq(Music::getUserId, queryUserId)
+                    .orderByDesc(Music::getCreateTime)
+                    .last("limit 100");
+            musics = this.list(wrapper);
+        }
+        
+        if (CollectionUtils.isEmpty(musics)) {
+            return Collections.emptyList();
+        }
+
+        List<MusicVO> musicVos = BeanUtils.copyPropertiesList(musics, MusicVO.class);
+
+        List<Long> musicIds = musics.stream().map(Music::getId).collect(Collectors.toList());
+        List<MusicStar> musicStarList = musicStarService.lambdaQuery()
+                .in(MusicStar::getMusicId, musicIds)
+                .eq(MusicStar::getDeleted, false).list();
+
+        // musicStarList根据musicId进行分组
+        Map<Long, List<MusicStar>> musicStarMap = musicStarList.stream().collect(Collectors.groupingBy(MusicStar::getMusicId));
+        musicVos.forEach(musicVO -> {
+            List<MusicStar> musicStars = musicStarMap.getOrDefault(musicVO.getId(), new ArrayList<>());
+            musicVO.setLikeCount(musicStars.size());
+            musicVO.setLiked(musicStars.stream().anyMatch(musicStar -> musicStar.getUserId().equals(userId)));
+        });
+
+        return musicVos;
+    }
+
+    @Override
+    public MusicVO addMusic(MusicAddDTO dto) {
+        long userId = SessionContext.getSession().getUserId();
+
+        // 校验数据
+        checkMusicData(dto);
+
+        Music music = BeanUtils.copyProperties(dto, Music.class);
+        music.setUserId(userId);
+        music.setCreateTime(LocalDateTime.now());
+        this.save(music);
+        MusicVO musicVO = BeanUtils.copyProperties(music, MusicVO.class);
+        return musicVO;
+    }
+
+    private void checkMusicData(MusicAddDTO dto) {
+        long userId = SessionContext.getSession().getUserId();
+
+        if (StringUtils.equalsAny(dto.getCategory(), TalkCategoryEnum.GROUP.getCode(), TalkCategoryEnum.REGION.getCode())) {
+            // 查询是否在一个月内上传数量超过100
+            if (StringUtils.equals(dto.getCategory(), TalkCategoryEnum.GROUP.getCode()) && ObjectUtil.isNull(dto.getGroupId())) {
+                throw new GlobalException("群聊id为空");
+            }
+            if (StringUtils.equals(dto.getCategory(), TalkCategoryEnum.REGION.getCode()) && StringUtils.isBlank(dto.getRegionCode())) {
+                throw new GlobalException("区域编码为空");
+            }
+
+            // 判断用户是否群成员
+            if (TalkCategoryEnum.GROUP.getCode().equals(dto.getCategory())) {
+                Group group = groupService.getAndCheckById(dto.getGroupId());
+                if (ObjectUtil.isNull(group)) {
+                    throw new GlobalException("群不存在");
+                }
+
+                if (!groupMemberService.isInGroup(dto.getGroupId(), Collections.singletonList(userId))) {
+                    throw new GlobalException("您不是群聊成员");
+                }
+            } else if (TalkCategoryEnum.REGION.getCode().equals(dto.getCategory())) {
+                if (regionGroupMemberService.isInRegionGroup(dto.getRegionCode(), Collections.singletonList(userId))) {
+                    throw new GlobalException("您不是地区群聊常驻成员");
+                }
+            }
+
+            LambdaQueryWrapper<Music> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Music::getCategory, dto.getCategory())
+                    .eq(ObjectUtil.isNotNull(dto.getGroupId()), Music::getGroupId, dto.getGroupId())
+                    .eq(StringUtils.isNotBlank(dto.getRegionCode()), Music::getRegionCode, dto.getRegionCode())
+                    .ge(Music::getCreateTime, LocalDateTime.now().minusDays(30));
+            List<Music> musics = this.list(wrapper);
+            if (musics.size() >= 100) {
+                throw new GlobalException("一个月内整体上传数量超过100，无法继续上传");
+            }
+
+            //判断用户上传是否超过20
+            long count = musics.stream().filter(m -> m.getUserId().equals(userId)).count();
+            if (count >= 10) {
+                throw new GlobalException("您在一个月内上传数量超过20，无法继续上传");
+            }
+        } else if (StringUtils.equals(dto.getCategory(), TalkCategoryEnum.PRIVATE.getCode())) {
+            // 判断用户一个月内上传数量是否超过100
+            LambdaQueryWrapper<Music> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Music::getCategory, dto.getCategory())
+                    .eq(Music::getUserId, userId)
+                    .ge(Music::getCreateTime, LocalDateTime.now().minusDays(30));
+            List<Music> musics = this.list(wrapper);
+            if (musics.size() >= 100) {
+                throw new GlobalException("您在一个月内上传数量超过100，无法继续上传");
+            }
         }
     }
 }

@@ -1,18 +1,11 @@
-package xyz.qy.implatform.entity;
+package xyz.qy.implatform.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("im_music")
-public class Music extends Model<Music> {
-    @TableId(type = IdType.AUTO)
+public class MusicVO {
     private Long id;
 
     private Long userId;
@@ -41,8 +34,7 @@ public class Music extends Model<Music> {
 
     private LocalDateTime updateTime;
 
-    @Override
-    protected Serializable pkVal() {
-        return this.id;
-    }
+    private Integer likeCount;
+
+    private Boolean liked;
 }

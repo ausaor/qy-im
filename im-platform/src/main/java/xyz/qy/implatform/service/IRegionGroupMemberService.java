@@ -60,4 +60,6 @@ public interface IRegionGroupMemberService extends IService<RegionGroupMember> {
      * @return 地区群聊成员id列表
      */
     List<Long> findUserIdsByCode(String regionCode);
+
+    Boolean isInRegionGroup(String regionCode, List<Long> userIds);
 }
