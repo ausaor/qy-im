@@ -1,11 +1,11 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4728505 */
-  src: url('iconfont.eot?t=1750470176264'); /* IE9 */
-  src: url('iconfont.eot?t=1750470176264#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1750470176264') format('woff2'),
-       url('iconfont.woff?t=1750470176264') format('woff'),
-       url('iconfont.ttf?t=1750470176264') format('truetype'),
-       url('iconfont.svg?t=1750470176264#iconfont') format('svg');
+  src: url('iconfont.eot?t=1751010982750'); /* IE9 */
+  src: url('iconfont.eot?t=1751010982750#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1751010982750') format('woff2'),
+       url('iconfont.woff?t=1751010982750') format('woff'),
+       url('iconfont.ttf?t=1751010982750') format('truetype'),
+       url('iconfont.svg?t=1751010982750#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,6 +14,14 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-music:before {
+  content: "\e698";
+}
+
+.icon-Music:before {
+  content: "\e874";
 }
 
 .icon-zhinengduihua:before {

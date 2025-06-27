@@ -17,7 +17,7 @@
             <i class="el-icon-headset"></i>
             <span>QY MUSIC</span>
           </div>
-          <div class="upload-btn" @click="showUploadDialog()">
+          <div v-if="showUpload" class="upload-btn" @click="showUploadDialog()">
             <i class="el-icon-upload2"></i>
           </div>
 <!--          <el-button
@@ -32,20 +32,25 @@
         <!-- 当前播放歌曲 -->
         <div class="current-song">
           <div class="song-cover">
-            <img :src="currentSong.cover" :alt="currentSong.name" />
-            <div class="like-overlay">
-              <el-button
-                  type="text"
-                  @click="toggleLike(currentSong)"
-                  class="like-btn"
-                  :class="{ liked: currentSong.liked }"
-              >
-                <i class="el-icon-star-on"></i>
-              </el-button>
-            </div>
+            <img v-if="currentSong.cover" :src="currentSong.cover" :alt="currentSong.name" />
+            <svg v-else class="icon svg-icon" :class="{'rotate-active': isPlaying}" aria-hidden="true">
+              <use xlink:href="#icon-music"></use>
+            </svg>
           </div>
           <div class="song-info">
-            <h3>{{ currentSong.name }}</h3>
+            <div class="song-name">
+              <h3>{{ currentSong.name }}</h3>
+              <div class="like-overlay">
+                <el-button
+                    type="text"
+                    @click="toggleLike(currentSong)"
+                    class="like-btn"
+                    :class="{ liked: currentSong.liked }"
+                >
+                  <i class="el-icon-star-on"></i>
+                </el-button>
+              </div>
+            </div>
             <p>{{ currentSong.singer }}</p>
           </div>
         </div>
@@ -136,7 +141,10 @@
                 @click="playSong(index)"
             >
               <div class="song-item-cover">
-                <img :src="song.cover" :alt="song.name" />
+                <img v-if="song.cover" :src="song.cover" :alt="song.name" />
+                <svg v-else class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-music"></use>
+                </svg>
                 <div class="play-indicator" v-if="currentSongIndex === index && isPlaying">
                   <i class="el-icon-video-play"></i>
                 </div>
@@ -198,6 +206,14 @@ export default {
     section: {
       type: String,
       default: true
+    },
+    showUpload: {
+      type: Boolean,
+      default: true
+    },
+    friendId: {
+      type: Number,
+      default: null
     }
   },
   components: {
@@ -356,12 +372,13 @@ export default {
       this.$refs.musicUploadRef.open();
     },
     addMusic(data) {
-      this.playlist.push(data)
+      this.playlist.push(data);
     },
     listMusic() {
       let params = {
         category: this.category,
-        section: this.section
+        section: this.section,
+        friendId: this.friendId,
       }
       this.$http({
         url: `/music/list`,
@@ -467,6 +484,16 @@ export default {
 }
 
 /* 当前歌曲区域 */
+/* 定义旋转动画 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .current-song {
   display: flex;
   align-items: center;
@@ -489,10 +516,23 @@ export default {
   object-fit: cover;
 }
 
+.song-cover .icon {
+  width: 80px;
+  height: 80px;
+}
+
+.rotate-active {
+  animation: spin 5s linear infinite; /* 持续2秒，匀速，无限循环 */
+
+  /* 确保元素以自身中心旋转（默认行为，无需额外设置） */
+  transform-origin: center; /* 可选：明确指定旋转中心 */
+
+  /* 可选：添加平滑旋转效果 */
+  backface-visibility: hidden;
+}
+
 .like-overlay {
-  position: absolute;
-  top: 5px;
-  right: 5px;
+  font-size: 18px;
 }
 
 .like-btn {
@@ -505,12 +545,18 @@ export default {
 }
 
 .song-info h3 {
-  margin: 0 0 5px 0;
+  margin: 0;
   font-size: 18px;
 }
 
+.song-info .song-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .song-info p {
-  margin: 0;
+  margin: 5px 0 0 0;
   opacity: 0.8;
   font-size: 14px;
 }
@@ -661,6 +707,11 @@ export default {
   height: 45px;
   border-radius: 6px;
   object-fit: cover;
+}
+
+.song-item-cover .icon {
+  width: 45px;
+  height: 45px;
 }
 
 .play-indicator {

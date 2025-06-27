@@ -71,6 +71,9 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         } else if (StringUtils.equals(dto.getCategory(), TalkCategoryEnum.PRIVATE.getCode())) {
             Long queryUserId = null;
             if ("friend".equals(dto.getSection())) {
+                if (ObjectUtil.isNull(dto.getFriendId())) {
+                    throw new GlobalException("好友Id不能为空");
+                }
                 // 判断是否好友
                 FriendVO friendVO = friendService.findFriend(dto.getFriendId());
                 queryUserId = friendVO.getId();

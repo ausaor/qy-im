@@ -61,6 +61,13 @@
                         </svg>
                       </div>
                     </el-descriptions-item>
+                    <el-descriptions-item label="歌单">
+                      <div class="friend-music" @click="openFriendMusic">
+                        <svg class="icon svg-icon" aria-hidden="true">
+                          <use xlink:href="#icon-Music"></use>
+                        </svg>
+                      </div>
+                    </el-descriptions-item>
                   </el-descriptions>
                 </el-col>
               </el-row>
@@ -88,6 +95,7 @@
         <talk-list ref="talkListRef" :category="'private'" :section="'friend'" :friend-id="userInfo.id"></talk-list>
       </template>
     </drawer>
+    <music-play ref="musicPlayRef" :category="'private'" :section="'friend'" :friend-id="userInfo.id" :show-upload="false"></music-play>
   </el-container>
 </template>
 
@@ -99,6 +107,7 @@ import TalkList from "@/components/talk/TalkList";
 import Drawer from "@/components/common/Drawer";
 import SpaceCover from "@/components/common/SpaceCover";
 import FileUpload from "@/components/common/FileUpload";
+import MusicPlay from "@components/common/musicPlay.vue";
 
 export default {
   name: "friend",
@@ -110,6 +119,7 @@ export default {
     Drawer,
     SpaceCover,
     FileUpload,
+    MusicPlay,
   },
   data() {
     return {
@@ -231,6 +241,9 @@ export default {
     openFriendSpace() {
       this.friendSpaceVisible = true;
     },
+    openFriendMusic() {
+      this.$refs.musicPlayRef.show();
+    },
     closeDrawer() {
       this.friendSpaceVisible = false;
     },
@@ -343,6 +356,25 @@ export default {
             height: 30px;
             line-height: 30px;
             font-size: 28px;
+            color: #333;
+            -webkit-transition: font-size 0.25s linear, width 0.25s linear;
+            -moz-transition: font-size 0.25s linear, width 0.25s linear;
+            transition: font-size 0.25s linear, width 0.25s linear;
+          }
+        }
+
+        .friend-music {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          margin-left: .5rem;
+
+          .icon {
+            display: block;
+            height: 26px;
+            line-height: 26px;
+            font-size: 26px;
             color: #333;
             -webkit-transition: font-size 0.25s linear, width 0.25s linear;
             -moz-transition: font-size 0.25s linear, width 0.25s linear;
