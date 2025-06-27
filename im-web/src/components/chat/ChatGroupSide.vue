@@ -60,6 +60,13 @@
         <div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
       </div>
       <el-divider v-if="!group.quit" content-position="center"></el-divider>
+      <div class="group-music" @click="openGroupMusic">
+        <svg class="icon svg-icon" aria-hidden="true">
+          <use xlink:href="#icon-Music"></use>
+        </svg>
+        <span style="color: #b7eb81;margin-left: 10px;font-size: 16px;">群歌单</span>
+      </div>
+      <el-divider content-position="center"></el-divider>
 			<el-form labelPosition="top" class="group-side-form" :model="group">
 				<el-form-item label="群聊名称">
 					<el-input v-model="group.name" disabled maxlength="20"></el-input>
@@ -128,6 +135,7 @@
       </template>
     </drawer>
     <talk-notify ref="talkNotifyRef" :category="'group'"></talk-notify>
+    <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="group.id"></music-play>
 	</div>
 </template>
 
@@ -140,6 +148,7 @@
 	import SpaceCover from "@/components/common/SpaceCover";
   import TalkNotify from "../talk/TalkNotify.vue";
   import HeadImage from "@components/common/HeadImage.vue";
+  import MusicPlay  from "@components/common/musicPlay.vue";
 
 	export default {
 		name: "chatGroupSide",
@@ -152,6 +161,7 @@
       Drawer,
       SpaceCover,
       TalkNotify,
+      MusicPlay,
 		},
 		data() {
 			return {
@@ -270,6 +280,9 @@
         this.groupSpaceVisible = true;
         this.$refs.talkListRef.refreshTalkList();
         this.$store.commit("resetGroupTalk", this.group.id);
+      },
+      openGroupMusic() {
+        this.$refs.musicPlayRef.show();
       },
       closeDrawer() {
         this.groupSpaceVisible = false;
@@ -562,6 +575,25 @@
         text-align: center;
         white-space: nowrap;
         border: 1px solid #f1e5e5;
+      }
+    }
+
+    .group-music {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+
+      .icon {
+        display: block;
+        height: 45px;
+        line-height: 45px;
+        font-size: 28px;
+        color: #333;
+        -webkit-transition: font-size 0.25s linear, width 0.25s linear;
+        -moz-transition: font-size 0.25s linear, width 0.25s linear;
+        transition: font-size 0.25s linear, width 0.25s linear;
       }
     }
 

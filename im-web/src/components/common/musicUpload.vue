@@ -71,6 +71,14 @@ export default {
     category: {
       type: String,
       required: true
+    },
+    groupId: {
+      type: Number,
+      default: null
+    },
+    regionCode: {
+      type: String,
+      default: null
     }
   },
   data() {
@@ -84,7 +92,9 @@ export default {
         name: '',
         singer: '',
         url: '',
-        cover: ''
+        cover: '',
+        groupId: null,
+        regionCode: null
       },
       rules: {
         name: [
@@ -166,6 +176,8 @@ export default {
           });
           let musicFIle = await this.onMusicUpload(this.fileList[0])
           if (musicFIle) {
+            this.form.groupId = this.groupId
+            this.form.regionCode = this.regionCode
             this.form.category = this.category
             this.form.url = musicFIle.url
             this.$http({
@@ -173,16 +185,16 @@ export default {
               method: 'post',
               data: this.form
             }).then(data => {
+              this.$message({
+                message: '歌曲上传成功!',
+                type: 'success',
+                duration: 3000
+              });
+              this.form.cover = '';
+              this.resetForm();
               this.$emit('add', data)
             })
           }
-
-          this.$message({
-            message: '歌曲上传成功!',
-            type: 'success',
-            duration: 3000
-          });
-          this.resetForm();
         } else {
           this.$message.error('请填写必填字段');
           return false;

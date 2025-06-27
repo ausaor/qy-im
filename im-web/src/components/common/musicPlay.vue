@@ -189,7 +189,7 @@
           @loadedmetadata="updateDuration"
           @ended="onSongEnd"
       ></audio>
-      <music-upload ref="musicUploadRef" :category="category" @add="addMusic"></music-upload>
+      <music-upload ref="musicUploadRef" :category="category" :group-id="groupId" :region-code="regionCode" @add="addMusic"></music-upload>
     </el-drawer>
 </template>
 
@@ -213,6 +213,14 @@ export default {
     },
     friendId: {
       type: Number,
+      default: null
+    },
+    groupId: {
+      type: Number,
+      default: null
+    },
+    regionCode: {
+      type: String,
       default: null
     }
   },
@@ -379,6 +387,8 @@ export default {
         category: this.category,
         section: this.section,
         friendId: this.friendId,
+        groupId: this.groupId,
+        regionCode: this.regionCode,
       }
       this.$http({
         url: `/music/list`,

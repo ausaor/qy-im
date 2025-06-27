@@ -125,6 +125,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         music.setCreateTime(LocalDateTime.now());
         this.save(music);
         MusicVO musicVO = BeanUtils.copyProperties(music, MusicVO.class);
+        musicVO.setIsOwner(Boolean.TRUE);
         return musicVO;
     }
 
@@ -172,7 +173,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
                     throw new GlobalException("您不是群聊成员");
                 }
             } else if (TalkCategoryEnum.REGION.getCode().equals(dto.getCategory())) {
-                if (regionGroupMemberService.isInRegionGroup(dto.getRegionCode(), Collections.singletonList(userId))) {
+                if (!regionGroupMemberService.isInRegionGroup(dto.getRegionCode(), Collections.singletonList(userId))) {
                     throw new GlobalException("您不是地区群聊常驻成员");
                 }
             }
