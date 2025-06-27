@@ -8,6 +8,7 @@
         :with-header="false"
         :show-close="false"
         class="music-drawer"
+        @closed="handleClose"
     >
       <div class="player-container">
         <!-- 头部 -->
@@ -35,7 +36,7 @@
             <div class="like-overlay">
               <el-button
                   type="text"
-                  @click="toggleLike(currentSong.id)"
+                  @click="toggleLike(currentSong)"
                   class="like-btn"
                   :class="{ liked: currentSong.liked }"
               >
@@ -150,13 +151,24 @@
                 <span class="duration">{{ song.duration }}</span>
                 <el-button
                     type="text"
-                    @click.stop="toggleLike(song.id)"
+                    @click.stop="toggleLike(song)"
                     class="like-btn-small"
                     :class="{ liked: song.liked }"
                 >
                   <i class="el-icon-star-on"></i>
                   <span v-if="song.likeCount > 0">{{ song.likeCount }}</span>
                 </el-button>
+                <el-popconfirm
+                    v-if="song.isOwner"
+                    confirm-button-text='确认'
+                    cancel-button-text='取消'
+                    icon="el-icon-info"
+                    icon-color="red"
+                    title="确认删除当前歌曲吗？"
+                    @confirm="delSong(song)"
+                >
+                  <el-button slot="reference" size="mini" type="text" @click.stop class="delete-btn-small">删除</el-button>
+                </el-popconfirm>
               </div>
             </div>
           </div>
@@ -227,6 +239,12 @@ export default {
   },
 
   methods: {
+    handleClose() {
+      if (this.isPlaying) {
+        this.$refs.audioPlayer.pause()
+        this.isPlaying = false
+      }
+    },
     show() {
       this.drawerVisible = true
     },
@@ -291,12 +309,25 @@ export default {
       this.$message.success(this.isRepeat ? '已开启单曲循环' : '已关闭单曲循环')
     },
 
-    toggleLike(songId) {
-      const song = this.playlist.find(s => s.id === songId)
-      if (song) {
-        song.liked = !song.liked
-        song.likeCount += song.liked ? 1 : -1
+    toggleLike(music) {
+      let params = {
+        musicId: music.id
       }
+      let url;
+      if (music.liked) {
+        url = '/music/cancelLike'
+      } else {
+        url = '/music/like'
+      }
+      this.$http({
+        url: url,
+        method: 'POST',
+        data: params
+      }).then(res => {
+        music.liked = !music.liked;
+        music.likeCount += music.liked ? 1 : -1
+        this.$message.success('操作成功');
+      })
     },
 
     seekTo(value) {
@@ -338,6 +369,24 @@ export default {
         data: params
       }).then((data) => {
         this.playlist = data
+        this.$nextTick(() => {
+          if (this.playlist.length > 0) {
+            this.$refs.audioPlayer.src = this.playlist[0].url;
+          }
+        })
+      })
+    },
+    delSong(song) {
+      let params = {
+        id: song.id
+      }
+      this.$http({
+        url: `/music/delete`,
+        method: "delete",
+        data: params
+      }).then((data) => {
+        this.$message.success("删除成功");
+        this.playlist = this.playlist.filter(item => item.id !== song.id)
       })
     }
   }
@@ -659,7 +708,7 @@ export default {
 
 .like-btn-small {
   padding: 4px;
-  font-size: 14px;
+  font-size: 18px;
   color: #666;
 }
 
@@ -668,7 +717,7 @@ export default {
 }
 
 .like-btn-small span {
-  font-size: 10px;
+  font-size: 18px;
   margin-left: 2px;
 }
 
@@ -677,6 +726,12 @@ export default {
 }
 
 .playlist-item.active .like-btn-small.liked {
+  color: #ff4757;
+}
+
+.delete-btn-small {
+  font-size: 12px;
+  margin-left: 2px;
   color: #ff4757;
 }
 

@@ -3,6 +3,7 @@ package xyz.qy.implatform.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,6 @@ import xyz.qy.imclient.IMClient;
 import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.imcommon.model.IMTalkMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
-import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.dto.TalkStarDTO;
 import xyz.qy.implatform.entity.CharacterAvatar;
 import xyz.qy.implatform.entity.Talk;
@@ -70,6 +70,16 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
     public TalkStarVO like(TalkStarDTO talkStarDTO) {
         UserSession session = SessionContext.getSession();
         Long myUserId = session.getUserId();
+
+        LambdaQueryWrapper<TalkStar> wrapper = Wrappers.lambdaQuery();
+        wrapper.eq(TalkStar::getTalkId, talkStarDTO.getTalkId())
+                .eq(TalkStar::getUserId, myUserId)
+                .eq(TalkStar::getDeleted, false);
+        TalkStar one = this.getOne(wrapper);
+
+        if (ObjectUtil.isNotNull(one)) {
+            throw new GlobalException("您已点赞过此动态");
+        }
 
         User user = userService.getById(myUserId);
 

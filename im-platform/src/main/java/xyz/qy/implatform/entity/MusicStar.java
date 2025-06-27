@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @TableName("im_music_star")
 public class MusicStar extends Model<MusicStar> {
-    @TableId(type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     private Long userId;

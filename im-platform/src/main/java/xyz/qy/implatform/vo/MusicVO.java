@@ -37,4 +37,6 @@ public class MusicVO {
     private Integer likeCount;
 
     private Boolean liked;
+
+    private Boolean isOwner;
 }

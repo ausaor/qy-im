@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import xyz.qy.implatform.dto.MusicAddDTO;
+import xyz.qy.implatform.dto.MusicDelDTO;
 import xyz.qy.implatform.dto.MusicQueryDTO;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.Music;
@@ -103,6 +104,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             List<MusicStar> musicStars = musicStarMap.getOrDefault(musicVO.getId(), new ArrayList<>());
             musicVO.setLikeCount(musicStars.size());
             musicVO.setLiked(musicStars.stream().anyMatch(musicStar -> musicStar.getUserId().equals(userId)));
+            musicVO.setIsOwner(musicVO.getUserId().equals(userId));
         });
 
         return musicVos;
@@ -121,6 +123,27 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         this.save(music);
         MusicVO musicVO = BeanUtils.copyProperties(music, MusicVO.class);
         return musicVO;
+    }
+
+    @Override
+    public void deleteMusic(MusicDelDTO dto) {
+        Long userId = SessionContext.getSession().getUserId();
+        Music music = this.getById(dto.getId());
+        if (ObjectUtil.isNull(music)) {
+            throw new GlobalException("歌曲不存在");
+        }
+
+        if (!music.getUserId().equals(userId)) {
+            throw new GlobalException("无权限删除");
+        }
+        music.setDeleted(true);
+        music.setUpdateTime(LocalDateTime.now());
+        boolean update = this.updateById(music);
+        if (update) {
+            log.info("成功删除音乐,musicId={}：", music.getId());
+        } else {
+            log.info("删除音乐失败,musicId={}：", music.getId());
+        }
     }
 
     private void checkMusicData(MusicAddDTO dto) {
