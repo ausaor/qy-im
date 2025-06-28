@@ -197,7 +197,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             //判断用户上传是否超过20
             long count = musics.stream().filter(m -> m.getUserId().equals(userId)).count();
             if (count >= 10) {
-                throw new GlobalException("您在一个月内上传数量超过20，无法继续上传");
+                throw new GlobalException("您在一个月内上传数量超过10，无法继续上传");
             }
         } else if (StringUtils.equals(dto.getCategory(), TalkCategoryEnum.PRIVATE.getCode())) {
             // 判断用户一个月内上传数量是否超过100
@@ -215,6 +215,11 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     @Override
     public void increasePlayCount(Long id) {
         long userId = SessionContext.getSession().getUserId();
+
+        Music music = this.getById(id);
+        if (ObjectUtil.isNull(music) || music.getDeleted()) {
+            throw new GlobalException("歌曲不存在");
+        }
 
         Boolean exists = redisCache.hasKey(RedisKey.IM_MUSIC_PLAY_COUNT + userId + ":" + id);
         if (!exists) {
