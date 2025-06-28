@@ -71,6 +71,14 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         if (friendId.equals(userId)) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "不允许添加自己为好友");
         }
+        // 查询用户好友数量
+        long count = this.lambdaQuery()
+                .eq(Friend::getUserId, userId)
+                .count();
+        if (count >= 100) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "好友数量已达上限");
+        }
+
         // 互相绑定好友关系
         FriendServiceImpl proxy = (FriendServiceImpl) AopContext.currentProxy();
         proxy.bindFriend(userId, friendId);
