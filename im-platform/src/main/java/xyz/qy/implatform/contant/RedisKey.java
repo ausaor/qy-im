@@ -15,6 +15,9 @@ public final class RedisKey {
     // 已读地区群聊消息位置(已读最大id)
     public final static String IM_REGION_GROUP_READED_POSITION = "im:readed:region:group:position";
 
+    // 已读动态消息位置(已读最大id)
+    public final static String IM_TALK_READED_POSITION = "im:readed:talk:position";
+
     /**
      * 私聊离线通知
      */

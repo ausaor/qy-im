@@ -1,6 +1,7 @@
 package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -17,6 +18,7 @@ import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.imcommon.contant.IMRedisKey;
 import xyz.qy.imcommon.model.IMTalkMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
+import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.TalkAddDTO;
 import xyz.qy.implatform.dto.TalkDelDTO;
 import xyz.qy.implatform.dto.TalkQueryDTO;
@@ -819,6 +821,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
     @Override
     public JSONObject pullOfflineTalks(Long minId) {
+        minId = minId == null ? 0L : minId;
         JSONObject jsonObject = new JSONObject();
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
@@ -846,6 +849,10 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         }
         Date minDate = DateUtils.addMonths(new Date(), -1);
 
+        String key = StrUtil.join(":", RedisKey.IM_TALK_READED_POSITION, userId);
+        Object object = redisCache.getCacheObject(key);
+        minId = object == null ? minId : Long.parseLong(object.toString());
+
         // 查询未读的好友一个月内发布的动态数量
         List<Talk> talkList = this.lambdaQuery()
                 .in(Talk::getUserId, friendIds)
@@ -853,7 +860,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 .eq(Talk::getCategory, "private")
                 .eq(Talk::getDeleted, false)
                 .ge(Talk::getCreateTime, minDate)
-                .gt(Objects.nonNull(minId), Talk::getId, minId)
+                .gt(Talk::getId, minId)
                 .orderByDesc(Talk::getId)
                 .last("limit 100")
                 .list();
@@ -863,6 +870,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
         // 获取最大id
         Long maxId = talkList.get(0).getId();
+
+        redisCache.setCacheObject(key, maxId);
 
         // 统计用户数量
         Set<Long> userIds = talkList.stream().map(Talk::getUserId).collect(Collectors.toSet());

@@ -4,6 +4,7 @@
       title="上传新音乐"
       :visible.sync="dialogVisible"
       width="600px"
+      :modal="false"
       custom-class="music-dialog"
       :before-close="resetForm"
   >
