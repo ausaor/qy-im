@@ -17,8 +17,16 @@
             <i class="el-icon-headset"></i>
             <span>QY MUSIC</span>
           </div>
-          <div v-if="showUpload" class="upload-btn" @click="showUploadDialog()">
-            <i class="el-icon-upload2"></i>
+          <div class="show-float-music">
+
+          </div>
+          <div class="upload-btn" >
+            <span style="margin-right: 20px;" @click="toggleFloatMusic">
+              <i :class="showFloatMusic ? 'el-icon-bottom-left' : 'el-icon-top-right'"></i>
+            </span>
+            <span v-if="showUpload" @click="showUploadDialog()">
+              <i class="el-icon-upload2"></i>
+            </span>
           </div>
 <!--          <el-button
               type="text"
@@ -256,6 +264,9 @@ export default {
 
     playModeText() {
       return this.playMode === 'random' ? '随机播放' : '顺序播放'
+    },
+    showFloatMusic() {
+      return this.$store.state.musicStore.showFloatMusic;
     }
   },
   watch: {
@@ -384,6 +395,18 @@ export default {
     showUploadDialog() {
       this.$refs.musicUploadRef.open();
     },
+    toggleFloatMusic() {
+      let musics = this.playlist.map(item => {
+        return {
+          id: item.id,
+          title: item.name,
+          artist: item.singer,
+          pic: item.cover,
+          src: item.url,
+        }
+      })
+      this.$store.commit("toggleFloatMusic", musics)
+    },
     addMusic(data) {
       this.playlist.push(data);
     },
@@ -489,6 +512,15 @@ export default {
 .logo i {
   margin-right: 8px;
   font-size: 24px;
+}
+
+.show-float-music {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: #00bcd4;
+  cursor: pointer;
 }
 
 .upload-btn {
@@ -727,7 +759,7 @@ export default {
 .song-item-cover img {
   width: 45px;
   height: 45px;
-  border-radius: 6px;
+  border-radius: 50%;
   object-fit: cover;
 }
 

@@ -102,6 +102,20 @@
     <rtc-private-video ref="rtcPrivateVideo"></rtc-private-video>
     <rtc-private-acceptor ref="rtcPrivateAcceptor"></rtc-private-acceptor>
     <rtc-group-video ref="rtcGroupVideo" ></rtc-group-video>
+    <aplayer v-if="showFloatMusic"
+            :music="musics[0]"
+             :list="musics"
+             :show-lrc="true"
+             :theme="'#ff7e5f'"
+             :autoplay="false"
+             :float="true"
+             :mutex="true"
+             :shuffle="false"
+             :preload="'auto'"
+             :list-max-height="'300px'"
+             :list-folded="true"
+             :featured="true"
+    />
 	</el-container>
 </template>
 
@@ -115,6 +129,7 @@
 	import Operation from "@/components/operation/Operation";
   import RtcGroupVideo from '../components/rtc/RtcGroupVideo.vue';
   import SSETool from '@/utils/sse-util';
+  import Aplayer from 'vue-aplayer'
 
 	export default {
 		components: {
@@ -125,7 +140,8 @@
       RtcPrivateVideo,
       RtcPrivateAcceptor,
       RtcGroupVideo,
-      Operation
+      Operation,
+      Aplayer
 		},
 		data() {
 			return {
@@ -133,7 +149,7 @@
 				showOperationDialog: false,
         lastPlayAudioTime: new Date()-1000,
         sse: null,
-        messages: []
+        messages: [],
 			}
 		},
 		methods: {
@@ -663,6 +679,12 @@
       notifyCount() {
         return this.$store.state.talkStore.notifyCount;
       },
+      showFloatMusic() {
+        return this.$store.state.musicStore.showFloatMusic;
+      },
+      musics() {
+        return this.$store.state.musicStore.musics;
+      }
 		},
 		watch: {
 			unreadCount: {
@@ -746,5 +768,16 @@
   background-color: #FFFAFA;
   color: #333;
   text-align: center;
+}
+
+.aplayer {
+  position: absolute;
+  display: flex;
+  flex-direction: column; /* 确保垂直排列 */
+  height: min-content; /* 显式声明 */
+  width: 450px;
+  z-index: 99999;
+  left: 0;
+  bottom: 0;
 }
 </style>

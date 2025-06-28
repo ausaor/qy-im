@@ -8,6 +8,7 @@ import regionGroupStore from './regionGroupStore.js';
 import configStore from './configStore.js';
 import uiStore from './uiStore.js';
 import talkStore from './talkStore.js';
+import musicStore from "./musicStore.js";
 // import VuexPersistence from 'vuex-persist'
 //
 //
@@ -19,7 +20,7 @@ import talkStore from './talkStore.js';
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-	modules: {chatStore,friendStore,userStore,groupStore,regionGroupStore,configStore,uiStore,talkStore},
+	modules: {chatStore,friendStore,userStore,groupStore,regionGroupStore,configStore,uiStore,talkStore,musicStore},
 	state: {},
 	//plugins: [vuexLocal.plugin],
 	mutations: {
