@@ -2,6 +2,7 @@ package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -743,7 +744,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         // 判断上次切换时间与当前时间间隔
         Date switchTime = group.getSwitchTime();
         if (switchTime != null) {
-            long interval = (new Date().getTime() - switchTime.getTime()) / 1000;
+            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
             if (interval < Constant.SWITCH_INTERVAL) {
                 throw new GlobalException("距离上次切换群聊类型未超过30分钟");
             }
@@ -828,7 +829,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         // 判断上次切换时间与当前时间间隔
         Date switchTime = group.getSwitchTime();
         if (switchTime != null) {
-            long interval = (new Date().getTime() - switchTime.getTime()) / 1000;
+            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
             if (interval < Constant.SWITCH_INTERVAL) {
                 throw new GlobalException("距离上次切换群聊类型未超过30分钟");
             }
@@ -907,7 +908,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         // 判断上次切换时间与当前时间间隔
         Date switchTime = group.getSwitchTime();
         if (switchTime != null) {
-            long interval = (new Date().getTime() - switchTime.getTime()) / 1000;
+            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
             if (interval < Constant.SWITCH_INTERVAL) {
                 throw new GlobalException("距离上次切换群聊类型未超过30分钟");
             }
@@ -997,7 +998,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         // 判断上次切换时间与当前时间间隔
         Date switchTime = group.getSwitchTime();
         if (switchTime != null) {
-            long interval = (new Date().getTime() - switchTime.getTime()) / 1000;
+            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
             if (interval < Constant.SWITCH_INTERVAL) {
                 throw new GlobalException("距离上次切换群聊类型未超过30分钟");
             }
@@ -1087,7 +1088,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         // 判断上次切换时间与当前时间间隔
         Date switchTime = group.getSwitchTime();
         if (switchTime != null) {
-            long interval = (new Date().getTime() - switchTime.getTime()) / 1000;
+            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
             if (interval < Constant.SWITCH_INTERVAL) {
                 throw new GlobalException("距离上次切换群聊类型未超过30分钟");
             }

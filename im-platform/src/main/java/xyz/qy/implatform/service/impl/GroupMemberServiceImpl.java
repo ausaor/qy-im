@@ -1,5 +1,7 @@
 package xyz.qy.implatform.service.impl;
 
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -15,17 +17,12 @@ import org.springframework.stereotype.Service;
 import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
-import xyz.qy.implatform.dto.GroupMessageDTO;
-import xyz.qy.implatform.dto.PrivateMessageDTO;
 import xyz.qy.implatform.entity.CharacterAvatar;
-import xyz.qy.implatform.entity.DictData;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.TemplateCharacter;
-import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.GroupChangeTypeEnum;
 import xyz.qy.implatform.enums.GroupTypeEnum;
-import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.DictDataMapper;
@@ -279,7 +276,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         // 判断上次切换时间与当前时间间隔
         Date switchTime = groupMember.getSwitchTime();
         if (switchTime != null) {
-            long interval = (new Date().getTime() - switchTime.getTime()) / 1000;
+            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
             if (interval < Constant.SWITCH_INTERVAL) {
                 throw new GlobalException("距离上次切换操作未超过30分钟");
             }
@@ -372,7 +369,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         // 判断上次切换时间与当前时间间隔
         Date switchTime = groupMember.getSwitchTime();
         if (switchTime != null) {
-            long interval = (new Date().getTime() - switchTime.getTime()) / 1000;
+            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
             if (interval < Constant.SWITCH_INTERVAL) {
                 throw new GlobalException("距离上次切换操作未超过30分钟");
             }
