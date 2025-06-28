@@ -1,5 +1,6 @@
 package xyz.qy.implatform.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -77,6 +78,10 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
                 .count();
         if (count >= 100) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "好友数量已达上限");
+        }
+        User user = userMapper.selectById(friendId);
+        if (ObjectUtil.isNull(user)) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户不存在");
         }
 
         // 互相绑定好友关系
