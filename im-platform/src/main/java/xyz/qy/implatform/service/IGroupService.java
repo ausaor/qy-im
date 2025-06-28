@@ -96,4 +96,6 @@ public interface IGroupService extends IService<Group> {
      * @param dto 入参
      */
     void unBanMsg(GroupBanDTO dto);
+
+    void checkUserGroupCount(Long userId);
 }

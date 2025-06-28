@@ -6,6 +6,7 @@ import xyz.qy.implatform.dto.TalkAddDTO;
 import xyz.qy.implatform.dto.TalkDelDTO;
 import xyz.qy.implatform.dto.TalkQueryDTO;
 import xyz.qy.implatform.dto.TalkUpdateDTO;
+import xyz.qy.implatform.dto.UserDataAuthDTO;
 import xyz.qy.implatform.entity.Talk;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.TalkVO;
@@ -42,4 +43,12 @@ public interface ITalkService extends IService<Talk> {
      * @param minId 最小id
      */
     JSONObject pullOfflineTalks(Long minId);
+
+    /**
+     * 校验用户是否具有数据操作权限
+     *
+     * @param dto 数据权限
+     * @return true:有权限，false:无权限
+     */
+    boolean verifyUserDataAuth(UserDataAuthDTO dto);
 }

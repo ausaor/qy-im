@@ -23,6 +23,7 @@ import xyz.qy.implatform.dto.TalkAddDTO;
 import xyz.qy.implatform.dto.TalkDelDTO;
 import xyz.qy.implatform.dto.TalkQueryDTO;
 import xyz.qy.implatform.dto.TalkUpdateDTO;
+import xyz.qy.implatform.dto.UserDataAuthDTO;
 import xyz.qy.implatform.entity.CharacterAvatar;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.GroupMember;
@@ -894,5 +895,27 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         jsonObject.put("userList", userIds);
         jsonObject.put("talkList", lastTwoTalkList);
         return jsonObject;
+    }
+
+    @Override
+    public boolean verifyUserDataAuth(UserDataAuthDTO dto) {
+        if (TalkCategoryEnum.PRIVATE.getCode().equals(dto.getCategory())) {
+            // 判断用户是否好友
+            if (dto.getUserId().equals(dto.getFriendId())) {
+                return true;
+            }
+            return friendService.isFriend(dto.getUserId(), dto.getFriendId());
+        } else if (TalkCategoryEnum.GROUP.getCode().equals(dto.getCategory())) {
+            // 判断用户是否群成员
+            return groupMemberService.isInGroup(dto.getGroupId(), Collections.singletonList(dto.getUserId()));
+        } else if (TalkCategoryEnum.REGION.getCode().equals(dto.getCategory())) {
+            // 判断用户是否地区群聊常驻成员
+            Boolean inRegionGroup = regionGroupMemberService.isInRegionGroup(dto.getRegionCode(), Collections.singletonList(dto.getUserId()));
+            Boolean tempMember = regionGroupMemberService.isTempMember(dto.getRegionCode(), dto.getUserId());
+            if (inRegionGroup || tempMember) {
+                return true;
+            }
+        }
+        return false;
     }
 }

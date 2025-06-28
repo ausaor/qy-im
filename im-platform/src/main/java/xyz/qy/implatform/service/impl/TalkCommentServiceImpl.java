@@ -12,6 +12,7 @@ import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.imcommon.model.IMTalkMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.dto.TalkCommentDTO;
+import xyz.qy.implatform.dto.UserDataAuthDTO;
 import xyz.qy.implatform.entity.CharacterAvatar;
 import xyz.qy.implatform.entity.Talk;
 import xyz.qy.implatform.entity.TalkComment;
@@ -83,6 +84,10 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
             if (talkService.verifyTalkCommentCharacter(talkId, talkCommentDTO.getCharacterId(), talkCommentDTO.getAvatarId())) {
                 throw new GlobalException("只能使用选择过的角色");
             }
+        }
+
+        if (!talkService.verifyUserDataAuth(new UserDataAuthDTO(talk.getCategory(), myUserId, talk.getUserId(), talk.getGroupId(), talk.getRegionCode()))) {
+            throw new GlobalException("您无权限操作");
         }
 
         TalkComment talkComment = new TalkComment();

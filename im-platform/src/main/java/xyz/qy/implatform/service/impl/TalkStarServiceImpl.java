@@ -13,6 +13,7 @@ import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.imcommon.model.IMTalkMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.dto.TalkStarDTO;
+import xyz.qy.implatform.dto.UserDataAuthDTO;
 import xyz.qy.implatform.entity.CharacterAvatar;
 import xyz.qy.implatform.entity.Talk;
 import xyz.qy.implatform.entity.TalkNotify;
@@ -92,6 +93,10 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
             if (talkService.verifyTalkCommentCharacter(talkId, talkStarDTO.getCharacterId(), talkStarDTO.getAvatarId())) {
                 throw new GlobalException("只能使用选择过的角色或所选角色已被使用");
             }
+        }
+
+        if (!talkService.verifyUserDataAuth(new UserDataAuthDTO(talk.getCategory(), myUserId, talk.getUserId(), talk.getGroupId(), talk.getRegionCode()))) {
+            throw new GlobalException("您无权限操作");
         }
         TalkStar talkStar = new TalkStar();
         talkStar.setTalkId(talkId);

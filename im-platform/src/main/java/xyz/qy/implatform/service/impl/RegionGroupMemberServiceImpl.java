@@ -5,10 +5,13 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import xyz.qy.imcommon.contant.IMRedisKey;
 import xyz.qy.implatform.entity.RegionGroupMember;
 import xyz.qy.implatform.mapper.RegionGroupMemberMapper;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
+import xyz.qy.implatform.util.RedisCache;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +24,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class RegionGroupMemberServiceImpl extends ServiceImpl<RegionGroupMemberMapper, RegionGroupMember> implements IRegionGroupMemberService {
+    @Resource
+    private RedisCache redisCache;
+
     @Override
     public List<RegionGroupMember> findByUserId(Long userId) {
         LambdaQueryWrapper<RegionGroupMember> queryWrapper = Wrappers.lambdaQuery();
@@ -73,5 +79,10 @@ public class RegionGroupMemberServiceImpl extends ServiceImpl<RegionGroupMemberM
                 .eq(RegionGroupMember::getQuit, false)
                 .in(RegionGroupMember::getUserId, userId);
         return this.count(wrapper) == userId.size();
+    }
+
+    @Override
+    public Boolean isTempMember(String regionCode, Long userId) {
+        return redisCache.hasKey(IMRedisKey.IM_USER_TEMP_REGION_GROUP + userId + ":" + regionCode);
     }
 }

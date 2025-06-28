@@ -62,4 +62,6 @@ public interface IRegionGroupMemberService extends IService<RegionGroupMember> {
     List<Long> findUserIdsByCode(String regionCode);
 
     Boolean isInRegionGroup(String regionCode, List<Long> userIds);
+
+    Boolean isTempMember(String regionCode, Long userId);
 }

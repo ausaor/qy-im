@@ -127,6 +127,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (Arrays.stream(GroupTypeEnum.values()).noneMatch(item -> item.getCode().equals(vo.getGroupType()))) {
             throw new GlobalException("群聊类型错误");
         }
+
+        this.checkUserGroupCount(session.getUserId());
+
         User user = userService.getById(session.getUserId());
         // 保存群组数据
         Group group = BeanUtils.copyProperties(vo, Group.class);
@@ -657,6 +660,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             throw new GlobalException("群聊类型错误");
         }
         UserSession session = SessionContext.getSession();
+
+        this.checkUserGroupCount(session.getUserId());
+
         User user = userService.getById(session.getUserId());
 
         Group group = new Group();
@@ -1564,6 +1570,16 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             messageSendUtil.sendTipMessage(group.getId(), session.getUserId(),
                     session.getNickName(), Collections.singletonList(groupMember.getUserId()),
                     content, GroupChangeTypeEnum.GROUP_BANNED_MSG.getCode());
+        }
+    }
+
+    @Override
+    public void checkUserGroupCount(Long userId) {
+        Integer count = this.lambdaQuery().eq(Group::getOwnerId, userId)
+                .eq(Group::getDeleted, false)
+                .count();
+        if (count >= 10) {
+            throw new GlobalException("群组创建数量已达上限，请删除部分群组后重试");
         }
     }
 }
