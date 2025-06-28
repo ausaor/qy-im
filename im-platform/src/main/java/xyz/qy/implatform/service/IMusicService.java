@@ -15,4 +15,6 @@ public interface IMusicService extends IService<Music> {
     MusicVO addMusic(MusicAddDTO dto);
 
     void deleteMusic(MusicDelDTO dto);
+
+    void increasePlayCount(Long id);
 }

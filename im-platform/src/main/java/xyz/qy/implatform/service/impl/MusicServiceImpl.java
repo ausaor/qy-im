@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.MusicAddDTO;
 import xyz.qy.implatform.dto.MusicDelDTO;
 import xyz.qy.implatform.dto.MusicQueryDTO;
@@ -25,6 +26,7 @@ import xyz.qy.implatform.service.IMusicStarService;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.vo.FriendVO;
 import xyz.qy.implatform.vo.MusicVO;
 
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -53,6 +56,9 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
 
     @Resource
     private IFriendService friendService;
+
+    @Resource
+    private RedisCache redisCache;
 
     @Override
     public List<MusicVO> listMusic(MusicQueryDTO dto) {
@@ -203,6 +209,17 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             if (musics.size() >= 100) {
                 throw new GlobalException("您在一个月内上传数量超过100，无法继续上传");
             }
+        }
+    }
+
+    @Override
+    public void increasePlayCount(Long id) {
+        long userId = SessionContext.getSession().getUserId();
+
+        Boolean exists = redisCache.hasKey(RedisKey.IM_MUSIC_PLAY_COUNT + userId + ":" + id);
+        if (!exists) {
+            baseMapper.increasePlayCount(id);
+            redisCache.setCacheObject(RedisKey.IM_MUSIC_PLAY_COUNT + userId + ":" + id, id, 24, TimeUnit.HOURS);
         }
     }
 }

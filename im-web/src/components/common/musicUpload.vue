@@ -93,6 +93,7 @@ export default {
         singer: '',
         url: '',
         cover: '',
+        duration: 0,
         groupId: null,
         regionCode: null
       },
@@ -180,6 +181,7 @@ export default {
             this.form.regionCode = this.regionCode
             this.form.category = this.category
             this.form.url = musicFIle.url
+            this.form.duration = musicFIle.duration
             this.$http({
               url: "/music/add",
               method: 'post',
@@ -205,6 +207,16 @@ export default {
     // 重置表单
     resetForm() {
       this.$refs.musicForm.resetFields();
+      this.form = {
+        category: '',
+        name: '',
+        singer: '',
+        url: '',
+        cover: '',
+        duration: 0,
+        groupId: null,
+        regionCode: null
+      };
       this.coverPreview = '';
       this.fileList = [];
       this.dialogVisible = false;

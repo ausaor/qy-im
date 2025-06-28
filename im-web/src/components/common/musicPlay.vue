@@ -156,7 +156,11 @@
               </div>
 
               <div class="song-item-actions">
-                <span class="duration">{{ song.duration }}</span>
+                <span class="duration">{{ formatTime(song.duration) }}</span>
+                <span class="play-count" v-if="song.playCount > 0">
+                  <i class="el-icon-video-play"></i>
+                  <span>{{ song.playCount }}</span>
+                </span>
                 <el-button
                     type="text"
                     @click.stop="toggleLike(song)"
@@ -288,6 +292,7 @@ export default {
           this.$refs.audioPlayer.src = this.currentSong.url
           this.$refs.audioPlayer.play()
           this.isPlaying = true
+          this.increasePlayCount();
         }
       })
     },
@@ -414,6 +419,13 @@ export default {
       }).then((data) => {
         this.$message.success("删除成功");
         this.playlist = this.playlist.filter(item => item.id !== song.id)
+      })
+    },
+    increasePlayCount() {
+      this.$http({
+        url: `/music/increasePlayCount/${this.currentSong.id}`,
+        method: "post",
+      }).then((data) => {
       })
     }
   }
@@ -765,6 +777,18 @@ export default {
   font-size: 12px;
   opacity: 0.7;
   min-width: 35px;
+}
+
+.play-count {
+  font-size: 18px;
+  opacity: 0.7;
+  min-width: 35px;
+  color: #666;
+}
+
+.play-count span {
+  font-size: 18px;
+  margin-left: 2px;
 }
 
 .like-btn-small {

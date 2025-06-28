@@ -5,6 +5,7 @@ import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.strategy.UploadStrategy;
+import xyz.qy.implatform.util.AudioDurationUtil;
 import xyz.qy.implatform.util.FileUtil;
 import xyz.qy.implatform.util.FileUtils;
 import xyz.qy.implatform.vo.UploadImageVO;
@@ -120,6 +121,9 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             String originalName = FileUtils.getFileName(file.getOriginalFilename());
             // 重新生成文件名
             String fileName = md5 + extName;
+
+            int duration = AudioDurationUtil.getAudioDuration(file);
+
             // 判断文件是否已存在
             if (!exists(path + fileName)) {
                 // 不存在则继续上传
@@ -128,6 +132,7 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
                 jsonObject = getAudioInfo(path, fileName);
             }
             jsonObject.put("originalName", originalName);
+            jsonObject.put("duration", duration);
             return jsonObject;
         } catch (Exception e) {
             log.error("上传音频异常:{}", e.getMessage());

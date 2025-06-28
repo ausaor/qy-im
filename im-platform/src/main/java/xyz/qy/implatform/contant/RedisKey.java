@@ -103,4 +103,9 @@ public final class RedisKey {
      * 重复提交
      */
     public static final String IM_REPEAT_SUBMIT = "im:repeat:submit";
+
+    /**
+     * 音乐播放次数
+     */
+    public static final String IM_MUSIC_PLAY_COUNT = IM_CACHE + "music:play-count:";
 }

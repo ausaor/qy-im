@@ -18,6 +18,8 @@ public class MusicAddDTO {
 
     private String cover;
 
+    private Integer duration;
+
     @NotBlank(message = "音乐分类不能为空")
     @ValidEnum(enumClass = TalkCategoryEnum.class, property = "code", message = "无效的分类")
     private String category;
