@@ -6,7 +6,7 @@
                           @click.native="gotoTalkSpace(communityList[0])"></community-item-talk>
         <community-item :community="communityList[1]" :active="communityList[1].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[1])"></community-item>
-        <community-item :community="communityList[2]" :active="communityList[2].sort === activeIndex"
+        <community-item v-if="mine.id===1" :community="communityList[2]" :active="communityList[2].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[2])"></community-item>
       </div>
     </el-aside>
@@ -31,7 +31,7 @@ export default {
       communityList: [
         {name: "空间动态", sort: 1, route: '/home/square/friendActivity', iconId: '#icon-shejiaotubiao-40'},
         {name: "群聊模板", sort: 2, route: '/home/square/templateGroup', iconId: '#icon-qiqiaoban'},
-        {name: "用户管理", sort: 3, route: '/home/square/users', iconId: '#icon-friend'}
+        {name: "用户管理", sort: 3, route: '/home/square/users', iconId: '#icon-person'}
       ],
       activeIndex: -1,
     }
@@ -70,6 +70,9 @@ export default {
     },
     notifyCount() {
       return this.$store.state.talkStore.notifyCount;
+    },
+    mine() {
+      return this.$store.state.userStore.userInfo;
     },
   }
 }

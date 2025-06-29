@@ -2,13 +2,13 @@
 	<div class="login-view" ref="loginView" :style="backImgStyle">
     <el-form :model="loginForm"  status-icon :rules="rules" ref="loginForm"  label-width="60px" class="web-ruleForm" @keyup.enter.native="submitForm('loginForm')">
       <div class="login-brand">{{websiteName}}</div>
-      <el-form-item label="用户名" prop="username">
+      <el-form-item label="用户名" prop="username" v-if="loginForm.loginType===0">
         <el-input type="username" v-model="loginForm.userName" autocomplete="off"></el-input>
       </el-form-item>
-      <el-form-item label="密码" prop="password">
+      <el-form-item label="密码" prop="password" v-if="loginForm.loginType===0">
         <el-input type="password" v-model="loginForm.password" autocomplete="off"></el-input>
       </el-form-item>
-      <el-form-item prop="code">
+      <el-form-item prop="code" v-if="loginForm.loginType===0">
         <el-input
             v-model="loginForm.code"
             auto-complete="off"
@@ -19,6 +19,18 @@
         <div class="login-code">
           <img :src="codeUrl" @click="getCode" class="login-code-img"/>
         </div>
+      </el-form-item>
+      <el-form-item label="邮箱" prop="email" v-if="loginForm.loginType===1">
+        <el-input type="email" v-model="loginForm.email" autocomplete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="" prop="emailCode" v-if="loginForm.loginType===1">
+        <el-input
+            v-model="loginForm.emailCode"
+            auto-complete="off"
+            placeholder="邮箱验证码"
+            style="width: 120px"
+        />
+        <el-button class="email-code" :disabled="disabled" @click="sendVerificationCode">{{validateBtn}}</el-button>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submitForm('loginForm')">登陆</el-button>
@@ -32,18 +44,20 @@
       <div class="social-login">
         <div class="social-login-title">社交账号登录</div>
         <div class="social-login-wrapper">
-          <el-image
-              style="width: 30px; height: 30px"
-              :src="require('@/assets/image/qq.png')"
-              @click="qqLogin"
-              />
+          <svg class="icon svg-icon" aria-hidden="true" @click="qqLogin">
+            <use xlink:href="#icon-QQ"></use>
+          </svg>
+          <svg class="icon svg-icon" aria-hidden="true" @click="toggleLoginType" v-if="loginForm.loginType===0">
+            <use xlink:href="#icon-email"></use>
+          </svg>
+          <svg class="icon svg-icon" aria-hidden="true" @click="toggleLoginType" v-if="loginForm.loginType===1">
+            <use xlink:href="#icon-diannao"></use>
+          </svg>
         </div>
       </div>
     </el-form>
     <div class="footer-wrap">
-      <a href="https://beian.miit.gov.cn/" target="_blank">
-
-      </a>
+      <a href="https://beian.miit.gov.cn/" target="_blank"></a>
     </div>
   </div>
 </template>
@@ -82,15 +96,30 @@ import BIRDS from "vanta/src/vanta.birds";
 				callback();
 
 			};
+      let checkMail = (rule, value, callback) => {
+        if (value === '') {
+          return callback(new Error('请输入邮箱'));
+        }
+        const regEmail = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+        if (!regEmail.test(value)) {
+          return callback(new Error('邮箱格式错误'));
+        }
+        callback();
+      };
 			return {
         websiteName: '輕語',
         codeUrl: '',
+        validateBtn: '获取验证码',
+        disabled: false,
 				loginForm: {
           terminal: this.$enums.TERMINAL_TYPE.WEB,
           userName: '',
 					password: '',
           code: '',
-          uuid: ''
+          uuid: '',
+          email: '',
+          emailCode: '',
+          loginType: 0
 				},
 				rules: {
           userName: [{
@@ -101,8 +130,16 @@ import BIRDS from "vanta/src/vanta.birds";
 						validator: checkPassword,
 						trigger: 'blur'
 					}],
+          email: [{
+            validator: checkMail,
+            trigger: 'blur'
+          }],
           code: [
             { required: true, trigger: "change", message: "请输入验证码" },
+            { min: 1, max: 4, message: "请输入4位验证码", trigger: "change"}
+          ],
+          emailCode: [
+            { required: true, trigger: "change", message: "请输入邮箱验证码" },
             { min: 1, max: 4, message: "请输入4位验证码", trigger: "change"}
           ]
 				},
@@ -213,8 +250,50 @@ import BIRDS from "vanta/src/vanta.birds";
           );
         }
       },
+      toggleLoginType() {
+        this.loginForm.loginType = this.loginForm.loginType === 0 ? 1 : 0;
+      },
       toRegister() {
         this.$router.push("/register");
+      },
+      sendVerificationCode() {
+        if (!this.loginForm.email) {
+          this.$message.warning('请输入邮箱');
+          return;
+        }
+        const regEmail = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+        if (!regEmail.test(this.loginForm.email)) {
+          this.$message.warning('邮箱格式错误');
+          return;
+        }
+
+        let time = 90;
+        let timer = setInterval(() => {
+          if(time === 0){
+            clearInterval(timer);
+            this.validateBtn = '获取验证码';
+            this.disabled = false;
+          }else{
+            this.disabled = true;
+            this.validateBtn = time + '秒后重试';
+            time--;
+          }
+        }, 1000);
+
+        this.getEmailCode();
+      },
+      getEmailCode() {
+        let params = {
+          toEmail: this.loginForm.email,
+          category: 'LOGIN'
+        }
+        this.$http({
+          url: "/email/getCode",
+          method: "post",
+          data: params
+        }).then(()=>{
+
+        })
       },
 		},
 		mounted() {
@@ -248,6 +327,7 @@ import BIRDS from "vanta/src/vanta.birds";
 	.login-view {
 
 		.web-ruleForm {
+      width: 350px;
 			height: 446px;
 			padding: 20px;
 			margin-top: 150px ;
@@ -338,8 +418,15 @@ import BIRDS from "vanta/src/vanta.birds";
 
         .social-login-wrapper {
           margin-top: 1rem;
-          font-size: 2rem;
-          text-align: center;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 10px;
+
+          .icon {
+            width: 30px;
+            height: 30px;
+          }
         }
       }
 		}

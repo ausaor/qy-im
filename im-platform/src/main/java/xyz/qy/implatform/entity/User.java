@@ -44,6 +44,12 @@ public class User extends Model<User> {
     private String nickName;
 
     /**
+     * 邮箱
+     */
+    @TableField("email")
+    private String email;
+
+    /**
      * 性别
      */
     @TableField("sex")

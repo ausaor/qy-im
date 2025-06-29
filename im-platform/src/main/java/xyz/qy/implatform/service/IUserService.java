@@ -26,6 +26,8 @@ public interface IUserService extends IService<User> {
 
     User findUserByUserName(String username);
 
+    User findUserByEmail(String email);
+
     void update(UserVO vo);
 
     UserVO findUserById(Long id);

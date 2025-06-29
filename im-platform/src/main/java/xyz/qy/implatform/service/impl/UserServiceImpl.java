@@ -31,6 +31,7 @@ import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.EmailCategoryEnum;
 import xyz.qy.implatform.enums.LoginTypeEnum;
 import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
@@ -108,18 +109,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public LoginVO login(LoginDTO dto) {
-        // 验证码校验
-        validateCaptcha(dto.getCode(), dto.getUuid());
-        User user = findUserByUserName(dto.getUserName());
-        if (null == user) {
-            throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户不存在");
+        User user = null;
+        if (LoginTypeEnum.USERNAME.getType().equals(dto.getLoginType())) {
+            if (StringUtils.isAnyBlank(dto.getUserName(), dto.getPassword(), dto.getUuid(), dto.getCode())) {
+                throw new GlobalException("参数异常");
+            }
+            // 验证码校验
+            validateCaptcha(dto.getCode(), dto.getUuid());
+            user = findUserByUserName(dto.getUserName());
+            if (null == user) {
+                throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户不存在");
+            }
+            if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+                throw new GlobalException(ResultCode.PASSWORD_ERROR);
+            }
+        } else if (LoginTypeEnum.EMAIL.getType().equals(dto.getLoginType())) {
+            if (StringUtils.isAnyBlank(dto.getEmail(), dto.getEmailCode())) {
+                throw new GlobalException("参数异常");
+            }
+            // 校验邮箱验证码
+            validateEmailCode(dto.getEmail(), EmailCategoryEnum.LOGIN.name(), dto.getEmailCode());
+            user = findUserByEmail(dto.getEmail());
+            if (null == user) {
+                throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户不存在");
+            }
         }
+
+        assert user != null;
         if (user.getIsDisable()) {
             throw new GlobalException("您的账号已被管理员封禁!");
         }
-        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new GlobalException(ResultCode.PASSWOR_ERROR);
-        }
+
         recordLoginInfo(user);
         redisCache.deleteObject(RedisKey.CAPTCHA_CODE_KEY + dto.getUuid());
         // 生成token
@@ -181,6 +201,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public void register(RegisterDTO vo) {
         // 验证码校验
         validateCaptcha(vo.getCode(), vo.getUuid());
+        validateEmailCode(vo.getEmail(), EmailCategoryEnum.REGISTER.name(), vo.getEmailCode());
         validateSpecialChar(vo);
         if (!Validator.isGeneral(vo.getUserName())) {
             throw new GlobalException("用户名只能包含数字，字母，下划线");
@@ -189,6 +210,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (null != user) {
             throw new GlobalException(ResultCode.USERNAME_ALREADY_REGISTER);
         }
+        User user1 = findUserByEmail(vo.getEmail());
+        if (null != user1) {
+            throw new GlobalException(ResultCode.EMAIL_ALREADY_REGISTER);
+        }
+
         user = BeanUtils.copyProperties(vo, User.class);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 //        try (InputStream inputStream = ImageUtil.getRandomAvatar()) {
@@ -230,6 +256,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
     }
 
+    private void validateEmailCode(String email, String category, String emailCode) {
+        String emailCodeCache = redisCache.getCacheObject(RedisKey.IM_CACHE_MAIL_BIND + category + ":" + email);
+        if (StringUtils.isBlank(emailCodeCache)) {
+            throw new GlobalException(ResultCode.VERITY_CODE_NOT_EXIST, "邮箱验证码已过期");
+        }
+        if (!emailCode.equals(emailCodeCache)) {
+            throw new GlobalException(ResultCode.VERITY_CODE_ERROR, "邮箱验证码错误");
+        }
+    }
+
     private void validateSpecialChar(RegisterDTO vo) {
         if (SysStringUtils.checkSpecialChar(vo.getUserName())) {
             throw new GlobalException("用户名不能包含特殊字符");
@@ -249,6 +285,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public User findUserByUserName(String username) {
         LambdaQueryWrapper<User> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.eq(User::getUserName, username);
+        return this.getOne(queryWrapper);
+    }
+
+    @Override
+    public User findUserByEmail(String email) {
+        LambdaQueryWrapper<User> queryWrapper = Wrappers.lambdaQuery();
+        queryWrapper.eq(User::getEmail, email);
         return this.getOne(queryWrapper);
     }
 
@@ -429,7 +472,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         User user = baseMapper.selectById(userId);
         if (!passwordEncoder.matches(passwordVO.getOldPassword(), user.getPassword())) {
-            throw new GlobalException("旧" + ResultCode.PASSWOR_ERROR);
+            throw new GlobalException("旧" + ResultCode.PASSWORD_ERROR);
         }
         user.setPassword(passwordEncoder.encode(passwordVO.getNewPassWord()));
         baseMapper.updateById(user);
