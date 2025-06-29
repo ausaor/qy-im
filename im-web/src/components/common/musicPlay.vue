@@ -17,9 +17,6 @@
             <i class="el-icon-headset"></i>
             <span>QY MUSIC</span>
           </div>
-          <div class="show-float-music">
-
-          </div>
           <div class="upload-btn" >
             <span style="margin-right: 20px;" @click="toggleFloatMusic">
               <i :class="showFloatMusic ? 'el-icon-bottom-left' : 'el-icon-top-right'"></i>
@@ -48,7 +45,7 @@
           <div class="song-info">
             <div class="song-name">
               <h3>{{ currentSong.name }}</h3>
-              <div class="like-overlay">
+              <div class="like-overlay" v-if="currentSong.id">
                 <el-button
                     type="text"
                     @click="toggleLike(currentSong)"
@@ -512,15 +509,6 @@ export default {
 .logo i {
   margin-right: 8px;
   font-size: 24px;
-}
-
-.show-float-music {
-  display: flex;
-  align-items: center;
-  font-size: 20px;
-  font-weight: bold;
-  color: #00bcd4;
-  cursor: pointer;
 }
 
 .upload-btn {
