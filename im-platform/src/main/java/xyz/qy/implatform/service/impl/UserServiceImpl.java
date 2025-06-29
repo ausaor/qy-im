@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.imclient.IMClient;
 import xyz.qy.imcommon.enums.IMTerminalType;
+import xyz.qy.imcommon.model.IMSystemMessage;
 import xyz.qy.implatform.config.JwtProperties;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
@@ -31,6 +32,7 @@ import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.LoginTypeEnum;
+import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.UserMapper;
@@ -53,6 +55,7 @@ import xyz.qy.implatform.vo.LoginVO;
 import xyz.qy.implatform.vo.OnlineTerminalVO;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.PasswordVO;
+import xyz.qy.implatform.vo.SystemMessageVO;
 import xyz.qy.implatform.vo.UserVO;
 
 import javax.annotation.Resource;
@@ -111,7 +114,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (null == user) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户不存在");
         }
-        if (user.getIsBanned()) {
+        if (user.getIsDisable()) {
             throw new GlobalException("您的账号已被管理员封禁!");
         }
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
@@ -531,6 +534,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (ObjectUtil.isNull(user)) {
             throw new GlobalException("用户不存在");
         }
+        if (redisCache.hasKey(RedisKey.IM_USER_MSG_SWITCH + dto.getUserId())) {
+            throw new GlobalException("用户已禁言");
+        }
+
         if (dto.getBanDuration() != null && dto.getBanDuration() > 0) {
             redisCache.setCacheObject(RedisKey.IM_USER_MSG_SWITCH + dto.getUserId(), dto.getUserId(), dto.getBanDuration(), TimeUnit.MINUTES);
         } else {
@@ -545,5 +552,56 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new GlobalException("只有系统管理员有权限操作");
         }
         redisCache.deleteObject(RedisKey.IM_USER_MSG_SWITCH + dto.getUserId());
+    }
+
+    @Override
+    public void banAccount(Long userId) {
+        UserSession session = SessionContext.getSession();
+        if (!session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("只有系统管理员有权限操作");
+        }
+        if (userId.equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("系统管理员不能被封禁");
+        }
+        User user = this.getById(userId);
+        if (ObjectUtil.isNull(user)) {
+            throw new GlobalException("用户不存在");
+        }
+        if (user.getIsDisable()) {
+            throw new GlobalException("用户已封禁");
+        }
+
+        user.setIsBanned(true);
+        user.setIsDisable(true);
+        redisCache.setCacheObject(RedisKey.IM_USER_BAN_ACCOUNT + userId, userId);
+        this.updateById(user);
+
+        SystemMessageVO msgInfo = new SystemMessageVO();
+        msgInfo.setType(MessageType.USER_BANNED.code());
+        msgInfo.setContent("账号违规");
+
+        IMSystemMessage<SystemMessageVO> sendMessage = new IMSystemMessage<>();
+        sendMessage.setRecvIds(Collections.singletonList(userId));
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendResult(false);
+        imClient.sendSystemMessage(sendMessage);
+    }
+
+    @Override
+    public void unBanAccount(Long userId) {
+        UserSession session = SessionContext.getSession();
+        if (!session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("只有系统管理员有权限操作");
+        }
+
+        User user = this.getById(userId);
+        if (ObjectUtil.isNull(user)) {
+            throw new GlobalException("用户不存在");
+        }
+
+        user.setIsBanned(false);
+        user.setIsDisable(false);
+        this.updateById(user);
+        redisCache.deleteObject(RedisKey.IM_USER_BAN_ACCOUNT + userId);
     }
 }

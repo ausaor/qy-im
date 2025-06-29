@@ -63,4 +63,8 @@ public interface IUserService extends IService<User> {
     void bandUser(UserBanDTO dto);
 
     void unBandUser(UserBanDTO dto);
+
+    void banAccount(Long userId);
+
+    void unBanAccount(Long userId);
 }

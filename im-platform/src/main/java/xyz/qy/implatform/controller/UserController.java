@@ -27,6 +27,7 @@ import xyz.qy.implatform.vo.UserVO;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Api(tags = "用户")
@@ -115,6 +116,20 @@ public class UserController {
     @PostMapping ("/unBandUser")
     public Result unBandUser(@Valid @RequestBody UserBanDTO dto){
         userService.unBandUser(dto);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "封禁账号",notes="封禁账号")
+    @GetMapping ("/banAccount")
+    public Result banAccount(@RequestParam Long userId) {
+        userService.banAccount(userId);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "解封账号",notes="解封账号")
+    @GetMapping ("/unBanAccount")
+    public Result unBanAccount(@RequestParam Long userId) {
+        userService.unBanAccount(userId);
         return ResultUtils.success();
     }
 }

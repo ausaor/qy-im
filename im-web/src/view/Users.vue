@@ -194,27 +194,26 @@ export default {
 
     // 切换封禁状态
     toggleDisable(user) {
-      const action = user.isDisable === 0 ? '封禁' : '解封';
+      const action = user.isDisable ? '解封' : '封禁';
       this.$confirm(`确定要${action}用户 "${user.nickName}" 吗?`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        // 实际项目中这里应该调用API
-        // axios.post(`/user/${user.isDisable ? 'enable' : 'disable'}`, { userId: user.id })
-        //   .then(() => {
-        //     this.$message.success(`${action}成功`);
-        //     this.fetchUserData();
-        //   })
-        //   .catch(() => {
-        //     this.$message.error(`${action}失败`);
-        //   });
-
-        // 模拟操作
-        setTimeout(() => {
-          user.isDisable = user.isDisable === 0 ? 1 : 0;
-          this.$message.success(`${action}操作成功`);
-        }, 500);
+        let url;
+        if (!user.isDisable) {
+          url = `/user/banAccount?userId=${user.id}`
+        } else {
+          url = `/user/unBanAccount?userId=${user.id}`
+        }
+        this.$http({
+          url: url,
+          method: 'get',
+        }).then(() => {
+          user.isDisable = !user.isDisable
+          this.$message.success("操作成功");
+        }).catch((e) => {
+        })
       }).catch(() => {
         this.$message.info('已取消操作');
       });

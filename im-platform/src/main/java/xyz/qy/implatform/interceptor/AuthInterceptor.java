@@ -10,9 +10,11 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import xyz.qy.imcommon.util.JwtUtil;
 import xyz.qy.implatform.config.JwtProperties;
+import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.session.UserSession;
+import xyz.qy.implatform.util.RedisCache;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +25,8 @@ import javax.servlet.http.HttpServletResponse;
 public class AuthInterceptor implements HandlerInterceptor {
 
     private final JwtProperties jwtProperties;
+
+    private final RedisCache redisCache;
 
     @Override
     public boolean preHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) throws Exception {
@@ -38,6 +42,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
         String strJson = JwtUtil.getInfo(token);
         UserSession userSession = JSON.parseObject(strJson, UserSession.class);
+        if (redisCache.hasKey(RedisKey.IM_USER_BAN_ACCOUNT + userSession.getUserId())) {
+            throw new GlobalException("账号已被封禁");
+        }
+
         //验证 token
         if (!JwtUtil.checkSign(token, jwtProperties.getAccessTokenSecret())) {
             log.error("token已失效，用户:{}", userSession.getUserName());

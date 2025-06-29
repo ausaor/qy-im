@@ -472,6 +472,7 @@
       handleSystemMessage(msg){
         // 用户被封禁
         if (msg.type == this.$enums.MESSAGE_TYPE.USER_BANNED) {
+          this.removeToken();
           this.$wsApi.close(3000);
           this.$alert("您的账号已被管理员封禁,原因:"+ msg.content, "账号被封禁", {
             confirmButtonText: '确定',
@@ -555,8 +556,12 @@
       },
       onExit() {
         this.$wsApi.close(3000);
-        sessionStorage.removeItem("accessToken");
+        this.removeToken();
         location.href = "/";
+      },
+      removeToken() {
+        sessionStorage.removeItem("accessToken");
+        sessionStorage.removeItem("refreshToken");
       },
       playAudioTip() {
         // 离线消息不播放铃声

@@ -7,6 +7,7 @@ import xyz.qy.implatform.dto.SocialTokenDTO;
 import xyz.qy.implatform.dto.SocialUserInfoDTO;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.LoginTypeEnum;
+import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.UserMapper;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IUserService;
@@ -62,6 +63,9 @@ public abstract class AbstractSocialLoginStrategyImpl implements SocialLoginStra
         if (ObjectUtil.isNull(user)) {
             user = saveUser(socialToken, ipAddress, ipSource);
         } else {
+            if (user.getIsDisable()) {
+                throw new GlobalException("您的账号已被管理员封禁!");
+            }
             user = updateUser(user, ipAddress, ipSource);
         }
         return jwtUtil.createToken(user, 0);
