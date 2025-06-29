@@ -1,15 +1,18 @@
 package xyz.qy.implatform.util;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import xyz.qy.implatform.service.SensitiveWordService;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,6 +23,7 @@ import java.util.Objects;
  * @since 2024-10-13
  **/
 @Component
+@RequiredArgsConstructor
 public class SensitiveUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(SensitiveUtil.class);
@@ -39,17 +43,25 @@ public class SensitiveUtil {
      */
     private static final TrieNode ROOT_NODE = new TrieNode();
 
+    private final SensitiveWordService sensitiveWordService;
+
     @PostConstruct
     public void init() {
-        try (
-                InputStream is = this.getClass().getClassLoader().getResourceAsStream(SENSITIVE_WORD);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(is)))
-        ) {
-            String keyword;
-            while ((keyword = reader.readLine()) != null) {
-                // 添加到前缀树
-                this.addKeyword(keyword);
-            }
+//        try (
+//                InputStream is = this.getClass().getClassLoader().getResourceAsStream(SENSITIVE_WORD);
+//                BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(is)))
+//        ) {
+//            String keyword;
+//            while ((keyword = reader.readLine()) != null) {
+//                // 添加到前缀树
+//                this.addKeyword(keyword);
+//            }
+//        } catch (Exception e) {
+//            logger.warn("加载敏感词文件失败: " + e.getMessage());
+//        }
+        try {
+            List<String> keywords = sensitiveWordService.findAllEnabledWords();
+            keywords.forEach(this::addKeyword);
         } catch (Exception e) {
             logger.warn("加载敏感词文件失败: " + e.getMessage());
         }
