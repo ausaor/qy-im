@@ -51,8 +51,8 @@ public final class RedisKey {
      * webrtc 群通话
      */
     public static final String IM_WEBRTC_GROUP_SESSION = "im:webrtc:group:session";
-    // 绑定邮箱验证码缓存
-    public final static String  IM_CACHE_MAIL_BIND = IM_CACHE + "mail:bind:";
+    // 邮箱验证码缓存
+    public final static String  IM_CACHE_MAIL_CODE = IM_CACHE + "mail:code:";
 
     // 百度图片检测accessToken
     public final static String IM_BAIDU_TOKEN = IM_CACHE + "token:baidu";

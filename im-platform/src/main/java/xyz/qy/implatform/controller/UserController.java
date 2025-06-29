@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.dto.EmailBindDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
+import xyz.qy.implatform.dto.ResetPwdDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.entity.User;
@@ -100,6 +101,13 @@ public class UserController {
         return ResultUtils.success();
     }
 
+    @ApiOperation(value = "重置密码",notes="重置密码")
+    @PostMapping("/resetPwd")
+    public Result resetPwd(@Valid @RequestBody ResetPwdDTO dto){
+        userService.resetPassword(dto);
+        return ResultUtils.success();
+    }
+
     @ApiOperation(value = "分页查询用户",notes="分页查询用户")
     @PostMapping ("/page")
     public Result page(@RequestBody UserQueryDTO dto){
@@ -138,6 +146,13 @@ public class UserController {
     @PostMapping ("/bindEmail")
     public Result bindEmail(@Valid @RequestBody EmailBindDTO dto) {
         userService.bindEmail(dto);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "获取邮箱验证码",notes="获取邮箱验证码")
+    @GetMapping ("/getEmailCode")
+    public Result getEmailCode() {
+        userService.getEmailCode();
         return ResultUtils.success();
     }
 }

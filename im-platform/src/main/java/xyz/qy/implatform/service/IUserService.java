@@ -5,6 +5,7 @@ import xyz.qy.implatform.dto.EmailBindDTO;
 import xyz.qy.implatform.dto.LoginDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
 import xyz.qy.implatform.dto.RegisterDTO;
+import xyz.qy.implatform.dto.ResetPwdDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.entity.User;
@@ -55,6 +56,8 @@ public interface IUserService extends IService<User> {
 
     void modifyPassword(ModifyPwdDTO dto);
 
+    void resetPassword(ResetPwdDTO dto);
+
     List<UserVO> findUserByName(String name);
 
     List<OnlineTerminalVO> getOnlineTerminals(String userIds);
@@ -72,4 +75,6 @@ public interface IUserService extends IService<User> {
     void unBanAccount(Long userId);
 
     void bindEmail(EmailBindDTO dto);
+
+    void getEmailCode();
 }

@@ -53,12 +53,12 @@
         <el-tab-pane label="重置密码" name="resetPwd">
           <el-form :model="resetPwdForm" ref="resetPwdForm" :rules="resetPwdRules" label-width="80px">
             <el-form-item label="邮箱地址" prop="mail">
-              <el-input type="text" v-model="resetPwdForm.mail" autocomplete="off"></el-input>
+              <el-input type="text" :disabled="true" v-model="mine.email" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="验证码" prop="code">
               <div class="verify-wrapper">
-                <el-input type="text" maxlength="6" suffix-icon="el-icon-lock" placeholder="验证码" v-model="resetPwdForm.code"/>
-                <el-button class="btn-orange" :disabled="disabled" @click="sendVerificationCode">{{validateBtn}}</el-button>
+                <el-input type="text" maxlength="6" suffix-icon="el-icon-lock" placeholder="验证码" v-model="resetPwdForm.emailCode"/>
+                <el-button class="btn-orange" :disabled="disabled" @click="getUserEmailCode">{{validateBtn}}</el-button>
               </div>
             </el-form-item>
             <el-form-item label="新密码" prop="newPassword">
@@ -153,8 +153,7 @@ export default {
         emailCode: ''
       },
       resetPwdForm: {
-        mail: '',
-        code: '',
+        emailCode: '',
         newPassword: ''
       },
       validateBtn: '获取验证码',
@@ -189,12 +188,7 @@ export default {
         }]
       },
       resetPwdRules: {
-        mail: [{
-          required: true,
-          validator: checkMail,
-          trigger: 'blur'
-        }],
-        code: [{
+        emailCode: [{
           required: true,
           validator: checkCode,
           trigger: 'blur'
@@ -245,6 +239,26 @@ export default {
         }
       });
     },
+    getUserEmailCode() {
+      let time = 60;
+      let timer = setInterval(() => {
+        if(time === 0){
+          clearInterval(timer);
+          this.validateBtn = '获取验证码';
+          this.disabled = false;
+        }else{
+          this.disabled = true;
+          this.validateBtn = time + '秒后重试';
+          time--;
+        }
+      }, 1000);
+
+      this.$http({
+        url: "/user/getEmailCode",
+        method: "get",
+      }).then(()=>{
+      })
+    },
     sendVerificationCode() {
       if (!this.mailForm.email) {
         this.$message.warning('请输入邮箱');
@@ -283,8 +297,28 @@ export default {
 
       })
     },
-    resetPwd() {
-
+    resetPwd(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$http({
+            url: "/user/resetPwd",
+            method: 'post',
+            data: this.resetPwdForm
+          }).then((data) => {
+            this.$message.success("重置成功!");
+            this.onExit();
+          })
+        }
+      });
+    },
+    onExit() {
+      this.$wsApi.close(3000);
+      this.removeToken();
+      location.href = "/";
+    },
+    removeToken() {
+      sessionStorage.removeItem("accessToken");
+      sessionStorage.removeItem("refreshToken");
     },
     changeSoundPlay(value) {
       this.userInfo.soundPlay = value;
@@ -305,11 +339,18 @@ export default {
       })
     }
   },
+  computed: {
+    mine() {
+      return this.$store.state.userStore.userInfo;
+    },
+  },
   watch: {
     visible: function(newData, oldData) {
       // 深拷贝
-      let mine = this.$store.state.userStore.userInfo;
-      this.userInfo = JSON.parse(JSON.stringify(mine));
+      if (newData) {
+        let mine = this.$store.state.userStore.userInfo;
+        this.userInfo = JSON.parse(JSON.stringify(mine));
+      }
     }
   }
 }

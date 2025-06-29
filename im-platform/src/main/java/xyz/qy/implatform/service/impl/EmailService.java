@@ -25,12 +25,12 @@ public class EmailService {
     private RedisCache redisCache;
 
     public void getEmailCode(EmailDTO emailDTO) {
-        if (redisCache.hasKey(RedisKey.IM_CACHE_MAIL_BIND + emailDTO.getCategory() + ":" + emailDTO.getToEmail())) {
+        if (redisCache.hasKey(RedisKey.IM_CACHE_MAIL_CODE + emailDTO.getCategory() + ":" + emailDTO.getToEmail())) {
             throw new GlobalException("请勿重复发送验证码");
         }
 
         String code = captchaProducer.createText();
-        redisCache.setCacheObject(RedisKey.IM_CACHE_MAIL_BIND + emailDTO.getCategory() + ":"  + emailDTO.getToEmail(), code, RedisKey.CAPTCHA_EXPIRATION, TimeUnit.MINUTES);
+        redisCache.setCacheObject(RedisKey.IM_CACHE_MAIL_CODE + emailDTO.getCategory() + ":"  + emailDTO.getToEmail(), code, RedisKey.CAPTCHA_EXPIRATION, TimeUnit.MINUTES);
         publisher.sendMailAsync("验证码", "您的验证码是：" + code + "，有效时间5分钟", emailDTO.getToEmail());
         log.info("绑定邮箱验证码推送事件成功:{}", emailDTO.getToEmail());
     }

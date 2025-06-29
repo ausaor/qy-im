@@ -25,6 +25,9 @@ public class UserVO {
     @ApiModelProperty(value = "用户昵称")
     private String nickName;
 
+    @ApiModelProperty(value = "邮箱")
+    private String email;
+
     @ApiModelProperty(value = "性别")
     private Integer sex;
 

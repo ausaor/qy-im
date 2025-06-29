@@ -24,9 +24,11 @@ import xyz.qy.implatform.config.JwtProperties;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.EmailBindDTO;
+import xyz.qy.implatform.dto.EmailDTO;
 import xyz.qy.implatform.dto.LoginDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
 import xyz.qy.implatform.dto.RegisterDTO;
+import xyz.qy.implatform.dto.ResetPwdDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.entity.Friend;
@@ -107,6 +109,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Resource
     private LocationServicesUtil locationServicesUtil;
+
+    @Resource
+    private EmailService emailService;
 
     @Override
     public LoginVO login(LoginDTO dto) {
@@ -258,13 +263,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     private void validateEmailCode(String email, String category, String emailCode) {
-        String emailCodeCache = redisCache.getCacheObject(RedisKey.IM_CACHE_MAIL_BIND + category + ":" + email);
+        String emailCodeCache = redisCache.getCacheObject(RedisKey.IM_CACHE_MAIL_CODE + category + ":" + email);
         if (StringUtils.isBlank(emailCodeCache)) {
             throw new GlobalException(ResultCode.VERITY_CODE_NOT_EXIST, "邮箱验证码已过期");
         }
         if (!emailCode.equals(emailCodeCache)) {
             throw new GlobalException(ResultCode.VERITY_CODE_ERROR, "邮箱验证码错误");
         }
+        redisCache.deleteObject(RedisKey.IM_CACHE_MAIL_CODE + category + ":" + email);
     }
 
     private void validateSpecialChar(RegisterDTO vo) {
@@ -491,6 +497,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         log.info("用户修改密码，用户id:{},用户名:{},昵称:{}", user.getId(), user.getUserName(), user.getNickName());
     }
 
+    @Override
+    public void resetPassword(ResetPwdDTO dto) {
+        UserSession session = SessionContext.getSession();
+        User user = this.getById(session.getUserId());
+        validateEmailCode(user.getEmail(), EmailCategoryEnum.RESET_PASSWORD.name(), dto.getEmailCode());
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        this.updateById(user);
+    }
+
     /**
      * 根据用户昵称查询用户，最多返回20条数据
      *
@@ -663,5 +678,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         User user = this.getById(session.getUserId());
         user.setEmail(dto.getEmail());
         this.updateById(user);
+    }
+
+    @Override
+    public void getEmailCode() {
+        UserSession session = SessionContext.getSession();
+        User user = this.getById(session.getUserId());
+        if (StringUtils.isBlank(user.getEmail())) {
+            throw new GlobalException("请先绑定邮箱");
+        }
+        emailService.getEmailCode(new EmailDTO(user.getEmail(), EmailCategoryEnum.RESET_PASSWORD.name()));
     }
 }
