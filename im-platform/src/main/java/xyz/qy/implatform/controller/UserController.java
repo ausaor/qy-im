@@ -151,8 +151,8 @@ public class UserController {
 
     @ApiOperation(value = "获取邮箱验证码",notes="获取邮箱验证码")
     @GetMapping ("/getEmailCode")
-    public Result getEmailCode() {
-        userService.getEmailCode();
+    public Result getEmailCode(@RequestParam String emailCategory) {
+        userService.getEmailCode(emailCategory);
         return ResultUtils.success();
     }
 }

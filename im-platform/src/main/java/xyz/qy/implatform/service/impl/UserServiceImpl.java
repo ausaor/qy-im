@@ -681,12 +681,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public void getEmailCode() {
+    public void getEmailCode(String emailCategory) {
+        if (Arrays.stream(EmailCategoryEnum.values()).noneMatch(item -> item.name().equals(emailCategory))) {
+            throw new GlobalException("邮件分类错误");
+        }
+
         UserSession session = SessionContext.getSession();
         User user = this.getById(session.getUserId());
         if (StringUtils.isBlank(user.getEmail())) {
             throw new GlobalException("请先绑定邮箱");
         }
-        emailService.getEmailCode(new EmailDTO(user.getEmail(), EmailCategoryEnum.RESET_PASSWORD.name()));
+        emailService.getEmailCode(new EmailDTO(user.getEmail(), emailCategory));
     }
 }

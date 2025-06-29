@@ -254,7 +254,7 @@ export default {
       }, 1000);
 
       this.$http({
-        url: "/user/getEmailCode",
+        url: "/user/getEmailCode?emailCategory=RESET_PASSWORD",
         method: "get",
       }).then(()=>{
       })

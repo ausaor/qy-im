@@ -76,5 +76,5 @@ public interface IUserService extends IService<User> {
 
     void bindEmail(EmailBindDTO dto);
 
-    void getEmailCode();
+    void getEmailCode(String emailCategory);
 }
