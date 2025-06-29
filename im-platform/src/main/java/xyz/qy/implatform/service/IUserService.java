@@ -1,6 +1,7 @@
 package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import xyz.qy.implatform.dto.EmailBindDTO;
 import xyz.qy.implatform.dto.LoginDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
 import xyz.qy.implatform.dto.RegisterDTO;
@@ -69,4 +70,6 @@ public interface IUserService extends IService<User> {
     void banAccount(Long userId);
 
     void unBanAccount(Long userId);
+
+    void bindEmail(EmailBindDTO dto);
 }

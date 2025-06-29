@@ -23,6 +23,7 @@ import xyz.qy.imcommon.model.IMSystemMessage;
 import xyz.qy.implatform.config.JwtProperties;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
+import xyz.qy.implatform.dto.EmailBindDTO;
 import xyz.qy.implatform.dto.LoginDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
 import xyz.qy.implatform.dto.RegisterDTO;
@@ -646,5 +647,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setIsDisable(false);
         this.updateById(user);
         redisCache.deleteObject(RedisKey.IM_USER_BAN_ACCOUNT + userId);
+    }
+
+    @Override
+    public void bindEmail(EmailBindDTO dto) {
+        // 查询邮箱是否存在
+        User userByEmail = this.findUserByEmail(dto.getEmail());
+        if (ObjectUtil.isNotNull(userByEmail)) {
+            throw new GlobalException("要绑定的邮箱已存在");
+        }
+
+        validateEmailCode(dto.getEmail(), EmailCategoryEnum.BIND_EMAIL.name(), dto.getEmailCode());
+
+        UserSession session = SessionContext.getSession();
+        User user = this.getById(session.getUserId());
+        user.setEmail(dto.getEmail());
+        this.updateById(user);
     }
 }

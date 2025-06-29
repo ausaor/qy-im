@@ -72,11 +72,11 @@
         <el-tab-pane label="邮箱绑定" name="email">
           <el-form :model="mailForm" ref="mailForm" :rules="mailRules" label-width="80px" class="content">
             <el-form-item label="邮箱地址" prop="mail">
-              <el-input type="text" v-model="mailForm.mail" autocomplete="off"></el-input>
+              <el-input type="text" v-model="mailForm.email" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="验证码" prop="code">
               <div class="verify-wrapper">
-                <el-input type="text" maxlength="6" suffix-icon="el-icon-lock" placeholder="验证码" v-model="mailForm.code"/>
+                <el-input type="text" maxlength="6" suffix-icon="el-icon-lock" placeholder="验证码" v-model="mailForm.emailCode"/>
                 <el-button class="btn-orange" :disabled="disabled" @click="sendVerificationCode">{{validateBtn}}</el-button>
               </div>
             </el-form-item>
@@ -149,8 +149,8 @@ export default {
         confirmPwd: ''
       },
       mailForm: {
-        mail: '',
-        code: ''
+        email: '',
+        emailCode: ''
       },
       resetPwdForm: {
         mail: '',
@@ -177,12 +177,12 @@ export default {
         }],
       },
       mailRules: {
-        mail: [{
+        email: [{
           required: true,
           validator: checkMail,
           trigger: 'blur'
         }],
-        code: [{
+        emailCode: [{
           required: true,
           validator: checkCode,
           trigger: 'blur'
@@ -234,10 +234,27 @@ export default {
     },
     bindMail(formName) {
       this.$refs[formName].validate((valid) => {
-
+        if (valid) {
+          this.$http({
+            url: "/user/bindEmail",
+            method: 'post',
+            data: this.mailForm
+          }).then((data) => {
+            this.$message.success("绑定成功!");
+          })
+        }
       });
     },
     sendVerificationCode() {
+      if (!this.mailForm.email) {
+        this.$message.warning('请输入邮箱');
+        return;
+      }
+      const regEmail = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+      if (!regEmail.test(this.mailForm.email)) {
+        this.$message.warning('邮箱格式错误');
+        return;
+      }
       let time = 60;
       let timer = setInterval(() => {
         if(time === 0){
@@ -254,7 +271,17 @@ export default {
       this.getCode();
     },
     getCode() {
+      let params = {
+        toEmail: this.mailForm.email,
+        category: 'BIND_EMAIL'
+      }
+      this.$http({
+        url: "/email/getCode",
+        method: "post",
+        data: params
+      }).then(()=>{
 
+      })
     },
     resetPwd() {
 

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.dto.EmailBindDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
@@ -130,6 +131,13 @@ public class UserController {
     @GetMapping ("/unBanAccount")
     public Result unBanAccount(@RequestParam Long userId) {
         userService.unBanAccount(userId);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "绑定邮箱",notes="绑定邮箱")
+    @PostMapping ("/bindEmail")
+    public Result bindEmail(@Valid @RequestBody EmailBindDTO dto) {
+        userService.bindEmail(dto);
         return ResultUtils.success();
     }
 }
