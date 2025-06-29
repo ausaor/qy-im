@@ -146,6 +146,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new GlobalException("您的账号已被管理员封禁!");
         }
 
+        user.setLoginType(dto.getLoginType());
         recordLoginInfo(user);
         redisCache.deleteObject(RedisKey.CAPTCHA_CODE_KEY + dto.getUuid());
         // 生成token
@@ -157,7 +158,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String ipSource = IpUtils.getIp2region(ipAddress);
         user.setIpAddress(ipAddress);
         user.setIpSource(ipSource);
-        user.setLoginType(LoginTypeEnum.USERNAME.getType());
         IpGeoInfoVO ipGeoInfo = locationServicesUtil.getIpGeoInfoByIp2Region(ipAddress);
         if (ObjectUtil.isNotNull(ipGeoInfo)) {
             user.setProvince(ipGeoInfo.getPro());
