@@ -73,6 +73,11 @@ export default new VueRouter({
                   name: "Review",
                   path: "/home/square/review",
                   component: () => import("../view/Review"),
+              },
+              {
+                  name: "Users",
+                  path: "/home/square/users",
+                  component: () => import("../view/Users.vue"),
               }
           ]
         }

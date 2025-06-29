@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
+import xyz.qy.implatform.dto.UserBanDTO;
+import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -93,6 +95,26 @@ public class UserController {
     @ApiOperation(value = "修改密码",notes="修改用户密码")
     public Result update(@Valid @RequestBody ModifyPwdDTO dto){
         userService.modifyPassword(dto);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "分页查询用户",notes="分页查询用户")
+    @PostMapping ("/page")
+    public Result page(@RequestBody UserQueryDTO dto){
+        return ResultUtils.success(userService.page(dto));
+    }
+
+    @ApiOperation(value = "禁言用户",notes="禁言用户")
+    @PostMapping ("/bandUser")
+    public Result banUser(@Valid @RequestBody UserBanDTO dto){
+        userService.bandUser(dto);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "解禁用户",notes="解禁用户")
+    @PostMapping ("/unBandUser")
+    public Result unBandUser(@Valid @RequestBody UserBanDTO dto){
+        userService.unBandUser(dto);
         return ResultUtils.success();
     }
 }

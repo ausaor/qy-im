@@ -17,18 +17,19 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import xyz.qy.imclient.IMClient;
 import xyz.qy.imcommon.enums.IMTerminalType;
 import xyz.qy.implatform.config.JwtProperties;
+import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.LoginDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
 import xyz.qy.implatform.dto.RegisterDTO;
+import xyz.qy.implatform.dto.UserBanDTO;
+import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.User;
-import xyz.qy.implatform.enums.FilePathEnum;
 import xyz.qy.implatform.enums.LoginTypeEnum;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.exception.GlobalException;
@@ -40,8 +41,6 @@ import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.strategy.context.UploadStrategyContext;
 import xyz.qy.implatform.util.BeanUtils;
-import xyz.qy.implatform.util.FileUtils;
-import xyz.qy.implatform.util.ImageUtil;
 import xyz.qy.implatform.util.IpUtils;
 import xyz.qy.implatform.util.JwtUtil;
 import xyz.qy.implatform.util.LocationServicesUtil;
@@ -54,12 +53,10 @@ import xyz.qy.implatform.vo.LoginVO;
 import xyz.qy.implatform.vo.OnlineTerminalVO;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.PasswordVO;
-import xyz.qy.implatform.vo.UploadImageVO;
 import xyz.qy.implatform.vo.UserVO;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -67,6 +64,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -493,5 +491,59 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public List<Long> getAllUserIds() {
         return lambdaQuery().select(User::getId).list().stream().map(User::getId).collect(Collectors.toList());
+    }
+
+    @Override
+    public PageResultVO page(UserQueryDTO dto) {
+        LambdaQueryWrapper<User> queryWrapper = Wrappers.lambdaQuery();
+        queryWrapper.like(StringUtils.isNotBlank(dto.getUserName()), User::getUserName, dto.getUserName());
+        queryWrapper.like(StringUtils.isNotBlank(dto.getNickName()), User::getNickName, dto.getNickName());
+        queryWrapper.eq(dto.getSex() != null, User::getSex, dto.getSex());
+        queryWrapper.orderByDesc(User::getId);
+
+        Page<User> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryWrapper);
+        List<User> users = page.getRecords();
+        if (CollectionUtils.isEmpty(users)) {
+            return PageResultVO.builder().data(Collections.EMPTY_LIST).build();
+        }
+        List<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
+        List<Long> onlineUserIds = imClient.getOnlineUser(userIds);
+        List<UserVO> vos = users.stream().map(u -> {
+            UserVO vo = BeanUtils.copyProperties(u, UserVO.class);
+            vo.setIsBanned(redisCache.hasKey(RedisKey.IM_USER_MSG_SWITCH + u.getId()));
+            vo.setOnline(onlineUserIds.contains(u.getId()));
+            return vo;
+        }).collect(Collectors.toList());
+
+        return PageResultVO.builder().data(vos).total(page.getTotal()).build();
+    }
+
+    @Override
+    public void bandUser(UserBanDTO dto) {
+        UserSession session = SessionContext.getSession();
+        if (!session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("只有系统管理员有权限操作");
+        }
+        if (dto.getUserId().equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("系统管理员不能被禁言");
+        }
+        User user = this.getById(dto.getUserId());
+        if (ObjectUtil.isNull(user)) {
+            throw new GlobalException("用户不存在");
+        }
+        if (dto.getBanDuration() != null && dto.getBanDuration() > 0) {
+            redisCache.setCacheObject(RedisKey.IM_USER_MSG_SWITCH + dto.getUserId(), dto.getUserId(), dto.getBanDuration(), TimeUnit.MINUTES);
+        } else {
+            redisCache.setCacheObject(RedisKey.IM_USER_MSG_SWITCH + dto.getUserId(), dto.getUserId());
+        }
+    }
+
+    @Override
+    public void unBandUser(UserBanDTO dto) {
+        UserSession session = SessionContext.getSession();
+        if (!session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("只有系统管理员有权限操作");
+        }
+        redisCache.deleteObject(RedisKey.IM_USER_MSG_SWITCH + dto.getUserId());
     }
 }

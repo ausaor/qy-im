@@ -44,6 +44,9 @@ public class UserVO {
     @ApiModelProperty(value = "是否在线")
     private Boolean online;
 
+    @ApiModelProperty(value = "IP地址")
+    private String ipAddress;
+
     @ApiModelProperty(value = "省份")
     private String province;
 
@@ -61,4 +64,8 @@ public class UserVO {
 
     @ApiModelProperty(value = "消息提示音")
     private Boolean soundPlay;
+
+    private Boolean isDisable;
+
+    private Boolean isBanned;
 }

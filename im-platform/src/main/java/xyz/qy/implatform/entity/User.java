@@ -102,7 +102,7 @@ public class User extends Model<User> {
      * 是否禁止登录
      */
     @TableField("is_disable")
-    private Integer isDisable;
+    private Boolean isDisable;
 
     /**
      * 用户登录IP地址

@@ -2,9 +2,10 @@ package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.qy.implatform.dto.LoginDTO;
-import xyz.qy.implatform.dto.LogoutDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
 import xyz.qy.implatform.dto.RegisterDTO;
+import xyz.qy.implatform.dto.UserBanDTO;
+import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.vo.LoginVO;
 import xyz.qy.implatform.vo.OnlineTerminalVO;
@@ -56,4 +57,10 @@ public interface IUserService extends IService<User> {
     List<OnlineTerminalVO> getOnlineTerminals(String userIds);
 
     List<Long> getAllUserIds();
+
+    PageResultVO page(UserQueryDTO dto);
+
+    void bandUser(UserBanDTO dto);
+
+    void unBandUser(UserBanDTO dto);
 }
