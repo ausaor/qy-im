@@ -636,6 +636,18 @@ create table im_visitor
 )
     comment '访客信息表';
 
+
+create table im_sensitive_word
+(
+    id          bigint auto_increment comment 'id'
+        primary key,
+    content     varchar(64)                          not null comment '敏感词内容',
+    enabled     tinyint  default 0                   null comment '是否启用 0:未启用 1:启用',
+    creator     bigint                               null comment '创建者',
+    create_time datetime default current_timestamp() null comment '创建时间'
+)
+    comment '敏感词';
+
 create table t_hero_info
 (
     id               int auto_increment comment 'id'
