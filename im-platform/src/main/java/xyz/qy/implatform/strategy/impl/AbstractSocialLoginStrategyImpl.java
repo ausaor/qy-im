@@ -105,6 +105,7 @@ public abstract class AbstractSocialLoginStrategyImpl implements SocialLoginStra
         SocialUserInfoDTO socialUserInfo = getSocialUserInfo(socialToken);
         User user = new User();
         user.setUserName(userService.generateRandomUsername());
+        user.setEmail(user.getUserName() + "@qq.com");
         user.setNickName(socialUserInfo.getNickname());
         user.setHeadImage(socialUserInfo.getAvatar());
         user.setHeadImageThumb(socialUserInfo.getAvatar());

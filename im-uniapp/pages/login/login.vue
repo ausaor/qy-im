@@ -46,6 +46,7 @@ export default {
 				password: '',
         code: '',
         uuid: '',
+        loginType: 0,
 			},
 			rules: {
 				userName: {

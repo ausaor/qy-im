@@ -3,25 +3,45 @@
     <view class="container">
       <view class="title">欢迎注册</view>
       <uni-forms  ref="form" :modelValue="dataForm" :rules="rules" validate-trigger="bind" label-width="80px">
-        <uni-forms-item name="userName" label="用户名">
+        <uni-forms-item name="userName" label="" label-align="right" label-width="0px">
           <uni-easyinput type="text" v-model="dataForm.userName" placeholder="用户名" />
         </uni-forms-item>
-        <uni-forms-item name="nickName" label="昵称">
+        <uni-forms-item name="userName" label="" label-align="right" label-width="0px">
+          <uni-easyinput type="text" v-model="dataForm.email" placeholder="邮箱" />
+        </uni-forms-item>
+        <uni-forms-item name="nickName" label="" label-align="right" label-width="0px">
           <uni-easyinput type="text" v-model="dataForm.nickName" placeholder="昵称" />
         </uni-forms-item>
-        <uni-forms-item name="password" label="密码">
+        <uni-forms-item name="password" label="" label-align="right" label-width="0px">
           <uni-easyinput type="password" v-model="dataForm.password" placeholder="密码" />
         </uni-forms-item>
-        <uni-forms-item name="corfirmPassword" label="确认密码">
-          <uni-easyinput type="password" v-model="dataForm.corfirmPassword" placeholder="确认密码" />
+        <uni-forms-item name="confirmPassword" label="" label-align="right" label-width="0px">
+          <uni-easyinput type="password" v-model="dataForm.confirmPassword" placeholder="确认密码" />
         </uni-forms-item>
-        <uni-forms-item name="code" label="验证码">
+        <uni-forms-item name="code" label="" label-align="right" label-width="0px">
           <view style="display: flex;align-items: center;">
             <view style="width: 50%;">
               <uni-easyinput type="text" v-model="dataForm.code" placeholder="验证码" />
             </view>
             <view style="width: 50%;display: flex;justify-content: right;">
-              <u-image :src="codeUrl" width="100px" height="35px" @click="getCode"></u-image>
+              <u-image :src="codeUrl" width="120px" height="35px" @click="getCode"></u-image>
+            </view>
+          </view>
+        </uni-forms-item>
+        <uni-forms-item name="emailCode" label="" label-align="right" label-width="0px">
+          <view class="code-input-container">
+            <uni-easyinput
+                v-model="dataForm.emailCode"
+                placeholder="邮箱验证码"
+                type="text"
+                class="code-input"
+            />
+            <view
+                class="code-btn"
+                :disabled="isCounting || !isEmailValid"
+                @click="getEmailCode"
+            >
+              {{ countdownText }}
             </view>
           </view>
         </uni-forms-item>
@@ -44,13 +64,18 @@ export default {
 	data() {
 		return {
       codeUrl: '',
+      validateBtn: '获取验证码',
+      countdown: 0,
+      isCounting: false,
 			dataForm: {
 				userName: '',
 				nickName: '',
 				password: '',
-				corfirmPassword: '',
+				confirmPassword: '',
         code: '',
         uuid: '',
+        email: '',
+        emailCode: '',
 			},
 			rules: {
 				userName: {
@@ -71,7 +96,7 @@ export default {
 						errorMessage: '请输入密码',
 					}]
 				},
-				corfirmPassword: {
+        confirmPassword: {
 					rules: [{
 						required: true,
 						errorMessage: '请输入确认密码',
@@ -91,11 +116,40 @@ export default {
             errorMessage: '请输入验证码',
           }]
         },
+        email: {
+          rules: [{
+            required: true,
+            errorMessage: '邮箱不能为空'
+          }, {
+            format: 'email',
+            errorMessage: '邮箱格式不正确'
+          }]
+        },
+        emailCode: {
+          rules: [{
+            required: true,
+            errorMessage: '验证码不能为空'
+          }, {
+            length: 4,
+            errorMessage: '验证码必须为4位字符'
+          }]
+        }
 			}
 		}
 	},
   onLoad(options) {
     this.getCode();
+  },
+  computed: {
+    // 计算属性：验证邮箱格式是否有效
+    isEmailValid() {
+      const emailRegex = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+      return emailRegex.test(this.dataForm.email)
+    },
+    // 计算属性：倒计时显示文本
+    countdownText() {
+      return this.isCounting ? `${this.countdown}s后重新获取` : '获取验证码'
+    }
   },
 	methods: {
 		submit() {
@@ -129,7 +183,47 @@ export default {
         this.codeUrl = "data:image/gif;base64," + result['img'];
         this.dataForm.uuid = result['uuid'];
       })
-    }
+    },
+    // 获取邮箱验证码
+    async getEmailCode() {
+      try {
+        // 验证邮箱字段
+        await this.$refs.form.validateField('email')
+
+        // 显示加载提示
+        uni.showLoading({ title: '发送中...', mask: true })
+
+        let params = {
+          toEmail: this.dataForm.email,
+          category: 'REGISTER'
+        }
+        this.$http({
+          url: "/email/getCode",
+          method: "post",
+          data: params
+        }).then(()=>{
+          uni.showToast({ title: '验证码已发送', icon: 'success' })
+          this.startCountdown(90)
+        }).finally(() => {
+          uni.hideLoading()
+        })
+      } catch (e) {
+        console.error('验证失败:', e)
+      }
+    },
+    // 开始倒计时
+    startCountdown(seconds) {
+      this.countdown = seconds
+      this.isCounting = true
+
+      const timer = setInterval(() => {
+        this.countdown--
+        if (this.countdown <= 0) {
+          clearInterval(timer)
+          this.isCounting = false
+        }
+      }, 1000)
+    },
 	}
 }
 </script>
@@ -161,6 +255,33 @@ export default {
 
     .uni-forms {
       padding: 50rpx;
+
+      .code-input-container {
+        display: flex;
+        align-items: center;
+        height: 70rpx;
+      }
+
+      .code-input {
+        flex: 1;
+        margin-right: 20rpx;
+      }
+
+      .code-btn {
+        width: 220rpx;
+        height: 100%;
+        font-size: 26rpx;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #007AFF;
+        color: white;
+      }
+
+      .code-btn[disabled] {
+        background-color: #f4efef;
+        color: #999999;
+      }
 
       .btn-submit {
         margin-top: 80rpx;
