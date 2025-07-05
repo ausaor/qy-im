@@ -35,7 +35,7 @@
 		</uni-card>
 		<bar-group>
 			<arrow-bar title="修改密码" icon="icon-modify-pwd"  @tap="onModifyPassword()"></arrow-bar>
-      <arrow-bar title="重置密码" icon="icon-zhongzhimima"  @tap="onModifyPassword()"></arrow-bar>
+      <arrow-bar title="重置密码" icon="icon-zhongzhimima"  @tap="onResetPassword()"></arrow-bar>
       <arrow-bar title="消息通知" icon="icon-notice"  @tap="onModifyPassword()"></arrow-bar>
       <arrow-bar title="绑定邮箱" icon="icon-email1"  @tap="onBindEmail()"></arrow-bar>
       <view class="activity-space" @tap="onActivitySpace()">
@@ -68,6 +68,11 @@ export default {
 				url: "/pages/mine/mine-edit"
 			})
 		},
+    onResetPassword() {
+      uni.navigateTo({
+        url: "/pages/mine/mine-reset-pwd"
+      })
+    },
 		onModifyPassword() {
 			uni.navigateTo({
 				url: "/pages/mine/mine-password"
