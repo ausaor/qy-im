@@ -35,6 +35,9 @@
 		</uni-card>
 		<bar-group>
 			<arrow-bar title="修改密码" icon="icon-modify-pwd"  @tap="onModifyPassword()"></arrow-bar>
+      <arrow-bar title="重置密码" icon="icon-zhongzhimima"  @tap="onModifyPassword()"></arrow-bar>
+      <arrow-bar title="消息通知" icon="icon-notice"  @tap="onModifyPassword()"></arrow-bar>
+      <arrow-bar title="绑定邮箱" icon="icon-email1"  @tap="onBindEmail()"></arrow-bar>
       <view class="activity-space" @tap="onActivitySpace()">
         <text class="icon iconfont icon-shejiaotubiao-40" style="color: #f5be3f"></text>
         <text class="title">
@@ -70,6 +73,11 @@ export default {
 				url: "/pages/mine/mine-password"
 			})
 		},
+    onBindEmail() {
+      uni.navigateTo({
+        url: "/pages/mine/mine-bind-email"
+      })
+    },
     onActivitySpace() {
       if (this.unreadUserCount > 0 || this.notifyCount > 0) {
         if (this.notifyCount > 0) {

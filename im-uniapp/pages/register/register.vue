@@ -77,6 +77,7 @@ export default {
         email: '',
         emailCode: '',
 			},
+      timer: null,
 			rules: {
 				userName: {
 					rules: [{
@@ -216,15 +217,19 @@ export default {
       this.countdown = seconds
       this.isCounting = true
 
-      const timer = setInterval(() => {
+      this.timer = setInterval(() => {
         this.countdown--
         if (this.countdown <= 0) {
-          clearInterval(timer)
+          clearInterval(this.timer)
           this.isCounting = false
         }
       }, 1000)
     },
-	}
+	},
+  beforeDestroy() {
+    // 清除定时器防止内存泄漏
+    if (this.timer) clearInterval(this.timer)
+  }
 }
 </script>
 

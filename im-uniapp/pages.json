@@ -92,6 +92,15 @@
 			"path": "pages/mine/mine-password"
 		},
 		{
+			"path": "pages/mine/mine-bind-email"
+		},
+		{
+			"path": "pages/mine/mine-msg-notice"
+		},
+		{
+			"path": "pages/mine/mine-reset-pwd"
+		},
+		{
 			"path": "pages/activity/activity-space",
 			"style": {
 				"navigationStyle": "custom",
