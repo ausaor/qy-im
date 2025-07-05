@@ -110,34 +110,9 @@
                   <i class="el-icon-refresh"></i>
                 </div>
                 <div class="switch-character-text">切换</div>
-                <el-dialog
-                    width="30%"
-                    title="请选择角色"
-                    :visible.sync="selectTemplateCharacterVisible"
-                    :before-close="closeSelectCharacter">
-                  <div>
-                    <el-input width="200px" placeholder="搜索角色" class="input-with-select" v-model="characterSearchText">
-                      <el-button slot="append" icon="el-icon-search"></el-button>
-                    </el-input>
-                  </div>
-                  <el-scrollbar style="height:400px;">
-                    <div v-for="(templateCharacter, index) in selectableCharacters" :key="index"
-                         v-show="templateCharacter.name.startsWith(characterSearchText)" style="display: flex;justify-content: space-between;align-items: center;padding-right: 10px;">
-                      <template-character-item class="character-item-left" :templateCharacter="templateCharacter"></template-character-item>
-                      <div class="character-item-right">
-                        <el-button :disabled="!templateCharacter.selectable ||templateCharacter.choosed "
-                                   :type="characterActiveIndex === index ? 'success' : ''"
-                                   icon="el-icon-check"
-                                   circle
-                                   @click="chooseTemplateCharacter(templateCharacter, index)"></el-button>
-                      </div>
-                    </div>
-                  </el-scrollbar>
-                  <span slot="footer" class="dialog-footer">
-                    <el-button @click="closeSelectCharacter">取 消</el-button>
-                    <el-button type="primary" @click="chooseTemplateCharacterOk">确 定</el-button>
-                  </span>
-                </el-dialog>
+                <template-character-choose-dialog :characters="selectableCharacters" :visible="selectTemplateCharacterVisible"
+                    @close="() => {this.selectTemplateCharacterVisible = false}"
+                    @choose="chooseTemplateCharacterOk"></template-character-choose-dialog>
                 <template-character-choose :visible="characterSwitchVisible" @close="characterSwitchVisible = false" @confirm="switchCharacterEvent"></template-character-choose>
                 <group-template-character-choose
                     :visible="groupTemplateCharacterVisible"
@@ -261,6 +236,7 @@
   import HeadImage from '../components/common/HeadImage.vue';
   import TemplateCharacterChoose from "@/components/template/TemplateCharacterChoose";
   import GroupTemplateCharacterChoose from "@/components/template/GroupTemplateCharacterChoose";
+  import TemplateCharacterChooseDialog from "@/components/template/TemplateCharacterChooseDialog";
 
 	export default {
 		name: "group",
@@ -278,6 +254,7 @@
       HeadImage,
       TemplateCharacterChoose,
       GroupTemplateCharacterChoose,
+      TemplateCharacterChooseDialog,
 		},
 		data() {
 			return {
@@ -581,13 +558,13 @@
 		    this.avatarActiveIndex = -1;
 		    this.selectCharacterAvatarVisible = false;
       },
-      chooseTemplateCharacterOk() {
+      chooseTemplateCharacterOk(newTemplateCharacter) {
         let groupMemberVO = {
           groupId: this.activeGroup.id,
           templateGroupId: this.activeGroup.templateGroupId,
-          templateCharacterId: this.newTemplateCharacter.id,
-          templateCharacterName: this.newTemplateCharacter.name,
-          templateCharacterAvatar: this.newTemplateCharacter.avatar,
+          templateCharacterId: newTemplateCharacter.id,
+          templateCharacterName: newTemplateCharacter.name,
+          templateCharacterAvatar: newTemplateCharacter.avatar,
           groupType: this.activeGroup.groupType,
         }
         this.$http({
