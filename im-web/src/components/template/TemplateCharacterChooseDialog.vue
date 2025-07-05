@@ -57,6 +57,7 @@ export default {
   },
   methods: {
     handleClose() {
+      this.reset();
       this.$emit("close");
     },
     handleOk() {
@@ -65,12 +66,17 @@ export default {
         return false
       }
       this.$emit("choose", this.activeTemplateCharacter)
-      this.characterActiveIndex = -1;
+      this.reset();
     },
     chooseTemplateCharacter(templateCharacter, index) {
       this.activeTemplateCharacter = templateCharacter;
       this.characterActiveIndex = index;
     },
+    reset() {
+      this.characterActiveIndex = -1;
+      this.activeTemplateCharacter = {};
+      this.characterSearchText = "";
+    }
   }
 }
 </script>

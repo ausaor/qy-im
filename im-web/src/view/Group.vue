@@ -329,11 +329,9 @@
           this.groupType = 4;
           this.showCreateTemplateGroup = true;
         } else if (this.radio === '3') {
-          console.log("多元角色群聊")
           this.groupType = 2;
           this.showCreateTemplateGroup = true;
         } else if (this.radio === '4') {
-          console.log("角色群聊")
           this.groupType = 3;
           this.showCreateTemplateGroup = true;
         } else {
@@ -542,17 +540,9 @@
         });
         this.selectCharacterAvatarVisible = true;
       },
-      chooseTemplateCharacter(templateCharacter, index) {
-		    this.newTemplateCharacter = templateCharacter;
-        this.characterActiveIndex = index;
-      },
       chooseCharacterAvatar(characterAvatar, index) {
 		    this.newCharacterAvatar = characterAvatar;
         this.avatarActiveIndex = index;
-      },
-      closeSelectCharacter() {
-        this.characterActiveIndex = -1;
-        this.selectTemplateCharacterVisible = false;
       },
       closeSelectCharacterAvatar() {
 		    this.avatarActiveIndex = -1;
@@ -573,11 +563,10 @@
           data: groupMemberVO
         }).then(() => {
           this.$message.success("修改成功");
-        }).finally(() =>{
           this.querySelectableTemplateCharacter();
           this.loadGroupMembers();
           this.loadGroup(this.activeGroup.id);
-          this.characterActiveIndex = -1;
+        }).finally(() =>{
           this.selectTemplateCharacterVisible = false;
         })
       },
