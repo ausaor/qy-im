@@ -166,10 +166,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public GroupVO modifyGroup(GroupVO vo) {
         UserSession session = SessionContext.getSession();
+        boolean hasModify = false;
         // 校验是不是群主，只有群主能改信息
         Group group = this.getById(vo.getId());
         // 群主有权修改群基本信息
         if (group.getOwnerId().equals(session.getUserId())) {
+            if (!StringUtils.equals(group.getName(), vo.getName())) {
+                hasModify = true;
+            }
             group = BeanUtils.copyProperties(vo, Group.class);
             assert group != null;
             group.setName(group.getName());
@@ -183,11 +187,23 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "您不是群聊的成员");
         }
         member.setRemark(StringUtils.isEmpty(vo.getRemark()) ? Objects.requireNonNull(group).getName() : vo.getRemark());
+        if (!StringUtils.equals(member.getAliasName(), vo.getAliasName())) {
+
+        }
+        if (StringUtils.isNotBlank(vo.getAliasNamePrefix()) && !vo.getAliasNamePrefix().equals(member.getAliasNamePrefix())) {
+            hasModify = true;
+        }
+        if (StringUtils.isNotBlank(vo.getAliasNameSuffix()) && !vo.getAliasNameSuffix().equals(member.getAliasNameSuffix())) {
+            hasModify = true;
+        }
         member.setShowNickName(vo.getShowNickName());
         member.setAliasNamePrefix(vo.getAliasNamePrefix());
         member.setAliasNameSuffix(vo.getAliasNameSuffix());
         member.setNickname(vo.getNickName());
         if (GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
+            if (StringUtils.isNotBlank(vo.getAliasName()) && !vo.getAliasName().equals(member.getAliasName())) {
+                hasModify = true;
+            }
             member.setAliasName(StringUtils.isEmpty(vo.getAliasName()) ? session.getNickName() : vo.getAliasName());
             member.setHeadImage(vo.getMemberHeadImage());
             member.setHeadImageDef(vo.getMemberHeadImage());
@@ -195,8 +211,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         groupMemberService.updateById(member);
         log.info("修改群聊，群聊id:{},群聊名称:{}", group.getId(), group.getName());
 
-        messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
-                null, "群数据有更新", GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
+        if (hasModify) {
+            messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
+                    null, "群数据有更新", GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
+        }
+
         return vo;
     }
 
