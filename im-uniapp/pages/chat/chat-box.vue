@@ -8,8 +8,7 @@
 					:scroll-into-view="'chat-item-' + scrollMsgIdx" :scroll-top="scrollTop" :scroll-with-animation="true">
           <view v-if="chat" class="chat-wrap">
             <view v-for="(msgInfo, idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid"
-                  class="message-wrapper" :class="{active: targetMsgId === msgInfo.id}"
-                  :data-highlight="scrollMsgIdx === msgInfo.id">
+                  class="message-wrapper" :class="{active: targetMsgId === msgInfo.id}">
               <chat-message-item :ref="'message'+msgInfo.id" v-if="idx >= showMinIdx"
                                  @call="onRtCall(msgInfo)" :showInfo="showInfo(msgInfo)"
                                  @recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
@@ -1246,15 +1245,17 @@ export default {
       this.quoteMsgInfo.show = false;
     },
     scrollToTargetMsg(messageId) {
-      this.scrollMsgIdx = messageId;
+      this.scrollMsgIdx = this.findIdxByMessageId(messageId);
       this.targetMsgId = messageId;
       console.log("scrollToTargetMsg", messageId)
-      // this.scrollToMsgIdx(messageId);
       // 移除之前的高亮
       setTimeout(() => {
         this.scrollMsgIdx = null;
         this.targetMsgId = null;
       }, 2000);
+    },
+    findIdxByMessageId(messageId) {
+      return this.chat.messages.findIndex(item => item.id == messageId);
     },
     handleGroupChangeEvent(msg) {
       console.log("handleGroupChangeEvent", msg);
