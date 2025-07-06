@@ -5,7 +5,7 @@
 			<view class="chat-msg" @click="switchChatTabBox('none')">
 				<scroll-view ref="messagesContainer" class="scroll-box" scroll-y="true" upper-threshold="200" @scroll="onScroll"
                      @scrolltoupper="onScrollToTop" @scrolltolower="onScrollToBottom"
-					:scroll-into-view="'chat-item-' + scrollMsgIdx" :scroll-top="scrollTop" :scroll-with-animation="true">
+					:scroll-into-view="'chat-item-' + scrollMsgIdx" :scroll-top="scrollTop">
           <view v-if="chat" class="chat-wrap">
             <view v-for="(msgInfo, idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid"
                   class="message-wrapper" :class="{active: targetMsgId === msgInfo.id}">
@@ -156,7 +156,6 @@
 </template>
 
 <script>
-import UNI_APP from '@/.env.js';
 import characterWordList from "../../components/character-word-list/character-word-list.vue";
 import VideoUpload from "../../components/video-upload/video-upload.vue";
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
