@@ -92,7 +92,7 @@
 						</view>
 					</long-press-menu>
           <view class="quote-message" v-if="msgInfo.quoteMsg">
-            <long-press-menu :items="quoteMsgMenuItems">
+            <long-press-menu :items="quoteMsgMenuItems" @select="scrollToMessage(msgInfo.quoteMsg.id)">
               <view class="chat-quote-message" @click.stop="scrollToMessage(msgInfo.quoteMsg.id)">
                 <view class="send-user">{{showInfo.quoteShowName}}:</view>
                 <view class="quote-content">

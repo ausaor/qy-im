@@ -1,22 +1,29 @@
 <template>
-	<view class="page chat-box">
+	<view class="page chat-box" id="chatBox">
 		<nav-bar backHome more :refresh="chat.type === 'GROUP'" @more="onShowMore" @refresh="refreshChat" @gotoHome="gotoHome">{{ title }}</nav-bar>
 		<view class="chat-main-box" :style="{height: chatMainHeight+'px'}">
 			<view class="chat-msg" @click="switchChatTabBox('none')">
-				<scroll-view class="scroll-box" scroll-y="true" upper-threshold="200" @scrolltoupper="onScrollToTop"
-					:scroll-into-view="'chat-item-' + scrollMsgIdx" :scroll-with-animation="true">
-					<view v-if="chat" v-for="(msgInfo, idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid" class="message-wrapper"
-                :data-highlight="scrollMsgIdx === msgInfo.id">
-						<chat-message-item :ref="'message'+msgInfo.id" v-if="idx >= showMinIdx"
-              @call="onRtCall(msgInfo)" :showInfo="showInfo(msgInfo)"
-							@recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
-							@longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
-              @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg" @playVideo="playVideo"
-							@audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
-							:groupMembers="groupMembers" :myGroupMemberInfo="myGroupMemberInfo" :isOwner="group.ownerId === msgInfo.sendId">
-						</chat-message-item>
-					</view>
+				<scroll-view ref="messagesContainer" class="scroll-box" scroll-y="true" upper-threshold="200" @scroll="onScroll"
+                     @scrolltoupper="onScrollToTop" @scrolltolower="onScrollToBottom"
+					:scroll-into-view="'chat-item-' + scrollMsgIdx" :scroll-top="scrollTop" :scroll-with-animation="true">
+          <view v-if="chat" class="chat-wrap">
+            <view v-for="(msgInfo, idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid"
+                  class="message-wrapper" :class="{active: targetMsgId === msgInfo.id}"
+                  :data-highlight="scrollMsgIdx === msgInfo.id">
+              <chat-message-item :ref="'message'+msgInfo.id" v-if="idx >= showMinIdx"
+                                 @call="onRtCall(msgInfo)" :showInfo="showInfo(msgInfo)"
+                                 @recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
+                                 @longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
+                                 @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg" @playVideo="playVideo"
+                                 @audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
+                                 :groupMembers="groupMembers" :myGroupMemberInfo="myGroupMemberInfo" :isOwner="group.ownerId === msgInfo.sendId">
+              </chat-message-item>
+            </view>
+          </view>
 				</scroll-view>
+        <view v-if="!isInBottom" class="scroll-to-bottom" @click="onClickToBottom">
+          {{ newMessageSize > 0 ?  newMessageSize+'条新消息' :'回到底部'}}
+        </view>
 			</view>
 			<view v-if="atUserIds.length > 0" class="chat-at-bar" @click="openAtBox()">
 				<view class="iconfont icon-at">:&nbsp;</view>
@@ -172,6 +179,7 @@ export default {
       myGroupMemberInfo: {}, // 我的群聊成员信息
 			isReceipt: false, // 是否回执消息
 			scrollMsgIdx: 0, // 滚动条定位为到哪条消息
+      targetMsgId: null,
 			chatTabBox: 'none',
 			showRecord: false,
 			chatMainHeight: 0, // 聊天窗口高度
@@ -179,7 +187,6 @@ export default {
 			windowHeight: 1000, // 窗口高度
 			initHeight: 1000, // h5初始高度
 			atUserIds: [],
-			needScrollToBottom: false, // 需要滚动到底部 
 			showMinIdx: 0, // 下标小于showMinIdx的消息不显示，否则可能很卡
 			reqQueue: [], // 请求队列
 			isSending: false, // 是否正在发送请求
@@ -207,6 +214,14 @@ export default {
       videoSrc: '',
       videoCoverImage: '',
       viewVideo: false,
+      isInBottom: true, // 滚动条是否在底部
+      newMessageSize: 0, // 滚动条不在底部时新的消息数量
+      scrollTop: 0, // 用于ios h5定位滚动条
+      scrollViewHeight: 0, // 滚动条总长度
+      currentScrollTop: 0,          // 当前滚动位置
+      lastScrollTop: 0,      // 上一次滚动位置
+      scrollDirection: null, // 滚动方向：'up' 或 'down'
+      timer: null, // 防抖计时器
 		}
 	},
 	methods: {
@@ -494,6 +509,20 @@ export default {
 				this.scrollToMsgIdx(size - 1);
 			}
 		},
+    holdingScrollBar(scrollViewHeight) {
+      // 内容高度
+      const query = uni.createSelectorQuery().in(this);
+      setTimeout(() => {
+        query.select('.chat-wrap').boundingClientRect();
+        query.exec(data => {
+          this.scrollTop = data[0].height - scrollViewHeight;
+          if(this.scrollTop < 10){
+            // 未渲染完成，重试一次
+            this.holdingScrollBar();
+          }
+        });
+      }, 50)
+    },
 		scrollToMsgIdx(idx) {
 			// 如果scrollMsgIdx值没变化，滚动条不会移动
 			if (idx == this.scrollMsgIdx && idx > 0) {
@@ -767,6 +796,42 @@ export default {
 				}
 			});
 		},
+    onScroll(e) {
+      // 记录当前滚动条高度
+      this.scrollViewHeight = e.detail.scrollHeight;
+      //console.log('scrollViewHeight', this.scrollViewHeight);
+
+      // 清除之前的计时器
+      if (this.timer) clearTimeout(this.timer)
+
+      // 设置防抖（100ms内只执行一次）
+      this.timer = setTimeout(() => {
+        const currentScrollTop = e.detail.scrollTop
+
+        // 判断滚动方向
+        if (currentScrollTop < this.lastScrollTop) {
+          this.scrollDirection = 'up'
+          this.isInBottom = false;
+          console.log('向上滚动')
+          // 这里可以添加向上滚动的自定义逻辑
+        } else if (currentScrollTop > this.lastScrollTop) {
+          this.scrollDirection = 'down'
+          console.log('向下滚动')
+        }
+        // 更新滚动位置记录
+        this.lastScrollTop = currentScrollTop
+        this.currentScrollTop = currentScrollTop
+      }, 100)
+    },
+    onClickToBottom() {
+      this.scrollToBottom();
+      // 有些设备滚到底部时会莫名触发滚动到顶部的事件
+      // 所以这里延迟100s保证能准确设置底部标志
+      setTimeout(() => {
+        this.isInBottom = true;
+        this.newMessageSize = 0;
+      }, 100)
+    },
 		onScrollToTop() {
       console.log("onScrollToTop")
       if (this.showMinIdx > 0) {
@@ -774,10 +839,24 @@ export default {
         // 防止滚动条定格在顶部，不能一直往上滚
         this.scrollToMsgIdx(this.showMinIdx);
         // #endif
+
+        // #ifdef H5
+        // 防止滚动条定格在顶部，不能一直往上滚，h5采用scroll-top定位
+        this.holdingScrollBar(this.scrollViewHeight);
+        // #endif
+
         // 多展示20条信息
         this.showMinIdx = this.showMinIdx > 20 ? this.showMinIdx - 20 : 0;
       }
+      // 清除底部标识
+      this.isInBottom = false;
 		},
+    onScrollToBottom(e) {
+      console.log("onScrollToBottom")
+      // 设置底部标识
+      this.isInBottom = true;
+      this.newMessageSize = 0;
+    },
 		onShowMore() {
 			if (this.chat.type == "GROUP") {
 				uni.navigateTo({
@@ -961,31 +1040,29 @@ export default {
 			}, 30)
 		},
 		listenKeyBoard() {
-			// #ifdef H5	
-			const userAgent = navigator.userAgent;
-			const regex = /(macintosh|windows)/i;
-			if (regex.test(userAgent)) {
-				// 电脑端不需要弹出键盘
-				console.log("userAgent:", userAgent)
-				return;
-			}
-			if (uni.getSystemInfoSync().platform == 'ios') {
-				// ios h5实现键盘监听
-				window.addEventListener('focusin', this.focusInListener);
-				window.addEventListener('focusout', this.focusOutListener);
+      // #ifdef H5
+      if (navigator.platform == "Win32") {
+        // 电脑端不需要弹出键盘
+        console.log("navigator.platform:", navigator.platform)
+        return;
+      }
+      if (uni.getSystemInfoSync().platform == 'ios') {
+        // ios h5实现键盘监听
+        window.addEventListener('focusin', this.focusInListener);
+        window.addEventListener('focusout', this.focusOutListener);
         // 监听键盘高度，ios13以上开始支持
-        if(window.visualViewport){
+        if (window.visualViewport) {
           window.visualViewport.addEventListener('resize', this.resizeListener);
         }
-			} else {
-				// 安卓h5实现键盘监听
-				window.addEventListener('resize', this.resizeListener);
-			}
-			// #endif
-			// #ifndef H5
-			// app实现键盘监听
-			uni.onKeyboardHeightChange(this.keyBoardListener);
-			// #endif
+      } else {
+        // 安卓h5实现键盘监听
+        window.addEventListener('resize', this.resizeListener);
+      }
+      // #endif
+      // #ifndef H5
+      // app实现键盘监听
+      uni.onKeyboardHeightChange(this.keyBoardListener);
+      // #endif
 		},
 		unListenKeyboard() {
 			// #ifdef H5
@@ -1005,13 +1082,17 @@ export default {
 			this.reCalChatMainHeight();
 		},
 		resizeListener() {
-			console.log("resize")
-			let keyboardHeight = this.initHeight - window.innerHeight;
-			this.isShowKeyBoard = keyboardHeight > 150;
-			if (this.isShowKeyBoard) {
-				this.keyboardHeight = keyboardHeight;
-			}
-			this.reCalChatMainHeight();
+      let keyboardHeight = this.initHeight - window.innerHeight;
+      // 兼容部分ios浏览器
+      if (window.visualViewport && uni.getSystemInfoSync().platform == 'ios') {
+        keyboardHeight = this.initHeight - window.visualViewport.height;
+      }
+      console.log("resizeListener:", window.visualViewport.height)
+      this.isShowKeyBoard = keyboardHeight > 150;
+      if (this.isShowKeyBoard) {
+        this.keyboardHeight = keyboardHeight;
+      }
+      this.reCalChatMainHeight();
 		},
 		focusInListener() {
 			console.log("focusInListener")
@@ -1166,8 +1247,13 @@ export default {
     },
     scrollToTargetMsg(messageId) {
       this.scrollMsgIdx = messageId;
+      this.targetMsgId = messageId;
+      console.log("scrollToTargetMsg", messageId)
+      // this.scrollToMsgIdx(messageId);
+      // 移除之前的高亮
       setTimeout(() => {
-        this.scrollMsgIdx = 0;
+        this.scrollMsgIdx = null;
+        this.targetMsgId = null;
       }, 2000);
     },
     handleGroupChangeEvent(msg) {
@@ -1267,16 +1353,21 @@ export default {
 	},
 	watch: {
 		messageSize: function(newSize, oldSize) {
-			// 接收到消息时滚动到底部
-			if (newSize > oldSize) {
-				let pages = getCurrentPages();
-				let curPage = pages[pages.length - 1].route;
-				if (curPage == "pages/chat/chat-box") {
-					this.scrollToBottom();
-				} else {
-					this.needScrollToBottom = true;
-				}
-			}
+      console.log("newSize", newSize);
+      console.log("oldSize", oldSize);
+      // 接收到新消息
+      if (newSize > oldSize && oldSize > 0) {
+        let lastMessage = this.chat.messages[newSize - 1];
+        if (this.$msgType.isNormal(lastMessage.type)) {
+          if (this.isInBottom) {
+            // 收到消息,则滚动至底部
+            this.scrollToBottom();
+          } else {
+            // 若滚动条不在底部，说明用户正在翻历史消息，此时滚动条不能动，同时增加新消息提示
+            this.newMessageSize++;
+          }
+        }
+      }
 		},
 		unreadCount: {
 			handler(newCount, oldCount) {
@@ -1308,18 +1399,24 @@ export default {
 		this.chatStore.activeChat(options.chatIdx);
 		// 复位回执消息
 		this.isReceipt = false;
+    // 清空底部标志
+    this.isInBottom = true;
+    this.newMessageSize = 0;
 		// 监听键盘高度
 		this.listenKeyBoard();
 		// 计算聊天窗口高度
 		this.$nextTick(() => {
 			this.windowHeight = uni.getSystemInfoSync().windowHeight;
 			this.reCalChatMainHeight()
+      this.scrollToBottom();
 			// 兼容ios h5:禁止页面滚动
 			// #ifdef H5
-			this.initHeight = window.innerHeight;
-			document.body.addEventListener('touchmove', function(e) {
-				e.preventDefault();
-			}, { passive: false });
+      this.initHeight = window.innerHeight;
+      // 兼容ios的h5:禁止页面滚动
+      const chatBox = document.getElementById('chatBox')
+      chatBox.addEventListener('touchmove', e => {
+        e.preventDefault()
+      }, { passive: false });
 			// #endif
 		});
 	},
@@ -1334,13 +1431,6 @@ export default {
     uni.$off('group-change-event', this.handleGroupChangeEvent) // 清理监听
     uni.$off('group-audio-event', this.handleGroupAudioEvent) // 清理监听
   },
-	onShow() {
-		if (this.needScrollToBottom) {
-			// 页面滚到底部
-			this.scrollToBottom();
-			this.needScrollToBottom = false;
-		}
-	}
 }
 </script>
 
@@ -1417,14 +1507,31 @@ export default {
 				height: 100%;
 
         .message-wrapper {
-          animation: fadeIn 0.3s ease;
+          //animation: fadeIn 0.3s ease;
           margin-bottom: 15px;
         }
 
-        .message-wrapper[data-highlight="true"] {
-          animation: highlight 2s ease;
+        .active {
+          background-color: rgba(79, 70, 229, 0.1);
         }
+
+        //.message-wrapper[data-highlight="true"] {
+        //  animation: highlight 2s ease;
+        //}
 			}
+
+      .scroll-to-bottom {
+        position: absolute;
+        right: 30rpx;
+        bottom: 30rpx;
+        font-size: $im-font-size;
+        color: $im-color-primary;
+        font-weight: 600;
+        background: white;
+        padding: 10rpx 30rpx;
+        border-radius: 25rpx;
+        box-shadow: $im-box-shadow-dark;
+      }
 		}
 
 		.chat-at-bar {
