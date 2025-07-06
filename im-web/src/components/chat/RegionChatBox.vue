@@ -177,7 +177,8 @@ export default {
       videoUrl: '',
       posterUrl: '',
       isInBottom: false, // 滚动条是否在底部
-      newMessageSize: 0 // 滚动条不在底部时新的消息数量
+      newMessageSize: 0, // 滚动条不在底部时新的消息数量
+      lastScrollTop: 0,
     }
   },
   created() {
@@ -424,11 +425,31 @@ export default {
         this.showMinIdx = this.showMinIdx > 20 ? this.showMinIdx - 20 : 0;
         this.isInBottom = false;
       }
+      // 判断滚动方向（向上滚动）
+      if (scrollTop < this.lastScrollTop - 100) {
+        console.log("向上滚动 ↑");
+        // 这里可以添加自定义逻辑
+        this.isInBottom = false;
+      }
+
+      // 更新上次滚动位置
+      this.lastScrollTop = scrollTop;
       // 滚到底部
       if (scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 30) {
         this.isInBottom = true;
         this.newMessageSize = 0;
       }
+    },
+    throttle(fn, delay) {
+      let timer = null;
+      return function (...args) {
+        if (!timer) {
+          timer = setTimeout(() => {
+            fn.apply(this, args);
+            timer = null;
+          }, delay);
+        }
+      };
     },
     showEmotionBox() {
       let width = this.$refs.emotion.offsetWidth;
@@ -900,7 +921,7 @@ export default {
   },
   mounted() {
     let div = document.getElementById("chatScrollBox");
-    div.addEventListener('scroll', this.onScroll)
+    div.addEventListener('scroll', this.throttle(this.onScroll, 100));
   },
 }
 </script>

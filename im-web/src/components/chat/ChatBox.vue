@@ -226,7 +226,8 @@
         playingAudioState: 'STOP',
         playAudios: [],
         isInBottom: false, // 滚动条是否在底部
-        newMessageSize: 0 // 滚动条不在底部时新的消息数量
+        newMessageSize: 0, // 滚动条不在底部时新的消息数量
+        lastScrollTop: 0,
 			}
 		},
     created() {
@@ -501,6 +502,18 @@
         // 多展示10条信息
         this.showMinIdx = this.showMinIdx > 10 ? this.showMinIdx - 10 : 0;
       },
+      // 节流函数（性能优化）
+      throttle(fn, delay) {
+        let timer = null;
+        return function (...args) {
+          if (!timer) {
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = null;
+            }, delay);
+          }
+        };
+      },
       onScroll(e) {
         let scrollElement = e.target
         let scrollTop = scrollElement.scrollTop
@@ -509,6 +522,15 @@
           this.showMinIdx = this.showMinIdx > 20 ? this.showMinIdx - 20 : 0;
           this.isInBottom = false;
         }
+        // 判断滚动方向（向上滚动）
+        if (scrollTop < this.lastScrollTop - 100) {
+          console.log("向上滚动 ↑");
+          // 这里可以添加自定义逻辑
+          this.isInBottom = false;
+        }
+
+        // 更新上次滚动位置
+        this.lastScrollTop = scrollTop;
         // 滚到底部
         if (scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 30) {
           this.isInBottom = true;
@@ -1197,7 +1219,7 @@
 		},
     mounted() {
       let div = document.getElementById("chatScrollBox");
-      div.addEventListener('scroll', this.onScroll)
+      div.addEventListener('scroll', this.throttle(this.onScroll, 100));
     },
 	}
 </script>
