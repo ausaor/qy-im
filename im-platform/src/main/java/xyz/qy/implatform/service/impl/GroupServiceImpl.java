@@ -744,6 +744,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
         GroupVO vo = BeanUtils.copyProperties(group, GroupVO.class);
         assert vo != null;
+        vo.setTemplateCharacterId(groupMember.getTemplateCharacterId());
         vo.setAliasName(groupMember.getAliasName());
         vo.setRemark(group.getName());
         log.info("创建群聊，群聊id:{},群聊名称:{}", group.getId(), group.getName());
