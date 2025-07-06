@@ -37,6 +37,9 @@
                 </ul>
               </div>
             </el-main>
+            <div v-if="!isInBottom" class="scroll-to-bottom" @click="scrollToBottom">
+              {{ newMessageSize > 0 ? newMessageSize + '条新消息' : '回到底部' }}
+            </div>
             <el-footer height="240px" class="im-chat-footer">
               <div class="chat-tool-bar">
                 <div title="表情" ref="emotion" @click.stop="showEmotionBox()">
@@ -172,7 +175,9 @@ export default {
       },
       highlightedMessageId: null,
       videoUrl: '',
-      posterUrl: ''
+      posterUrl: '',
+      isInBottom: false, // 滚动条是否在底部
+      newMessageSize: 0 // 滚动条不在底部时新的消息数量
     }
   },
   created() {
@@ -417,6 +422,12 @@ export default {
       if (scrollTop < 30) { // 在顶部,不滚动的情况
         // 多展示20条信息
         this.showMinIdx = this.showMinIdx > 20 ? this.showMinIdx - 20 : 0;
+        this.isInBottom = false;
+      }
+      // 滚到底部
+      if (scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 30) {
+        this.isInBottom = true;
+        this.newMessageSize = 0;
       }
     },
     showEmotionBox() {
@@ -855,6 +866,7 @@ export default {
           // 滚到底部
           this.scrollToBottom();
           this.showSide = false;
+          this.isInBottom = true;
           // 消息已读
           this.readedMessage()
           // 初始状态只显示30条消息
@@ -867,6 +879,19 @@ export default {
         }
       },
       immediate: true
+    },
+    messageSize: {
+      handler(newSize, oldSize) {
+        if (newSize > oldSize) {
+          if (this.isInBottom) {
+            // 拉至底部
+            this.scrollToBottom();
+          } else {
+            // 增加新消息提醒
+            this.newMessageSize++;
+          }
+        }
+      }
     },
     regionGroup: {
       handler(newRegionGroup, oldRegionGroup) {
@@ -932,27 +957,45 @@ export default {
     }
   }
 
-  .im-chat-main {
-    padding: 0;
-    border: var(--border-color) solid 1px;
-    .im-chat-box {
-      >ul {
-        padding: 0px 20px 20px 20px;
+  .content-box {
+    .im-chat-main {
+      padding: 0;
+      border: var(--border-color) solid 1px;
+      .im-chat-box {
+        >ul {
+          padding: 0px 20px 20px 20px;
 
-        li {
-          list-style-type: none;
-        }
+          li {
+            list-style-type: none;
+          }
 
-        .message-wrapper {
-          animation: fadeIn 0.3s ease;
-          margin-bottom: 15px;
-        }
+          .message-wrapper {
+            animation: fadeIn 0.3s ease;
+            margin-bottom: 15px;
+          }
 
-        .message-wrapper[data-highlight="true"] {
-          animation: highlight 2s ease;
+          .message-wrapper[data-highlight="true"] {
+            animation: highlight 2s ease;
+          }
         }
       }
     }
+  }
+
+  .scroll-to-bottom {
+    text-align: right;
+    position: absolute;
+    right: 20px;
+    bottom: 250px;
+    color: #2830d3;
+    font-size: 14px;
+    font-weight: 600;
+    background: #eee;
+    padding: 5px 15px;
+    border-radius: 15px;
+    cursor: pointer;
+    z-index: 99;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   }
 
   .im-chat-footer {
