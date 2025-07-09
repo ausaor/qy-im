@@ -2,8 +2,10 @@ package xyz.qy.implatform.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
+import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
@@ -417,5 +419,25 @@ public class RedisCache
      */
     public Set<String> sortRange(String key, int min, int max) {
         return redisTemplate.opsForZSet().rangeByScore(key, min, max);
+    }
+
+    /**
+     * 删除指定前缀key的所有数据
+     */
+    public void deleteKeysByPrefix(String prefix) {
+        // 使用 SCAN 命令避免阻塞 Redis（生产环境关键）
+        ScanOptions options = ScanOptions.scanOptions()
+                .match(prefix + "*")  // 匹配前缀
+                .count(100)           // 每次扫描数量（根据数据量调整）
+                .build();
+
+        try (Cursor<Object> cursor = redisTemplate.scan(options)) {
+            while (cursor.hasNext()) {
+                Object key = cursor.next();
+                // 使用 unlink 非阻塞删除（Redis 4.0+）
+                redisTemplate.unlink(key.toString());
+                // 或使用同步删除：redisTemplate.delete(key);
+            }
+        }
     }
 }
