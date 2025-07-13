@@ -26,8 +26,8 @@
         >
           <el-option label="DeepSeek" value="deepseek"></el-option>
           <el-option label="通义千问" value="qianwen"></el-option>
-<!--          <el-option label="GPT-4" value="gpt4"></el-option>
-          <el-option label="MCP模式" value="mcp"></el-option>-->
+          <el-option label="MCP对话" value="mcp"></el-option>
+<!--          <el-option label="GPT-4" value="gpt4"></el-option>-->
         </el-select>
       </div>
 
@@ -240,7 +240,7 @@ export default {
         deepseek: 'DeepSeek',
         qwen: '通义千问',
         gpt4: 'GPT-4',
-        mcp: 'MCP模式'
+        mcp: 'MCP对话'
       }
       return modelMap[model] || model
     },
@@ -271,7 +271,11 @@ export default {
       this.currentChat.messages.push(aiMessage)
 
       try {
-        await this.streamResponse(messageToSend, aiMessage)
+        if (this.selectedModel === 'deepseek' || this.selectedModel === 'qwen' || this.selectedModel === 'gpt4') {
+          await this.streamResponse(messageToSend, aiMessage)
+        } else {
+          await this.mcpStreamResponse(messageToSend, aiMessage)
+        }
       } catch (error) {
         console.error('发送消息失败:', error)
         this.$message.error('发送消息失败，请重试')
@@ -305,6 +309,46 @@ export default {
           //   aiMessage.content += text
           //   this.scrollToBottom();
           // }
+        }
+
+        this.eventSource.onerror = (error) => {
+          if (this.eventSource.readyState === EventSource.CLOSED) {
+            console.log('this.eventSource.close()')
+            this.eventSource.close();
+            resolve();
+          } else {
+            console.log('this.eventSource.error.close()')
+            this.eventSource.close()
+            //reject(error)
+            resolve();
+          }
+        }
+
+        this.eventSource.addEventListener('end', () => {
+          console.log('EventSource end event received')
+          this.eventSource.close()
+          resolve()
+        })
+      })
+    },
+
+    async mcpStreamResponse(message, aiMessage) {
+      // 模拟EventSource流式响应
+      return new Promise((resolve, reject) => {
+        //let accessToken = sessionStorage.getItem("accessToken");
+
+        // 真实的EventSource实现示例：
+        this.eventSource = new EventSource(`http://127.0.0.1:8181/chat/mcp/msg/${this.currentChatId}?content=${encodeURIComponent(message)}&model=deepseek&role=user&maxTokens=2000&temperature=0.7`)
+
+        this.eventSource.onmessage = (event) => {
+          // 后端Flux<ServerSentEvent<String>>返回格式处理
+          const response = JSON.parse(event.data)
+          // 获取流式响应的文本内容
+          const text = response.result?.output?.text || response.results?.[0]?.output?.text || ''
+          if (text) {
+            aiMessage.content += text
+            this.scrollToBottom();
+          }
         }
 
         this.eventSource.onerror = (error) => {
