@@ -10,6 +10,7 @@ import '@/assets/icon/iconfont.js';
 import httpRequest from './api/httpRequest';
 import * as socketApi from './api/wssocket';
 import * as messageType from './api/messageType';
+import * as sseApi from './api/sse';
 import common from './api/common.js';
 import emotion from './api/emotion.js';
 import url from './api/url.js';
@@ -33,6 +34,7 @@ Vue.use(VueAudio)
 
 // 挂载全局
 Vue.prototype.$wsApi = socketApi;
+Vue.prototype.$sseApi = sseApi;
 Vue.prototype.$msgType = messageType
 Vue.prototype.$date = date;
 Vue.prototype.$commonUtil = common;

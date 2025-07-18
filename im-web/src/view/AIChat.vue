@@ -238,7 +238,7 @@ export default {
     getModelName(model) {
       const modelMap = {
         deepseek: 'DeepSeek',
-        qwen: '通义千问',
+        qianwen: '通义千问',
         gpt4: 'GPT-4',
         mcp: 'MCP对话'
       }
@@ -271,10 +271,12 @@ export default {
       this.currentChat.messages.push(aiMessage)
 
       try {
-        if (this.selectedModel === 'deepseek' || this.selectedModel === 'qwen' || this.selectedModel === 'gpt4') {
-          await this.streamResponse(messageToSend, aiMessage)
-        } else {
-          await this.mcpStreamResponse(messageToSend, aiMessage)
+        if (this.selectedModel === 'deepseek' || this.selectedModel === 'qianwen' || this.selectedModel === 'gpt4') {
+          //await this.streamResponse(messageToSend, aiMessage)
+          await this.sseResponse(messageToSend, aiMessage);
+        } else if (this.selectedModel === 'mcp') {
+          //await this.mcpStreamResponse(messageToSend, aiMessage)
+          await this.sseMcpResponse(messageToSend, aiMessage);
         }
       } catch (error) {
         console.error('发送消息失败:', error)
@@ -284,6 +286,74 @@ export default {
         this.isTyping = false
         this.scrollToBottom()
       }
+    },
+
+    async sseResponse(message, aiMessage) {
+      return new Promise((resolve, reject) => {
+        this.eventSource = this.$sseApi.createSSEConnection(
+            process.env.VUE_APP_AI_URL + `/chat/flux/msg/${this.currentChatId}`,
+            {
+              content: message,
+              model: this.selectedModel
+            },
+            (data) => this.handleStreamData(data, aiMessage),
+            (error) => this.handleError(error, resolve, reject)
+        );
+      })
+    },
+
+    async sseMcpResponse(message, aiMessage) {
+      return new Promise((resolve, reject) => {
+        this.eventSource = this.$sseApi.createSSEConnection(
+            process.env.VUE_APP_AI_URL + `/chat/mcp/msg/${this.currentChatId}`,
+            {
+              content: message,
+              model: 'deepseek'
+            },
+            (data) => this.handleMcpStreamData(data, aiMessage),
+            (error) => this.handleError(error, resolve, reject)
+        );
+      })
+    },
+
+    // 处理流式数据
+    handleStreamData(data, aiMessage) {
+      // 后端SseEmitter|Flux<String>返回格式处理
+      if (data) {
+        aiMessage.content += data
+        this.scrollToBottom();
+      }
+
+      // 后端Flux<ChatResponse>返回格式处理
+      // if (data) {
+      //   const response = JSON.parse(data)
+      //   // 获取流式响应的文本内容
+      //   const text = response.result?.output?.text || response.results?.[0]?.output?.text || ''
+      //   if (text) {
+      //     aiMessage.content += text
+      //     this.scrollToBottom();
+      //   }
+      // }
+    },
+
+    handleMcpStreamData(data, aiMessage) {
+      // 后端Flux<ServerSentEvent<String>>返回格式处理
+      if (data) {
+        const response = JSON.parse(data)
+        // 获取流式响应的文本内容
+        const text = response.result?.output?.text || response.results?.[0]?.output?.text || ''
+        if (text) {
+          aiMessage.content += text
+          this.scrollToBottom();
+        }
+      }
+    },
+
+    // 错误处理
+    handleError(error, resolve, reject) {
+      console.error('SSE连接错误:', error)
+      this.eventSource.close();
+      resolve();
     },
 
     async streamResponse(message, aiMessage) {

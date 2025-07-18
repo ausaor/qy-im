@@ -128,7 +128,6 @@
 	import RtcPrivateAcceptor from '../components/rtc/RtcPrivateAcceptor.vue';
 	import Operation from "@/components/operation/Operation";
   import RtcGroupVideo from '../components/rtc/RtcGroupVideo.vue';
-  import SSETool from '@/utils/sse-util';
   import Aplayer from 'vue-aplayer'
 
 	export default {
@@ -217,35 +216,6 @@
         }).catch((e) => {
           console.log("初始化失败", e);
         })
-      },
-      initSSE() {
-        this.sse = new SSETool({
-          url: process.env.VUE_APP_SSE_URL,
-          token: sessionStorage.getItem("accessToken"), // 从本地存储获取Token
-          retryInterval: 5000,
-          onOpen: () => {
-            console.log('SSE连接成功');
-          },
-          onError: (err) => {
-            console.error('SSE连接错误:', err);
-          }
-        });
-
-        // 监听默认消息
-        this.sse.on('message', (event) => {
-          if (event.data === '') {
-            console.log('收到心跳包，保持连接活跃');
-            // 无需处理业务逻辑
-          } else {
-            // 正常业务处理
-            this.messages.push(event.data);
-          }
-        });
-
-        // 监听自定义事件
-        this.sse.on('customEvent', (event) => {
-          console.log('收到自定义事件:', event.data);
-        });
       },
       pullPrivateOfflineMessage(minId) {
         console.log("拉取私聊记录start......")
