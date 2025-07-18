@@ -64,4 +64,13 @@ public interface IRegionGroupMemberService extends IService<RegionGroupMember> {
     Boolean isInRegionGroup(String regionCode, List<Long> userIds);
 
     Boolean isTempMember(String regionCode, Long userId);
+
+    /**
+     * 判断两个用户是否在同一个地区群聊中
+     *
+     * @param userId1 用户id1
+     * @param userId2 用户id2
+     * @return 是否在同一个地区群聊中
+     */
+    Boolean existsInSameGroup(Long userId1, Long userId2);
 }

@@ -85,4 +85,9 @@ public class RegionGroupMemberServiceImpl extends ServiceImpl<RegionGroupMemberM
     public Boolean isTempMember(String regionCode, Long userId) {
         return redisCache.hasKey(IMRedisKey.IM_USER_TEMP_REGION_GROUP + userId + ":" + regionCode);
     }
+
+    @Override
+    public Boolean existsInSameGroup(Long userId1, Long userId2) {
+        return baseMapper.existsInSameGroup(userId1, userId2);
+    }
 }

@@ -900,17 +900,38 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     @Override
     public boolean verifyUserDataAuth(UserDataAuthDTO dto) {
         if (TalkCategoryEnum.PRIVATE.getCode().equals(dto.getCategory())) {
-            // 判断用户是否好友
             if (dto.getUserId().equals(dto.getFriendId())) {
                 return true;
             }
-            return friendService.isFriend(dto.getUserId(), dto.getFriendId());
+            // 判断用户是否好友
+            Boolean friend = friendService.isFriend(dto.getUserId(), dto.getFriendId());
+            if (friend) {
+                return true;
+            }
+
+            if (dto.getGroupVisible() && ViewScopeEnum.PUBLIC.getCode().equals(dto.getScope())) {
+                // 判断是否群友
+                Boolean inGroup = groupMemberService.existsInSameGroup(dto.getUserId(), dto.getFriendId());
+                if (inGroup) {
+                    return true;
+                }
+            }
+
+            if (dto.getRegionVisible() && ViewScopeEnum.PUBLIC.getCode().equals(dto.getScope())) {
+                // 判断用户是否地区群聊常驻成员
+                Boolean inRegionGroup = regionGroupMemberService.existsInSameGroup(dto.getUserId(), dto.getFriendId());
+                if (inRegionGroup) {
+                    return true;
+                }
+            }
         } else if (TalkCategoryEnum.GROUP.getCode().equals(dto.getCategory())) {
-            // 判断用户是否群成员
+            // 判断当前用户是否群成员
             return groupMemberService.isInGroup(dto.getGroupId(), Collections.singletonList(dto.getUserId()));
         } else if (TalkCategoryEnum.REGION.getCode().equals(dto.getCategory())) {
-            // 判断用户是否地区群聊常驻成员
+            // 判断当前用户是否地区群聊常驻成员
             Boolean inRegionGroup = regionGroupMemberService.isInRegionGroup(dto.getRegionCode(), Collections.singletonList(dto.getUserId()));
+
+            // 判断当前用户是否临时成员
             Boolean tempMember = regionGroupMemberService.isTempMember(dto.getRegionCode(), dto.getUserId());
             if (inRegionGroup || tempMember) {
                 return true;

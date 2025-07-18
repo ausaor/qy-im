@@ -445,4 +445,9 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
                 .in(GroupMember::getUserId, userIds);
         return userIds.size() == this.count(wrapper);
     }
+
+    @Override
+    public Boolean existsInSameGroup(Long userId1, Long userId2) {
+        return this.baseMapper.existsInSameGroup(userId1, userId2);
+    }
 }

@@ -42,7 +42,14 @@ public class MusicStarServiceImpl extends ServiceImpl<MusicStarMapper, MusicStar
             throw new GlobalException("点赞歌曲不存在");
         }
 
-        if (!talkService.verifyUserDataAuth(new UserDataAuthDTO(music.getCategory(), userId, music.getUserId(), music.getGroupId(), music.getRegionCode()))) {
+        UserDataAuthDTO userDataAuthDTO = UserDataAuthDTO.builder()
+                .category(music.getCategory())
+                .userId(userId)
+                .friendId(music.getUserId())
+                .groupId(music.getGroupId())
+                .regionCode(music.getRegionCode())
+                .build();
+        if (!talkService.verifyUserDataAuth(userDataAuthDTO)) {
             throw new GlobalException("您无权限操作");
         }
 

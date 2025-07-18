@@ -95,7 +95,17 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
             }
         }
 
-        if (!talkService.verifyUserDataAuth(new UserDataAuthDTO(talk.getCategory(), myUserId, talk.getUserId(), talk.getGroupId(), talk.getRegionCode()))) {
+        UserDataAuthDTO userDataAuthDTO = UserDataAuthDTO.builder()
+                .category(talk.getCategory())
+                .userId(myUserId)
+                .friendId(talk.getUserId())
+                .groupId(talk.getGroupId())
+                .regionCode(talk.getRegionCode())
+                .groupVisible(talk.getGroupVisible())
+                .regionVisible(talk.getRegionVisible())
+                .scope(talk.getScope())
+                .build();
+        if (!talkService.verifyUserDataAuth(userDataAuthDTO)) {
             throw new GlobalException("您无权限操作");
         }
         TalkStar talkStar = new TalkStar();

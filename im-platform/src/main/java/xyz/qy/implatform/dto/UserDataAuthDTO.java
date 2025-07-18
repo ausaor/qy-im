@@ -20,4 +20,10 @@ public class UserDataAuthDTO {
     private Long groupId;
 
     private String regionCode;
+
+    private Boolean groupVisible = false;
+
+    private Boolean regionVisible = false;
+
+    private Integer scope;
 }

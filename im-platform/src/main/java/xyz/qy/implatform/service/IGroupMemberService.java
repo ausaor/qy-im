@@ -51,4 +51,13 @@ public interface IGroupMemberService extends IService<GroupMember> {
      * @param userIds  用户id
      */
     Boolean isInGroup(Long groupId,List<Long> userIds);
+
+    /**
+     * 判断两个用户是否在同一群中
+     *
+     * @param userId1 用户1id
+     * @param userId2 用户2id
+     * @return 布尔值
+     */
+    Boolean existsInSameGroup(Long userId1,Long userId2);
 }
