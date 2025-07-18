@@ -292,7 +292,7 @@ export default {
         //let accessToken = sessionStorage.getItem("accessToken");
 
         // 真实的EventSource实现示例：
-        this.eventSource = new EventSource(`http://127.0.0.1:8181/chat/flux/msg/${this.currentChatId}?content=${encodeURIComponent(message)}&model=${this.selectedModel}&role=user&maxTokens=2000&temperature=0.7`)
+        this.eventSource = new EventSource(process.env.VUE_APP_AI_URL + `/chat/flux/msg/${this.currentChatId}?content=${encodeURIComponent(message)}&model=${this.selectedModel}&role=user&maxTokens=2000&temperature=0.7`)
 
         this.eventSource.onmessage = (event) => {
           // 后端SseEmitter|Flux<String>返回格式处理
@@ -338,7 +338,7 @@ export default {
         //let accessToken = sessionStorage.getItem("accessToken");
 
         // 真实的EventSource实现示例：
-        this.eventSource = new EventSource(`http://127.0.0.1:8181/chat/mcp/msg/${this.currentChatId}?content=${encodeURIComponent(message)}&model=deepseek&role=user&maxTokens=2000&temperature=0.7`)
+        this.eventSource = new EventSource(process.env.VUE_APP_AI_URL + `/chat/mcp/msg/${this.currentChatId}?content=${encodeURIComponent(message)}&model=deepseek&role=user&maxTokens=2000&temperature=0.7`)
 
         this.eventSource.onmessage = (event) => {
           // 后端Flux<ServerSentEvent<String>>返回格式处理
