@@ -37,10 +37,10 @@
             v-for="chat in chatList"
             :key="chat.id"
             :class="['chat-item', { active: currentChatId === chat.id }]"
-            @click="switchChat(chat.id)"
+            @click="switchChat(chat)"
         >
           <div class="chat-title">{{ chat.title }}</div>
-          <div class="chat-time">{{ formatTime(chat.updateTime) }}</div>
+          <div class="chat-time">{{ formatTime(chat.createTime) }}</div>
           <el-button
               type="text"
               size="mini"
@@ -64,7 +64,7 @@
 
       <!-- 消息列表 -->
       <div class="message-container" ref="messageContainer">
-        <div v-if="currentChat.messages.length === 0" class="empty-state">
+        <div v-if="!currentChat.messages || currentChat.messages.length === 0" class="empty-state">
           <div class="empty-icon">
             <i class="el-icon-chat-dot-round"></i>
           </div>
@@ -82,8 +82,11 @@
           </div>
           <div class="message-content">
             <div class="message-header">
-              <span class="role-name">{{ message.role === 'user' ? '用户' : 'AI助手' }}</span>
-              <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+              <span class="role-name">
+                {{ message.role === 'user' ? '用户' : 'AI助手' }}
+                <span class="model-name" v-if='message.role === "assistant"'>【{{message.model}}】</span>
+              </span>
+              <span class="message-time">{{ formatTime(message.createTime) }}</span>
             </div>
             <div
                 class="message-text"
@@ -158,7 +161,7 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
 export default {
-  name: 'LightAiChat',
+  name: 'AiChat',
   data() {
     return {
       selectedModel: 'deepseek',
@@ -167,14 +170,7 @@ export default {
       isTyping: false,
       isConnected: true,
       eventSource: null,
-      chatList: [
-        {
-          id: 1,
-          title: '新对话',
-          updateTime: Date.now(),
-          messages: []
-        }
-      ],
+      chatList: [],
       messageIdCounter: 1
     }
   },
@@ -184,8 +180,10 @@ export default {
     }
   },
   mounted() {
-    this.currentChatId = this.chatList[0].id
     this.setupMarked()
+  },
+  created() {
+    this.querySessions();
   },
   methods: {
     setupMarked() {
@@ -207,16 +205,21 @@ export default {
       const newChat = {
         id: Date.now(),
         title: '新对话',
-        updateTime: Date.now(),
+        createTime: Date.now(),
         messages: []
       }
       this.chatList.unshift(newChat)
       this.currentChatId = newChat.id
     },
 
-    switchChat(chatId) {
-      this.currentChatId = chatId
+    switchChat(chat) {
+      this.currentChatId = chat.id
       this.stopGeneration()
+      if ((!chat.messages || chat.messages.length === 0) && chat.title !== '新对话') {
+        this.querySessionMessages(chat)
+      } else {
+        this.scrollToBottom()
+      }
     },
 
     deleteChat(chatId) {
@@ -252,7 +255,7 @@ export default {
         id: this.messageIdCounter++,
         role: 'user',
         content: this.inputMessage.trim(),
-        timestamp: Date.now()
+        createTime: Date.now()
       }
 
       this.currentChat.messages.push(userMessage)
@@ -261,12 +264,18 @@ export default {
       const messageToSend = this.inputMessage.trim()
       this.inputMessage = ''
       this.isTyping = true
-
+      let modelName = '';
+      if (this.selectedModel === 'deepseek' || this.selectedModel === 'qianwen' || this.selectedModel === 'gpt4') {
+        modelName = this.selectedModel;
+      } else if (this.selectedModel === 'mcp') {
+        modelName = 'deepseek';
+      }
       const aiMessage = {
         id: this.messageIdCounter++,
         role: 'assistant',
         content: '',
-        timestamp: Date.now()
+        model: modelName,
+        createTime: Date.now()
       }
       this.currentChat.messages.push(aiMessage)
 
@@ -454,7 +463,7 @@ export default {
       const chat = this.currentChat
       if (chat.messages.length <= 1) {
         chat.title = firstMessage.length > 20 ? firstMessage.substring(0, 20) + '...' : firstMessage
-        chat.updateTime = Date.now()
+        chat.createTime = Date.now()
       }
     },
 
@@ -476,7 +485,35 @@ export default {
       if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
       if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
       return date.toLocaleDateString()
-    }
+    },
+
+    querySessions() {
+      this.$http({
+        url: `/ai/session/list`,
+        method: 'get',
+      }).then((list) => {
+        if (list && list.length > 0) {
+          this.chatList = list
+        } else {
+          this.chatList.push({
+            id: Date.now(),
+            title: '新对话',
+            createTime: Date.now(),
+            messages: []
+          })
+        }
+        this.currentChatId = this.chatList[0].id
+      })
+    },
+    querySessionMessages(chat) {
+      this.$http({
+        url: `/ai/session/message/list?sessionId=${chat.id}`,
+        method: 'get',
+      }).then((list) => {
+        chat.messages = list
+        this.scrollToBottom();
+      })
+    },
   },
 
   beforeDestroy() {
