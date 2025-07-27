@@ -79,7 +79,7 @@
                     </svg>
                   </file-upload>
                 </div>
-                <div title="回执消息" v-show="regionGroup.joinType===1" :class="isReceipt ? 'chat-tool-active' : ''" @click="onSwitchReceipt">
+                <div title="回执消息" v-show="regionGroup.joinType===1 && memberSize <= 50" :class="isReceipt ? 'chat-tool-active' : ''" @click="onSwitchReceipt">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-yihuizhi"></use>
                   </svg>
@@ -877,6 +877,9 @@ export default {
         return 0;
       }
       return this.chat.messages.length;
+    },
+    memberSize() {
+      return this.regionGroupMembers.filter(m => !m.quit).length;
     },
   },
   watch: {

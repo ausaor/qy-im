@@ -80,7 +80,7 @@
                     </svg>
                   </file-upload>
                 </div>
-                <div title="回执消息" v-show="chat.type == 'GROUP'" :class="isReceipt ? 'chat-tool-active' : ''" @click="onSwitchReceipt">
+                <div title="回执消息" v-show="isGroup && memberSize <= 50" :class="isReceipt ? 'chat-tool-active' : ''" @click="onSwitchReceipt">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-yihuizhi"></use>
                   </svg>
@@ -90,27 +90,27 @@
                     <use xlink:href="#icon-yuyin"></use>
                   </svg>
                 </div>
-                <div title="语音通话" v-show="chat.type == 'PRIVATE'" @click="showPrivateVideo('voice')">
+                <div title="语音通话" v-show="isPrivate" @click="showPrivateVideo('voice')">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-yuyintonghua"></use>
                   </svg>
                 </div>
-                <div title="语音通话" v-show="chat.type == 'GROUP'" @click="onGroupVideo()">
+                <div title="语音通话" v-show="isGroup" @click="onGroupVideo()">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-yuyintonghua"></use>
                   </svg>
                 </div>
-                <div title="视频通话" v-show="chat.type=='PRIVATE'" @click="showPrivateVideo('video')">
+                <div title="视频通话" v-show="isPrivate" @click="showPrivateVideo('video')">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-shipin"></use>
                   </svg>
                 </div>
-                <div title="角色台词" ref="characterWord" v-show="chat.type == 'GROUP' && myGroupMemberInfo.isTemplate" @click.stop="showWordBox()">
+                <div title="角色台词" ref="characterWord" v-show="isGroup && myGroupMemberInfo.isTemplate" @click.stop="showWordBox()">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-minganci"></use>
                   </svg>
                 </div>
-                <div title="角色表情包" ref="characterEmo" v-show="chat.type == 'GROUP' && myGroupMemberInfo.isTemplate" @click.stop="showCharacterEmoBox()">
+                <div title="角色表情包" ref="characterEmo" v-show="isGroup && myGroupMemberInfo.isTemplate" @click.stop="showCharacterEmoBox()">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-biaoqing"></use>
                   </svg>
@@ -1170,6 +1170,15 @@
         }
         return this.chat.messages.length;
       },
+      memberSize() {
+        return this.groupMembers.filter(m => !m.quit).length;
+      },
+      isGroup() {
+        return this.chat.type == 'GROUP';
+      },
+      isPrivate() {
+        return this.chat.type == 'PRIVATE';
+      }
 		},
 		watch: {
 			chat: {

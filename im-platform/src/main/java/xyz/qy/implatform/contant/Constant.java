@@ -66,4 +66,9 @@ public final class Constant {
      * 限流 redis key
      */
     public static final String RATE_LIMIT_KEY = "rate_limit:";
+
+    /**
+     * 回执消息限制人数
+     */
+    public static final int RECEIPT_LIMIT_MEMBERS = 50;
 }

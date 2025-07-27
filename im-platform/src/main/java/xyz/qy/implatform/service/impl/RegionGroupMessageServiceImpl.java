@@ -23,6 +23,7 @@ import xyz.qy.imcommon.enums.IMTerminalType;
 import xyz.qy.imcommon.model.IMRegionGroupMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.imcommon.util.CommaTextUtils;
+import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.contant.RegionGroupConst;
 import xyz.qy.implatform.dto.RegionGroupMessageDTO;
@@ -130,6 +131,11 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
                 UserSession userSession = Convert.convert(UserSession.class, object);
                 userIds.add(userSession.getUserId());
             }
+        }
+
+        if (dto.getReceipt() && userIds.size() > Constant.RECEIPT_LIMIT_MEMBERS) {
+            throw new GlobalException(
+                    String.format("当前群聊大于%s人,不支持发送回执消息", Constant.RECEIPT_LIMIT_MEMBERS));
         }
 
         // 不用发给自己
