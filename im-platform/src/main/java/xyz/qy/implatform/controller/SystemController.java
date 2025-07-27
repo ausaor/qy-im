@@ -22,5 +22,19 @@ public class SystemController {
     public Result<SystemConfigVO> loadConfig() {
         return ResultUtils.success(systemService.getSystemConfig());
     }
+
+    @GetMapping("/allBanned")
+    @ApiOperation(value = "全局禁言", notes = "全局禁言")
+    public Result allBanned(Integer time) {
+        systemService.allBanned(time);
+        return ResultUtils.success();
+    }
+
+    @GetMapping("/unAllBanned")
+    @ApiOperation(value = "解除全局禁言", notes = "解除全局禁言")
+    public Result unAllBanned() {
+        systemService.unAllBanned();
+        return ResultUtils.success();
+    }
 }
 
