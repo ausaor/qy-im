@@ -71,6 +71,21 @@
                 </div>
               </div>
             </div>
+            <div class="group-space">
+              <div class="group-activity" @click="openGroupSpace">
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-shejiaotubiao-40"></use>
+                </svg>
+                <span style="color: orange;margin-left: 10px;font-size: 16px;">群空间</span>
+                <div class="new-talk-info">
+                  <div v-show="unreadTalkCount" class="new-talk-text">{{unreadTalkCount}}条新动态</div>
+                  <div v-show="talkList.length" class="new-talk-list">
+                    <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="24"></head-image>
+                  </div>
+                </div>
+                <div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
+              </div>
+            </div>
 					</div>
 					<el-divider content-position="center"></el-divider>
 					<el-scrollbar style="height:200px;">
@@ -218,6 +233,18 @@
         </span>
     </el-dialog>
     <join-group :dialogVisible="showJoinGroup" @close="closeJoinGroup"></join-group>
+    <drawer
+        :visible="groupSpaceVisible"
+        @close="closeDrawer"
+        :width=60>
+      <template v-slot:header>
+        <space-cover :name="'群空间'" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify" :notify-count="unreadNotifyCount"></space-cover>
+      </template>
+      <template v-slot:main>
+        <talk-list ref="talkListRef" :category="'group'" :section="'group'" :group-id="activeGroup.id" :new-talk-list="talkList" :new-talk-count="unreadTalkCount"></talk-list>
+      </template>
+    </drawer>
+    <talk-notify ref="talkNotifyRef" :category="'group'"></talk-notify>
 	</el-container>
 </template>
 
@@ -237,10 +264,18 @@
   import TemplateCharacterChoose from "@/components/template/TemplateCharacterChoose";
   import GroupTemplateCharacterChoose from "@/components/template/GroupTemplateCharacterChoose";
   import TemplateCharacterChooseDialog from "@/components/template/TemplateCharacterChooseDialog";
+  import SpaceCover from "@components/common/SpaceCover.vue";
+  import Drawer from "@components/common/Drawer.vue";
+  import TalkList from "@components/talk/TalkList.vue";
+  import TalkNotify from "@components/talk/TalkNotify.vue";
 
 	export default {
 		name: "group",
 		components: {
+      TalkNotify,
+      TalkList,
+      Drawer,
+      SpaceCover,
 			GroupItem,
 			GroupMember,
 			FileUpload,
@@ -309,6 +344,7 @@
           icon: 'el-icon-remove-outline'
         }],
         bannedTime: 1,
+        groupSpaceVisible: false,
 			};
 		},
     mounted() {
@@ -740,7 +776,41 @@
           this.$message.success("操作成功");
         }).catch((e) => {
         })
-      }
+      },
+      openGroupSpace() {
+        this.groupSpaceVisible = true;
+        this.$refs.talkListRef.refreshTalkList();
+        this.$store.commit("resetGroupTalk", this.activeGroup.id);
+      },
+      closeDrawer() {
+        this.groupSpaceVisible = false;
+      },
+      handleShowAddTalk() {
+        this.$refs.talkListRef.handleShowAddTalk();
+      },
+      refreshTalkList() {
+        this.$refs.talkListRef.refreshTalkList();
+        this.$store.commit("resetGroupTalk", this.activeGroup.id);
+        this.$store.commit("resetGroupNotify", this.activeGroup.id);
+      },
+      showTalkNotify() {
+        this.$refs.talkNotifyRef.show();
+        this.$store.commit("resetGroupNotify", this.activeGroup.id);
+        if (this.unreadNotifyCount > 0) {
+          this.readedTalkNotify();
+        }
+      },
+      readedTalkNotify() {
+        let params = {
+          category: 'group',
+          groupId: this.activeGroup.id
+        };
+        this.$http({
+          url: `/talk-notify/readed`,
+          method: 'post',
+          data: params
+        }).then(() => {})
+      },
 		},
 		computed: {
 			groupStore() {
@@ -758,7 +828,31 @@
       },
 			imageAction(){
 				return `/image/upload`;
-			}
+			},
+      talkList() {
+        let talkMap =this.$store.state.talkStore.groupsTalks;
+        let talks = talkMap.get(this.activeGroup.id)
+        if (talks && talks.length > 2) {
+          return talks.slice(0, 2);
+        }
+        return talks ? talks : [];
+      },
+      unreadTalkCount() {
+        let talkMap =this.$store.state.talkStore.groupsTalks;
+        let talks = talkMap.get(this.activeGroup.id);
+        if (talks) {
+          return talks.length;
+        }
+        return 0;
+      },
+      unreadNotifyCount() {
+        let notifyMap =this.$store.state.talkStore.groupNotify;
+        let count = notifyMap.get(this.activeGroup.id);
+        if (count) {
+          return count;
+        }
+        return 0;
+      },
 		},
 	}
 </script>
@@ -871,6 +965,59 @@
                 display: flex;
                 justify-content: right;
                 margin-bottom: 10px;
+              }
+            }
+          }
+
+          .group-space {
+            padding-left: 30px;
+
+            .icon {
+              display: block;
+              height: 30px;
+              line-height: 30px;
+              font-size: 30px;
+              color: #333;
+              -webkit-transition: font-size 0.25s linear, width 0.25s linear;
+              -moz-transition: font-size 0.25s linear, width 0.25s linear;
+              transition: font-size 0.25s linear, width 0.25s linear;
+            }
+
+            .group-activity {
+              position: relative;
+              display: flex;
+              align-items: center;
+              cursor: pointer;
+
+              .new-talk-info {
+                padding-left: 10px;
+                display: flex;
+                align-items: center;
+
+                .new-talk-text {
+                  font-size: 12px;
+                  color: red;
+                }
+
+                .new-talk-list {
+                  display: flex;
+                  align-items: center;
+                }
+              }
+
+              .unread-text {
+                position: absolute;
+                line-height: 16px;
+                background-color: #f56c6c;
+                left: 20%;
+                top: -5px;
+                color: white;
+                border-radius: 16px;
+                padding: 0 5px;
+                font-size: 10px;
+                text-align: center;
+                white-space: nowrap;
+                border: 1px solid #f1e5e5;
               }
             }
           }

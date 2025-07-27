@@ -2,6 +2,7 @@
 	<div class="group-item" :class="active ? 'active' : ''">
 		<div class="avatar">
 			<head-image :size="45" :name="group.remark" :url="group.headImage"> </head-image>
+      <div class="group-activity" v-show="unreadTalkCount > 0 || unreadNotifyCount > 0"></div>
 		</div>
 		<div class="group-info">
       <div class="group-tag">
@@ -33,8 +34,25 @@
 			active: {
 				type: Boolean
 			}
-		}
-
+		},
+    computed: {
+      unreadTalkCount() {
+        let talkMap =this.$store.state.talkStore.groupsTalks;
+        let talks = talkMap.get(this.group.id);
+        if (talks) {
+          return talks.length;
+        }
+        return 0;
+      },
+      unreadNotifyCount() {
+        let notifyMap =this.$store.state.talkStore.groupNotify;
+        let count = notifyMap.get(this.group.id);
+        if (count) {
+          return count;
+        }
+        return 0;
+      },
+    }
 	}
 </script>
 
@@ -56,9 +74,20 @@
       background-color: var(--active-color);
     }
 
-    .group-avatar {
+    .avatar {
       width: 45px;
       height: 45px;
+      position: relative;
+
+      .group-activity {
+        position: absolute;
+        top: 0;
+        left: 40px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: red;
+      }
     }
 
     .group-info {

@@ -35,6 +35,7 @@
                 <use xlink:href="#icon-group"></use>
               </svg>
             </span>
+            <div v-show="groupActivity" class="unread-dot"></div>
 					</router-link>
 				</el-menu-item>
         <el-menu-item title="经纬网">
@@ -659,6 +660,22 @@
       },
       musics() {
         return this.$store.state.musicStore.musics;
+      },
+      groupActivity() {
+        let talkMap =this.$store.state.talkStore.groupsTalks;
+        let notifyMap =this.$store.state.talkStore.groupNotify;
+        for (const [key, value] of talkMap) {
+          if (value.length > 0) {
+            return true
+          }
+        }
+
+        for (const [key, value] of notifyMap) {
+          if (value > 0) {
+            return true;
+          }
+        }
+        return false;
       }
 		},
 		watch: {
@@ -717,6 +734,16 @@
         text-align: center;
         white-space: nowrap;
         border: 1px solid #f1e5e5;
+      }
+
+      .unread-dot {
+        position: absolute;
+        top: 8px;
+        right: 15px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: red;
       }
     }
   }
