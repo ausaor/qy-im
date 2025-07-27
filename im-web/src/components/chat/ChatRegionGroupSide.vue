@@ -120,7 +120,7 @@
                    :new-talk-list="talkList" :new-talk-count="unreadTalkCount"></talk-list>
       </template>
     </drawer>
-    <talk-notify ref="talkNotifyRef" :category="'region'"></talk-notify>
+    <talk-notify ref="talkNotifyRef" :category="'region'" :region-code="regionGroup.code"></talk-notify>
     <music-play ref="musicPlayRef" :category="'region'" :section="'region'" :region-code="regionGroup.code"></music-play>
   </div>
 </template>

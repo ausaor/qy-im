@@ -134,7 +134,7 @@
         <talk-list ref="talkListRef" :category="'group'" :section="'group'" :group-id="group.id" :new-talk-list="talkList" :new-talk-count="unreadTalkCount"></talk-list>
       </template>
     </drawer>
-    <talk-notify ref="talkNotifyRef" :category="'group'"></talk-notify>
+    <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="group.id"></talk-notify>
     <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="group.id"></music-play>
 	</div>
 </template>

@@ -244,7 +244,7 @@
         <talk-list ref="talkListRef" :category="'group'" :section="'group'" :group-id="activeGroup.id" :new-talk-list="talkList" :new-talk-count="unreadTalkCount"></talk-list>
       </template>
     </drawer>
-    <talk-notify ref="talkNotifyRef" :category="'group'"></talk-notify>
+    <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="activeGroup.id"></talk-notify>
 	</el-container>
 </template>
 
