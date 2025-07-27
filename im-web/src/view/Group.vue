@@ -85,6 +85,12 @@
                 </div>
                 <div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
               </div>
+              <div class="group-music" @click="openGroupMusic">
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-Music"></use>
+                </svg>
+                <span style="color: #b7eb81;margin-left: 10px;font-size: 16px;">群歌单</span>
+              </div>
             </div>
 					</div>
 					<el-divider content-position="center"></el-divider>
@@ -245,6 +251,7 @@
       </template>
     </drawer>
     <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="activeGroup.id"></talk-notify>
+    <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="activeGroup.id"></music-play>
 	</el-container>
 </template>
 
@@ -268,10 +275,12 @@
   import Drawer from "@components/common/Drawer.vue";
   import TalkList from "@components/talk/TalkList.vue";
   import TalkNotify from "@components/talk/TalkNotify.vue";
+  import MusicPlay from "@components/common/musicPlay.vue";
 
 	export default {
 		name: "group",
 		components: {
+      MusicPlay,
       TalkNotify,
       TalkList,
       Drawer,
@@ -782,6 +791,9 @@
         this.$refs.talkListRef.refreshTalkList();
         this.$store.commit("resetGroupTalk", this.activeGroup.id);
       },
+      openGroupMusic() {
+        this.$refs.musicPlayRef.show();
+      },
       closeDrawer() {
         this.groupSpaceVisible = false;
       },
@@ -1019,6 +1031,13 @@
                 white-space: nowrap;
                 border: 1px solid #f1e5e5;
               }
+            }
+
+            .group-music {
+              display: flex;
+              align-items: center;
+              cursor: pointer;
+              margin-top: 20px;
             }
           }
 				}
