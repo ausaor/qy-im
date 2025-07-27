@@ -46,6 +46,7 @@
                 </svg>
               </span>
               <div v-show="unreadRegionCount>0" class="unread-text">{{unreadRegionCount}}</div>
+              <div v-show="regionGroupActivity" class="unread-dot"></div>
           </router-link>
         </el-menu-item>
         <el-menu-item title="AI对话">
@@ -676,6 +677,22 @@
           }
         }
         return false;
+      },
+      regionGroupActivity() {
+        let talkMap =this.$store.state.talkStore.regionTalks;
+        let notifyMap =this.$store.state.talkStore.regionNotify;
+        for (const [key, value] of talkMap) {
+          if (value.length > 0) {
+            return true
+          }
+        }
+
+        for (const [key, value] of notifyMap) {
+          if (value > 0) {
+            return true;
+          }
+        }
+        return false;
       }
 		},
 		watch: {
@@ -738,8 +755,8 @@
 
       .unread-dot {
         position: absolute;
-        top: 8px;
-        right: 15px;
+        bottom: 1%;
+        right: 16%;
         width: 12px;
         height: 12px;
         border-radius: 50%;

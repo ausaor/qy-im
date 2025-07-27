@@ -3,6 +3,7 @@
 		<div class="group-avatar">
 			<head-image :size="45" :name="regionGroup.remark" :url="regionGroup.headImage"> </head-image>
       <div v-show="unreadCount>0" class="unread-text">{{unreadCount}}</div>
+      <div class="group-activity" v-show="unreadTalkCount > 0 || unreadNotifyCount > 0"></div>
 		</div>
 		<div class="group-info">
 			<div class="group-name">{{regionGroup.remark}}
@@ -109,7 +110,23 @@
           return "[@全体成员]"
         }
         return "";
-      }
+      },
+      unreadTalkCount() {
+        let talkMap =this.$store.state.talkStore.regionTalks;
+        let talks = talkMap.get(this.regionGroup.code);
+        if (talks) {
+          return talks.length;
+        }
+        return 0;
+      },
+      unreadNotifyCount() {
+        let notifyMap =this.$store.state.talkStore.regionNotify;
+        let count = notifyMap.get(this.regionGroup.code);
+        if (count) {
+          return count;
+        }
+        return 0;
+      },
     }
 	}
 </script>
@@ -152,6 +169,16 @@
         text-align: center;
         white-space: nowrap;
         border: 1px solid #f1e5e5;
+      }
+
+      .group-activity {
+        position: absolute;
+        bottom: 0;
+        right: -3px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: red;
       }
     }
 
