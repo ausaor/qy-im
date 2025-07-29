@@ -7,6 +7,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import xyz.qy.implatform.util.Threads;
 
@@ -17,6 +18,7 @@ import xyz.qy.implatform.util.Threads;
  * @since 2024-09-08
  **/
 @Configuration
+@EnableAsync
 public class ThreadPoolConfig {
     // 核心线程池大小
     private int corePoolSize = Runtime.getRuntime().availableProcessors();
