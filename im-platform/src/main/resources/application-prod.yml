@@ -19,20 +19,20 @@ spring:
     password:
 
   mail:
-    host: smtp.126.com
-    username:
-    password:
+    host: smtp.qq.com          # QQ 邮箱 SMTP 服务器地址
+    port: 465                  # SMTP 服务端口（SSL）
+    username: your_email@qq.com # 发件人邮箱（QQ邮箱地址）
+    password: your_authorization_code # 授权码（非邮箱密码）
+    protocol: smtp             # 邮件协议
     default-encoding: UTF-8
-    port: 465
     properties:
       mail:
         smtp:
-          auth: true
-          socketFactory:
-            class: javax.net.ssl.SSLSocketFactory
-          starttls:
-            enable: true
-    protocol: smtps
+          auth: true           # 启用认证
+          starttls.enable: true # 启用 TLS
+          starttls.required: true
+          ssl.enable: true      # 启用 SSL 加密
+
 #防止redission启动报错
 management:
   health:
