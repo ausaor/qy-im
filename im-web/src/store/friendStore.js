@@ -5,7 +5,6 @@ export default {
 
 	state: {
 		friends: [],
-		activeFriend: null,
 		timer: null
 	},
 	mutations: {
@@ -28,14 +27,11 @@ export default {
 				}
 			})
 		},
-		activeFriend(state, idx) {
-			state.activeFriend = state.friends[idx];
-		},
-		removeFriend(state, idx) {
-			if (state.friends[idx] == state.activeFriend) {
-				state.activeFriend = null;
+		removeFriend(state, id) {
+			const idx = state.friends.findIndex(f => f.id === id);
+			if (idx !== -1) {
+				state.friends[idx].deleted = true;
 			}
-			state.friends.splice(idx, 1);
 		},
 		addFriend(state, friend) {
 			state.friends.push(friend);
@@ -90,7 +86,6 @@ export default {
 			state.timer && clearTimeout(state.timer);
 			state.friends = [];
 			state.timer = null;
-			state.activeFriend = [];
 		}
 	},
 	actions: {

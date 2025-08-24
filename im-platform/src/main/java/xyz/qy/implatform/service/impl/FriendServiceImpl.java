@@ -3,6 +3,7 @@ package xyz.qy.implatform.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,9 @@ import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.vo.FriendVO;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,6 +38,20 @@ import java.util.stream.Collectors;
 @Service
 public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> implements IFriendService {
     private final UserMapper userMapper;
+
+    @Override
+    public List<FriendVO> findFriends() {
+        List<Friend> friends = this.findAllFriends();
+        return friends.stream().map(this::convert).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Friend> findAllFriends() {
+        Long userId = SessionContext.getSession().getUserId();
+        LambdaQueryWrapper<Friend> wrapper = Wrappers.lambdaQuery();
+        wrapper.eq(Friend::getUserId, userId);
+        return this.list(wrapper);
+    }
 
     /**
      * 查询用户的所有好友
@@ -75,6 +92,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         // 查询用户好友数量
         long count = this.lambdaQuery()
                 .eq(Friend::getUserId, userId)
+                .eq(Friend::getDeleted, false)
                 .count();
         if (count >= 100) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "好友数量已达上限");
@@ -89,18 +107,6 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         proxy.bindFriend(userId, friendId);
         proxy.bindFriend(friendId, userId);
         log.info("添加好友，用户id:{},好友id:{}", userId, friendId);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public void addFriend(Long userId, Long friendId) {
-        if (!userId.equals(friendId)) {
-            // 互相绑定好友关系
-            FriendServiceImpl proxy = (FriendServiceImpl) AopContext.currentProxy();
-            proxy.bindFriend(userId, friendId);
-            proxy.bindFriend(friendId, userId);
-            log.info("添加好友，用户id:{},好友id:{}", userId, friendId);
-        }
     }
 
     /**
@@ -190,19 +196,20 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
      */
     @CacheEvict(key = "#userId+':'+#friendId")
     public void bindFriend(Long userId, Long friendId) {
-        QueryWrapper<Friend> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda()
-                .eq(Friend::getUserId, userId)
-                .eq(Friend::getFriendId, friendId);
-        if (this.count(queryWrapper) == 0) {
-            Friend friend = new Friend();
-            friend.setUserId(userId);
-            friend.setFriendId(friendId);
-            User friendInfo = userMapper.selectById(friendId);
-            friend.setFriendHeadImage(friendInfo.getHeadImage());
-            friend.setFriendNickName(friendInfo.getNickName());
-            this.save(friend);
+        QueryWrapper<Friend> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(Friend::getUserId, userId).eq(Friend::getFriendId, friendId);
+        Friend friend = this.getOne(wrapper);
+        if (Objects.isNull(friend)) {
+            friend = new Friend();
         }
+        friend.setUserId(userId);
+        friend.setFriendId(friendId);
+        User friendInfo = userMapper.selectById(friendId);
+        friend.setFriendHeadImage(friendInfo.getHeadImageThumb());
+        friend.setFriendNickName(friendInfo.getNickName());
+        friend.setCreatedTime(new Date());
+        friend.setDeleted(false);
+        this.saveOrUpdate(friend);
     }
 
     /**
@@ -213,12 +220,12 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
      */
     @CacheEvict(key = "#userId+':'+#friendId")
     public void unbindFriend(Long userId, Long friendId) {
-        QueryWrapper<Friend> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda()
-                .eq(Friend::getUserId, userId)
-                .eq(Friend::getFriendId, friendId);
-        List<Friend> friends = this.list(queryWrapper);
-        friends.forEach(friend -> this.removeById(friend.getId()));
+        // 逻辑删除
+        LambdaUpdateWrapper<Friend> wrapper = Wrappers.lambdaUpdate();
+        wrapper.eq(Friend::getUserId, userId);
+        wrapper.eq(Friend::getFriendId, friendId);
+        wrapper.set(Friend::getDeleted,true);
+        this.update(wrapper);
     }
 
     /**
@@ -238,11 +245,15 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         if (friend == null) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "对方不是您的好友");
         }
+        return convert(friend);
+    }
+
+    private FriendVO convert(Friend f) {
         FriendVO vo = new FriendVO();
-        vo.setId(friend.getFriendId());
-        vo.setHeadImage(friend.getFriendHeadImage());
-        vo.setNickName(friend.getFriendNickName());
-        vo.setFriendRemark(friend.getFriendRemark());
+        vo.setId(f.getFriendId());
+        vo.setHeadImage(f.getFriendHeadImage());
+        vo.setNickName(f.getFriendNickName());
+        vo.setDeleted(f.getDeleted());
         return vo;
     }
 }

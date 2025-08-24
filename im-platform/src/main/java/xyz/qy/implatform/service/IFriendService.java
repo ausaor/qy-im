@@ -9,6 +9,20 @@ import java.util.List;
 
 public interface IFriendService extends IService<Friend> {
 
+    /**
+     * 查询当前用户的所有好友
+     *
+     * @return 好友列表
+     */
+    List<FriendVO> findFriends();
+
+    /**
+     * 查询用户的所有好友,包括已删除的
+     *
+     * @return 好友列表
+     */
+    List<Friend> findAllFriends();
+
     Boolean isFriend(Long userId1, Long userId2);
 
     List<Friend> findFriendByUserId(Long UserId);
@@ -16,8 +30,6 @@ public interface IFriendService extends IService<Friend> {
     List<Long> getFriendIdsByUserId(Long userId);
 
     void addFriend(Long friendId);
-
-    void addFriend(Long userId, Long friendId);
 
     void delFriend(Long friendId);
 

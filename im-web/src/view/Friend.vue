@@ -8,13 +8,16 @@
         <el-button plain class="add-btn" icon="el-icon-plus" title="添加好友" @click="onShowAddFriend()"></el-button>
         <add-friend :dialogVisible="showAddFriend" @close="onCloseAddFriend"></add-friend>
       </div>
-      <el-scrollbar class="friend-list-items">
-        <div v-for="(friend,index) in $store.state.friendStore.friends" :key="index">
-          <friend-item v-show="friend.nickName.startsWith(searchText)"  :index="index"
-                       :active="friend === $store.state.friendStore.activeFriend" @chat="onSendMessage(friend)"
-                       @delete="onDelItem(friend,index)" @click.native="onActiveItem(friend,index)"
-                       :friend="friend">
-          </friend-item>
+      <el-scrollbar class="friend-items">
+        <div v-for="(friends, i) in friendValues" :key="i">
+          <div class="letter">{{ friendKeys[i] }}</div>
+          <div v-for="(friend) in friends" :key="friend.id">
+            <friend-item :friend="friend" :active="friend.id === activeFriend.id"
+                         @chat="onSendMessage(friend)" @delete="onDelFriend(friend)"
+                         @click.native="onActiveItem(friend)">
+            </friend-item>
+          </div>
+          <div v-if="i < friendValues.length - 1" class="divider"></div>
         </div>
       </el-scrollbar>
     </el-aside>
@@ -75,7 +78,7 @@
             <div class="frient-btn-group">
               <el-button v-show="isFriend" icon="el-icon-chat-dot-round" type="primary"  @click="onSendMessage(userInfo)">发送消息</el-button>
               <el-button v-show="!isFriend" icon="el-icon-plus" type="primary"  @click="onAddFriend(userInfo)">加为好友</el-button>
-              <el-button v-show="isFriend" icon="el-icon-delete"  type="danger" @click="onDelItem(userInfo,activeIdx)">删除好友</el-button>
+              <el-button v-show="isFriend" icon="el-icon-delete"  type="danger" @click="onDelFriend(userInfo)">删除好友</el-button>
               <el-button v-show="isFriend" type="success" @click="modifyFriendInfo(userInfo)">提交</el-button>
             </div>
           </div>
@@ -108,6 +111,7 @@ import Drawer from "@/components/common/Drawer";
 import SpaceCover from "@/components/common/SpaceCover";
 import FileUpload from "@/components/common/FileUpload";
 import MusicPlay from "@components/common/musicPlay.vue";
+import { pinyin } from 'pinyin-pro';
 
 export default {
   name: "friend",
@@ -129,6 +133,7 @@ export default {
       activeIdx: -1,
       friendSpaceVisible: false,
       maxSize: 2 * 1024 * 1024,
+      activeFriend: {}
     }
   },
   methods: {
@@ -138,12 +143,11 @@ export default {
     onCloseAddFriend() {
       this.showAddFriend = false;
     },
-    onActiveItem(friend, idx) {
-      this.$store.commit("activeFriend", idx);
-      this.activeIdx = idx
-      this.loadUserInfo(friend, idx);
+    onActiveItem(friend) {
+      this.activeFriend = friend;
+      this.loadUserInfo(friend);
     },
-    onDelItem(friend, idx) {
+    onDelFriend(friend) {
       this.$confirm(`确认删除'${friend.nickName}',并清空聊天记录吗?`, '确认解除?', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -154,7 +158,7 @@ export default {
           method: 'delete'
         }).then((data) => {
           this.$message.success("删除好友成功");
-          this.$store.commit("removeFriend", idx);
+          this.$store.commit("removeFriend", friend.id);
           this.$store.commit("removePrivateChat", friend.id);
         })
       })
@@ -193,7 +197,7 @@ export default {
         this.$store.commit('showFullImageBox', this.userInfo.headImage);
       }
     },
-    updateFriendInfo(friend, user, index) {
+    updateFriendInfo(friend, user) {
       // store的数据不能直接修改，深拷贝一份store的数据
       friend = JSON.parse(JSON.stringify(friend));
       friend.nickName = user.nickName;
@@ -207,7 +211,7 @@ export default {
         this.$store.commit("updateChatFromFriend", user);
       })
     },
-    loadUserInfo(friend, index) {
+    loadUserInfo(friend) {
       this.$http({
         url: `/user/find/${friend.id}`,
         method: 'get'
@@ -215,7 +219,7 @@ export default {
         this.userInfo = user;
         // 如果发现好友的头像和昵称改了，进行更新
         if (user.nickName != friend.nickName || user.headImage != friend.headImage) {
-          this.updateFriendInfo(friend, user, index)
+          this.updateFriendInfo(friend, user)
         }
       })
     },
@@ -253,6 +257,18 @@ export default {
     onUploadAvatarSuccess(data) {
       this.userInfo.myHeadImageToFriend = data.originUrl;
     },
+    firstLetter(strText) {
+      // 使用pinyin-pro库将中文转换为拼音
+      let pinyinOptions = {
+        toneType: 'none', // 无声调
+        type: 'normal' // 普通拼音
+      };
+      let pyText = pinyin(strText, pinyinOptions);
+      return pyText[0];
+    },
+    isEnglish(character) {
+      return /^[A-Za-z]+$/.test(character);
+    }
   },
   computed: {
     friendStore() {
@@ -267,6 +283,45 @@ export default {
     imageAction(){
       return `/image/upload`;
     },
+    friendMap() {
+      // 按首字母分组
+      let map = new Map();
+      this.friendStore.friends.forEach((f) => {
+        if (f.deleted || (this.searchText && !f.nickName.includes(this.searchText))) {
+          return;
+        }
+        let letter = this.firstLetter(f.nickName).toUpperCase();
+        // 非英文一律为#组
+        if (!this.isEnglish(letter)) {
+          letter = "#"
+        }
+        if (f.online) {
+          letter = '在线'
+        }
+        if (map.has(letter)) {
+          map.get(letter).push(f);
+        } else {
+          map.set(letter, [f]);
+        }
+      })
+      // 排序
+      let arrayObj = Array.from(map);
+      arrayObj.sort((a, b) => {
+        // #组在最后面
+        if (a[0] == '#' || b[0] == '#') {
+          return b[0].localeCompare(a[0])
+        }
+        return a[0].localeCompare(b[0])
+      })
+      map = new Map(arrayObj.map(i => [i[0], i[1]]));
+      return map;
+    },
+    friendKeys() {
+      return Array.from(this.friendMap.keys());
+    },
+    friendValues() {
+      return Array.from(this.friendMap.values());
+    }
   },
   mounted() {
 
@@ -300,8 +355,20 @@ export default {
       }
     }
 
-    .friend-list-items {
+    .friend-items {
       flex: 1;
+
+      .letter {
+        text-align: left;
+        font-size: var(--im-larger-size-larger);
+        padding: 5px 15px;
+        color: var(--im-text-color-light);
+      }
+
+      .divider {
+        border-bottom: 1px solid #ddd;
+        margin: 10px;
+      }
     }
   }
 

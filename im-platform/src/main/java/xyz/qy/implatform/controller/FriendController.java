@@ -13,18 +13,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.annotation.RepeatSubmit;
-import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IFriendService;
-import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.vo.FriendVO;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Api(tags = "好友")
 @RestController
@@ -37,16 +34,7 @@ public class FriendController {
     @GetMapping("/list")
     @ApiOperation(value = "好友列表", notes = "获取好友列表")
     public Result<List<FriendVO>> findFriends() {
-        List<Friend> friends = friendService.findFriendByUserId(SessionContext.getSession().getUserId());
-        List<FriendVO> vos = friends.stream().map(f -> {
-            FriendVO vo = new FriendVO();
-            vo.setId(f.getFriendId());
-            vo.setHeadImage(f.getFriendHeadImage());
-            vo.setNickName(f.getFriendNickName());
-            vo.setFriendRemark(f.getFriendRemark());
-            return vo;
-        }).collect(Collectors.toList());
-        return ResultUtils.success(vos);
+        return ResultUtils.success(friendService.findFriends());
     }
 
     @RepeatSubmit

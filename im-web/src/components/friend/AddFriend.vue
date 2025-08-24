@@ -102,7 +102,7 @@
 			},
 			isFriend(userId){
 				let friends = this.$store.state.friendStore.friends;
-				let friend = friends.find((f)=> f.id==userId);			
+				let friend = friends.find((f)=> f.id==userId && !f.deleted);
 				return friend != undefined;
 			},
       handleSizeChange(pageSize) {

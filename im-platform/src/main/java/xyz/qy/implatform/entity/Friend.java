@@ -65,6 +65,12 @@ public class Friend extends Model<Friend> {
     @TableField("created_time")
     private Date createdTime;
 
+    /**
+     * 是否已删除
+     */
+    @TableField("deleted")
+    private Boolean deleted;
+
 
     @Override
     protected Serializable pkVal() {

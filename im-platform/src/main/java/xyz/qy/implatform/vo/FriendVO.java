@@ -25,4 +25,7 @@ public class FriendVO {
 
     @ApiModelProperty(value = "与好友聊天头像")
     private String myHeadImageToFriend;
+
+    @ApiModelProperty(value = "是否删除")
+    private Boolean deleted;
 }
