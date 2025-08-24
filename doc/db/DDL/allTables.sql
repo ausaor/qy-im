@@ -609,6 +609,7 @@ create table im_user
     is_banned        smallint(1)   default 0                   not null comment '禁止发言（1：是；0：否）',
     auto_play        tinyint(1)    default 0                   not null comment '语音自动播放（1：是；0：否）',
     sound_play       tinyint(1)    default 0                   not null comment '消息提示音（1：开启；0：关闭）',
+    friend_review    tinyint(1)    default 1                   not null comment '添加好友是否需要审核',
     last_login_time  datetime      default current_timestamp() null on update current_timestamp() comment '最后登录时间',
     create_time      datetime      default current_timestamp() null comment '创建时间',
     update_time      datetime      default current_timestamp() null on update current_timestamp() comment '更新时间',
@@ -650,6 +651,24 @@ create table im_sensitive_word
     create_time datetime default current_timestamp() null comment '创建时间'
 )
     comment '敏感词';
+
+
+create table im_friend_request
+(
+    id              bigint auto_increment
+        primary key,
+    send_id         bigint               not null comment '发送者id',
+    send_head_image varchar(1000)        null comment '发送者头像',
+    send_nick_name  varchar(50)          not null comment '发送者昵称',
+    recv_id         bigint               not null comment '接收者id',
+    recv_head_image varchar(1000)        null comment '接收者头像',
+    recv_nick_name  varchar(50)          not null comment '接收者昵称',
+    status          tinyint(1) default 1 not null comment '状态（0：撤回；1：申请；2：同意；3：拒绝）',
+    apply_time      datetime             not null comment '申请时间',
+    remark          varchar(50)          null comment '备注'
+)
+    comment '请求添加好友表';
+
 
 create table t_hero_info
 (

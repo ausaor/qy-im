@@ -2,7 +2,6 @@ package xyz.qy.implatform.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,8 +40,7 @@ public class FriendController {
     @PostMapping("/add")
     @ApiOperation(value = "添加好友", notes = "双方建立好友关系")
     public Result addFriend(@NotEmpty(message = "好友id不可为空") @RequestParam("friendId") Long friendId) {
-        friendService.addFriend(friendId);
-        return ResultUtils.success();
+        return ResultUtils.success(friendService.addFriend(friendId));
     }
 
     @GetMapping("/find/{friendId}")

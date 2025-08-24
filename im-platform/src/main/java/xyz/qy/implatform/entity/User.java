@@ -153,6 +153,12 @@ public class User extends Model<User> {
     private Boolean soundPlay;
 
     /**
+     * 添加好友是否需要审核
+     */
+    @TableField("friend_review")
+    private Boolean friendReview;
+
+    /**
      * 最后登录时间
      */
     @TableField("last_login_time")

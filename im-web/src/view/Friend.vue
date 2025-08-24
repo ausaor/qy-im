@@ -9,6 +9,14 @@
         <add-friend :dialogVisible="showAddFriend" @close="onCloseAddFriend"></add-friend>
       </div>
       <el-scrollbar class="friend-items">
+        <div class="top-item" @click="showFriendRequest" :class="showType === 1 ? 'active' : ''">
+          <div class="top-item-avatar">
+            <head-image :size="45" :name="'新的朋友'" :url="require('@/assets/image/new_friend.png')"></head-image>
+          </div>
+          <div class="top-item-info">
+            <div class="top-item-name">新的朋友</div>
+          </div>
+        </div>
         <div v-for="(friends, i) in friendValues" :key="i">
           <div class="letter">{{ friendKeys[i] }}</div>
           <div v-for="(friend) in friends" :key="friend.id">
@@ -21,11 +29,48 @@
         </div>
       </el-scrollbar>
     </el-aside>
-    <el-container class="friend-box">
-      <div class="friend-header" v-show="userInfo.id">
-        {{userInfo.nickName}}
+    <el-container class="container">
+      <div class="header" v-show="showType !== 0">
+        {{headerTitle}}
       </div>
-      <div v-show="userInfo.id">
+      <div v-show="showType === 1">
+        <div class="friend-request request-box">
+          <el-tabs type="card">
+            <el-tab-pane :label="'收到的申请('+ receivedFriendRequest.length +')'">
+              <el-scrollbar class="request-list">
+                <div class="request-item" v-for="(item, idx) in receivedFriendRequest" :key="idx">
+                  <div class="friend-request-item">
+                    <div class="friend-avatar"><head-image :size="45" :name="item.sendNickName" :url="item.sendHeadImage"></head-image></div>
+                    <div class="request-info">
+                      <div class="nick-name"><div>{{item.sendNickName}}</div></div>
+                      <div class="info-text"><div>{{item.remark}}</div></div>
+                    </div>
+                    <div class="btn-group">
+                      <el-button type="danger" size="mini" @click="rejectFriendRequest(item.id)">拒绝</el-button>
+                      <el-button type="primary" size="mini" @click="approveFriendRequest(item.id)">同意</el-button>
+                    </div>
+                  </div>
+                </div>
+              </el-scrollbar>
+            </el-tab-pane>
+            <el-tab-pane :label="'发起的申请(' + launchFriendRequest.length + ')'">
+              <div class="request-item" v-for="(item, idx) in launchFriendRequest" :key="idx">
+                <div class="friend-request-item">
+                  <div class="friend-avatar"><head-image :size="45" :name="item.recvNickName" :url="item.recvHeadImage"></head-image></div>
+                  <div class="request-info">
+                    <div class="nick-name"><div>{{item.recvNickName}}</div></div>
+                    <div class="info-text"><div>{{item.remark}}</div></div>
+                  </div>
+                  <div class="btn-group">
+                    <el-button type="danger" size="mini" @click="recallFriendRequest(item.id)">撤回</el-button>
+                  </div>
+                </div>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+        </div>
+      </div>
+      <div v-show="showType === 2">
         <div class="friend-detail">
           <head-image  :size="200"
                        :name="userInfo.nickName"
@@ -133,10 +178,17 @@ export default {
       activeIdx: -1,
       friendSpaceVisible: false,
       maxSize: 2 * 1024 * 1024,
-      activeFriend: {}
+      activeFriend: {},
+      showType: 0, // 0:不展示；1:新的朋友 2:好友信息
+      headerTitle: '',
     }
   },
   methods: {
+    showFriendRequest() {
+      this.showType = 1;
+      this.headerTitle = '新的朋友';
+      this.activeFriend = {}
+    },
     onShowAddFriend() {
       this.showAddFriend = true;
     },
@@ -145,6 +197,8 @@ export default {
     },
     onActiveItem(friend) {
       this.activeFriend = friend;
+      this.headerTitle = friend.nickName
+      this.showType = 2;
       this.loadUserInfo(friend);
     },
     onDelFriend(friend) {
@@ -171,14 +225,11 @@ export default {
           friendId: user.id
         }
       }).then((data) => {
-        this.$message.success("添加成功，对方已成为您的好友");
-        let friend = {
-          id:user.id,
-          nickName: user.nickName,
-          headImage: user.headImage,
-          online: user.online
+        if (data === 1) {
+          this.$message.warning("申请成功，请等待对方通过")
+        } else if (data === 2) {
+          this.$message.success("申请成功，对方已成为您的好友");
         }
-        this.$store.commit("addFriend",friend);
       })
     },
     onSendMessage(user) {
@@ -217,6 +268,7 @@ export default {
         method: 'get'
       }).then((user) => {
         this.userInfo = user;
+        this.headerTitle = user.nickName;
         // 如果发现好友的头像和昵称改了，进行更新
         if (user.nickName != friend.nickName || user.headImage != friend.headImage) {
           this.updateFriendInfo(friend, user)
@@ -268,14 +320,41 @@ export default {
     },
     isEnglish(character) {
       return /^[A-Za-z]+$/.test(character);
-    }
+    },
+    rejectFriendRequest(id) {
+      this.$http({
+        url: `/friend/request/reject?id=${id}`,
+        method: "post",
+      }).then(() => {
+
+      })
+    },
+    approveFriendRequest(id) {
+      this.$http({
+        url: `/friend/request/approve?id=${id}`,
+        method: "post",
+      }).then(() => {
+
+      })
+    },
+    recallFriendRequest(id) {
+      this.$http({
+        url: `/friend/request/recall?id=${id}`,
+        method: "post",
+      }).then(() => {
+
+      })
+    },
   },
   computed: {
+    mine() {
+      return this.$store.state.userStore.userInfo;
+    },
     friendStore() {
       return this.$store.state.friendStore;
     },
     isFriend(){
-      return this.friendStore.friends.find((f)=>f.id==this.userInfo.id);
+      return this.friendStore.friends.some(f=>f.id===this.userInfo.id && !f.deleted);
     },
     curFriend() {
       return this.friendStore.activeFriend;
@@ -321,6 +400,12 @@ export default {
     },
     friendValues() {
       return Array.from(this.friendMap.values());
+    },
+    receivedFriendRequest() {
+      return this.$store.state.friendStore.friendRequest.filter((r) => r.recvId === this.mine.id && r.status === 1)
+    },
+    launchFriendRequest() {
+      return this.$store.state.friendStore.friendRequest.filter((r) => r.sendId === this.mine.id && r.status === 1)
     }
   },
   mounted() {
@@ -342,7 +427,6 @@ export default {
       display: flex;
       align-items: center;
       padding: 5px 8px;
-      border-bottom: 1px #ddd solid;
 
       .add-btn {
         padding: 5px !important;
@@ -358,6 +442,40 @@ export default {
     .friend-items {
       flex: 1;
 
+      .top-item {
+        height: 50px;
+        display: flex;
+        position: relative;
+        padding: 5px;
+        align-items: center;
+        white-space: nowrap;
+        cursor: pointer;
+
+        .top-item-avatar {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .top-item-info {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          padding-left: 10px;
+          text-align: left;
+
+          .top-item-name {
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+          }
+        }
+
+        &.active {
+          background-color: var(--active-color);
+        }
+      }
+
       .letter {
         text-align: left;
         font-size: var(--im-larger-size-larger);
@@ -372,12 +490,12 @@ export default {
     }
   }
 
-  .friend-box {
+  .container {
     display: flex;
     flex-direction: column;
     border: var(--border-color) solid 1px;
 
-    .friend-header {
+    .header {
       width: 100%;
       height: 50px;
       padding: 5px;
@@ -388,6 +506,56 @@ export default {
       font-weight: 600;
       background-color: white;
       border: var(--border-color) solid 1px;
+    }
+
+    .request-box {
+      flex: 1;
+
+      .friend-request-item {
+        display: flex;
+        position: relative;
+        align-items: center;
+        cursor: pointer;
+        margin: 0 30px;
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+
+        .request-info {
+          margin-left: 15px;
+          flex: 3;
+          display: flex;
+          flex-direction: column;
+          flex-shrink: 0;
+          overflow: hidden;
+
+          .nick-name {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 16px;
+            line-height: 30px;
+          }
+
+          .info-text {
+            display: flex;
+            word-break: break-all;
+            font-size: 14px;
+            line-height: 20px;
+            text-align: left;
+          }
+        }
+
+        .btn-group {
+          text-align: left !important;
+          margin-top: 20px;
+          margin-left: 60px;
+        }
+      }
+    }
+
+    .friend-request {
+      display: flex;
+      flex-direction: column;
     }
 
     .friend-detail {

@@ -72,14 +72,11 @@
 						friendId: this.user.id
 					}
 				}).then((data) => {
-					this.$message.success("添加成功，对方已成为您的好友");
-					let friend = {
-						id: this.user.id,
-						nickName: this.user.nickName,
-						headImage: this.user.headImage,
-						online: this.user.online
-					}
-					this.$store.commit("addFriend", friend);
+          if (data === 1) {
+            this.$message.warning("申请成功，请等待对方通过")
+          } else if (data === 2) {
+            this.$message.success("申请成功，对方已成为您的好友");
+          }
 				})
 			},
 			showFullImage(){
@@ -91,8 +88,7 @@
 		computed: {
 			isFriend() {
 				let friends = this.$store.state.friendStore.friends;
-				let friend = friends.find((f) => f.id == this.user.id);
-				return friend != undefined;
+				return friends.some(f => f.id === this.user.id && !f.deleted);
 			}
 		}
 	}

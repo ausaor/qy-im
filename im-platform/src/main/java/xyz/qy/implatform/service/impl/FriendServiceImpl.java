@@ -1,6 +1,7 @@
 package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -15,18 +16,32 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xyz.qy.imclient.IMClient;
+import xyz.qy.imcommon.enums.IMTerminalType;
+import xyz.qy.imcommon.model.IMPrivateMessage;
+import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.entity.Friend;
+import xyz.qy.implatform.entity.FriendRequest;
+import xyz.qy.implatform.entity.PrivateMessage;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.FriendRequestStatusEnum;
+import xyz.qy.implatform.enums.MessageStatus;
+import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.FriendMapper;
+import xyz.qy.implatform.mapper.FriendRequestMapper;
+import xyz.qy.implatform.mapper.PrivateMessageMapper;
 import xyz.qy.implatform.mapper.UserMapper;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
+import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.vo.FriendVO;
+import xyz.qy.implatform.vo.PrivateMessageVO;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -38,6 +53,12 @@ import java.util.stream.Collectors;
 @Service
 public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> implements IFriendService {
     private final UserMapper userMapper;
+
+    private final FriendRequestMapper friendRequestMapper;
+
+    private final PrivateMessageMapper privateMessageMapper;
+
+    private final IMClient imClient;
 
     @Override
     public List<FriendVO> findFriends() {
@@ -84,7 +105,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void addFriend(Long friendId) {
+    public Integer addFriend(Long friendId) {
         long userId = SessionContext.getSession().getUserId();
         if (friendId.equals(userId)) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "不允许添加自己为好友");
@@ -97,16 +118,46 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         if (count >= 100) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "好友数量已达上限");
         }
-        User user = userMapper.selectById(friendId);
-        if (ObjectUtil.isNull(user)) {
+        User friend = userMapper.selectById(friendId);
+        if (ObjectUtil.isNull(friend)) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户不存在");
         }
 
-        // 互相绑定好友关系
-        FriendServiceImpl proxy = (FriendServiceImpl) AopContext.currentProxy();
-        proxy.bindFriend(userId, friendId);
-        proxy.bindFriend(friendId, userId);
-        log.info("添加好友，用户id:{},好友id:{}", userId, friendId);
+        User user = userMapper.selectById(userId);
+
+        // 判断用户是否开启了好友添加验证
+        if (friend.getFriendReview()) {
+            // 查询是否已存在好友申请
+            LambdaQueryWrapper<FriendRequest> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(FriendRequest::getSendId, userId);
+            wrapper.eq(FriendRequest::getRecvId, friendId);
+            wrapper.eq(FriendRequest::getStatus, FriendRequestStatusEnum.APPLYING.getCode());
+            int count2 = friendRequestMapper.selectCount(wrapper);
+            if (count2 > 0) {
+                throw new GlobalException(ResultCode.PROGRAM_ERROR, "已发送好友申请");
+            }
+
+            FriendRequest friendRequest = new FriendRequest();
+            friendRequest.setSendId(userId);
+            friendRequest.setSendNickName(user.getNickName());
+            friendRequest.setSendHeadImage(user.getHeadImage());
+            friendRequest.setRecvId(friendId);
+            friendRequest.setRecvNickName(friend.getNickName());
+            friendRequest.setRecvHeadImage(friend.getHeadImage());
+            friendRequest.setStatus(FriendRequestStatusEnum.APPLYING.getCode());
+            friendRequest.setApplyTime(LocalDateTime.now());
+            friendRequestMapper.insert(friendRequest);
+            sendFriendRequestMessage(friendRequest, MessageType.FRIEND_REQUEST_ADD.code());
+            return FriendRequestStatusEnum.APPLYING.getCode();
+        } else {
+            // 互相绑定好友关系
+            FriendServiceImpl proxy = (FriendServiceImpl) AopContext.currentProxy();
+            proxy.bindFriend(userId, friendId);
+            proxy.bindFriend(friendId, userId);
+            sendAddTipMessage(friendId);
+            log.info("添加好友，用户id:{},好友id:{}", userId, friendId);
+            return FriendRequestStatusEnum.AGREED.getCode();
+        }
     }
 
     /**
@@ -137,7 +188,8 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         QueryWrapper<Friend> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
                 .eq(Friend::getUserId, userId1)
-                .eq(Friend::getFriendId, userId2);
+                .eq(Friend::getFriendId, userId2)
+                .eq(Friend::getDeleted, false);
         return this.count(queryWrapper) > 0;
     }
 
@@ -195,6 +247,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
      * @param friendId 好友的用户id
      */
     @CacheEvict(key = "#userId+':'+#friendId")
+    @Override
     public void bindFriend(Long userId, Long friendId) {
         QueryWrapper<Friend> wrapper = new QueryWrapper<>();
         wrapper.lambda().eq(Friend::getUserId, userId).eq(Friend::getFriendId, friendId);
@@ -210,6 +263,8 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         friend.setCreatedTime(new Date());
         friend.setDeleted(false);
         this.saveOrUpdate(friend);
+        // 推送好友变化信息s
+        sendAddFriendMessage(userId, friendId, friend);
     }
 
     /**
@@ -226,6 +281,8 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         wrapper.eq(Friend::getFriendId, friendId);
         wrapper.set(Friend::getDeleted,true);
         this.update(wrapper);
+        // 推送好友变化信息
+        sendDelFriendMessage(userId, friendId);
     }
 
     /**
@@ -248,6 +305,15 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         return convert(friend);
     }
 
+    @Override
+    public Friend findFriendInfo(Long userId, Long friendId) {
+        QueryWrapper<Friend> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .eq(Friend::getUserId, userId)
+                .eq(Friend::getFriendId, friendId);
+        return this.getOne(wrapper);
+    }
+
     private FriendVO convert(Friend f) {
         FriendVO vo = new FriendVO();
         vo.setId(f.getFriendId());
@@ -255,5 +321,111 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         vo.setNickName(f.getFriendNickName());
         vo.setDeleted(f.getDeleted());
         return vo;
+    }
+
+    @Override
+    public void sendAddFriendMessage(Long userId, Long friendId, Friend friend) {
+        // 推送好友状态信息
+        PrivateMessageVO msgInfo = new PrivateMessageVO();
+        msgInfo.setSendId(friendId);
+        msgInfo.setRecvId(userId);
+        msgInfo.setSendTime(new Date());
+        msgInfo.setType(MessageType.FRIEND_NEW.code());
+        FriendVO vo = convert(friend);
+        msgInfo.setContent(JSON.toJSONString(vo));
+        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        sendMessage.setSender(new IMUserInfo(friendId, IMTerminalType.WEB.code()));
+        sendMessage.setRecvId(userId);
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendToSelf(false);
+        sendMessage.setSendResult(false);
+        imClient.sendPrivateMessage(sendMessage);
+    }
+
+    @Override
+    public void sendDelFriendMessage(Long userId, Long friendId) {
+        // 推送好友状态信息
+        PrivateMessageVO msgInfo = new PrivateMessageVO();
+        msgInfo.setSendId(friendId);
+        msgInfo.setRecvId(userId);
+        msgInfo.setSendTime(new Date());
+        msgInfo.setType(MessageType.FRIEND_DEL.code());
+        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        sendMessage.setSender(new IMUserInfo(friendId, IMTerminalType.WEB.code()));
+        sendMessage.setRecvId(userId);
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendToSelf(false);
+        sendMessage.setSendResult(false);
+        imClient.sendPrivateMessage(sendMessage);
+    }
+
+    @Override
+    public void sendAddTipMessage(Long friendId) {
+        UserSession session = SessionContext.getSession();
+        PrivateMessage msg = new PrivateMessage();
+        msg.setSendId(session.getUserId());
+        msg.setRecvId(friendId);
+        msg.setContent("你们已成为好友，现在可以开始聊天了");
+        msg.setSendTime(new Date());
+        msg.setStatus(MessageStatus.UNSEND.code());
+        msg.setType(MessageType.TIP_TEXT.code());
+        privateMessageMapper.insert(msg);
+        // 推给对方
+        PrivateMessageVO messageInfo = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
+        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        sendMessage.setRecvId(friendId);
+        sendMessage.setSendToSelf(false);
+        sendMessage.setData(messageInfo);
+        imClient.sendPrivateMessage(sendMessage);
+        // 推给自己
+        sendMessage.setRecvId(session.getUserId());
+        imClient.sendPrivateMessage(sendMessage);
+    }
+
+    @Override
+    public void sendDelTipMessage(Long friendId) {
+        UserSession session = SessionContext.getSession();
+        // 推送好友状态信息
+        PrivateMessage msg = new PrivateMessage();
+        msg.setSendId(session.getUserId());
+        msg.setRecvId(friendId);
+        msg.setSendTime(new Date());
+        msg.setType(MessageType.TIP_TEXT.code());
+        msg.setStatus(MessageStatus.UNSEND.code());
+        msg.setContent("你们的好友关系已被解除");
+        privateMessageMapper.insert(msg);
+        // 推送
+        PrivateMessageVO messageInfo = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
+        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        sendMessage.setSender(new IMUserInfo(friendId, IMTerminalType.WEB.code()));
+        sendMessage.setRecvId(friendId);
+        sendMessage.setData(messageInfo);
+        imClient.sendPrivateMessage(sendMessage);
+    }
+
+    @Override
+    public void sendFriendRequestMessage(FriendRequest friendRequest, Integer type) {
+        PrivateMessage msg = new PrivateMessage();
+        msg.setSendId(friendRequest.getSendId());
+        msg.setRecvId(friendRequest.getRecvId());
+        msg.setContent(JSON.toJSONString(friendRequest));
+        msg.setSendTime(new Date());
+        msg.setStatus(MessageStatus.UNSEND.code());
+        msg.setType(type);
+
+        // 推给对方
+        PrivateMessageVO messageInfo = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
+        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        sendMessage.setSender(new IMUserInfo(friendRequest.getSendId(), IMTerminalType.WEB.code()));
+        sendMessage.setRecvId(friendRequest.getRecvId());
+        sendMessage.setSendToSelf(false);
+        sendMessage.setSendResult(false);
+        sendMessage.setData(messageInfo);
+        imClient.sendPrivateMessage(sendMessage);
+
+        // 推给自己
+        sendMessage.setRecvId(friendRequest.getSendId());
+        imClient.sendPrivateMessage(sendMessage);
     }
 }

@@ -174,6 +174,7 @@
             this.pullRegionGroupOfflineMessage(this.$store.state.regionGroupStore.regionGroupMsgMaxId);
             this.pullSystemOfflineMessage(this.$store.state.chatStore.systemMsgMaxSeqNo);
             this.pullOfflineTalks(this.$store.state.talkStore.privateTalkMaxId);
+            this.pullFriendRequests();
           });
           this.$wsApi.onMessage((cmd, msgInfo) => {
             if (cmd == 2) {
@@ -273,7 +274,20 @@
 
         })
       },
+      pullFriendRequests() {
+        this.$http({
+          url: "/friend/request/list",
+          method: 'GET'
+        }).then((data) => {
+          this.$store.commit("setFriendRequest", data)
+        }).catch(() => {
+        })
+      },
       handlePrivateMessage(msg) {
+        // 标记这条消息是不是自己发的
+        msg.selfSend = msg.sendId === this.mine.id;
+        // 好友id
+        let friendId = msg.selfSend ? msg.recvId : msg.sendId;
         // 消息加载标志
         if (msg.type == this.$enums.MESSAGE_TYPE.LOADING) {
           console.log("私聊记录加载......", JSON.parse(msg.content))
@@ -295,6 +309,27 @@
           })
           return;
         }
+        // 好友申请类消息
+        if (msg.type == this.$enums.MESSAGE_TYPE.FRIEND_REQUEST_ADD) {
+          this.$store.commit("addFriendRequest", JSON.parse(msg.content));
+          return;
+        }
+        if (msg.type == this.$enums.MESSAGE_TYPE.FRIEND_REQUEST_MODIFY) {
+          this.$store.commit("updateFriendRequest", JSON.parse(msg.content));
+          return;
+        }
+
+        // 新增好友
+        if (msg.type == this.$enums.MESSAGE_TYPE.FRIEND_NEW) {
+          this.$store.commit("addFriend", JSON.parse(msg.content));
+          return;
+        }
+        // 删除好友
+        if (msg.type == this.$enums.MESSAGE_TYPE.FRIEND_DEL) {
+          this.$store.commit("removeFriend", friendId);
+          return;
+        }
+
         // 标记这条消息是不是自己发的
         msg.selfSend = msg.sendId == this.$store.state.userStore.userInfo.id;
         // 单人webrtc 信令
@@ -302,8 +337,6 @@
           this.$refs.rtcPrivateVideo.onRTCMessage(msg)
           return;
         }
-        // 好友id
-        let friendId = msg.selfSend ? msg.recvId : msg.sendId;
         this.loadFriendInfo(friendId).then((friend) => {
           this.insertPrivateMessage(friend, msg);
         })

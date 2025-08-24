@@ -5,6 +5,7 @@ export default {
 
 	state: {
 		friends: [],
+		friendRequest: [],
 		timer: null
 	},
 	mutations: {
@@ -15,6 +16,9 @@ export default {
 				f.onlineApp = false;
 			})
 			state.friends = friends;
+		},
+		setFriendRequest(state, friendRequest) {
+			state.friendRequest = friendRequest;
 		},
 		updateFriend(state,friend){
 			state.friends.forEach((f,index)=>{
@@ -27,6 +31,14 @@ export default {
 				}
 			})
 		},
+		updateFriendRequest(state, friendRequest) {
+			state.friendRequest.forEach((item, index)=>{
+				if(item.id===friendRequest.id){
+					// 拷贝属性
+					Object.assign(state.friendRequest[index], friendRequest);
+				}
+			})
+		},
 		removeFriend(state, id) {
 			const idx = state.friends.findIndex(f => f.id === id);
 			if (idx !== -1) {
@@ -35,6 +47,9 @@ export default {
 		},
 		addFriend(state, friend) {
 			state.friends.push(friend);
+		},
+		addFriendRequest(state, friendRequest) {
+			state.friendRequest.push(friendRequest);
 		},
 		refreshOnlineStatus(state){
 			let userIds = [];
@@ -87,6 +102,11 @@ export default {
 			state.friends = [];
 			state.timer = null;
 		}
+	},
+	getters: {
+		getFriendRequest: (state) => () => {
+			return state.friendRequest;
+		},
 	},
 	actions: {
 		loadFriend(context) {
