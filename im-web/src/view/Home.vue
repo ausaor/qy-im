@@ -26,6 +26,7 @@
                 <use xlink:href="#icon-friend"></use>
               </svg>
             </span>
+            <div v-show="friendRequestCount > 0" class="unread-text">{{friendRequestCount}}</div>
 					</router-link>
 				</el-menu-item>
 				<el-menu-item title="群聊">
@@ -726,6 +727,9 @@
           }
         }
         return false;
+      },
+      friendRequestCount() {
+        return this.$store.state.friendStore.friendRequest.filter((r) => r.status === 1).length
       }
 		},
 		watch: {

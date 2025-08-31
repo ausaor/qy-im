@@ -46,7 +46,12 @@ export default {
 			}
 		},
 		addFriend(state, friend) {
-			state.friends.push(friend);
+			const idx = state.friends.findIndex(f => f.id === friend.id);
+			if (idx !== -1) {
+				state.friends[idx].deleted = false;
+			} else {
+				state.friends.push(friend);
+			}
 		},
 		addFriendRequest(state, friendRequest) {
 			state.friendRequest.push(friendRequest);

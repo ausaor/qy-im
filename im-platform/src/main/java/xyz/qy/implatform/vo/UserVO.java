@@ -68,7 +68,12 @@ public class UserVO {
     @ApiModelProperty(value = "消息提示音")
     private Boolean soundPlay;
 
+    @ApiModelProperty(value = "是否禁用")
     private Boolean isDisable;
 
+    @ApiModelProperty(value = "是否被封禁")
     private Boolean isBanned;
+
+    @ApiModelProperty(value = "是否需要好友审核")
+    private Boolean friendReview;
 }

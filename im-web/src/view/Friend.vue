@@ -12,6 +12,7 @@
         <div class="top-item" @click="showFriendRequest" :class="showType === 1 ? 'active' : ''">
           <div class="top-item-avatar">
             <head-image :size="45" :name="'新的朋友'" :url="require('@/assets/image/new_friend.png')"></head-image>
+            <div class="unread-text" v-show="friendRequestCount > 0">{{friendRequestCount}}</div>
           </div>
           <div class="top-item-info">
             <div class="top-item-name">新的朋友</div>
@@ -218,13 +219,35 @@ export default {
       })
     },
     onAddFriend(user){
+      if (user.friendReview) {
+        this.$prompt(`提示: 对方开启了好友验证,等待对方同意后才能成为好友`, '申请添加好友', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPlaceholder: `我是${this.mine.nickName}`,
+          inputValue: `我是${this.mine.nickName}`,
+          inputPattern: /\S/,
+          inputErrorMessage: '请输入备注'
+        }).then((data) => {
+          let param = {
+            friendId: user.id,
+            remark: data.value
+          }
+          this.requestAddFriend(param, user)
+        })
+      } else {
+        let param = {
+          friendId: user.id
+        }
+        this.requestAddFriend(param, user)
+      }
+    },
+    requestAddFriend(param, user) {
       this.$http({
         url: "/friend/add",
         method: "post",
-        params: {
-          friendId: user.id
-        }
+        data: param
       }).then((data) => {
+        user.friendRequestStatus = data
         if (data === 1) {
           this.$message.warning("申请成功，请等待对方通过")
         } else if (data === 2) {
@@ -406,6 +429,9 @@ export default {
     },
     launchFriendRequest() {
       return this.$store.state.friendStore.friendRequest.filter((r) => r.sendId === this.mine.id && r.status === 1)
+    },
+    friendRequestCount() {
+      return this.receivedFriendRequest.length + this.launchFriendRequest.length;
     }
   },
   mounted() {
@@ -455,6 +481,21 @@ export default {
           display: flex;
           justify-content: center;
           align-items: center;
+          position: relative;
+
+          .unread-text {
+            position: absolute;
+            background-color: #f56c6c;
+            right: -4px;
+            top: -2px;
+            color: #fff;
+            border-radius: 30px;
+            padding: 1px 5px;
+            font-size: 10px;
+            text-align: center;
+            white-space: nowrap;
+            border: 1px solid #f1e5e5;
+          }
         }
 
         .top-item-info {

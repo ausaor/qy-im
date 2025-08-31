@@ -2,7 +2,15 @@
   <el-dialog class="setting" title="操作" :visible.sync="visible"  width="500px" :before-close="handleClose">
     <el-container>
       <el-tabs v-moel="activeTab" tab-position="left" style="height: 360px;" @tab-click="handleTabClick">
-        <el-tab-pane label="消息通知" name="notify">
+        <el-tab-pane label="开关项" name="notify">
+          <el-row>
+            <el-col :span="24"><label>加我为好友需要验证：</label><el-switch
+                v-model="userInfo.friendReview"
+                @change="changeFriendReview"
+                active-text="开启"
+                inactive-text="关闭">
+            </el-switch></el-col>
+          </el-row>
           <el-row>
             <el-col :span="24"><label>好友上线通知：</label><el-switch
                 v-model="friendOnlineNotice"
@@ -319,6 +327,10 @@ export default {
     removeToken() {
       sessionStorage.removeItem("accessToken");
       sessionStorage.removeItem("refreshToken");
+    },
+    changeFriendReview(value) {
+      this.userInfo.friendReview = value;
+      this.updateUserInfo();
     },
     changeSoundPlay(value) {
       this.userInfo.soundPlay = value;

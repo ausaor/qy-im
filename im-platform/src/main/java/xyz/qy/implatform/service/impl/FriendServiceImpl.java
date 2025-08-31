@@ -21,6 +21,7 @@ import xyz.qy.imcommon.enums.IMTerminalType;
 import xyz.qy.imcommon.model.IMPrivateMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.contant.RedisKey;
+import xyz.qy.implatform.dto.FriendAddDTO;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.FriendRequest;
 import xyz.qy.implatform.entity.PrivateMessage;
@@ -101,13 +102,13 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     /**
      * 添加好友，互相建立好友关系
      *
-     * @param friendId 好友的用户id
+     * @param dto 好友信息
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Integer addFriend(Long friendId) {
+    public Integer addFriend(FriendAddDTO dto) {
         long userId = SessionContext.getSession().getUserId();
-        if (friendId.equals(userId)) {
+        if (dto.getFriendId().equals(userId)) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "不允许添加自己为好友");
         }
         // 查询用户好友数量
@@ -118,7 +119,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         if (count >= 100) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "好友数量已达上限");
         }
-        User friend = userMapper.selectById(friendId);
+        User friend = userMapper.selectById(dto.getFriendId());
         if (ObjectUtil.isNull(friend)) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户不存在");
         }
@@ -130,7 +131,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
             // 查询是否已存在好友申请
             LambdaQueryWrapper<FriendRequest> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(FriendRequest::getSendId, userId);
-            wrapper.eq(FriendRequest::getRecvId, friendId);
+            wrapper.eq(FriendRequest::getRecvId, dto.getFriendId());
             wrapper.eq(FriendRequest::getStatus, FriendRequestStatusEnum.APPLYING.getCode());
             int count2 = friendRequestMapper.selectCount(wrapper);
             if (count2 > 0) {
@@ -141,21 +142,22 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
             friendRequest.setSendId(userId);
             friendRequest.setSendNickName(user.getNickName());
             friendRequest.setSendHeadImage(user.getHeadImage());
-            friendRequest.setRecvId(friendId);
+            friendRequest.setRecvId(dto.getFriendId());
             friendRequest.setRecvNickName(friend.getNickName());
             friendRequest.setRecvHeadImage(friend.getHeadImage());
             friendRequest.setStatus(FriendRequestStatusEnum.APPLYING.getCode());
             friendRequest.setApplyTime(LocalDateTime.now());
+            friendRequest.setRemark(dto.getRemark());
             friendRequestMapper.insert(friendRequest);
             sendFriendRequestMessage(friendRequest, MessageType.FRIEND_REQUEST_ADD.code());
             return FriendRequestStatusEnum.APPLYING.getCode();
         } else {
             // 互相绑定好友关系
             FriendServiceImpl proxy = (FriendServiceImpl) AopContext.currentProxy();
-            proxy.bindFriend(userId, friendId);
-            proxy.bindFriend(friendId, userId);
-            sendAddTipMessage(friendId);
-            log.info("添加好友，用户id:{},好友id:{}", userId, friendId);
+            proxy.bindFriend(userId, dto.getFriendId());
+            proxy.bindFriend(dto.getFriendId(), userId);
+            sendAddTipMessage(dto.getFriendId());
+            log.info("添加好友，用户id:{},好友id:{}", userId, dto.getFriendId());
             return FriendRequestStatusEnum.AGREED.getCode();
         }
     }

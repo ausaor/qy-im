@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.annotation.RepeatSubmit;
+import xyz.qy.implatform.dto.FriendAddDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IFriendService;
@@ -39,8 +39,8 @@ public class FriendController {
     @RepeatSubmit
     @PostMapping("/add")
     @ApiOperation(value = "添加好友", notes = "双方建立好友关系")
-    public Result addFriend(@NotEmpty(message = "好友id不可为空") @RequestParam("friendId") Long friendId) {
-        return ResultUtils.success(friendService.addFriend(friendId));
+    public Result addFriend(@RequestBody @Valid FriendAddDTO dto) {
+        return ResultUtils.success(friendService.addFriend(dto));
     }
 
     @GetMapping("/find/{friendId}")
