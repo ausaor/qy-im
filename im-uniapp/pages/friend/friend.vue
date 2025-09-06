@@ -84,6 +84,19 @@ export default {
       uni.navigateTo({
         url: "/pages/friend/friend-request"
       })
+    },
+    refreshUnreadBadge() {
+      if (this.friendRequestCount > 0) {
+        uni.setTabBarBadge({
+          index: 2,
+          text: this.friendRequestCount + ""
+        })
+      } else {
+        uni.removeTabBarBadge({
+          index: 2,
+          complete: () => {}
+        })
+      }
     }
 	},
 	computed: {
@@ -135,7 +148,15 @@ export default {
     friendRequestCount() {
       return this.friendStore.friendRequests.filter((r) => r.recvId === this.mine.id && r.status === 1).length
     },
-	}
+	},
+  watch: {
+    friendRequestCount(newCount, oldCount) {
+      this.refreshUnreadBadge();
+    }
+  },
+  onShow() {
+    this.refreshUnreadBadge();
+  }
 }
 </script>
 

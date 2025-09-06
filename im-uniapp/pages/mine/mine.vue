@@ -121,7 +121,20 @@ export default {
 					}
 				}
 			});
-		}
+		},
+    refreshUnreadBadge() {
+      if (this.unreadUserCount > 0 || this.notifyCount > 0) {
+        uni.setTabBarBadge({
+          index: 3,
+          text: (this.unreadUserCount + this.notifyCount) + ""
+        })
+      } else {
+        uni.removeTabBarBadge({
+          index: 3,
+          complete: () => {}
+        })
+      }
+    }
 	},
 	computed: {
 		userInfo() {
@@ -136,7 +149,18 @@ export default {
     talkList() {
       return this.talkStore.lastTalks;
     }
-	}
+	},
+  watch: {
+    unreadUserCount(newCount, oldCount) {
+      this.refreshUnreadBadge();
+    },
+    notifyCount(newCount, oldCount) {
+      this.refreshUnreadBadge();
+    }
+  },
+  onShow() {
+    this.refreshUnreadBadge();
+  }
 }
 </script>
 
