@@ -32,14 +32,17 @@ import xyz.qy.implatform.dto.ResetPwdDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.entity.Friend;
+import xyz.qy.implatform.entity.FriendRequest;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.EmailCategoryEnum;
+import xyz.qy.implatform.enums.FriendRequestStatusEnum;
 import xyz.qy.implatform.enums.LoginTypeEnum;
 import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.UserMapper;
+import xyz.qy.implatform.service.IFriendRequestService;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IUserService;
@@ -112,6 +115,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Resource
     private EmailService emailService;
+
+    @Resource
+    private IFriendRequestService friendRequestService;
 
     @Override
     public LoginVO login(LoginDTO dto) {
@@ -429,11 +435,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (CollectionUtils.isEmpty(users)) {
             return PageResultVO.builder().data(Collections.EMPTY_LIST).build();
         }
+
+        // 查询当前用户发起的好友申请列表
+        List<Long> recvIds = friendRequestService.lambdaQuery()
+                .eq(FriendRequest::getSendId, userId)
+                .eq(FriendRequest::getStatus, FriendRequestStatusEnum.APPLYING.getCode())
+                .select(FriendRequest::getRecvId).list()
+                .stream().map(FriendRequest::getRecvId).collect(Collectors.toList());
+
+
         List<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
         List<Long> onlineUserIds = imClient.getOnlineUser(userIds);
         List<UserVO> vos = users.stream().map(u -> {
             UserVO vo = BeanUtils.copyProperties(u, UserVO.class);
             vo.setOnline(onlineUserIds.contains(u.getId()));
+            vo.setIsManualApprove(recvIds.contains(u.getId()));
             return vo;
         }).collect(Collectors.toList());
         return PageResultVO.builder().data(vos).total(page.getTotal()).build();
@@ -523,9 +539,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         List<User> users = this.list(queryWrapper);
         List<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
         List<Long> onlineUserIds = imClient.getOnlineUser(userIds);
+
+        Long userId = SessionContext.getSession().getUserId();
+        // 查询当前用户发起的好友申请列表
+        List<Long> recvIds = friendRequestService.lambdaQuery()
+                .eq(FriendRequest::getSendId, userId)
+                .eq(FriendRequest::getStatus, FriendRequestStatusEnum.APPLYING.getCode())
+                .select(FriendRequest::getRecvId).list()
+                .stream().map(FriendRequest::getRecvId).collect(Collectors.toList());
         return users.stream().map(u -> {
             UserVO vo = BeanUtils.copyProperties(u, UserVO.class);
             vo.setOnline(onlineUserIds.contains(u.getId()));
+            vo.setIsManualApprove(recvIds.contains(u.getId()));
             return vo;
         }).collect(Collectors.toList());
     }

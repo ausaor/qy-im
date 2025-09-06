@@ -76,4 +76,7 @@ public class UserVO {
 
     @ApiModelProperty(value = "是否需要好友审核")
     private Boolean friendReview;
+
+    @ApiModelProperty(value = "是否需要人工审核")
+    private Boolean isManualApprove;
 }
