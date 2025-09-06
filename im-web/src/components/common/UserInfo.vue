@@ -65,20 +65,41 @@
 				this.$emit("close");
 			},
       onAddFriend() {
-				this.$http({
-					url: "/friend/add",
-					method: "post",
-					params: {
-						friendId: this.user.id
-					}
-				}).then((data) => {
+        if (this.user.friendReview) {
+          this.$prompt(`提示: 对方开启了好友验证,等待对方同意后才能成为好友`, '申请添加好友', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            inputPlaceholder: `我是${this.mine.nickName}`,
+            inputValue: `我是${this.mine.nickName}`,
+            inputPattern: /\S/,
+            inputErrorMessage: '请输入备注'
+          }).then((data) => {
+            let param = {
+              friendId: this.user.id,
+              remark: data.value
+            }
+            this.requestAddFriend(param)
+          })
+        } else {
+          let param = {
+            friendId: this.user.id
+          }
+          this.requestAddFriend(param)
+        }
+			},
+      requestAddFriend(param) {
+        this.$http({
+          url: "/friend/add",
+          method: "post",
+          data: param
+        }).then((data) => {
           if (data === 1) {
             this.$message.warning("申请成功，请等待对方通过")
           } else if (data === 2) {
             this.$message.success("申请成功，对方已成为您的好友");
           }
-				})
-			},
+        })
+      },
 			showFullImage(){
 				if(this.user.headImage){
 					this.$store.commit("showFullImageBox", this.user.headImage);
@@ -89,7 +110,10 @@
 			isFriend() {
 				let friends = this.$store.state.friendStore.friends;
 				return friends.some(f => f.id === this.user.id && !f.deleted);
-			}
+			},
+      mine() {
+        return this.$store.state.userStore.userInfo;
+      },
 		}
 	}
 </script>
