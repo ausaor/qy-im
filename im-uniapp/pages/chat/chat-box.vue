@@ -847,7 +847,9 @@ export default {
         this.showMinIdx = this.showMinIdx > 20 ? this.showMinIdx - 20 : 0;
       }
       // 清除底部标识
-      this.isInBottom = false;
+      if (this.showMinIdx > 0) {
+        this.isInBottom = false;
+      }
 		},
     onScrollToBottom(e) {
       console.log("onScrollToBottom")
@@ -1359,7 +1361,7 @@ export default {
       if (newSize > oldSize && oldSize > 0) {
         let lastMessage = this.chat.messages[newSize - 1];
         if (this.$msgType.isNormal(lastMessage.type)) {
-          if (this.isInBottom) {
+          if (this.isInBottom || lastMessage.selfSend) {
             // 收到消息,则滚动至底部
             this.scrollToBottom();
           } else {
@@ -1403,22 +1405,25 @@ export default {
     this.isInBottom = true;
     this.newMessageSize = 0;
 		// 监听键盘高度
-		this.listenKeyBoard();
-		// 计算聊天窗口高度
-		this.$nextTick(() => {
-			this.windowHeight = uni.getSystemInfoSync().windowHeight;
-			this.reCalChatMainHeight()
+    this.listenKeyBoard();
+    // 计算聊天窗口高度
+    this.windowHeight = uni.getSystemInfoSync().windowHeight;
+    this.screenHeight = uni.getSystemInfoSync().screenHeight;
+    this.reCalChatMainHeight();
+    this.$nextTick(() => {
+      // 上面获取的windowHeight可能不准，重新计算一次聊天窗口高度
+      this.windowHeight = uni.getSystemInfoSync().windowHeight;
+      this.reCalChatMainHeight();
       this.scrollToBottom();
-			// 兼容ios h5:禁止页面滚动
-			// #ifdef H5
+      // #ifdef H5
       this.initHeight = window.innerHeight;
       // 兼容ios的h5:禁止页面滚动
       const chatBox = document.getElementById('chatBox')
       chatBox.addEventListener('touchmove', e => {
         e.preventDefault()
       }, { passive: false });
-			// #endif
-		});
+      // #endif
+    });
 	},
 	onUnload() {
     console.log('chat-box-onUnload')

@@ -17,8 +17,8 @@
                         placeholder="搜索"></uni-search-bar>
       </view>
     </view>
-    <view class="chat-tip" v-if="!loading && regionStore.regionChats.length === 0">
-      温馨提示：您现在还没有任何地区群聊消息~
+    <view class="chat-tip" v-if="!loading && regionStore.regionGroups.length === 0">
+      温馨提示：您现在还没有加入任何地区群聊~
     </view>
     <scroll-view class="scroll-bar" v-else scroll-with-animation="true" scroll-y="true">
       <view v-for="(regionGroup, index) in regionStore.regionGroups" :key="index" v-show="!searchText || regionGroup.remark.includes(searchText)">
@@ -162,6 +162,15 @@ export default {
     .loading-box {
       position: relative;
     }
+  }
+
+  .chat-tip {
+    position: absolute;
+    top: 400rpx;
+    padding: 50rpx;
+    line-height: 50rpx;
+    text-align: center;
+    color: $im-text-color-lighter;
   }
 
   .scroll-bar {
