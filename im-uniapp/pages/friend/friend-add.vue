@@ -21,14 +21,26 @@
 							<view class="nick-name">{{ `昵称:${user.nickName}`}}</view>
 						</view>
 						<view class="user-btns">
-							<button type="primary" v-show="!isFriend(user.id)" size="mini"
-								@click.stop="onAddFriend(user)">加为好友</button>
-							<button type="default" v-show="isFriend(user.id)" size="mini" disabled>已添加</button>
+							<button type="primary" v-show="!isFriend(user.id) && !user.isManualApprove" size="mini" @click.stop="onAddFriend(user)">加为好友</button>
+							<text v-show="isFriend(user.id)" class="status-tip">已添加</text>
+              <text v-show="!isFriend(user.id) && user.isManualApprove" class="status-tip">等待对方验证</text>
 						</view>
 					</view>
 				</view>
 			</scroll-view>
 		</view>
+    <uni-popup ref="popup" type="center" :mask-click="true" @maskClick="closePopup">
+      <view class="custom-popup">
+        <view class="popup-header">提示: 对方开启了好友验证,等待对方同意后才能成为好友</view>
+        <view class="popup-content">
+          <input class="input-field" v-model="friendRequestRemark" placeholder="请输入备注信息" type="text" focus>
+        </view>
+        <view class="popup-footer">
+          <button class="popup-btn cancel-btn" @click="closePopup">取消</button>
+          <button class="popup-btn confirm-btn" @click="confirmInput">确定</button>
+        </view>
+      </view>
+    </uni-popup>
 	</view>
 </template>
 
@@ -37,7 +49,9 @@ export default {
 	data() {
 		return {
 			searchText: "",
-			users: []
+			users: [],
+      friendRequestRemark: '',
+      friendInfo: null,
 		}
 	},
 	methods: {
@@ -53,34 +67,69 @@ export default {
 			})
 		},
 		onAddFriend(user) {
-			this.$http({
-				url: "/friend/add?friendId=" + user.id,
-				method: "POST"
-			}).then((data) => {
-				let friend = {
-					id: user.id,
-					nickName: user.nickName,
-					headImage: user.headImage,
-					online: user.online
-				}
-				this.friendStore.addFriend(friend);
-				uni.showToast({
-					title: "添加成功，对方已成为您的好友",
-					icon: "none"
-				})
-			})
+      this.friendInfo = user;
+      if (user.friendReview) {
+        this.friendRequestRemark = '我是' + this.userInfo.nickName;
+        this.openPopup();
+      } else {
+        let param = {
+          friendId: user.id,
+          remark: '我是' + this.userInfo.nickName
+        }
+        this.friendRequest(param);
+      }
 		},
+    friendRequest(param) {
+      this.$http({
+        url: "/friend/add",
+        method: "POST",
+        data: param
+      }).then((data) => {
+        if (data === 1) {
+          this.friendInfo.isManualApprove = true;
+          uni.showToast({
+            title: "申请成功，请等待对方通过",
+            icon: "none"
+          })
+        } else if (data === 2) {
+          uni.showToast({
+            title: "添加成功，对方已成为您的好友",
+            icon: "none"
+          })
+        }
+      }).finally(() => {
+        this.closePopup();
+      })
+    },
 		onShowUserInfo(user) {
 			uni.navigateTo({
 				url: "/pages/common/user-info?id=" + user.id
 			})
 		},
 		isFriend(userId) {
-			let friends = this.friendStore.friends;
-			let friend = friends.find((f) => f.id == userId);
-			return !!friend;
-		}
-	}
+			return this.friendStore.friends.some((f) => f.id === userId && !f.deleted);
+		},
+    closePopup() {
+      this.friendRequestRemark = '';
+      this.friendInfo = null;
+      this.$refs.popup.close();
+    },
+    openPopup() {
+      this.$refs.popup.open();
+    },
+    confirmInput() {
+      let param = {
+        friendId: this.friendInfo.id,
+        remark: this.friendRequestRemark
+      }
+      this.friendRequest(param)
+    }
+	},
+  computed: {
+    userInfo() {
+      return this.userStore.userInfo;
+    },
+  }
 }
 </script>
 
@@ -136,6 +185,11 @@ export default {
 					padding-top: 8rpx;
 				}
 			}
+
+      .user-btns {
+        font-size: .875rem;
+        color: #909399;
+      }
 		}
 
 		.scroll-bar {
@@ -143,5 +197,71 @@ export default {
 		}
 	}
 
+  .custom-popup {
+    margin: auto;
+    padding: 20px;
+    width: 80%;
+    border-radius: 12px;
+    background-color: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .popup-header {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .popup-content {
+    margin-bottom: 25px;
+  }
+
+  .popup-footer {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .popup-btn {
+    flex: 1;
+    margin: 0 10px;
+    border-radius: 50px;
+    padding: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .cancel-btn {
+    background-color: #e74c3c;
+    color: white;
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+  }
+
+  .confirm-btn {
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+    color: white;
+    box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+  }
+
+  .popup-btn:active {
+    transform: translateY(2px);
+  }
+
+  .input-field {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+  }
+
+  .input-field:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  }
 }
 </style>

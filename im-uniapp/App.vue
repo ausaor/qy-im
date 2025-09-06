@@ -46,6 +46,7 @@ export default {
 				this.pullGroupOfflineMessage(this.chatStore.groupMsgMaxId);
         this.pullRegionGroupOfflineMessage(this.regionStore.regionGroupMsgMaxId);
         this.pullOfflineTalks(this.talkStore.privateTalkMaxId);
+        this.pullFriendRequests();
 			});
 			wsApi.onMessage((cmd, msgInfo) => {
 				if (cmd == 2) {
@@ -142,14 +143,47 @@ export default {
 
       })
     },
+    pullFriendRequests() {
+      http({
+        url: "/friend/request/list",
+        method: 'GET'
+      }).then((data) => {
+        this.friendStore.setFriendRequests(data);
+      }).catch(() => {
+      })
+    },
 		handlePrivateMessage(msg) {
+      // 标记这条消息是不是自己发的
+      msg.selfSend = msg.sendId === this.userStore.userInfo.id;
+      // 好友id
+      let friendId = msg.selfSend ? msg.recvId : msg.sendId;
 			// 消息加载标志
-			if (msg.type == enums.MESSAGE_TYPE.LOADING) {
+			if (msg.type === enums.MESSAGE_TYPE.LOADING) {
 				this.chatStore.setLoadingPrivateMsg(JSON.parse(msg.content))
 				return;
 			}
+      // 好友申请类消息
+      if (msg.type === enums.MESSAGE_TYPE.FRIEND_REQUEST_ADD) {
+        this.friendStore.addFriendRequest(JSON.parse(msg.content));
+        return;
+      }
+      if (msg.type === enums.MESSAGE_TYPE.FRIEND_REQUEST_MODIFY) {
+        this.friendStore.updateFriendRequest(JSON.parse(msg.content));
+        return;
+      }
+
+      // 新增好友
+      if (msg.type === enums.MESSAGE_TYPE.FRIEND_NEW) {
+        this.friendStore.addFriend(JSON.parse(msg.content));
+        return;
+      }
+      // 删除好友
+      if (msg.type === enums.MESSAGE_TYPE.FRIEND_DEL) {
+        this.friendStore.removeFriend(friendId);
+        return;
+      }
 			// 消息已读处理，清空已读数量
-			if (msg.type == enums.MESSAGE_TYPE.READED) {
+			if (msg.type === enums.MESSAGE_TYPE.READED) {
 				this.chatStore.resetUnreadCount({
 					type: 'PRIVATE',
 					targetId: msg.recvId
@@ -163,10 +197,6 @@ export default {
 				})
 				return;
 			}
-			// 标记这条消息是不是自己发的
-			msg.selfSend = msg.sendId == this.userStore.userInfo.id;
-			// 好友id
-			let friendId = msg.selfSend ? msg.recvId : msg.sendId;
 			this.loadFriendInfo(friendId, (friend) => {
 				this.insertPrivateMessage(friend, msg);
 			})

@@ -35,16 +35,31 @@
 				</view>
 			</view>
 		</uni-card>
-		<bar-group>
+		<bar-group v-if="!showFriendRequest">
 			<btn-bar v-show="isFriend" type="primary" title="发送消息" @tap="onSendMessage()">
 			</btn-bar>
 			<btn-bar v-show="!isFriend" type="primary" title="加为好友" @tap="onAddFriend()"></btn-bar>
 			<btn-bar v-show="isFriend" type="danger" title="删除好友" @tap="onDelFriend()"></btn-bar>
 		</bar-group>
+    <view class="friend-request-info" v-if="showFriendRequest">
+      <bar-group>
+        <view class="info-item">
+          <view class="label">对方请求添加您为好友</view>
+          <view class="value">{{ $date.formatDateTime(friendRequestInfo?.applyTime) }}</view>
+        </view>
+        <view class="remark-item">
+          <view class="remark-text">{{friendRequestInfo?.sendNickName + ': ' + friendRequestInfo?.remark}}</view>
+        </view>
+      </bar-group>
+      <bar-group>
+        <btn-bar type="primary" title="同意" @tap="approveFriendRequest"></btn-bar>
+        <btn-bar type="danger" title="拒绝" @tap="rejectFriendRequest"></btn-bar>
+      </bar-group>
+    </view>
     <view class="user-space">
       <view class="activity-space" @click="toFriendSpace">
         <svg-icon icon-class="shejiaotubiao-40" style="width: 60rpx;height: 60rpx;"></svg-icon>
-        <text class="label">好友空间</text>
+        <text class="label">空间</text>
       </view>
     </view>
 	</view>
@@ -57,7 +72,10 @@ export default {
   components: {SvgIcon},
 	data() {
 		return {
-			userInfo: {}
+			userInfo: {},
+      showFriendRequest: false,
+      requestId: '',
+      friendRequestInfo: {},
 		}
 	},
 	methods: {
@@ -154,21 +172,44 @@ export default {
       uni.navigateTo({
         url: `/pages/activity/activity-space?category=private&section=friend&friendId=${this.userInfo.id}&spaceTitle=好友空间`
       })
+    },
+    approveFriendRequest() {
+      this.$http({
+        url: `/friend/request/approve?id=${this.requestId}`,
+        method: "post",
+      }).then(() => {
+        this.showFriendRequest = false;
+        uni.showToast({
+          title: this.userInfo.nickName + '已成为您的好友',
+          icon: 'none'
+        })
+      })
+    },
+    rejectFriendRequest() {
+      this.$http({
+        url: `/friend/request/reject?id=${this.requestId}`,
+        method: "post",
+      }).then(() => {
+        this.showFriendRequest = false;
+      })
     }
 	},
 	computed: {
 		isFriend() {
-			return !!this.friendInfo;
+			return this.friendStore.friends.some((f) => f.id === this.userInfo.id && !f.deleted);
 		},
 		friendInfo() {
-			let friends = this.friendStore.friends;
-			let friend = friends.find((f) => f.id == this.userInfo.id);
-			return friend;
+			return this.friendStore.friends.find((f) => f.id === this.userInfo.id);
 		}
 	},
 	onLoad(options) {
 		// 查询用户信息
 		this.loadUserInfo(options.id);
+    if (options.requestId) {
+      this.requestId = options.requestId;
+      this.friendRequestInfo = this.friendStore.findFriendRequest(parseInt(options.requestId));
+      this.showFriendRequest = true;
+    }
 	}
 }
 </script>
@@ -227,6 +268,40 @@ export default {
 			}
 		}
 	}
+
+  .friend-request-info {
+
+    .info-item {
+      display: flex;
+      background-color: #fff;
+      padding: 0 1.25rem;
+
+      .label {
+        line-height: 3.125rem;
+        font-size: .9375rem;
+      }
+
+      .value {
+        flex: 1;
+        text-align: right;
+        line-height: 3.125rem;
+        color: #909399;
+        font-size: .875rem;
+      }
+    }
+
+    .remark-item {
+      background-color: #fff;
+      padding: 0 1.25rem;
+
+      .remark-text {
+        flex: 1;
+        line-height: 1.875rem;
+        color: #909399;
+        font-size: .9375rem;
+      }
+    }
+  }
 
   .user-space {
     width: 100%;

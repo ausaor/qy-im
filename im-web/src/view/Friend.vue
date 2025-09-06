@@ -431,7 +431,7 @@ export default {
       return this.$store.state.friendStore.friendRequest.filter((r) => r.sendId === this.mine.id && r.status === 1)
     },
     friendRequestCount() {
-      return this.receivedFriendRequest.length + this.launchFriendRequest.length;
+      return this.receivedFriendRequest.length;
     }
   },
   mounted() {

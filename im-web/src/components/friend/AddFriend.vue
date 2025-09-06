@@ -22,9 +22,9 @@
               <div>昵称:{{user.nickName}}</div>
             </div>
 					</div>
-					 <el-button type="success" v-show="!(isFriend(user.id) || user.friendRequestStatus === 2) && !(isApplying(user.id) || user.friendRequestStatus === 1)" plain @click="handleAddFriend(user)">添加</el-button>
-					 <el-button type="info" v-show="isFriend(user.id) || user.friendRequestStatus === 2" plain disabled>已添加</el-button>
-					 <el-button type="info" v-show="isApplying(user.id) || user.friendRequestStatus === 1" plain disabled>待审核</el-button>
+					 <el-button type="success" v-show="!isFriend(user.id) && !user.isManualApprove" plain @click="handleAddFriend(user)">添加</el-button>
+					 <el-button type="info" v-show="isFriend(user.id)" plain disabled>已添加</el-button>
+					 <el-button type="info" v-show="!isFriend(user.id) && user.isManualApprove" plain disabled>待审核</el-button>
 				</div>
 			</div>
 		</el-scrollbar>
@@ -112,8 +112,8 @@
           method: "post",
           data: param
         }).then((data) => {
-          user.friendRequestStatus = data
           if (data === 1) {
+            user.isManualApprove = true;
             this.$message.warning("申请成功，请等待对方通过")
           } else if (data === 2) {
             this.$message.success("申请成功，对方已成为您的好友");
@@ -124,10 +124,6 @@
 				let friends = this.$store.state.friendStore.friends;
 				return friends.some(f=> f.id===userId && !f.deleted);
 			},
-      isApplying(userId) {
-        let friendRequestList = this.$store.state.friendStore.friendRequest;
-        return friendRequestList.some(f => f.recvId === userId && f.status === 1);
-      },
       handleSizeChange(pageSize) {
         this.pageSize = pageSize;
 			  this.handleSearch();

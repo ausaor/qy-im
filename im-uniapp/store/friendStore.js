@@ -6,6 +6,7 @@ export default defineStore('friendStore', {
 	state: () => {
 		return {
 			friends: [],
+			friendRequests: [],
 			timer: null
 		}
 	},
@@ -18,6 +19,9 @@ export default defineStore('friendStore', {
 			})
 			this.friends = friends;
 		},
+		setFriendRequests(friendRequests) {
+			this.friendRequests = friendRequests;
+		},
 		updateFriend(friend) {
 			let f = this.findFriend(friend.id);
 			let copy = JSON.parse(JSON.stringify(f));
@@ -26,15 +30,34 @@ export default defineStore('friendStore', {
 			f.onlineWeb = copy.onlineWeb;
 			f.onlineApp = copy.onlineApp;
 		},
+		updateFriendRequest(friendRequest) {
+			this.friendRequests.forEach((f, idx) => {
+				if (f.id === friendRequest.id) {
+					// 拷贝属性
+					Object.assign(this.friendRequests[idx], friendRequest);
+				}
+			})
+		},
 		removeFriend(id) {
 			this.friends.forEach((f, idx) => {
 				if (f.id == id) {
-					this.friends.splice(idx, 1)
+					this.friends[idx].deleted = true;
 				}
 			})
 		},
 		addFriend(friend) {
-			this.friends.push(friend);
+			let f = this.findFriend(friend.id);
+			if (f) {
+				console.log('用户已存在');
+				f.deleted = false;
+				this.updateFriend(friend);
+			}  else {
+				this.friends.push(friend);
+				console.log('添加用户成功');
+			}
+		},
+		addFriendRequest(friendRequest) {
+			this.friendRequests.push(friendRequest);
 		},
 		setOnlineStatus(onlineTerminals) {
 			this.friends.forEach((f) => {
@@ -89,7 +112,10 @@ export default defineStore('friendStore', {
 	},
 	getters: {
 		findFriend: (state) => (id) => {
-			return state.friends.find((f) => f.id == id);
-		}
+			return state.friends.find((f) => f.id === id);
+		},
+		findFriendRequest: (state) => (id) => {
+			return state.friendRequests.find((f) => f.id === id);
+		},
 	}
 })

@@ -59,6 +59,9 @@
 			"path": "pages/friend/friend-add"
 		},
 		{
+			"path": "pages/friend/friend-request"
+		},
+		{
 			"path": "pages/group/group"
 		},
 		{

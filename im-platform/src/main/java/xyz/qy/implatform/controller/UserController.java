@@ -2,6 +2,7 @@ package xyz.qy.implatform.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,12 +30,12 @@ import xyz.qy.implatform.vo.UserVO;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Api(tags = "用户")
 @RestController
 @RequestMapping("/user")
+@Validated
 public class UserController {
 
     @Resource
@@ -64,7 +65,7 @@ public class UserController {
 
     @GetMapping("/find/{id}")
     @ApiOperation(value = "查找用户", notes = "根据id查找用户")
-    public Result<UserVO> findById(@NotEmpty @PathVariable("id") Long id){
+    public Result<UserVO> findById(@PathVariable("id") Long id){
         return ResultUtils.success(userService.findUserById(id));
     }
 
@@ -77,7 +78,7 @@ public class UserController {
 
     @GetMapping("/pageFindByNickName")
     @ApiOperation(value = "查找用户", notes = "根据昵称查找用户")
-    public Result findByNickName(@NotEmpty(message = "用户昵称不可为空") @RequestParam("nickName") String nickName) {
+    public Result findByNickName(@RequestParam("nickName") String nickName) {
         return ResultUtils.success(userService.pageFindUserByNickName(nickName));
     }
 

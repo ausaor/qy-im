@@ -9,17 +9,22 @@
 			</view>
 		</view>
     <view class="socializes">
-      <view class="socializes-item" @click.stop="onAddNewFriends">
+      <view class="socializes-item" @click.stop="toFriendRequestPage">
         <view class="item-icon">
           <svg-icon class="svg-icon" icon-class="xindepengyou"></svg-icon>
         </view>
-        <view class="item-name">新的朋友</view>
+        <view class="item-info">
+          <view class="item-name">新的朋友</view>
+          <uni-badge v-show="friendRequestCount > 0" :text="friendRequestCount" />
+        </view>
       </view>
       <view class="socializes-item" @click.stop="toGroupPage">
         <view class="item-icon">
           <svg-icon class="svg-icon" icon-class="qunliao"></svg-icon>
         </view>
-        <view class="item-name">群聊</view>
+        <view class="item-info">
+          <view class="item-name">群聊</view>
+        </view>
       </view>
     </view>
 		<view class="friend-tip" v-if="friends.length == 0">
@@ -75,8 +80,16 @@ export default {
 				url: "/pages/group/group"
 			})
 		},
+    toFriendRequestPage() {
+      uni.navigateTo({
+        url: "/pages/friend/friend-request"
+      })
+    }
 	},
 	computed: {
+    mine() {
+      return this.userStore.userInfo;
+    },
 		friends() {
 			return this.friendStore.friends;
 		},
@@ -84,7 +97,7 @@ export default {
 			// 按首字母分组
 			let groupMap = new Map();
 			this.friends.forEach((f) => {
-				if (this.searchText && !f.nickName.includes(this.searchText)) {
+				if (f.deleted || (this.searchText && !f.nickName.includes(this.searchText))) {
 					return;
 				}
 				let letter = this.firstLetter(f.nickName).toUpperCase();
@@ -118,7 +131,10 @@ export default {
 		},
 		friendGroups() {
 			return Array.from(this.friendGroupMap.values());
-		}
+		},
+    friendRequestCount() {
+      return this.friendStore.friendRequests.filter((r) => r.recvId === this.mine.id && r.status === 1).length
+    },
 	}
 }
 </script>
@@ -167,12 +183,18 @@ export default {
         }
       }
 
-      .item-name {
-        width: 100%;
-        height: 2.4rem;
-        line-height: 2.4rem;
-        margin-left: 20rpx;
-        color: $im-text-color;
+      .item-info {
+        flex: 1;
+        display: flex;
+        padding-left: .625rem;
+        align-items: center;
+
+        .item-name {
+          font-size: .9375rem;
+          white-space: nowrap;
+          overflow: hidden;
+          color: $im-text-color;
+        }
       }
     }
   }
