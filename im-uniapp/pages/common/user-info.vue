@@ -62,6 +62,18 @@
         <text class="label">空间</text>
       </view>
     </view>
+    <uni-popup ref="popup" type="center" :mask-click="true" @maskClick="closePopup">
+      <view class="custom-popup">
+        <view class="popup-header">提示: 对方开启了好友验证,等待对方同意后才能成为好友</view>
+        <view class="popup-content">
+          <input class="input-field" v-model="friendRequestRemark" placeholder="请输入备注信息" type="text" focus>
+        </view>
+        <view class="popup-footer">
+          <button class="popup-btn cancel-btn" @click="closePopup">取消</button>
+          <button class="popup-btn confirm-btn" @click="confirmInput">确定</button>
+        </view>
+      </view>
+    </uni-popup>
 	</view>
 </template>
 
@@ -76,6 +88,7 @@ export default {
       showFriendRequest: false,
       requestId: '',
       friendRequestInfo: {},
+      friendRequestRemark: '',
 		}
 	},
 	methods: {
@@ -101,23 +114,52 @@ export default {
 			})
 		},
 		onAddFriend() {
-			this.$http({
-				url: "/friend/add?friendId=" + this.userInfo.id,
-				method: "POST"
-			}).then((data) => {
-				let friend = {
-					id: this.userInfo.id,
-					nickName: this.userInfo.nickName,
-					headImage: this.userInfo.headImage,
-					online: this.userInfo.online
-				}
-				this.friendStore.addFriend(friend);
-				uni.showToast({
-					title: '对方已成为您的好友',
-					icon: 'none'
-				})
-			})
+      if (this.userInfo.friendReview) {
+        this.friendRequestRemark = '我是' + this.mine.nickName;
+        this.openPopup();
+      } else {
+        let param = {
+          friendId: this.userInfo.id,
+          remark: '我是' + this.mine.nickName
+        }
+        this.friendRequest(param);
+      }
 		},
+    friendRequest(param) {
+      this.$http({
+        url: "/friend/add",
+        method: "POST",
+        data: param
+      }).then((data) => {
+        if (data === 1) {
+          uni.showToast({
+            title: "申请成功，请等待对方通过",
+            icon: "none"
+          })
+        } else if (data === 2) {
+          uni.showToast({
+            title: "添加成功，对方已成为您的好友",
+            icon: "none"
+          })
+        }
+      }).finally(() => {
+        this.closePopup();
+      })
+    },
+    closePopup() {
+      this.friendRequestRemark = '';
+      this.$refs.popup.close();
+    },
+    openPopup() {
+      this.$refs.popup.open();
+    },
+    confirmInput() {
+      let param = {
+        friendId: this.friendInfo.id,
+        remark: this.friendRequestRemark
+      }
+      this.friendRequest(param)
+    },
 		onDelFriend() {
 			uni.showModal({
 				title: "确认删除",
@@ -195,6 +237,9 @@ export default {
     }
 	},
 	computed: {
+    mine() {
+      return this.userStore.userInfo;
+    },
 		isFriend() {
 			return this.friendStore.friends.some((f) => f.id === this.userInfo.id && !f.deleted);
 		},
@@ -320,6 +365,73 @@ export default {
         font-weight: 600;
       }
     }
+  }
+
+  .custom-popup {
+    margin: auto;
+    padding: 20px;
+    width: 80%;
+    border-radius: 12px;
+    background-color: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .popup-header {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .popup-content {
+    margin-bottom: 25px;
+  }
+
+  .popup-footer {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .popup-btn {
+    flex: 1;
+    margin: 0 10px;
+    border-radius: 50px;
+    padding: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .cancel-btn {
+    background-color: #e74c3c;
+    color: white;
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+  }
+
+  .confirm-btn {
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+    color: white;
+    box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+  }
+
+  .popup-btn:active {
+    transform: translateY(2px);
+  }
+
+  .input-field {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+  }
+
+  .input-field:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
   }
 }
 </style>
