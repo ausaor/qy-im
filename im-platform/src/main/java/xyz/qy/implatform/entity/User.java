@@ -159,6 +159,11 @@ public class User extends Model<User> {
     private Boolean friendReview;
 
     /**
+     * 邀请进群组是否需要审核
+     */
+    private Boolean groupReview;
+
+    /**
      * 最后登录时间
      */
     @TableField("last_login_time")

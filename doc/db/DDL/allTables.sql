@@ -116,6 +116,7 @@ create table im_group
     is_banned         smallint(1)   default 0                   not null comment '禁止发言（1：是；0否）',
     ban_type          varchar(50)                               null comment '被禁止发言类型（admin：管理员禁止；master：群主禁止）',
     ban_expire_time   datetime                                  null comment '禁止发言失效时间',
+    enter_review      tinyint(1)    default 1                   not null comment '加群审核'
     deleted           tinyint(1)    default 0                   not null comment '是否已删除',
     created_time      datetime      default current_timestamp() null comment '创建时间',
     switch_time       datetime                                  null comment '切换模板群聊时间'
@@ -610,6 +611,7 @@ create table im_user
     auto_play        tinyint(1)    default 0                   not null comment '语音自动播放（1：是；0：否）',
     sound_play       tinyint(1)    default 0                   not null comment '消息提示音（1：开启；0：关闭）',
     friend_review    tinyint(1)    default 1                   not null comment '添加好友是否需要审核',
+    group_review     tinyint(1)    default 1                   not null comment '邀请进群组是否需要审核',
     last_login_time  datetime      default current_timestamp() null on update current_timestamp() comment '最后登录时间',
     create_time      datetime      default current_timestamp() null comment '创建时间',
     update_time      datetime      default current_timestamp() null on update current_timestamp() comment '更新时间',
@@ -668,6 +670,24 @@ create table im_friend_request
     remark          varchar(50)          null comment '备注'
 )
     comment '请求添加好友表';
+
+
+create table im_group_request
+(
+    id                    bigint auto_increment comment '主键'
+        primary key,
+    group_id              bigint        not null comment '群id',
+    type                  tinyint(1)    not null comment '类型（1：用户主动申请加入；2：用户被邀请加入）',
+    user_id               bigint        not null comment '用户id',
+    user_nickname         varchar(50)   not null comment '用户昵称',
+    user_head_image       varchar(1000) null comment '用户头像',
+    status                tinyint(1)    not null comment '状态（0：撤回；1：审核中；2：同意；3：拒绝）',
+    launch_user_id        bigint        not null comment '发起人id',
+    template_character_id bigint        null comment '模板角色id',
+    create_time           datetime      not null comment '创建时间',
+    remark                varchar(50)   null comment '备注'
+)
+    comment '群组请求表';
 
 
 create table t_hero_info

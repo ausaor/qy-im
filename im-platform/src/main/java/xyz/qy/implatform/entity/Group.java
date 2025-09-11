@@ -120,6 +120,12 @@ public class Group extends Model<Group> {
     @TableField("switch_time")
     private Date switchTime;
 
+    /**
+     * 入群审核
+     */
+    @TableField("enter_review")
+    private Boolean enterReview;
+
 
     @Override
     protected Serializable pkVal() {
