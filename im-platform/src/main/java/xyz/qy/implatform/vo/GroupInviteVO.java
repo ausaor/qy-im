@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -15,10 +14,6 @@ public class GroupInviteVO {
     @ApiModelProperty(value = "群id")
     private Long groupId;
 
-    @NotEmpty(message = "群id不可为空")
-    @ApiModelProperty(value = "好友id列表不可为空")
-    private List<Long> friendIds;
-
     @ApiModelProperty(value = "是否模板群聊")
     private Boolean isTemplate;
 
@@ -26,5 +21,5 @@ public class GroupInviteVO {
     private Integer groupType;
 
     @ApiModelProperty(value = "好友模板人物信息")
-    private List<TemplateCharacterInviteVO> characterInviteVOList;
+    private List<InviteFriendVO> inviteFriends;
 }

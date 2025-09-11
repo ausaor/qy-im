@@ -202,34 +202,30 @@
 
 				let inviteVO = {
 					groupId: this.groupId,
-					friendIds: [],
-          characterInviteVOList: [],
+          inviteFriends: [],
           isTemplate: this.isTemplate,
           groupType: this.groupType,
 				}
 				this.friends.forEach((f) => {
 					if (f.isCheck && !f.disabled) {
-						inviteVO.friendIds.push(f.id);
-						if (this.groupType !== 0) {
-              let obj = {
-                friendId: f.id,
-                templateCharacterId: f.templateCharacterId,
-                templateCharacterAvatar: f.templateCharacterAvatar,
-                templateCharacterName: f.templateCharacterName
-              }
-              inviteVO.characterInviteVOList.push(obj);
+            let obj = {
+              friendId: f.id,
+              templateCharacterId: f.templateCharacterId,
+              templateCharacterAvatar: f.templateCharacterAvatar,
+              templateCharacterName: f.templateCharacterName
             }
+						inviteVO.inviteFriends.push(obj);
 					}
 				})
         if (this.groupType === 1 || this.groupType === 2) {
-          const templateCharacterIds = inviteVO.characterInviteVOList.map(item => item["templateCharacterId"]);
+          const templateCharacterIds = inviteVO.inviteFriends.map(item => item["templateCharacterId"]);
           let templateCharacterIdSet = new Set(templateCharacterIds);
           if (templateCharacterIdSet.size !== templateCharacterIds.length) {
             this.$message.warning("存在重复的模板角色，请重新选择");
             return;
           }
         }
-				if (inviteVO.friendIds.length > 0) {
+				if (inviteVO.inviteFriends.length > 0) {
 					this.$http({
 						url: "/group/invite",
 						method: 'post',

@@ -8,7 +8,7 @@ import lombok.Data;
  * @create: 2023-03-26 09:15
  **/
 @Data
-public class TemplateCharacterInviteVO {
+public class InviteFriendVO {
     /**
      * 好友id
      */

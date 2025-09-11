@@ -28,6 +28,7 @@ import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.imcommon.util.CommaTextUtils;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
+import xyz.qy.implatform.dto.EnterGroupUsersDTO;
 import xyz.qy.implatform.dto.GroupBanDTO;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.Group;
@@ -48,6 +49,7 @@ import xyz.qy.implatform.mapper.GroupMapper;
 import xyz.qy.implatform.mapper.GroupMessageMapper;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
+import xyz.qy.implatform.service.IGroupRequestService;
 import xyz.qy.implatform.service.IGroupService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.service.ITemplateGroupService;
@@ -66,7 +68,7 @@ import xyz.qy.implatform.vo.GroupVO;
 import xyz.qy.implatform.vo.MultCharacterGroupVO;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.SwitchTemplateGroupVO;
-import xyz.qy.implatform.vo.TemplateCharacterInviteVO;
+import xyz.qy.implatform.vo.InviteFriendVO;
 import xyz.qy.implatform.vo.TemplateGroupCreateVO;
 
 import javax.annotation.Resource;
@@ -113,6 +115,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Resource
     private GroupMessageMapper groupMessageMapper;
+
+    @Resource
+    private IGroupRequestService groupRequestService;
 
     /**
      * 创建普通群聊
@@ -419,6 +424,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Lock(prefix = "im:group:member:modify", key = "#vo.getGroupId()")
     public void invite(GroupInviteVO vo) {
         UserSession session = SessionContext.getSession();
+        if (CollectionUtils.isEmpty(vo.getInviteFriends())) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "请选择好友");
+        }
         Group group = this.getById(vo.getGroupId());
         if (Objects.isNull(group) || group.getDeleted()) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "群聊不存在");
@@ -433,7 +441,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         // 群聊人数校验
         List<GroupMember> members = groupMemberService.findByGroupId(vo.getGroupId());
         long size = members.stream().filter(m -> !m.getQuit()).count();
-        if (vo.getFriendIds().size() + size > Constant.MAX_GROUP_MEMBER) {
+        if (vo.getInviteFriends().size() + size > Constant.MAX_GROUP_MEMBER) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "群聊人数不能大于" + Constant.MAX_GROUP_MEMBER + "人");
         }
 
@@ -445,11 +453,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     .eq(TemplateCharacter::getTemplateGroupId, group.getTemplateGroupId())
                     .eq(TemplateCharacter::getStatus, ReviewEnum.REVIEWED.getCode())
                     .eq(TemplateCharacter::getDeleted, false));
-            if (vo.getFriendIds().size() + size > characterCount) {
+            if (vo.getInviteFriends().size() + size > characterCount) {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "当前模板群聊人数不能大于" + characterCount + "人");
             }
-            List<Long> templateCharacterIds = vo.getCharacterInviteVOList().stream()
-                    .map(TemplateCharacterInviteVO::getTemplateCharacterId)
+            List<Long> templateCharacterIds = vo.getInviteFriends().stream()
+                    .map(InviteFriendVO::getTemplateCharacterId)
                     .collect(Collectors.toList());
             
             // 判断所选模板角色是否重复
@@ -477,12 +485,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                         .map(TemplateCharacter::getName).collect(Collectors.joining(",")) + "的用户");
             }
         } else if (GroupTypeEnum.MULT_CHARTER.getCode().equals(vo.getGroupType())) {
-            List<Long> templateCharacterIds = vo.getCharacterInviteVOList().stream()
-                    .map(TemplateCharacterInviteVO::getTemplateCharacterId)
+            List<Long> templateCharacterIds = vo.getInviteFriends().stream()
+                    .map(InviteFriendVO::getTemplateCharacterId)
                     .collect(Collectors.toList());
 
             // 判断是否有重复的角色
-            List<Long> distinctList = vo.getCharacterInviteVOList().stream().map(TemplateCharacterInviteVO::getTemplateCharacterId).distinct().collect(Collectors.toList());
+            List<Long> distinctList = vo.getInviteFriends().stream().map(InviteFriendVO::getTemplateCharacterId).distinct().collect(Collectors.toList());
             if (distinctList.size() != templateCharacterIds.size()) {
                 throw new GlobalException("模板角色有重复");
             }
@@ -508,8 +516,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         } else if (GroupTypeEnum.CHARTERS.getCode().equals(vo.getGroupType())
             || GroupTypeEnum.TEMPLATE_MULT_CHARTER.getCode().equals(vo.getGroupType())) {
             // 判断参数中每个角色的数量加已存在成员的对应角色数量是否超过10
-            List<TemplateCharacterInviteVO> characterInviteVOList = vo.getCharacterInviteVOList();
-            Map<Long, List<TemplateCharacterInviteVO>> characterUserMap = characterInviteVOList.stream().collect(Collectors.groupingBy(TemplateCharacterInviteVO::getTemplateCharacterId));
+            List<InviteFriendVO> characterInviteVOList = vo.getInviteFriends();
+            Map<Long, List<InviteFriendVO>> characterUserMap = characterInviteVOList.stream().collect(Collectors.groupingBy(InviteFriendVO::getTemplateCharacterId));
             Set<Long> characterIds = characterUserMap.keySet();
 
             // 判断角色是否存在
@@ -541,37 +549,49 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
         // 找出好友信息
         List<Friend> friends = friendsService.findFriendByUserId(session.getUserId());
-        List<Friend> friendsList = vo.getFriendIds().stream().map(id ->
-                friends.stream().filter(f -> f.getFriendId().equals(id)).findFirst().get()).collect(Collectors.toList());
-        if (friendsList.size() != vo.getFriendIds().size()) {
+        List<Friend> friendsList = vo.getInviteFriends().stream().map(item ->
+                friends.stream().filter(f -> f.getFriendId().equals(item.getFriendId())).findFirst().get()).collect(Collectors.toList());
+        if (friendsList.size() != vo.getInviteFriends().size()) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "部分用户不是您的好友，邀请失败");
         }
+
+        List<Long> friendIds = vo.getInviteFriends().stream().map(InviteFriendVO::getFriendId).collect(Collectors.toList());
+        List<User> userList = userService.findUserByIds(friendIds);
+        // userList根据id为key转换为Map
+        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, Function.identity(), (key1, key2) -> key2));
+
+        EnterGroupUsersDTO enterGroupUsersDTO = diffUserList(userList, vo.getInviteFriends());
+        enterGroupUsersDTO.setGroupId(vo.getGroupId());
+        enterGroupUsersDTO.setLaunchUserId(session.getUserId());
+
         Map<Long, Friend> friendMap = friendsList.stream().collect(Collectors.toMap(Friend::getFriendId, Function.identity(), (key1, key2) -> key2));
 
         List<GroupMember> groupMembers = null;
         // 不是模板群聊
-        if (GroupTypeEnum.COMMON.getCode().equals(vo.getGroupType())) {
+        if (GroupTypeEnum.COMMON.getCode().equals(vo.getGroupType())
+                && CollectionUtils.isNotEmpty(enterGroupUsersDTO.getNoReviewUserList())) {
             // 批量保存成员数据
-            groupMembers = friendsList.stream()
+            groupMembers = enterGroupUsersDTO.getReviewUserList().stream()
                     .map(f -> {
                         Optional<GroupMember> optional = members.stream().filter(m -> m.getUserId().equals(f.getFriendId())).findFirst();
                         GroupMember groupMember = optional.orElseGet(GroupMember::new);
                         groupMember.setGroupId(vo.getGroupId());
                         groupMember.setUserId(f.getFriendId());
-                        groupMember.setAliasName(f.getFriendNickName());
+                        groupMember.setAliasName(userMap.get(f.getFriendId()).getNickName());
                         groupMember.setRemark(group.getName());
-                        groupMember.setHeadImage(f.getFriendHeadImage());
+                        groupMember.setHeadImage(userMap.get(f.getFriendId()).getHeadImage());
                         groupMember.setCreatedTime(new Date());
                         groupMember.setQuit(false);
                         groupMember.setCharacterAvatarId(null);
                         groupMember.setAvatarAlias(null);
                         return groupMember;
                     }).collect(Collectors.toList());
-        } else {
+        } else if (CollectionUtils.isNotEmpty(enterGroupUsersDTO.getNoReviewUserList())) {
             assert templateCharacterList != null;
-            Map<Long, TemplateCharacter> templateCharacterMap = templateCharacterList.stream().collect(Collectors.toMap(TemplateCharacter::getId, Function.identity(), (key1, key2) -> key2));
+            Map<Long, TemplateCharacter> templateCharacterMap = templateCharacterList.stream()
+                    .collect(Collectors.toMap(TemplateCharacter::getId, Function.identity(), (key1, key2) -> key2));
 
-            groupMembers = vo.getCharacterInviteVOList().stream().map(f -> {
+            groupMembers = enterGroupUsersDTO.getReviewUserList().stream().map(f -> {
                 Optional<GroupMember> optional = members.stream().filter(m -> m.getUserId().equals(f.getFriendId())).findFirst();
                 GroupMember groupMember = optional.orElseGet(GroupMember::new);
                 groupMember.setGroupId(vo.getGroupId());
@@ -595,6 +615,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (CollectionUtils.isNotEmpty(groupMembers)) {
             groupMemberService.saveOrUpdateBatch(group.getId(), groupMembers);
 
+            List<Long> enterUserIds = groupMembers.stream().map(GroupMember::getUserId).collect(Collectors.toList());
             String membersInfo = groupMembers.stream().map(item -> {
                 if (GroupTypeEnum.COMMON.getCode().equals(vo.getGroupType())) {
                     return item.getAliasName();
@@ -602,17 +623,35 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     return friendMap.getOrDefault(item.getUserId(), new Friend()).getFriendNickName() + "【" + item.getAliasName() + "】";
                 }
             }).collect(Collectors.joining("，"));
-            StringBuilder builder = new StringBuilder();
-            String content = builder.append("用户")
-                    .append(session.getUserName()).append("【").append(session.getNickName()).append("】")
-                    .append("邀请")
-                    .append(membersInfo)
-                    .append("加入了群聊").toString();
+            String content = "用户" +
+                    session.getUserName() + "【" + session.getNickName() + "】" +
+                    "邀请" +
+                    membersInfo +
+                    "加入了群聊";
             messageSendUtil.sendTipMessage(group.getId(),
                     session.getUserId(), session.getNickName(), Collections.emptyList(),
                     content, GroupChangeTypeEnum.NEW_USER_JOIN.getCode());
+            log.info("邀请进入群聊，群聊id:{},群聊名称:{},被邀请用户id:{}", group.getId(), group.getName(), enterUserIds);
         }
-        log.info("邀请进入群聊，群聊id:{},群聊名称:{},被邀请用户id:{}", group.getId(), group.getName(), vo.getFriendIds());
+        groupRequestService.saveEnterGroupRequestInfo(enterGroupUsersDTO);
+    }
+
+    private EnterGroupUsersDTO diffUserList(List<User> userList, List<InviteFriendVO> characterInviteVOList) {
+        EnterGroupUsersDTO enterGroupUsersDTO = new EnterGroupUsersDTO();
+        // 开启了邀请进群需审核的用户id
+        List<Long> userIds = userList.stream().filter(User::getGroupReview).map(User::getId).collect(Collectors.toList());
+
+        // 未开启邀请进群需审核的用户
+        List<InviteFriendVO> noReviewUserList = characterInviteVOList.stream()
+                .filter(f -> !userIds.contains(f.getFriendId())).collect(Collectors.toList());
+        enterGroupUsersDTO.setNoReviewUserList(noReviewUserList);
+
+        // 开启邀请进群需审核的用户
+        List<InviteFriendVO> reviewUserList = characterInviteVOList.stream()
+                .filter(f -> userIds.contains(f.getFriendId())).collect(Collectors.toList());
+        enterGroupUsersDTO.setReviewUserList(reviewUserList);
+
+        return enterGroupUsersDTO;
     }
 
     /**
