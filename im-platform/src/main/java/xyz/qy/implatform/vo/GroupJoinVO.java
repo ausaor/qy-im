@@ -18,6 +18,9 @@ public class GroupJoinVO {
     @ApiModelProperty(value = "群id")
     private Long groupId;
 
+    @ApiModelProperty(value = "用户id")
+    private Long userId;
+
     @ApiModelProperty(value = "是否模板群聊")
     private Boolean isTemplate;
 
@@ -35,4 +38,7 @@ public class GroupJoinVO {
 
     @ApiModelProperty(value = "模板人物名称")
     public String templateCharacterName;
+
+    @ApiModelProperty(value = "备注")
+    private String remark;
 }

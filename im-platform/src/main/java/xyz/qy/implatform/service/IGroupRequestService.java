@@ -3,6 +3,7 @@ package xyz.qy.implatform.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.qy.implatform.dto.EnterGroupUsersDTO;
 import xyz.qy.implatform.entity.GroupRequest;
+import xyz.qy.implatform.vo.GroupJoinVO;
 
 /**
  * 群组请求表 服务类
@@ -17,4 +18,11 @@ public interface IGroupRequestService extends IService<GroupRequest> {
      * @param enterGroupUsersDTO 进群信息
      */
     void saveEnterGroupRequestInfo(EnterGroupUsersDTO enterGroupUsersDTO);
+
+    /**
+     * 保存用户进群请求信息
+     *
+     * @param groupJoinVO 进群信息
+     */
+    void saveUserJoinGroupRequestInfo(GroupJoinVO groupJoinVO);
 }

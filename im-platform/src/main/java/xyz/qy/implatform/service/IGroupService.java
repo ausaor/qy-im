@@ -81,7 +81,7 @@ public interface IGroupService extends IService<Group> {
      *
      * @param vo 群聊信息vo
      */
-    GroupVO joinGroup(GroupJoinVO vo);
+    void joinGroup(GroupJoinVO vo);
 
     /**
      * 禁言操作

@@ -1304,7 +1304,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Lock(prefix = "im:group:member:modify", key = "#vo.getGroupId()")
     @Override
-    public GroupVO joinGroup(GroupJoinVO vo) {
+    public void joinGroup(GroupJoinVO vo) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
 
@@ -1327,6 +1327,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (optional.isPresent() && !optional.get().getQuit()) {
             throw new GlobalException("您已加入当前群聊");
         }
+
+        // 判断群聊是否开启进群审核
+        if (group.getEnterReview()) {
+            vo.setUserId(userId);
+            groupRequestService.saveUserJoinGroupRequestInfo(vo);
+            return;
+        }
+
         GroupMember member = optional.orElseGet(GroupMember::new);
         // 不是模板群聊
         if (GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
@@ -1467,12 +1475,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         messageSendUtil.sendTipMessage(group.getId(),
                 session.getUserId(), session.getNickName(), Collections.emptyList(),
                 content, GroupChangeTypeEnum.NEW_USER_JOIN.getCode());
-
-        GroupVO groupVO = BeanUtils.copyProperties(group, GroupVO.class);
-        assert groupVO != null;
-        groupVO.setAliasName(member.getAliasName());
-        groupVO.setRemark(groupVO.getName());
-        return groupVO;
     }
 
     private void sendTipMessage(Long groupId,List<Long> recvIds,String content){
