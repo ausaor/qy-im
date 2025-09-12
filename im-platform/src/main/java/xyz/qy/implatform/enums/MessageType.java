@@ -37,6 +37,8 @@ public enum MessageType {
     FRIEND_DEL(81, "删除好友"),
     FRIEND_REQUEST_ADD(82, "申请加为好友"),
     FRIEND_REQUEST_MODIFY(83, "申请加为好友修改"),
+    GROUP_JOIN_REQUEST(90, "加入群聊请求"),
+    GROUP_JOIN_REQUEST_MODIFY(91, "申请加群修改"),
     RTC_CALL_VOICE(100, "语音呼叫"),
     RTC_CALL_VIDEO(101, "视频呼叫"),
     RTC_ACCEPT(102, "接受"),

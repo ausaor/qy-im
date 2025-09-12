@@ -1361,13 +1361,13 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             // 判断用户选择的模板人物是否已存在
             GroupMember groupMember = members.stream().filter(m -> Objects.equals(m.getTemplateCharacterId(), templateCharacterId) && !m.getQuit()).findFirst().orElse(null);
             if (ObjectUtil.isNotNull(groupMember)) {
-                throw new GlobalException("当前模板人物已有用户选择，请重新选择");
+                throw new GlobalException("当前模板角色已有用户选择，请重新选择");
             }
             // 判断当前模板人物是否存在模板群聊中
             List<TemplateCharacter> templateCharacter = templateCharacterService
                     .findPublishedByTemplateGroupIdAndCharacterIds(group.getTemplateGroupId(), Collections.singletonList(vo.getTemplateCharacterId()));
             if (CollectionUtils.isEmpty(templateCharacter)) {
-                throw new GlobalException("所选模板人物不存在于当前模板群聊");
+                throw new GlobalException("所选模板角色不存在于当前模板群聊");
             }
             member = optional.orElseGet(GroupMember::new);
             member.setGroupId(vo.getGroupId());
@@ -1391,7 +1391,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             // 判断用户选择的模板人物是否已存在
             GroupMember groupMember = members.stream().filter(m -> Objects.equals(m.getTemplateCharacterId(), templateCharacterId) && !m.getQuit()).findFirst().orElse(null);
             if (ObjectUtil.isNotNull(groupMember)) {
-                throw new GlobalException("当前模板人物已有用户选择，请重新选择");
+                throw new GlobalException("当前模板角色已有用户选择，请重新选择");
             }
             // 判断当前模板人物是否存在
             TemplateCharacter templateCharacter = templateCharacterService.findPublishedById(vo.getTemplateCharacterId());

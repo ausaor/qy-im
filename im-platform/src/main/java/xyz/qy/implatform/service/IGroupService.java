@@ -97,5 +97,10 @@ public interface IGroupService extends IService<Group> {
      */
     void unBanMsg(GroupBanDTO dto);
 
+    /**
+     * 检查用户加入的群聊数量
+     *
+     * @param userId 用户id
+     */
     void checkUserGroupCount(Long userId);
 }

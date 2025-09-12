@@ -25,4 +25,25 @@ public interface IGroupRequestService extends IService<GroupRequest> {
      * @param groupJoinVO 进群信息
      */
     void saveUserJoinGroupRequestInfo(GroupJoinVO groupJoinVO);
+
+    /**
+     * 撤回请求
+     *
+     * @param id 请求id
+     */
+    void recall(Long id);
+
+    /**
+     * 拒绝请求
+     *
+     * @param id 请求id
+     */
+    void reject(Long id);
+
+    /**
+     * 同意请求
+     *
+     * @param id 请求id
+     */
+    void approve(Long id);
 }
