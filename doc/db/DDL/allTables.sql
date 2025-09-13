@@ -676,16 +676,20 @@ create table im_group_request
 (
     id                    bigint auto_increment comment '主键'
         primary key,
-    group_id              bigint        not null comment '群id',
-    type                  tinyint(1)    not null comment '类型（1：用户主动申请加入；2：用户被邀请加入）',
-    user_id               bigint        not null comment '用户id',
-    user_nickname         varchar(50)   not null comment '用户昵称',
-    user_head_image       varchar(1000) null comment '用户头像',
-    status                tinyint(1)    not null comment '状态（0：撤回；1：审核中；2：同意；3：拒绝）',
-    launch_user_id        bigint        not null comment '发起人id',
-    template_character_id bigint        null comment '模板角色id',
-    create_time           datetime      not null comment '创建时间',
-    remark                varchar(50)   null comment '备注'
+    group_id              bigint               not null comment '群id',
+    type                  tinyint(1)           not null comment '类型（1：用户主动申请加入；2：用户被邀请加入）',
+    user_id               bigint               not null comment '用户id',
+    user_nickname         varchar(50)          not null comment '用户昵称',
+    user_head_image       varchar(1000)        null comment '用户头像',
+    status                tinyint(1)           not null comment '状态（0：撤回；1：审核中；2：同意；3：拒绝）',
+    launch_user_id        bigint               not null comment '发起人id',
+    template_character_id bigint               null comment '模板角色id',
+    create_time           datetime             not null comment '创建时间',
+    create_by             bigint               not null comment '创建人id',
+    update_time           datetime             null comment '更新时间',
+    deleted               tinyint(1) default 0 not null comment '是否删除',
+    update_by             bigint               null comment '更新人id',
+    remark                varchar(50)          null comment '备注'
 )
     comment '群组请求表';
 

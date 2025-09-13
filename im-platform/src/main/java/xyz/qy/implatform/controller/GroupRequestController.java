@@ -2,11 +2,13 @@ package xyz.qy.implatform.controller;
 
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
+import xyz.qy.implatform.dto.GroupRequestUpdateDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IGroupRequestService;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 /**
  * 群组请求表 前端控制器
@@ -38,6 +40,13 @@ public class GroupRequestController {
     @PostMapping("/approve")
     public Result approve(@RequestParam Long id) {
         groupRequestService.approve(id);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "更新群组请求信息", notes = "更新群组请求信息")
+    @PostMapping("/update")
+    public Result update(@Valid @RequestBody GroupRequestUpdateDTO dto) {
+        groupRequestService.update(dto);
         return ResultUtils.success();
     }
 }

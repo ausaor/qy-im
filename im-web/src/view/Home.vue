@@ -729,7 +729,7 @@
         return false;
       },
       friendRequestCount() {
-        return this.$store.state.friendStore.friendRequest.filter((r) => r.status === 1).length
+        return this.$store.state.friendStore.friendRequest.filter((r) => r.status === 1 && r.recvId === this.mine.id).length
       }
 		},
 		watch: {

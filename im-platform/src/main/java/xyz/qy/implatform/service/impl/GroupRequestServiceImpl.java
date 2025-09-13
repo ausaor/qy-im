@@ -17,6 +17,7 @@ import xyz.qy.imcommon.model.IMGroupMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.dto.EnterGroupUsersDTO;
+import xyz.qy.implatform.dto.GroupRequestUpdateDTO;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.GroupMessage;
@@ -46,7 +47,6 @@ import xyz.qy.implatform.vo.GroupMessageVO;
 import xyz.qy.implatform.vo.InviteFriendVO;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -92,6 +92,9 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         if (CollectionUtils.isEmpty(enterGroupUsersDTO.getReviewUserList())) {
             return;
         }
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
         List<InviteFriendVO> reviewUserList = enterGroupUsersDTO.getReviewUserList();
         List<Long> userIds = reviewUserList.stream().map(InviteFriendVO::getFriendId).collect(Collectors.toList());
         List<User> userList = userService.findUserByIds(userIds);
@@ -108,7 +111,8 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
             groupRequest.setGroupId(enterGroupUsersDTO.getGroupId());
             groupRequest.setType(GroupRequestTypeEnum.INVITE_JOIN.getCode());
             groupRequest.setStatus(GroupRequestStatusEnum.APPLYING.getCode());
-            groupRequest.setCreateTime(LocalDateTime.now());
+            groupRequest.setCreateTime(new Date());
+            groupRequest.setCreateBy(userId);
             return groupRequest;
         }).collect(Collectors.toList());
 
@@ -134,6 +138,9 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
             throw new GlobalException("已存在申请记录");
         }
 
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
         User user = userService.getById(groupJoinVO.getUserId());
 
         GroupRequest groupRequest = new GroupRequest();
@@ -145,7 +152,8 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         groupRequest.setTemplateCharacterId(groupJoinVO.getTemplateCharacterId());
         groupRequest.setType(GroupRequestTypeEnum.SELF_JOIN.getCode());
         groupRequest.setStatus(GroupRequestStatusEnum.APPLYING.getCode());
-        groupRequest.setCreateTime(LocalDateTime.now());
+        groupRequest.setCreateTime(new Date());
+        groupRequest.setCreateBy(userId);
         this.save(groupRequest);
 
         Group group = groupService.getById(groupRequest.getGroupId());
@@ -167,6 +175,8 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
             throw new GlobalException("当前数据状态不能操作");
         }
         groupRequest.setStatus(GroupRequestStatusEnum.RECALL.getCode());
+        groupRequest.setUpdateTime(new Date());
+        groupRequest.setUpdateBy(userId);
         this.updateById(groupRequest);
 
         Group group = groupService.getById(groupRequest.getGroupId());
@@ -196,6 +206,8 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
             // 群主邀请加入，用户拒绝
             throw new GlobalException("不是您的数据,无权限操作");
         }
+        groupRequest.setUpdateTime(new Date());
+        groupRequest.setUpdateBy(userId);
         groupRequest.setStatus(GroupRequestStatusEnum.REFUSED.getCode());
         this.updateById(groupRequest);
         List<Long> recvIds = List.of(group.getOwnerId(), groupRequest.getUserId());
@@ -359,6 +371,8 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 groupMemberService.saveOrUpdateBatch(group.getId(), Collections.singletonList(member));
             }
 
+            groupRequest.setUpdateTime(new Date());
+            groupRequest.setUpdateBy(userId);
             groupRequest.setStatus(GroupRequestStatusEnum.AGREED.getCode());
             this.updateById(groupRequest);
             List<Long> recvIds = List.of(group.getOwnerId(), groupRequest.getUserId());
@@ -398,5 +412,33 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         sendMessage.setSendResult(false);
         sendMessage.setSendToSelf(false);
         imClient.sendGroupMessage(sendMessage);
+    }
+
+    @Lock(prefix = "im:group:request", key = "#dto.getId()")
+    @Override
+    public void update(GroupRequestUpdateDTO dto) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
+        GroupRequest groupRequest = this.getById(dto.getId());
+        if (!GroupRequestStatusEnum.APPLYING.getCode().equals(groupRequest.getStatus())) {
+            throw new GlobalException("当前数据状态不支持修改");
+        }
+
+        Group group = groupService.getById(groupRequest.getGroupId());
+        // 用户，群主，发起人都可以更新角色id
+        if (!userId.equals(groupRequest.getUserId())
+                && !userId.equals(group.getOwnerId())
+                && !userId.equals(groupRequest.getLaunchUserId())) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "无权限修改");
+        }
+
+        if (GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "普通群聊不能修改角色数据");
+        }
+        groupRequest.setTemplateCharacterId(dto.getTemplateCharacterId());
+        groupRequest.setUpdateTime(new Date());
+        groupRequest.setUpdateBy(userId);
+        this.updateById(groupRequest);
     }
 }

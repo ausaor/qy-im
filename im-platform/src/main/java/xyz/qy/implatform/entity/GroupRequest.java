@@ -4,9 +4,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableField;
-import java.time.LocalDateTime;
 
-import com.baomidou.mybatisplus.extension.activerecord.Model;
+import java.io.Serializable;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @TableName("im_group_request")
-public class GroupRequest extends Model<GroupRequest> {
+public class GroupRequest extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -76,12 +76,6 @@ public class GroupRequest extends Model<GroupRequest> {
      */
     @TableField("template_character_id")
     private Long templateCharacterId;
-
-    /**
-     * 创建时间
-     */
-    @TableField("create_time")
-    private LocalDateTime createTime;
 
     /**
      * 备注
