@@ -4,17 +4,27 @@ export default {
 
 	state: {
 		groups: [],
+		groupRequests: [],
 		activeGroup: null,
 	},
 	mutations: {
 		setGroups(state, groups) {
 			state.groups = groups;
 		},
+		setGroupRequests(state, groupRequests) {
+			state.groupRequests = groupRequests;
+		},
 		activeGroup(state, idx) {
 			state.activeGroup = state.groups[idx];
 		},
+		clearActiveGroup(state) {
+			state.activeGroup = null;
+		},
 		addGroup(state, group) {
 			state.groups.unshift(group);
+		},
+		addGroupRequest(state, groupRequest) {
+			state.groupRequests.push(groupRequest);
 		},
 		removeGroup(state, groupId) {
 			state.groups.forEach((g, idx) => {
@@ -31,6 +41,14 @@ export default {
 				if (g.id == group.id) {
 					// 拷贝属性
 					Object.assign(state.groups[idx], group);
+				}
+			})
+		},
+		updateGroupRequest(state, groupRequest) {
+			state.groupRequests.forEach((item, index)=>{
+				if(item.id===groupRequest.id){
+					// 拷贝属性
+					Object.assign(state.groupRequests[index], groupRequest);
 				}
 			})
 		},
@@ -58,6 +76,9 @@ export default {
 	getters: {
 		findGroupById: (state, getters) => (gid) => {
 			return state.groups.find(item => item.id === gid);
+		},
+		getGroupRequests: (state) => () => {
+			return state.groupRequests;
 		},
 	}
 }

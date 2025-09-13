@@ -30,7 +30,7 @@
         </div>
       </el-scrollbar>
     </el-aside>
-    <el-container class="container">
+    <el-container class="friend-container">
       <div class="header" v-show="showType !== 0">
         {{headerTitle}}
       </div>
@@ -531,7 +531,7 @@ export default {
     }
   }
 
-  .container {
+  .friend-container {
     display: flex;
     flex-direction: column;
     border: var(--border-color) solid 1px;
@@ -588,7 +588,7 @@ export default {
 
         .btn-group {
           text-align: left !important;
-          margin-top: 20px;
+          display: flex;
           margin-left: 60px;
         }
       }

@@ -6,9 +6,11 @@ import xyz.qy.implatform.dto.GroupRequestUpdateDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IGroupRequestService;
+import xyz.qy.implatform.vo.GroupRequestVO;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 群组请求表 前端控制器
@@ -21,6 +23,12 @@ import javax.validation.Valid;
 public class GroupRequestController {
     @Resource
     private IGroupRequestService groupRequestService;
+
+    @ApiOperation(value = "群组请求列表", notes = "群组请求列表")
+    @GetMapping("/list")
+    public Result<List<GroupRequestVO>> groupRequestList() {
+        return ResultUtils.success(groupRequestService.groupRequestList());
+    }
 
     @ApiOperation(value = "撤回加入群聊请求", notes = "撤回加入群聊请求")
     @PostMapping("/recall")

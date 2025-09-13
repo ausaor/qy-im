@@ -5,6 +5,9 @@ import xyz.qy.implatform.dto.EnterGroupUsersDTO;
 import xyz.qy.implatform.dto.GroupRequestUpdateDTO;
 import xyz.qy.implatform.entity.GroupRequest;
 import xyz.qy.implatform.vo.GroupJoinVO;
+import xyz.qy.implatform.vo.GroupRequestVO;
+
+import java.util.List;
 
 /**
  * 群组请求表 服务类
@@ -13,6 +16,13 @@ import xyz.qy.implatform.vo.GroupJoinVO;
  * @since 2025-09-11
  */
 public interface IGroupRequestService extends IService<GroupRequest> {
+    /**
+     * 群组请求列表
+     *
+     * @return 群组请求列表
+     */
+    List<GroupRequestVO> groupRequestList();
+
     /**
      * 保存进群请求信息
      *

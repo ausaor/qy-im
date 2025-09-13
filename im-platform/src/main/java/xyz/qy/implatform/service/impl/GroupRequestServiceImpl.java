@@ -44,11 +44,14 @@ import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.MessageSendUtil;
 import xyz.qy.implatform.vo.GroupJoinVO;
 import xyz.qy.implatform.vo.GroupMessageVO;
+import xyz.qy.implatform.vo.GroupRequestVO;
+import xyz.qy.implatform.vo.GroupVO;
 import xyz.qy.implatform.vo.InviteFriendVO;
 
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -86,6 +89,56 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
     @Resource
     private RedissonClient redissonClient;
 
+    @Override
+    public List<GroupRequestVO> groupRequestList() {
+        Long userId = SessionContext.getSession().getUserId();
+
+        // 查询用户作为群主的群聊
+        List<Long> groupIds = groupService.findByOwnerId(userId);
+
+        LambdaQueryWrapper<GroupRequest> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(GroupRequest::getDeleted, false);
+        wrapper.eq(GroupRequest::getStatus, GroupRequestStatusEnum.APPLYING.getCode());
+        wrapper.and(lqw ->
+                lqw.eq(GroupRequest::getUserId, userId)
+                    .or()
+                    .eq(GroupRequest::getLaunchUserId, userId)
+                    .or()
+                    .in(CollectionUtils.isNotEmpty(groupIds), GroupRequest::getGroupId, groupIds));
+        wrapper.orderByDesc(GroupRequest::getCreateTime);
+        List<GroupRequest> groupRequestList = this.list(wrapper);
+        List<GroupRequestVO> groupRequestVOS = BeanUtils.copyPropertiesList(groupRequestList, GroupRequestVO.class);
+        List<Long> groupIdList = groupRequestVOS.stream().map(GroupRequestVO::getGroupId).collect(Collectors.toList());
+        List<Long> characterIds = groupRequestVOS.stream().map(GroupRequestVO::getTemplateCharacterId).filter(Objects::nonNull).collect(Collectors.toList());
+
+        // 查询群聊信息
+        List<Group> groups = groupService.listByIds(groupIdList);
+
+        // 查询模板角色信息
+        List<TemplateCharacter> characterList = templateCharacterService.findPublishedByCharacterIds(characterIds);
+
+        Map<Long, Group> groupMap = groups.stream().collect(Collectors.toMap(Group::getId, Function.identity()));
+        Map<Long, TemplateCharacter> characterMap = characterList.stream().collect(Collectors.toMap(TemplateCharacter::getId, Function.identity()));
+        groupRequestVOS.forEach(item -> {
+            Group group = groupMap.get(item.getGroupId());
+            if (ObjectUtil.isNotNull(group)) {
+                // 群聊信息
+                item.setGroupName(group.getName());
+                item.setGroupHeadImage(group.getHeadImage());
+                item.setGroupType(group.getGroupType());
+                item.setGroupOwnerId(group.getOwnerId());
+            }
+            TemplateCharacter templateCharacter = characterMap.get(item.getTemplateCharacterId());
+            if (ObjectUtil.isNotNull(templateCharacter)) {
+                // 模板角色信息
+                item.setTemplateCharacterAvatar(templateCharacter.getAvatar());
+                item.setTemplateCharacterName(templateCharacter.getName());
+            }
+        });
+
+        return groupRequestVOS;
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveEnterGroupRequestInfo(EnterGroupUsersDTO enterGroupUsersDTO) {
@@ -119,11 +172,32 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         this.saveBatch(groupRequestList);
         log.info("邀请进入群组待用户同意信息,groupId:{}, userIds:{}", enterGroupUsersDTO.getGroupId(), userIds);
 
+        List<Long> characterIds = groupRequestList.stream().map(GroupRequest::getTemplateCharacterId)
+                .filter(Objects::nonNull).collect(Collectors.toList());
+
+        Map<Long, TemplateCharacter> characterMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(characterIds)) {
+            List<TemplateCharacter> characterList = templateCharacterService.findPublishedByCharacterIds(characterIds);
+            characterMap = characterList.stream().collect(Collectors.toMap(TemplateCharacter::getId, Function.identity()));
+        }
+
         Group group = groupService.getById(enterGroupUsersDTO.getGroupId());
-        groupRequestList.forEach(item -> {
+        for (GroupRequest item : groupRequestList) {
             List<Long> recvIds = List.of(item.getUserId(), group.getOwnerId());
-            this.sendGroupRequestMessage(item, recvIds, MessageType.GROUP_JOIN_REQUEST.code());
-        });
+            GroupRequestVO groupRequestVO = BeanUtils.copyProperties(item, GroupRequestVO.class);
+            groupRequestVO.setGroupName(group.getName());
+            groupRequestVO.setGroupHeadImage(group.getHeadImage());
+            groupRequestVO.setGroupType(group.getGroupType());
+            groupRequestVO.setGroupOwnerId(group.getOwnerId());
+            if (ObjectUtil.isNotNull(item.getTemplateCharacterId())) {
+                TemplateCharacter templateCharacter = characterMap.get(item.getTemplateCharacterId());
+                if (ObjectUtil.isNotNull(templateCharacter)) {
+                    groupRequestVO.setTemplateCharacterAvatar(templateCharacter.getAvatar());
+                    groupRequestVO.setTemplateCharacterName(templateCharacter.getName());
+                }
+            }
+            this.sendGroupRequestMessage(groupRequestVO, recvIds, MessageType.GROUP_JOIN_REQUEST.code());
+        }
     }
 
     @Override
@@ -158,7 +232,20 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
 
         Group group = groupService.getById(groupRequest.getGroupId());
         List<Long> recvIds = List.of(group.getOwnerId(), groupRequest.getUserId());
-        this.sendGroupRequestMessage(groupRequest, recvIds, MessageType.GROUP_JOIN_REQUEST.code());
+
+        GroupRequestVO groupRequestVO = BeanUtils.copyProperties(groupRequest, GroupRequestVO.class);
+        groupRequestVO.setGroupName(group.getName());
+        groupRequestVO.setGroupHeadImage(group.getHeadImage());
+        groupRequestVO.setGroupType(group.getGroupType());
+        groupRequestVO.setGroupOwnerId(group.getOwnerId());
+        if (ObjectUtil.isNotNull(groupRequest.getTemplateCharacterId())) {
+            TemplateCharacter templateCharacter = templateCharacterService.findPublishedById(groupRequest.getTemplateCharacterId());
+            if (ObjectUtil.isNotNull(templateCharacter)) {
+                groupRequestVO.setTemplateCharacterAvatar(templateCharacter.getAvatar());
+                groupRequestVO.setTemplateCharacterName(templateCharacter.getName());
+            }
+        }
+        this.sendGroupRequestMessage(groupRequestVO, recvIds, MessageType.GROUP_JOIN_REQUEST.code());
     }
 
     @Lock(prefix = "im:group:request", key = "#id")
@@ -181,7 +268,8 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
 
         Group group = groupService.getById(groupRequest.getGroupId());
         List<Long> recvIds = List.of(group.getOwnerId(), groupRequest.getUserId());
-        this.sendGroupRequestMessage(groupRequest, recvIds, MessageType.GROUP_JOIN_REQUEST_MODIFY.code());
+        GroupRequestVO groupRequestVO = BeanUtils.copyProperties(groupRequest, GroupRequestVO.class);
+        this.sendGroupRequestMessage(groupRequestVO, recvIds, MessageType.GROUP_JOIN_REQUEST_MODIFY.code());
     }
 
     @Lock(prefix = "im:group:request", key = "#id")
@@ -211,7 +299,8 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         groupRequest.setStatus(GroupRequestStatusEnum.REFUSED.getCode());
         this.updateById(groupRequest);
         List<Long> recvIds = List.of(group.getOwnerId(), groupRequest.getUserId());
-        this.sendGroupRequestMessage(groupRequest, recvIds, MessageType.GROUP_JOIN_REQUEST_MODIFY.code());
+        GroupRequestVO groupRequestVO = BeanUtils.copyProperties(groupRequest, GroupRequestVO.class);
+        this.sendGroupRequestMessage(groupRequestVO, recvIds, MessageType.GROUP_JOIN_REQUEST_MODIFY.code());
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -226,6 +315,9 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         }
 
         Group group = groupService.getById(groupRequest.getGroupId());
+        if (group.getDeleted()) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "群聊已解散");
+        }
         // 用户主动申请加入，群主同意
         if (GroupRequestTypeEnum.SELF_JOIN.getCode().equals(groupRequest.getType())
                 && !userId.equals(group.getOwnerId())) {
@@ -376,13 +468,20 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
             groupRequest.setStatus(GroupRequestStatusEnum.AGREED.getCode());
             this.updateById(groupRequest);
             List<Long> recvIds = List.of(group.getOwnerId(), groupRequest.getUserId());
-            this.sendGroupRequestMessage(groupRequest, recvIds, MessageType.GROUP_JOIN_REQUEST_MODIFY.code());
+            GroupRequestVO groupRequestVO = BeanUtils.copyProperties(groupRequest, GroupRequestVO.class);
+            this.sendGroupRequestMessage(groupRequestVO, recvIds, MessageType.GROUP_JOIN_REQUEST_MODIFY.code());
+
+            GroupVO groupVO = BeanUtils.copyProperties(group, GroupVO.class);
+            groupVO.setShowNickName(member.getShowNickName());
+            groupVO.setQuit(member.getQuit());
+            // 发送加群消息
+            groupService.sendAddGroupMessage(groupVO, List.of(groupRequest.getUserId()), true);
 
             String content = null;
             if (GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
-                content = "用户" + user.getNickName() + "加入了群聊";
+                content = user.getNickName() + "加入了群聊";
             } else {
-                content = "用户" + user.getNickName() + "【" + member.getAliasName() + "】" + "加入了群聊";
+                content = user.getNickName() + "【" + member.getAliasName() + "】" + "加入了群聊";
             }
             messageSendUtil.sendTipMessage(group.getId(),
                     session.getUserId(), session.getNickName(), Collections.emptyList(),
@@ -394,7 +493,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         }
     }
 
-    private void sendGroupRequestMessage(GroupRequest groupRequest, List<Long> recvIds, Integer type) {
+    private void sendGroupRequestMessage(GroupRequestVO groupRequest, List<Long> recvIds, Integer type) {
         GroupMessage groupMessage = new GroupMessage();
         groupMessage.setGroupId(groupRequest.getGroupId());
         groupMessage.setSendId(groupRequest.getLaunchUserId());
@@ -436,9 +535,26 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         if (GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "普通群聊不能修改角色数据");
         }
+        TemplateCharacter templateCharacter = templateCharacterService.findPublishedById(dto.getTemplateCharacterId());
+        if (ObjectUtil.isNull(templateCharacter)) {
+            throw new GlobalException("模板角色不存在");
+        }
+
         groupRequest.setTemplateCharacterId(dto.getTemplateCharacterId());
         groupRequest.setUpdateTime(new Date());
         groupRequest.setUpdateBy(userId);
         this.updateById(groupRequest);
+
+        GroupRequestVO groupRequestVO = BeanUtils.copyProperties(groupRequest, GroupRequestVO.class);
+        groupRequestVO.setTemplateCharacterName(templateCharacter.getName());
+        groupRequestVO.setTemplateCharacterAvatar(templateCharacter.getAvatar());
+        groupRequestVO.setGroupName(group.getName());
+        groupRequestVO.setGroupHeadImage(group.getHeadImage());
+        groupRequestVO.setGroupType(group.getGroupType());
+
+        List<Long> recvIds = List.of(group.getOwnerId(), groupRequest.getUserId(), groupRequest.getLaunchUserId());
+        // cecvIds去重
+        recvIds = recvIds.stream().distinct().collect(Collectors.toList());
+        this.sendGroupRequestMessage(groupRequestVO, recvIds, MessageType.GROUP_JOIN_REQUEST_MODIFY.code());
     }
 }

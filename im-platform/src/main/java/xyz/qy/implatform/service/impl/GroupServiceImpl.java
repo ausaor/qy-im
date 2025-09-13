@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -247,12 +248,16 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         // 清理已读缓存
         String key = StrUtil.join(":", RedisKey.IM_GROUP_READED_POSITION, groupId);
         redisTemplate.delete(key);
+
         // 推送解散群聊提示
         this.sendTipMessage(groupId,userIds,String.format("'%s'解散了群聊",session.getNickName()));
 //        messageSendUtil.sendTipMessage(group.getId(),
 //                session.getUserId(), session.getNickName(), userIds,
 //                "群主已将当前群聊解散", GroupChangeTypeEnum.DELETE_GROUP.getCode());
         log.info("删除群聊，群聊id:{},群聊名称:{}", group.getId(), group.getName());
+
+        // 推送同步消息
+        this.sendDelGroupMessage(groupId, userIds);
     }
 
     /**
@@ -301,6 +306,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         // 推送踢出群聊提示
         this.sendTipMessage(groupId,Arrays.asList(userId),"您已被移出群聊");
         log.info("踢出群聊，群聊id:{},群聊名称:{},用户id:{}", group.getId(), group.getName(), userId);
+        // 推送同步消息
+        this.sendDelGroupMessage(groupId, List.of(userId));
     }
 
     @Override
@@ -615,6 +622,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (CollectionUtils.isNotEmpty(groupMembers)) {
             groupMemberService.saveOrUpdateBatch(group.getId(), groupMembers);
 
+            // 推送同步消息给被邀请人
+            for (GroupMember m : groupMembers) {
+                GroupVO groupVo = convert(group, m);
+                this.sendAddGroupMessage(groupVo, List.of(m.getUserId()), false);
+            }
             List<Long> enterUserIds = groupMembers.stream().map(GroupMember::getUserId).collect(Collectors.toList());
             String membersInfo = groupMembers.stream().map(item -> {
                 if (GroupTypeEnum.COMMON.getCode().equals(vo.getGroupType())) {
@@ -623,8 +635,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     return friendMap.getOrDefault(item.getUserId(), new Friend()).getFriendNickName() + "【" + item.getAliasName() + "】";
                 }
             }).collect(Collectors.joining("，"));
-            String content = "用户" +
-                    session.getUserName() + "【" + session.getNickName() + "】" +
+            String content = "【" + session.getNickName() + "】" +
                     "邀请" +
                     membersInfo +
                     "加入了群聊";
@@ -1466,11 +1477,13 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         log.info("用户{}进入群聊，群聊id:{},群聊名称:{},用户id:{}", user.getUserName(), group.getId(), group.getName(), userId);
 
+        GroupVO groupVO = convert(group, member);
+        this.sendAddGroupMessage(groupVO, List.of(userId), false);
         String content = null;
         if (GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
-            content = "用户" + session.getNickName() + "加入了群聊";
+            content = session.getNickName() + "加入了群聊";
         } else {
-            content = "用户" + session.getNickName() + "【" + member.getAliasName() + "】" + "加入了群聊";
+            content = session.getNickName() + "【" + member.getAliasName() + "】" + "加入了群聊";
         }
         messageSendUtil.sendTipMessage(group.getId(),
                 session.getUserId(), session.getNickName(), Collections.emptyList(),
@@ -1642,5 +1655,72 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (count >= 10) {
             throw new GlobalException("群组创建数量已达上限，请删除部分群组后重试");
         }
+    }
+
+    @Override
+    public List<Long> findByOwnerId(Long userId) {
+        return this.lambdaQuery().eq(Group::getOwnerId, userId)
+                .eq(Group::getDeleted, false)
+                .select(Group::getId)
+                .list()
+                .stream()
+                .map(Group::getId)
+                .collect(Collectors.toList());
+    }
+
+    private GroupVO convert(Group group, GroupMember member) {
+        GroupVO vo = BeanUtils.copyProperties(group, GroupVO.class);
+        vo.setShowNickName(member.getShowNickName());
+        vo.setQuit(member.getQuit());
+        return vo;
+    }
+
+    @Override
+    public void sendAddGroupMessage(GroupVO group, List<Long> recvIds, Boolean sendToSelf) {
+        UserSession session = SessionContext.getSession();
+        GroupMessageVO msgInfo = new GroupMessageVO();
+        msgInfo.setContent(JSON.toJSONString(group));
+        msgInfo.setType(MessageType.GROUP_NEW.code());
+        msgInfo.setSendTime(new Date());
+        msgInfo.setGroupId(group.getId());
+        msgInfo.setSendId(session.getUserId());
+        IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
+        sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        sendMessage.setRecvIds(recvIds);
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendResult(false);
+        sendMessage.setSendToSelf(sendToSelf);
+        imClient.sendGroupMessage(sendMessage);
+    }
+
+    private void sendDelGroupMessage(Long groupId, List<Long> recvIds) {
+        UserSession session = SessionContext.getSession();
+        GroupMessageVO msgInfo = new GroupMessageVO();
+        msgInfo.setType(MessageType.GROUP_DEL.code());
+        msgInfo.setSendTime(new Date());
+        msgInfo.setGroupId(groupId);
+        msgInfo.setSendId(session.getUserId());
+        IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
+        sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        sendMessage.setRecvIds(recvIds);
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendResult(false);
+        sendMessage.setSendToSelf(false);
+        imClient.sendGroupMessage(sendMessage);
+    }
+
+    private void sendSyncDndMessage(Long groupId, Boolean isDnd) {
+        UserSession session = SessionContext.getSession();
+        GroupMessageVO msgInfo = new GroupMessageVO();
+        msgInfo.setType(MessageType.GROUP_DND.code());
+        msgInfo.setSendTime(new Date());
+        msgInfo.setGroupId(groupId);
+        msgInfo.setSendId(session.getUserId());
+        msgInfo.setContent(isDnd.toString());
+        IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
+        sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendResult(false);
+        imClient.sendGroupMessage(sendMessage);
     }
 }

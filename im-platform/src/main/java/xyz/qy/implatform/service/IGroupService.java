@@ -103,4 +103,20 @@ public interface IGroupService extends IService<Group> {
      * @param userId 用户id
      */
     void checkUserGroupCount(Long userId);
+
+    /**
+     * 根据群主id查询群聊id
+     *
+     * @param userId 群主id
+     * @return 群聊id
+     */
+    List<Long> findByOwnerId(Long userId);
+
+    /**
+     * 发送加群消息
+     * @param group 群聊信息
+     * @param recvIds 接收者id
+     * @param sendToSelf 是否发送给自己
+     */
+    void sendAddGroupMessage(GroupVO group, List<Long> recvIds, Boolean sendToSelf);
 }

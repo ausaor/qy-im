@@ -176,6 +176,7 @@
             this.pullSystemOfflineMessage(this.$store.state.chatStore.systemMsgMaxSeqNo);
             this.pullOfflineTalks(this.$store.state.talkStore.privateTalkMaxId);
             this.pullFriendRequests();
+            this.pullGroupRequests();
           });
           this.$wsApi.onMessage((cmd, msgInfo) => {
             if (cmd == 2) {
@@ -284,19 +285,28 @@
         }).catch(() => {
         })
       },
+      pullGroupRequests() {
+        this.$http({
+          url: "/group/request/list",
+          method: 'GET'
+        }).then((data) => {
+          this.$store.commit("setGroupRequests", data)
+        }).catch(() => {
+        })
+      },
       handlePrivateMessage(msg) {
         // 标记这条消息是不是自己发的
         msg.selfSend = msg.sendId === this.mine.id;
         // 好友id
         let friendId = msg.selfSend ? msg.recvId : msg.sendId;
         // 消息加载标志
-        if (msg.type == this.$enums.MESSAGE_TYPE.LOADING) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.LOADING) {
           console.log("私聊记录加载......", JSON.parse(msg.content))
           this.$store.commit("loadingPrivateMsg", JSON.parse(msg.content))
           return;
         }
         // 消息已读处理，清空已读数量
-        if (msg.type == this.$enums.MESSAGE_TYPE.READED) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.READED) {
           this.$store.commit("resetUnreadCount", {
             type: 'PRIVATE',
             targetId: msg.recvId
@@ -304,35 +314,35 @@
           return;
         }
         // 消息回执处理,改消息状态为已读
-        if (msg.type == this.$enums.MESSAGE_TYPE.RECEIPT) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.RECEIPT) {
           this.$store.commit("readedMessage", {
             friendId: msg.sendId
           })
           return;
         }
         // 好友申请类消息
-        if (msg.type == this.$enums.MESSAGE_TYPE.FRIEND_REQUEST_ADD) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.FRIEND_REQUEST_ADD) {
           this.$store.commit("addFriendRequest", JSON.parse(msg.content));
           return;
         }
-        if (msg.type == this.$enums.MESSAGE_TYPE.FRIEND_REQUEST_MODIFY) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.FRIEND_REQUEST_MODIFY) {
           this.$store.commit("updateFriendRequest", JSON.parse(msg.content));
           return;
         }
 
         // 新增好友
-        if (msg.type == this.$enums.MESSAGE_TYPE.FRIEND_NEW) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.FRIEND_NEW) {
           this.$store.commit("addFriend", JSON.parse(msg.content));
           return;
         }
         // 删除好友
-        if (msg.type == this.$enums.MESSAGE_TYPE.FRIEND_DEL) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.FRIEND_DEL) {
           this.$store.commit("removeFriend", friendId);
           return;
         }
 
         // 标记这条消息是不是自己发的
-        msg.selfSend = msg.sendId == this.$store.state.userStore.userInfo.id;
+        msg.selfSend = msg.sendId === this.$store.state.userStore.userInfo.id;
         // 单人webrtc 信令
         if (this.$msgType.isRtcPrivate(msg.type)) {
           this.$refs.rtcPrivateVideo.onRTCMessage(msg)
@@ -355,26 +365,51 @@
         this.$store.commit("insertMessage", msg);
         // 播放提示音
         if (!msg.selfSend && this.$msgType.isNormal(msg.type) &&
-            msg.status != this.$enums.MESSAGE_STATUS.READED) {
+            msg.status !== this.$enums.MESSAGE_STATUS.READED) {
           this.playAudioTip();
         }
       },
       handleGroupMessage(msg) {
         // 消息加载标志
-        if (msg.type == this.$enums.MESSAGE_TYPE.LOADING) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.LOADING) {
           console.log("群聊记录加载......", JSON.parse(msg.content))
           this.$store.commit("loadingGroupMsg", JSON.parse(msg.content))
           return;
         }
+
+        // --------------------------群聊申请类消息start--------------------------
+        if (msg.type ===  this.$enums.MESSAGE_TYPE.GROUP_JOIN_REQUEST) {
+          console.log("群聊申请处理......", JSON.parse(msg.content))
+          this.$store.commit("addGroupRequest", JSON.parse(msg.content));
+          return;
+        }
+        if (msg.type ===  this.$enums.MESSAGE_TYPE.GROUP_JOIN_REQUEST_MODIFY) {
+          console.log("群聊申请修改......", JSON.parse(msg.content))
+          this.$store.commit("updateGroupRequest", JSON.parse(msg.content));
+          return;
+        }
+        // --------------------------群聊申请类消息end--------------------------
+
+        // 新增群
+        if (msg.type === this.$enums.MESSAGE_TYPE.GROUP_NEW) {
+          this.$store.commit("addGroup", JSON.parse(msg.content));
+          return;
+        }
+        // 删除群
+        if (msg.type === this.$enums.MESSAGE_TYPE.GROUP_DEL) {
+          this.$store.commit("removeGroup", msg.groupId);
+          return;
+        }
+
         // 群聊有变更
-        if (msg.type == this.$enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
           this.eventGroupChange(msg);
         }
-        if (msg.type == this.$enums.MESSAGE_TYPE.WORD_VOICE && this.mine.autoPlay) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.WORD_VOICE && this.mine.autoPlay) {
           this.eventGroupPlayAudio(msg);
         }
         // 消息已读处理
-        if (msg.type == this.$enums.MESSAGE_TYPE.READED) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.READED) {
           // 我已读对方的消息，清空已读数量
           let chatInfo = {
             type: 'GROUP',
@@ -384,7 +419,7 @@
           return;
         }
         // 消息回执处理
-        if (msg.type == this.$enums.MESSAGE_TYPE.RECEIPT) {
+        if (msg.type === this.$enums.MESSAGE_TYPE.RECEIPT) {
           // 更新消息已读人数
           let msgInfo = {
             id: msg.id,
@@ -397,7 +432,7 @@
           return;
         }
         // 标记这条消息是不是自己发的
-        msg.selfSend = msg.sendId == this.$store.state.userStore.userInfo.id;
+        msg.selfSend = msg.sendId === this.$store.state.userStore.userInfo.id;
         // 群视频信令
         if (this.$msgType.isRtcGroup(msg.type)) {
           this.$nextTick(() => {

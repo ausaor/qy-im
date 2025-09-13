@@ -8,6 +8,15 @@
         <el-button plain class="add-btn" icon="el-icon-plus" title="创建群聊" @click="dialogVisible = true"></el-button>
 			</div>
 			<el-scrollbar class="group-list-items">
+        <div class="top-item" @click="showGroupRequest()" :class="showType === 1 ? 'active' : ''">
+          <div class="top-item-avatar">
+            <head-image :size="45" :name="'新的群聊'" :url="require('@/assets/image/join_group.png')"></head-image>
+            <div class="unread-text" v-show="groupRequestCount > 0">{{groupRequestCount}}</div>
+          </div>
+          <div class="top-item-info">
+            <div class="top-item-name">新的群聊</div>
+          </div>
+        </div>
 				<div v-for="(group,index) in groupStore.groups" :key="index">
 					<group-item v-show="!group.quit && group.remark.startsWith(searchText)" :group="group" :active="group === groupStore.activeGroup"
 					 @click.native="onActiveItem(group,index)">
@@ -16,10 +25,85 @@
 			</el-scrollbar>
 		</el-aside>
 		<el-container class="group-box">
-			<div class="group-header" v-show="activeGroup.id">
+      <div class="header" v-show="showType === 1">
+        新的群聊
+      </div>
+			<div class="group-header" v-show="showType === 2 && activeGroup.id">
 				{{activeGroup.remark}}({{groupMemberCount}})
 			</div>
-			<el-scrollbar class="group-container">
+      <div v-show="showType === 1">
+        <div class="group-request request-box">
+          <el-tabs type="card">
+            <el-tab-pane :label="'收到的邀请' + receivedGroupRequests.length + ')'">
+              <div class="request-item" v-for="(item, idx) in receivedGroupRequests" :key="idx">
+                <div class="group-info">
+                  <div class="group-avatar">
+                    <head-image :size="45" :name="item.groupName" :url="item.groupHeadImage"></head-image>
+                  </div>
+                  <div class="request-info">
+                    <div class="group-name">
+                      <div>{{item.groupName}}</div>
+                      <div class="group-tag">
+                        <el-tag size="mini" effect="dark" color="rgb(0,47,167)"  v-if="item.groupType===1">模板群聊</el-tag>
+                        <el-tag size="mini" effect="dark" color="rgb(105,149,114)" v-if="item.groupType===2">多元角色群聊</el-tag>
+                        <el-tag size="mini" effect="dark" color="rgb(144,0,33)" v-if="item.groupType===3">角色群聊</el-tag>
+                        <el-tag size="mini" effect="dark" color="rgb(176,89,35)" v-if="item.groupType===4">模板角色群聊</el-tag>
+                      </div>
+                    </div>
+                    <div class="info-text"><div>{{item.remark}}</div></div>
+                  </div>
+                  <div class="character-info" v-if="item.templateCharacterName">
+                    <div class="character-avatar">
+                      <head-image :size="30" :name="item.templateCharacterName" :url="item.templateCharacterAvatar"></head-image>
+                    </div>
+                    <div class="character-name">
+                      {{item.templateCharacterName}}
+                    </div>
+                  </div>
+                  <div class="btn-group">
+                    <el-button type="warning" size="mini" @click="modifyGroupRequest(item.id)">修改</el-button>
+                    <el-button type="danger" size="mini" @click="rejectGroupRequest(item.id)">拒绝</el-button>
+                    <el-button type="primary" size="mini" @click="approveGroupRequest(item.id)">同意</el-button>
+                  </div>
+                </div>
+              </div>
+            </el-tab-pane>
+            <el-tab-pane :label="'发起的申请(' + launchGroupRequests.length + ')'">
+              <div class="request-item" v-for="(item, idx) in launchGroupRequests" :key="idx">
+                <div class="group-info">
+                  <div class="group-avatar">
+                    <head-image :size="45" :name="item.groupName" :url="item.groupHeadImage"></head-image>
+                  </div>
+                  <div class="request-info">
+                    <div class="group-name">
+                      <div>{{item.groupName}}</div>
+                      <div class="group-tag">
+                        <el-tag size="mini" effect="dark" color="rgb(0,47,167)"  v-if="item.groupType===1">模板群聊</el-tag>
+                        <el-tag size="mini" effect="dark" color="rgb(105,149,114)" v-if="item.groupType===2">多元角色群聊</el-tag>
+                        <el-tag size="mini" effect="dark" color="rgb(144,0,33)" v-if="item.groupType===3">角色群聊</el-tag>
+                        <el-tag size="mini" effect="dark" color="rgb(176,89,35)" v-if="item.groupType===4">模板角色群聊</el-tag>
+                      </div>
+                    </div>
+                    <div class="info-text"><div>{{item.remark}}</div></div>
+                  </div>
+                  <div class="character-info" v-if="item.templateCharacterName">
+                    <div class="character-avatar">
+                      <head-image :size="30" :name="item.templateCharacterName" :url="item.templateCharacterAvatar"></head-image>
+                    </div>
+                    <div class="character-name">
+                      {{item.templateCharacterName}}
+                    </div>
+                  </div>
+                  <div class="btn-group">
+                    <el-button type="danger" size="mini" @click="recallGroupRequest(item.id)">撤回</el-button>
+                  </div>
+                </div>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+        </div>
+      </div>
+			<el-scrollbar class="group-container" v-show="showType === 2">
 				<div v-show="activeGroup.id">
 					<div class="group-info">
 						<div class="avatar-box">
@@ -90,6 +174,10 @@
                   <use xlink:href="#icon-Music"></use>
                 </svg>
                 <span style="color: #b7eb81;margin-left: 10px;font-size: 16px;">群歌单</span>
+              </div>
+              <div class="group-request-info">
+                <head-image :size="28" :name="'群通知'" :url="require('@/assets/image/join_group.png')"></head-image>
+                <span style="color: rgb(119 158 242);margin-left: 10px;font-size: 16px;">群通知</span>
               </div>
             </div>
 					</div>
@@ -354,6 +442,7 @@
         }],
         bannedTime: 1,
         groupSpaceVisible: false,
+        showType: 0, // 0:不展示；1:新的群聊 2:群组信息
 			};
 		},
     mounted() {
@@ -412,6 +501,7 @@
 				})
 			},
       onActiveItem(group, index) {
+        this.showType = 2;
 				this.$store.commit("activeGroup", index);
 				// store数据不能直接修改，所以深拷贝一份内存
 				this.activeGroup = JSON.parse(JSON.stringify(group));
@@ -424,6 +514,11 @@
           this.isTemplateGroup = false;
         }
 			},
+      showGroupRequest() {
+        this.showType = 1;
+        this.activeGroup = {};
+        this.$store.commit("clearActiveGroup");
+      },
       onInviteMember() {
         if (this.activeGroup.groupType===1) {
           this.querySelectableTemplateCharacter();
@@ -823,6 +918,33 @@
           data: params
         }).then(() => {})
       },
+      modifyGroupRequest() {
+
+      },
+      rejectGroupRequest(id) {
+        this.$http({
+          url: `/group/request/reject?id=${id}`,
+          method: "post",
+        }).then(() => {
+
+        })
+      },
+      approveGroupRequest(id) {
+        this.$http({
+          url: `/group/request/approve?id=${id}`,
+          method: "post",
+        }).then(() => {
+
+        })
+      },
+      recallGroupRequest(id) {
+        this.$http({
+          url: `/group/request/recall?id=${id}`,
+          method: "post",
+        }).then(() => {
+
+        })
+      }
 		},
 		computed: {
 			groupStore() {
@@ -865,6 +987,20 @@
         }
         return 0;
       },
+      receivedGroupRequests() {
+        return this.$store.state.groupStore.groupRequests.filter((r) => r.userId === this.mine.id && r.status === 1 && r.type === 2)
+      },
+      launchGroupRequests() {
+        return this.$store.state.groupStore.groupRequests.filter((r) => r.userId === this.mine.id && r.status === 1 && r.type === 1)
+      },
+      groupRequestCount() {
+        return this.receivedGroupRequests.length;
+      },
+      joinGroupRequests() {
+        // 群组申请(当前用户是群主，待审核的加群申请)
+        return this.activeGroup?.ownerId === this.mine.id ? this.$store.state.groupStore.groupRequests
+            .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1 && r.groupId === this.activeGroup.id) : [];
+      }
 		},
 	}
 </script>
@@ -898,6 +1034,55 @@
 			
 			.group-list-items {
 				flex: 1;
+
+        .top-item {
+          height: 50px;
+          display: flex;
+          position: relative;
+          padding: 5px;
+          align-items: center;
+          white-space: nowrap;
+          cursor: pointer;
+
+          .top-item-avatar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+
+            .unread-text {
+              position: absolute;
+              background-color: #f56c6c;
+              right: -4px;
+              top: -2px;
+              color: #fff;
+              border-radius: 30px;
+              padding: 1px 5px;
+              font-size: 10px;
+              text-align: center;
+              white-space: nowrap;
+              border: 1px solid #f1e5e5;
+            }
+          }
+
+          .top-item-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding-left: 10px;
+            text-align: left;
+
+            .top-item-name {
+              font-size: 14px;
+              white-space: nowrap;
+              overflow: hidden;
+            }
+          }
+
+          &.active {
+            background-color: var(--active-color);
+          }
+        }
 			}
 		}
 
@@ -905,6 +1090,19 @@
 			display: flex;
 			flex-direction: column;
 			border: var(--border-color) solid 1px;
+
+      .header {
+        width: 100%;
+        height: 50px;
+        padding: 5px;
+        line-height: 50px;
+        font-size: 20px;
+        text-align: left;
+        text-indent: 10px;
+        font-weight: 600;
+        background-color: white;
+        border: var(--border-color) solid 1px;
+      }
 
 			.group-header {
 				width: 100%;
@@ -918,6 +1116,82 @@
 				background-color: white;
 				border: var(--border-color) solid 1px;
 			}
+
+      .request-box {
+        flex: 1;
+
+        .group-info {
+          display: flex;
+          position: relative;
+          align-items: center;
+          cursor: pointer;
+          margin: 0 30px;
+          padding: 10px;
+          border-bottom: 1px solid #ccc;
+
+          .request-info {
+            flex: 1;
+            margin-left: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+
+            .group-name {
+              display: flex;
+              align-items: center;
+              font-weight: 600;
+              font-size: 16px;
+
+              .group-tag {
+                display: flex;
+                line-height: 22px;
+
+                .el-tag {
+                  min-width: 22px;
+                  text-align: center;
+                  background-color: #2830d3;
+                  border-radius: 10px;
+                  border: 0;
+                  height: 16px;
+                  line-height: 16px;
+                  font-size: 10px;
+                  margin-left: 2px;
+                  opacity: .8;
+                }
+              }
+            }
+
+            .info-text {
+              display: flex;
+              word-break: break-all;
+              font-size: 14px;
+              line-height: 20px;
+              text-align: left;
+            }
+          }
+
+          .character-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+
+            .character-name {
+              margin-left: 10px;
+            }
+          }
+
+          .btn-group {
+            text-align: left !important;
+            display: flex;
+            margin-left: 60px;
+          }
+        }
+      }
+
+      .group-request {
+        display: flex;
+        flex-direction: column;
+      }
 
 			.group-container {
 				padding: 20px;
@@ -1034,6 +1308,13 @@
             }
 
             .group-music {
+              display: flex;
+              align-items: center;
+              cursor: pointer;
+              margin-top: 20px;
+            }
+
+            .group-request-info {
               display: flex;
               align-items: center;
               cursor: pointer;
