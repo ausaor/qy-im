@@ -79,4 +79,7 @@ public class UserVO {
 
     @ApiModelProperty(value = "是否需要人工审核")
     private Boolean isManualApprove;
+
+    @ApiModelProperty(value = "邀我进群需要审核")
+    private Boolean groupReview;
 }

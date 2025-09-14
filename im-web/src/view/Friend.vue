@@ -1,7 +1,7 @@
 <template>
   <el-container class="friend-page">
-    <el-aside width="14%" class="friend-list-box">
-      <div class="friend-list-header">
+    <el-aside width="260px" class="aside">
+      <div class="header">
         <el-input class="search-text" placeholder="搜索" v-model="searchText">
           <i class="el-icon-search el-input__icon" slot="prefix"> </i>
         </el-input>
@@ -121,7 +121,7 @@
                 </el-col>
               </el-row>
             </div>
-            <div class="frient-btn-group">
+            <div class="friend-btn-group">
               <el-button v-show="isFriend" icon="el-icon-chat-dot-round" type="primary"  @click="onSendMessage(userInfo)">发送消息</el-button>
               <el-button v-show="!isFriend" icon="el-icon-plus" type="primary"  @click="onAddFriend(userInfo)">加为好友</el-button>
               <el-button v-show="isFriend" icon="el-icon-delete"  type="danger" @click="onDelFriend(userInfo)">删除好友</el-button>
@@ -442,25 +442,22 @@ export default {
 
 <style scoped lang="scss">
 .friend-page {
-  .friend-list-box {
+  .aside {
     display: flex;
     flex-direction: column;
-    border-right: #54CC36 solid 1px;
     background: white;
+    border-right: 1px solid #cccccc;
 
-    .friend-list-header {
+    .header {
       height: 50px;
       display: flex;
       align-items: center;
-      padding: 5px 8px;
+      padding: 0 8px;
 
       .add-btn {
         padding: 5px !important;
         margin: 5px;
-        font-size: 20px;
-        color: #54CC36;
-        border: #54CC36 1px solid;
-        background-color: #F0F8FF;
+        font-size: 16px;
         border-radius: 50%;
       }
     }
@@ -664,7 +661,7 @@ export default {
       }
     }
 
-    .frient-btn-group {
+    .friend-btn-group {
       text-align: left !important;
       padding: 20px;
       display: flex;

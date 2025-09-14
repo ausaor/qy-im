@@ -1,7 +1,7 @@
 <template>
 	<el-container class="group-page">
-		<el-aside width="14%" class="group-list-box">
-			<div class="group-list-header">
+		<el-aside width="260px" class="aside">
+			<div class="header">
         <el-input class="search-text" placeholder="搜索" v-model="searchText">
           <i class="el-icon-search el-input__icon" slot="prefix"> </i>
         </el-input>
@@ -1031,27 +1031,22 @@
 
 <style lang="scss">
 	.group-page {
-		.group-list-box {
-			display: flex;
-			flex-direction: column;
-      border-right: #54CC36 solid 1px;
+		.aside {
+      display: flex;
+      flex-direction: column;
 			background: white;
+      border-right: 1px solid #cccccc;
 
-			.group-list-header {
+			.header {
         height: 50px;
         display: flex;
         align-items: center;
-        padding: 3px 8px;
-        background-color: white;
-        border-bottom: 1px #ddd solid;
+        padding: 0 8px;
 
         .add-btn {
           padding: 5px !important;
           margin: 5px;
-          font-size: 20px;
-          color: #54CC36;
-          border: #54CC36 1px solid;
-          background-color: #F0F8FF;
+          font-size: 16px;
           border-radius: 50%;
         }
 			}

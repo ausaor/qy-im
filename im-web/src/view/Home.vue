@@ -1,101 +1,107 @@
 <template>
-	<el-container class="home-page">
-		<el-aside width="5%" class="navi-bar">
-			<div class="user-head-image" style="width: 100%">
-        <head-image :name="$store.state.userStore.userInfo.nickName"
-                    :url="$store.state.userStore.userInfo.headImage"
-                    :size="60" @click.native="showSettingDialog=true">
-        </head-image>
-			</div>
-
-			<el-menu class="menu-bar" text-color="#ddd" style="margin-top: 15px;width: 100%">
-				<el-menu-item title="聊天">
-					<router-link v-bind:to="'/home/chat'">
-            <span>
-              <svg class="icon svg-icon" aria-hidden="true">
-                <use xlink:href="#icon-xiaoxi"></use>
-              </svg>
-            </span>
-						<div v-show="unreadCount>0" class="unread-text">{{unreadCount}}</div>
-					</router-link>
-				</el-menu-item>
-				<el-menu-item title="好友">
-					<router-link v-bind:to="'/home/friend'">
-            <span>
-              <svg class="icon svg-icon" aria-hidden="true">
-                <use xlink:href="#icon-friend"></use>
-              </svg>
-            </span>
-            <div v-show="friendRequestCount > 0" class="unread-text">{{friendRequestCount}}</div>
-					</router-link>
-				</el-menu-item>
-				<el-menu-item title="群聊">
-					<router-link v-bind:to="'/home/group'">
-            <span>
-              <svg class="icon svg-icon" aria-hidden="true">
-                <use xlink:href="#icon-group"></use>
-              </svg>
-            </span>
-            <div v-show="groupActivity || (groupRequestCount > 0)" class="unread-dot"></div>
-					</router-link>
-				</el-menu-item>
-        <el-menu-item title="经纬网">
-          <router-link v-bind:to="'/home/regionGroup'">
+	<div class="home-page">
+    <div class="app-container" :class="{ fullscreen: isFullscreen }">
+      <div class="navi-bar">
+        <div class="navi-bar-box">
+          <div class="top">
+            <div class="user-head-image">
+              <head-image :name="$store.state.userStore.userInfo.nickName"
+                          :url="$store.state.userStore.userInfo.headImage"
+                          :size="38" @click.native="showSettingDialog=true">
+              </head-image>
+            </div>
+            <div class="menu">
+              <router-link class="link" v-bind:to="'/home/chat'">
+                <div class="menu-item">
+                  <span>
+                    <svg class="icon svg-icon" aria-hidden="true">
+                      <use xlink:href="#icon-xiaoxi"></use>
+                    </svg>
+                  </span>
+                  <div v-show="unreadCount>0" class="unread-text">{{unreadCount}}</div>
+                </div>
+              </router-link>
+              <router-link class="link" v-bind:to="'/home/friend'">
+                <div class="menu-item">
+                  <span>
+                    <svg class="icon svg-icon" aria-hidden="true">
+                      <use xlink:href="#icon-friend"></use>
+                    </svg>
+                  </span>
+                  <div v-show="friendRequestCount > 0" class="unread-text">{{friendRequestCount}}</div>
+                </div>
+              </router-link>
+              <router-link class="link" v-bind:to="'/home/group'">
+                <div class="menu-item">
+                  <span>
+                    <svg class="icon svg-icon" aria-hidden="true">
+                      <use xlink:href="#icon-group"></use>
+                    </svg>
+                  </span>
+                  <div v-show="groupActivity || (groupRequestCount > 0)" class="unread-dot"></div>
+                </div>
+              </router-link>
+              <router-link class="link" v-bind:to="'/home/regionGroup'">
+                <div class="menu-item">
+                  <span>
+                    <svg class="icon svg-icon" aria-hidden="true">
+                      <use xlink:href="#icon-diqiu"></use>
+                    </svg>
+                  </span>
+                  <div v-show="unreadRegionCount>0" class="unread-text">{{unreadRegionCount}}</div>
+                  <div v-show="regionGroupActivity" class="unread-dot"></div>
+                </div>
+              </router-link>
+              <router-link class="link" v-bind:to="'/home/ai-chat'">
+                <div class="menu-item">
+                  <span>
+                    <svg class="icon svg-icon" aria-hidden="true">
+                      <use xlink:href="#icon-AIzhushou"></use>
+                    </svg>
+                  </span>
+                </div>
+              </router-link>
+              <router-link class="link" v-bind:to="'/home/square'">
+                <div class="menu-item">
+                  <span>
+                    <svg class="icon svg-icon" aria-hidden="true">
+                     <use xlink:href="#icon-fenleiorguangchangorqitatianchong"></use>
+                    </svg>
+                  </span>
+                  <div v-show="unreadUserCount > 0 || notifyCount > 0" class="unread-text">{{unreadUserCount + notifyCount}}</div>
+                </div>
+              </router-link>
+            </div>
+          </div>
+          <div class="botoom">
+            <div class="bottom-item" @click="showSetting">
               <span>
                 <svg class="icon svg-icon" aria-hidden="true">
-                  <use xlink:href="#icon-diqiu"></use>
+                  <use xlink:href="#icon-shezhi"></use>
                 </svg>
               </span>
-              <div v-show="unreadRegionCount>0" class="unread-text">{{unreadRegionCount}}</div>
-              <div v-show="regionGroupActivity" class="unread-dot"></div>
-          </router-link>
-        </el-menu-item>
-        <el-menu-item title="AI对话">
-          <router-link v-bind:to="'/home/ai-chat'">
-            <span>
-              <svg class="icon svg-icon" aria-hidden="true">
-                <use xlink:href="#icon-AIzhushou"></use>
-              </svg>
+            </div>
+            <div class="bottom-item" @click="showOperation">
+              <span>
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-operation"></use>
+                </svg>
             </span>
-          </router-link>
-        </el-menu-item>
-        <el-menu-item title="广场">
-          <router-link v-bind:to="'/home/square'">
-            <span>
-              <svg class="icon svg-icon" aria-hidden="true">
-               <use xlink:href="#icon-fenleiorguangchangorqitatianchong"></use>
-              </svg>
-            </span>
-            <div v-show="unreadUserCount > 0 || notifyCount > 0" class="unread-text">{{unreadUserCount + notifyCount}}</div>
-          </router-link>
-        </el-menu-item>
-
-				<el-menu-item title="设置" @click="showSetting()">
-					<span>
-            <svg class="icon svg-icon" aria-hidden="true">
-              <use xlink:href="#icon-shezhi"></use>
-            </svg>
-          </span>
-				</el-menu-item>
-        <el-menu-item title="操作" @click="showOperation()">
-          <span>
-            <svg class="icon svg-icon" aria-hidden="true">
-              <use xlink:href="#icon-operation"></use>
-            </svg>
-          </span>
-        </el-menu-item>
-        <el-menu-item @click="onExit()" title="退出">
-          <span>
-            <svg class="icon svg-icon" aria-hidden="true">
-              <use xlink:href="#icon-tuichu"></use>
-            </svg>
-          </span>
-        </el-menu-item>
-			</el-menu>
-		</el-aside>
-		<el-main class="content-box">
-			<router-view></router-view>
-		</el-main>
+            </div>
+            <div class="bottom-item" @click="onExit()" title="退出">
+              <span>
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-tuichu"></use>
+                </svg>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="content-box">
+        <router-view></router-view>
+      </div>
+    </div>
 		<setting :visible="showSettingDialog" @close="closeSetting()"></setting>
     <operation :visible="showOperationDialog" @close="closeOperation()"></operation>
     <user-info v-show="uiStore.userInfo.show" :pos="uiStore.userInfo.pos" :user="uiStore.userInfo.user"
@@ -117,9 +123,8 @@
              :preload="'auto'"
              :list-max-height="'300px'"
              :list-folded="true"
-             :featured="true"
-    />
-	</el-container>
+             :featured="true"/>
+	</div>
 </template>
 
 <script>
@@ -152,6 +157,7 @@
         lastPlayAudioTime: new Date()-1000,
         sse: null,
         messages: [],
+        isFullscreen: true,
 			}
 		},
 		methods: {
@@ -379,12 +385,10 @@
 
         // --------------------------群聊申请类消息start--------------------------
         if (msg.type ===  this.$enums.MESSAGE_TYPE.GROUP_JOIN_REQUEST) {
-          console.log("群聊申请处理......", JSON.parse(msg.content))
           this.$store.commit("addGroupRequest", JSON.parse(msg.content));
           return;
         }
         if (msg.type ===  this.$enums.MESSAGE_TYPE.GROUP_JOIN_REQUEST_MODIFY) {
-          console.log("群聊申请修改......", JSON.parse(msg.content))
           this.$store.commit("updateGroupRequest", JSON.parse(msg.content));
           return;
         }
@@ -794,76 +798,190 @@
 </script>
 
 <style scoped lang="scss">
-.navi-bar {
-  background: white;
-  padding: 10px;
+.home-page {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  overflow: hidden;
 
-  .user-head-image{
-    /*转为flex弹性盒布局*/
+  .app-container {
+    width: 62vw;
+    height: 80vh;
     display: flex;
-    /*主轴上的对齐方式为居中*/
-    justify-content: center;
-    /*交叉轴上对齐方式为居中*/
-    align-items: center;
+    min-height: 600px;
+    min-width: 970px;
+    position: absolute;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: 0.2s;
+
+    &.fullscreen {
+      transition: 0.2s;
+      width: 100vw;
+      height: 100vh;
+    }
   }
 
-  .el-menu {
-    border: none;
-    flex: 1;
+  .navi-bar {
+    --icon-font-size: 22px;
+    --width: 60px;
+    width: var(--width);
+    background: var(--im-color-primary-light-1);
+    padding-top: 20px;
+    border-right: #cccccc solid 1px;
 
-    .el-menu-item {
-      margin: 25px auto;
+    .navi-bar-box {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
 
-      .unread-text {
-        position: absolute;
-        line-height: 20px;
-        background-color: #f56c6c;
-        left: 36px;
-        top: 7px;
-        color: white;
-        border-radius: 30px;
-        padding: 0 5px;
-        font-size: 10px;
-        text-align: center;
-        white-space: nowrap;
-        border: 1px solid #f1e5e5;
+      .botoom {
+        margin-bottom: 30px;
+      }
+    }
+
+    .user-head-image {
+      display: flex;
+      justify-content: center;
+    }
+
+    .menu {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      .link {
+        text-decoration: none;
       }
 
-      .unread-dot {
-        position: absolute;
-        bottom: 1%;
-        right: 16%;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background-color: red;
+      .router-link-active .menu-item {
+        color: #fff;
+        background: var(--im-color-primary-light-2);
+      }
+
+      .link:not(.router-link-active) .menu-item:hover {
+        color: var(--im-color-primary-light-7);
+      }
+
+      .menu-item {
+        position: relative;
+        color: var(--im-color-primary-light-4);
+        width: var(--width);
+        height: 46px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 10px;
+        margin-top: 10px;
+
+        .icon {
+          font-size: var(--icon-font-size);
+          display: block;
+          height: 25px;
+          width: 25px;
+          line-height: 25px;
+        }
+
+        .unread-text {
+          position: absolute;
+          background-color: #f56c6c;
+          left: 28px;
+          top: 8px;
+          color: white;
+          border-radius: 30px;
+          padding: 0 5px;
+          font-size: 10px;
+          text-align: center;
+          white-space: nowrap;
+          border: 1px solid #f1e5e5;
+        }
+
+        .unread-dot {
+          position: absolute;
+          bottom: 1%;
+          right: 16%;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background-color: red;
+        }
+      }
+    }
+
+    .bottom-item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 50px;
+      width: 100%;
+      cursor: pointer;
+      color: var(--im-color-primary-light-4);
+      font-size: var(--icon-font-size);
+
+      .icon {
+        font-size: var(--icon-font-size);
+        display: block;
+        height: 25px;
+        width: 25px;
+        line-height: 25px;
+      }
+
+      &:hover {
+        font-weight: 600;
+        color: var(--im-color-primary-light-7);
       }
     }
   }
-}
 
-.menu-bar {
-  background: inherit;
-
-  .icon {
-    display: block;
-    height: 56px;
-    line-height: 56px;
-    font-size: 28px;
-    margin: 10px auto;
-    color: #333;
-    -webkit-transition: font-size 0.25s linear, width 0.25s linear;
-    -moz-transition: font-size 0.25s linear, width 0.25s linear;
-    transition: font-size 0.25s linear, width 0.25s linear;
+  .content-box {
+    flex: 1;
+    padding: 0;
+    background-color: #fff;
+    text-align: center;
   }
 }
 
-.content-box {
-  padding: 0;
-  background-color: #FFFAFA;
-  color: #333;
-  text-align: center;
-}
+//.icon {
+//  display: block;
+//  height: 56px;
+//  line-height: 56px;
+//  font-size: 28px;
+//  margin: 10px auto;
+//  color: #333;
+//  -webkit-transition: font-size 0.25s linear, width 0.25s linear;
+//  -moz-transition: font-size 0.25s linear, width 0.25s linear;
+//  transition: font-size 0.25s linear, width 0.25s linear;
+//}
+
+//.unread-text {
+//  position: absolute;
+//  line-height: 20px;
+//  background-color: #f56c6c;
+//  left: 36px;
+//  top: 7px;
+//  color: white;
+//  border-radius: 30px;
+//  padding: 0 5px;
+//  font-size: 10px;
+//  text-align: center;
+//  white-space: nowrap;
+//  border: 1px solid #f1e5e5;
+//}
+//
+//.unread-dot {
+//  position: absolute;
+//  bottom: 1%;
+//  right: 16%;
+//  width: 12px;
+//  height: 12px;
+//  border-radius: 50%;
+//  background-color: red;
+//}
 
 .aplayer {
   position: absolute;

@@ -161,6 +161,7 @@ public class User extends Model<User> {
     /**
      * 邀请进群组是否需要审核
      */
+    @TableField("group_review")
     private Boolean groupReview;
 
     /**

@@ -1,6 +1,6 @@
 <template>
   <el-container class="im-box-square">
-    <el-aside width="14%" class="l-square-box">
+    <el-aside width="260px" class="l-square-box">
       <div class="l-square-list">
         <community-item-talk :community="communityList[0]" :active="communityList[0].sort === activeIndex"
                           @click.native="gotoTalkSpace(communityList[0])"></community-item-talk>
@@ -83,7 +83,7 @@ export default {
   .l-square-box {
     display: flex;
     flex-direction: column;
-    border-right: var(--line-color) solid 1px;
+    border-right: #cccccc solid 1px;
     background: white;
     overflow: hidden;
 

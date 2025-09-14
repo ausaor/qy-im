@@ -72,8 +72,9 @@
     position: relative;
     padding: 5px;
     align-items: center;
-    background-color: var(--bg-color);
+    background-color: white;
     white-space: nowrap;
+    cursor: pointer;
     &:hover {
       background-color: var(--active-color);
     }

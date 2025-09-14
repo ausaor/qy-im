@@ -118,7 +118,7 @@ export default {
   position: relative;
   padding: 5px;
   align-items: center;
-  background-color: var(--bg-color);
+  background-color: white;
   white-space: nowrap;
   color: black;
   cursor: pointer;

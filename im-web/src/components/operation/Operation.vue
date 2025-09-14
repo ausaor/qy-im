@@ -12,6 +12,14 @@
             </el-switch></el-col>
           </el-row>
           <el-row>
+            <el-col :span="24"><label>邀我进群需要验证：</label><el-switch
+                v-model="userInfo.groupReview"
+                @change="changeGroupReview"
+                active-text="开启"
+                inactive-text="关闭">
+            </el-switch></el-col>
+          </el-row>
+          <el-row>
             <el-col :span="24"><label>好友上线通知：</label><el-switch
                 v-model="friendOnlineNotice"
                 active-text="开"
@@ -330,6 +338,10 @@ export default {
     },
     changeFriendReview(value) {
       this.userInfo.friendReview = value;
+      this.updateUserInfo();
+    },
+    changeGroupReview() {
+      this.userInfo.groupReview = value;
       this.updateUserInfo();
     },
     changeSoundPlay(value) {

@@ -1,7 +1,7 @@
 <template>
   <el-container class="chat-page">
-    <el-aside width="14%" class="region-list-box">
-      <div class="region-list-header" @click="chooseRegion">
+    <el-aside width="260px" class="aside">
+      <div class="header" @click="chooseRegion">
         {{mapVisible ? '关闭' : '选择地区'}}
       </div>
       <el-scrollbar class="group-list-items">
@@ -325,14 +325,13 @@ export default {
 
 <style scoped lang="scss">
   .chat-page {
-    .region-list-box {
+    .aside {
       display: flex;
       flex-direction: column;
-      border-right: #54CC36 solid 1px;
       background: white;
-      width: 3rem;
+      border-right: 1px solid #cccccc;
 
-      .region-list-header {
+      .header {
         background-color: #FFFAFA;
         color: orange;
         width: 98%;
@@ -351,33 +350,37 @@ export default {
 
     .region-map {
       display: flex;
-      height: 100%;
+      height: 100vh;
       position: relative;
       overflow: hidden;
+      box-sizing: border-box;
 
       .tree-side {
         width: 15%;
         margin-top: 10px;
-        border-bottom: 1px solid #54CC36;
         height: 100%;
+        display: flex;
+        flex-direction: column;
         overflow: auto;
 
         .tree-aside {
           width: 100%;
-          max-height: 750px;
-          overscroll-behavior: contain;
-          overflow: auto;
+          min-height: 600px;
           box-sizing: content-box;
+          flex: 1;
+          overflow-y: auto;
+          flex-shrink: 0;
         }
 
         .tree-footer {
+          flex: 1;
+          flex-shrink: 0;
           width: 100%;
-          height: 120px;
+          height: 150px;
           text-align: left;
           margin-top: 5px;
-          margin-left: 5px;
-          overscroll-behavior: contain;
           overflow: auto;
+          padding: 5px;
           box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
 
           .tips {

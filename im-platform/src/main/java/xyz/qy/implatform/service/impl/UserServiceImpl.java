@@ -356,6 +356,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setAutoPlay(vo.getAutoPlay());
         user.setSoundPlay(vo.getSoundPlay());
         user.setFriendReview(vo.getFriendReview());
+        user.setGroupReview(vo.getGroupReview());
         this.updateById(user);
         log.info("用户信息更新，用户:{}", user);
     }

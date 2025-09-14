@@ -1,16 +1,15 @@
 <template>
 	<el-container class="chat-page">
-		<el-aside width="14%" class="chat-list-box">
-			<div class="chat-list-header">
+		<el-aside width="260px" class="aside">
+			<div class="header">
         <el-input class="search-text" placeholder="搜索" v-model="searchText">
           <i class="el-icon-search el-input__icon" slot="prefix"> </i>
         </el-input>
 			</div>
-      <div class="chat-list-loading"  v-if="loading" v-loading="true" element-loading-text="消息接收中..."
-           element-loading-spinner="el-icon-loading" element-loading-background="#eee">
-        <div class="chat-loading-box"></div>
+      <div class="chat-loading"  v-if="loading" v-loading="true" element-loading-text="消息接收中..."
+           element-loading-spinner="el-icon-loading" element-loading-background="#F9F9F9" element-loading-size="24">
       </div>
-			<el-scrollbar class="chat-list-items">
+			<el-scrollbar class="chat-items">
 				<div v-for="(chat,index) in chatStore.chats" :key="index">
 					<chat-item
                v-show="!chat.delete && chat.showName.includes(searchText)"
@@ -22,7 +21,7 @@
 				</div>
 			</el-scrollbar>
 		</el-aside>
-		<el-container class="chat-box">
+		<el-container>
 			<chat-box v-if="chatStore.activeChat && (chatStore.activeChat.type=== 'PRIVATE' || chatStore.activeChat.type=== 'GROUP')" :chat="chatStore.activeChat"></chat-box>
       <chat-system-box v-if="chatStore.activeChat && chatStore.activeChat.type=== 'SYSTEM'" :chat="chatStore.activeChat"></chat-system-box>
 		</el-container>
@@ -72,32 +71,37 @@
 </script>
 
 <style scoped lang="scss">
-	.chat-page {
-		.chat-list-box {
-			display: flex;
-			flex-direction: column;
-			border-right: 1px #54CC36 solid;
-			background: white;
-			width: 3rem;
+  .chat-page {
+    .aside {
+      display: flex;
+      flex-direction: column;
+      background: white;
+      border-right: 1px solid #cccccc;
 
-			.chat-list-header {
-        padding: 3px 8px;
-        line-height: 50px;
-        border-bottom: 1px #ddd solid;
-			}
+      .header {
+        height: 50px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+      }
 
-      .chat-list-loading{
+      .chat-loading {
         height: 50px;
         background-color: #eee;
 
-        .chat-loading-box{
-          height: 100%;
+        .el-icon-loading {
+          font-size: 24px;
+          color: #999999;
+        }
+
+        .el-loading-text {
+          color: #999999;
         }
       }
 
-			.chat-list-items{
-				flex: 1;
-			}
-		}
-	}
+      .chat-items {
+        flex: 1;
+      }
+    }
+  }
 </style>

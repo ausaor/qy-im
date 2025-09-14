@@ -53,14 +53,14 @@ export default {
 
 <style scoped lang="scss">
 .item {
-  height: 65px;
+  height: 45px;
   display: flex;
   margin-bottom: 1px;
   position: relative;
   padding-left: 15px;
   align-items: center;
   padding-right: 5px;
-  background-color: var(--bg-color);
+  background-color: white;
   white-space: nowrap;
   cursor: pointer;
 
