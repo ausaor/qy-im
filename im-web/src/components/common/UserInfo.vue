@@ -6,22 +6,28 @@
 					<head-image :name="user.nickName" :url="user.headImage" :size="60" :online="user.online"
                 @click.native="showFullImage()"> </head-image>
 				</div>
-				<div>
-					<el-descriptions :column="1" :title="user.userName" class="user-info-items">
-						<el-descriptions-item label="昵称">{{ user.nickName }}
-						</el-descriptions-item>
-            <el-descriptions-item label="地区">{{ user.province }}
-            </el-descriptions-item>
-						<el-descriptions-item label="签名">{{ user.signature }}
-						</el-descriptions-item>
-					</el-descriptions>
-				</div>
+        <div class="info-card">
+          <div class="header">
+            <div class="nick-name">{{ user.nickName }}</div>
+            <div v-if="user.sex == 0" class="icon iconfont icon-man" style="color: darkblue;"></div>
+            <div v-if="user.sex == 1" class="icon iconfont icon-woman" style="color: darkred;"></div>
+          </div>
+          <div class="info-item">
+            用户名: {{ user.userName }}
+          </div>
+          <div class="info-item">
+            地区: {{ user.province }}
+          </div>
+          <div class="signature">
+            {{ user.signature }}
+          </div>
+        </div>
 				
 			</div>
 			<el-divider content-position="center"></el-divider>
 			<div class="user-btn-group">
-				<el-button v-show="isFriend" type="primary" @click="onSendMessage()">发消息</el-button>
-				<el-button v-show="!isFriend" type="primary" @click="onAddFriend()">加为好友</el-button>
+				<el-button size="small" v-show="isFriend" type="primary" @click="onSendMessage()">发消息</el-button>
+				<el-button size="small" v-show="!isFriend" type="primary" @click="onAddFriend()">加为好友</el-button>
 			</div>
 		</div>
 	</div>
@@ -134,27 +140,43 @@
 		border: var(--border-color) solid 1px;
 		border-radius: 5px;
 		padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
 
 		.user-info-box {
 			display: flex;
 
-			.user-info-items {
-				margin-left: 10px;
-				white-space: nowrap;
-				overflow: hidden;
+      .info-card {
+        flex: 1;
+        padding-left: 10px;
 
-				.el-descriptions__header { 
-					margin-bottom: 5px;
-				}
-				
-				.el-descriptions__title {
-					font-size: 20px;
-				}
-				
-				.el-descriptions-item__cell {
-					padding-bottom: 1px;
-				}
-			}
+        .header {
+          display: flex;
+          align-items: center;
+
+          .nick-name {
+            font-size: 16px;
+            font-weight: 600;
+          }
+
+          .icon {
+            margin-left: 3px;
+            font-size: 14px;
+          }
+        }
+
+        .info-item {
+          font-size: 14px;
+          margin-top: 5px;
+          word-break: break-all;
+        }
+
+        .signature {
+          font-size: 13px;
+          margin-top: 5px;
+          color: #888;
+          word-break: break-all;
+        }
+      }
 		}
 
 		.user-btn-group {

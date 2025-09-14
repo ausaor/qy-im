@@ -1,7 +1,7 @@
 <template>
 	<div class="group-member" @contextmenu.prevent="showRightMenu($event)">
     <head-image :id="member.userId" :name="member.aliasName"
-                :url="member.headImage" :size="40"
+                :url="member.headImage" :size="38"
                 :online="member.online" >
     </head-image>
     <div  v-if="showDel" @click.stop="onDelete()" class="btn-kick el-icon-error"></div>

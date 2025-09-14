@@ -53,7 +53,7 @@ export default {
     padding-left: 10px;;
     padding-right: 10px;
     align-items: center;
-    background-color: var(--bg-color);
+    background-color: white;
     white-space: nowrap;
     box-sizing: border-box;
 

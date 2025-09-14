@@ -1,7 +1,7 @@
 <template>
   <div class="chat-group-side">
     <div class="group-side-search">
-      <el-input placeholder="搜索群成员" v-model="searchText">
+      <el-input placeholder="搜索群成员" v-model="searchText" size="small">
       </el-input>
       <el-button class="refresh-btn" icon="el-icon-refresh" @click="loadRegionGroupMembers(regionGroup.id)"></el-button>
     </div>
@@ -44,7 +44,7 @@
       <div class="operation-item member-info">
         <label>备注：</label>
         <el-input
-            size="small"
+            size="mini"
             placeholder="群昵称"
             minlength="1"
             maxlength="10"
@@ -471,8 +471,8 @@ export default {
 
 <style scoped lang="scss">
 .chat-group-side {
-  border-left: 1px solid var(--line-color);
-  background-color: var(--bg-color);
+  border-left: 1px solid #cccccc;
+  background-color: white;
   height: 100%;
   box-sizing: content-box;
   padding-left: 2px;
@@ -483,7 +483,7 @@ export default {
     .refresh-btn {
       padding: 5px !important;
       margin: 5px;
-      font-size: 20px;
+      font-size: 14px;
       color: #54CC36;
       border: #54CC36 1px solid;
       background-color: #F0F8FF;
@@ -585,19 +585,19 @@ export default {
 
     .member-info {
       overflow: hidden;
-      height: 32px;
-      line-height: 32px;
+      height: 28px;
+      line-height: 28px;
 
       .avatar-uploader {
-        width: 32px;
-        height: 32px;
-        line-height: 32px;
+        width: 28px;
+        height: 28px;
+        line-height: 28px;
         margin-left: 10px;
         margin-right: 20px;
 
         .member-avatar {
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           object-fit: cover;
         }
       }

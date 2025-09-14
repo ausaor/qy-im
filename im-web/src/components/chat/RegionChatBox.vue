@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-box" style="height:100vh; width:100vw;" @click="closeRefBox()" @mousemove="readedMessage()">
+  <div class="chat-box" @click="closeRefBox()" @mousemove="readedMessage()">
     <el-container>
       <el-header height="60px">
         <span class="region-group-name">{{title}}</span>
@@ -954,10 +954,6 @@ export default {
       line-height: 60px;
       font-size: 22px;
       cursor: pointer;
-
-      &:hover {
-        font-size: 30px;
-      }
     }
   }
 

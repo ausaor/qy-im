@@ -1254,10 +1254,6 @@
 				line-height: 60px;
 				font-size: 22px;
 				cursor: pointer;
-
-				&:hover {
-					font-size: 30px;
-				}
 			}
 		}
 

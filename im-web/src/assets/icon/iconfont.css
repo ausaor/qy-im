@@ -1,11 +1,11 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4728505 */
-  src: url('iconfont.eot?t=1751188677093'); /* IE9 */
-  src: url('iconfont.eot?t=1751188677093#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1751188677093') format('woff2'),
-       url('iconfont.woff?t=1751188677093') format('woff'),
-       url('iconfont.ttf?t=1751188677093') format('truetype'),
-       url('iconfont.svg?t=1751188677093#iconfont') format('svg');
+  src: url('iconfont.eot?t=1757839053005'); /* IE9 */
+  src: url('iconfont.eot?t=1757839053005#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1757839053005') format('woff2'),
+       url('iconfont.woff?t=1757839053005') format('woff'),
+       url('iconfont.ttf?t=1757839053005') format('truetype'),
+       url('iconfont.svg?t=1757839053005#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,6 +14,14 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-man:before {
+  content: "\e7e2";
+}
+
+.icon-woman:before {
+  content: "\e8f1";
 }
 
 .icon-diannao:before {

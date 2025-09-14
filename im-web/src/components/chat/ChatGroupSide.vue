@@ -1,44 +1,23 @@
 <template>
 	<div class="chat-group-side">
 		<div v-show="!group.quit" class="group-side-search">
-			<el-input placeholder="搜索群成员" v-model="searchText">
-				<el-button slot="append" icon="el-icon-search"></el-button>
+			<el-input placeholder="搜索群成员" v-model="searchText" size="small">
+        <i class="el-icon-search el-input__icon" slot="prefix"> </i>
 			</el-input>
 		</div>
 		<el-scrollbar class="group-side-scrollbar">
-			<div v-show="!group.quit" class="group-side-member-list">
-				<div class="group-side-invite">
-					<div class="invite-member-btn" title="邀请好友进群聊" @click="showAddGroupMember=true">
+			<div v-show="!group.quit" class="member-list">
+				<div class="member-tools">
+					<div class="tool-btn" title="邀请好友进群聊" @click="showAddGroupMember=true">
 						<i class="el-icon-plus"></i>
 					</div>
-					<div class="invite-member-text">邀请</div>
-					<add-group-member
-              :visible="showAddGroupMember"
-              :groupId="group.id"
-              :members="groupMembers"
-              :isTemplate="group.isTemplate"
-              :templateGroupId="group.templateGroupId"
-              :selectableCharacters="selectableCharacters"
-              :groupType="group.groupType"
-              @reload="$emit('reload')"
-              @close="showAddGroupMember=false"></add-group-member>
+					<div class="tool-text">邀请</div>
 				</div>
-        <div v-if="group.groupType!==0" class="member-info">
-          <div class="view-member-info-btn" title="群聊成员信息" @click="openGroupMemberInfoDialog">
+        <div v-if="group.groupType!==0" class="member-tools">
+          <div class="tool-btn" title="群聊成员信息" @click="openGroupMemberInfoDialog">
             <i class="el-icon-search"></i>
           </div>
-          <div class="view-member-text">查看</div>
-          <el-dialog
-              width="25%"
-              title="群成员信息"
-              :visible.sync="groupMemberVisible"
-              :before-close="closeGroupMemberInfoDialog">
-            <el-scrollbar style="height:400px;">
-              <div v-for="(groupMember, index) in groupMembers" :key="index" v-show="!groupMember.quit">
-                <template-group-member class="r-group-member" :member="groupMember"></template-group-member>
-              </div>
-            </el-scrollbar>
-          </el-dialog>
+          <div class="tool-text">查看</div>
         </div>
 				<div v-for="(member) in groupMembers" :key="member.id">
 					<group-member class="group-side-member" v-show="!member.quit && member.aliasName.startsWith(searchText)" :member="member"
@@ -136,6 +115,27 @@
     </drawer>
     <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="group.id"></talk-notify>
     <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="group.id"></music-play>
+    <add-group-member
+        :visible="showAddGroupMember"
+        :groupId="group.id"
+        :members="groupMembers"
+        :isTemplate="group.isTemplate"
+        :templateGroupId="group.templateGroupId"
+        :selectableCharacters="selectableCharacters"
+        :groupType="group.groupType"
+        @reload="$emit('reload')"
+        @close="showAddGroupMember=false"></add-group-member>
+    <el-dialog
+        width="25%"
+        title="群成员信息"
+        :visible.sync="groupMemberVisible"
+        :before-close="closeGroupMemberInfoDialog">
+      <el-scrollbar style="height:400px;">
+        <div v-for="(groupMember, index) in groupMembers" :key="index" v-show="!groupMember.quit">
+          <template-group-member class="r-group-member" :member="groupMember"></template-group-member>
+        </div>
+      </el-scrollbar>
+    </el-dialog>
 	</div>
 </template>
 
@@ -442,64 +442,31 @@
 <style scoped lang="scss">
 	.chat-group-side {
 
-		.group-side-member-list {
-			padding: 10px;
-			display: flex;
-			align-items: center;
-			flex-wrap: wrap;
-			font-size: 16px;
-			text-align: center;
+    .member-list {
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 14px;
+      text-align: center;
 
-			.group-side-member {
-				margin-left: 15px;
-			}
+      .group-side-member {
+        margin-left: 5px;
+      }
 
-			.group-side-invite {
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				width: 50px;
-				margin-left: 15px;
-
-				.invite-member-btn {
-					width: 100%;
-					height: 50px;
-					line-height: 50px;
-					border: #cccccc solid 1px;
-					font-size: 25px;
-					cursor: pointer;
-					box-sizing: border-box;
-
-					&:hover {
-						border: #aaaaaa solid 1px;
-					}
-				}
-
-				.invite-member-text {
-					font-size: 16px;
-					text-align: center;
-					width: 100%;
-					height: 30px;
-					line-height: 30px;
-					white-space: nowrap;
-					text-overflow: ellipsis;
-					overflow: hidden
-				}
-			}
-
-      .member-info {
+      .member-tools {
         display: flex;
         flex-direction: column;
         align-items: center;
-        width: 50px;
-        margin-left: 15px;
+        width: 54px;
+        margin-left: 5px;
 
-        .view-member-info-btn {
-          width: 100%;
-          height: 50px;
-          line-height: 50px;
-          border: #cccccc solid 1px;
-          font-size: 25px;
+        .tool-btn {
+          width: 38px;
+          height: 38px;
+          line-height: 38px;
+          border: 1px solid #EBEEF5;
+          font-size: 14px;
           cursor: pointer;
           box-sizing: border-box;
 
@@ -508,8 +475,8 @@
           }
         }
 
-        .view-member-text {
-          font-size: 16px;
+        .tool-text {
+          font-size: 12px;
           text-align: center;
           width: 100%;
           height: 30px;
@@ -519,7 +486,7 @@
           overflow: hidden
         }
       }
-		}
+    }
 
     .el-divider--horizontal {
       margin: 0;
