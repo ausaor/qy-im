@@ -77,4 +77,7 @@ public class GroupVO {
 
     @ApiModelProperty(value = "是否禁言")
     private Boolean isBanned;
+
+    @ApiModelProperty(value = "加群审核")
+    private Boolean enterReview;
 }

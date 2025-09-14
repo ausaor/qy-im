@@ -393,6 +393,10 @@ export default {
       this.$refs.musicUploadRef.open();
     },
     toggleFloatMusic() {
+      if (this.playlist.length === 0) {
+        this.$message.warning('播放列表为空')
+        return
+      }
       let musics = this.playlist.map(item => {
         return {
           id: item.id,

@@ -80,6 +80,18 @@
               :disabled="!editing">
           </el-switch>
         </el-form-item>
+        <el-form-item label="进群审核" v-if="isOwner" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
+          <el-switch
+              style="display: block"
+              v-model="group.enterReview"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-text="开启"
+              inactive-text="关闭"
+              @change="enterGroupReviewChange"
+              :disabled="!editing">
+          </el-switch>
+        </el-form-item>
         <el-form-item label="全局禁言" v-if="isOwner">
           <el-switch
               style="display: block"
@@ -275,6 +287,9 @@
       },
       showNickNameChange() {
         this.$emit("change", this.myGroupMemberInfo.showNickName);
+      },
+      enterGroupReviewChange(value) {
+        this.group.enterReview = value;
       },
       openGroupSpace() {
         this.groupSpaceVisible = true;

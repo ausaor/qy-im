@@ -194,7 +194,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         member.setRemark(StringUtils.isEmpty(vo.getRemark()) ? Objects.requireNonNull(group).getName() : vo.getRemark());
         if (!StringUtils.equals(member.getAliasName(), vo.getAliasName())) {
-
+            hasModify = true;
         }
         if (StringUtils.isNotBlank(vo.getAliasNamePrefix()) && !vo.getAliasNamePrefix().equals(member.getAliasNamePrefix())) {
             hasModify = true;
@@ -578,7 +578,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (GroupTypeEnum.COMMON.getCode().equals(vo.getGroupType())
                 && CollectionUtils.isNotEmpty(enterGroupUsersDTO.getNoReviewUserList())) {
             // 批量保存成员数据
-            groupMembers = enterGroupUsersDTO.getReviewUserList().stream()
+            groupMembers = enterGroupUsersDTO.getNoReviewUserList().stream()
                     .map(f -> {
                         Optional<GroupMember> optional = members.stream().filter(m -> m.getUserId().equals(f.getFriendId())).findFirst();
                         GroupMember groupMember = optional.orElseGet(GroupMember::new);
