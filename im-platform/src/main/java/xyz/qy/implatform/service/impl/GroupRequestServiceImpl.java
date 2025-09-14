@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -107,10 +108,16 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                     .in(CollectionUtils.isNotEmpty(groupIds), GroupRequest::getGroupId, groupIds));
         wrapper.orderByDesc(GroupRequest::getCreateTime);
         List<GroupRequest> groupRequestList = this.list(wrapper);
+        if (CollectionUtils.isEmpty(groupRequestList)) {
+            return Collections.emptyList();
+        }
+        
         List<GroupRequestVO> groupRequestVOS = BeanUtils.copyPropertiesList(groupRequestList, GroupRequestVO.class);
         List<Long> groupIdList = groupRequestVOS.stream().map(GroupRequestVO::getGroupId).collect(Collectors.toList());
         List<Long> characterIds = groupRequestVOS.stream().map(GroupRequestVO::getTemplateCharacterId).filter(Objects::nonNull).collect(Collectors.toList());
+        List<Long> launchUserIds = groupRequestVOS.stream().map(GroupRequestVO::getLaunchUserId).collect(Collectors.toList());
 
+        Map<Long, User> userMap = userService.listByIds(launchUserIds).stream().collect(Collectors.toMap(User::getId, Function.identity()));
         // 查询群聊信息
         List<Group> groups = groupService.listByIds(groupIdList);
 
@@ -134,6 +141,12 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 item.setTemplateCharacterAvatar(templateCharacter.getAvatar());
                 item.setTemplateCharacterName(templateCharacter.getName());
             }
+            User launchUser = userMap.get(item.getLaunchUserId());
+            if (ObjectUtil.isNotNull(launchUser)) {
+                // 邀请人信息
+                item.setLaunchUserNickname(launchUser.getNickName());
+                item.setLaunchUserHeadImage(launchUser.getHeadImage());
+            }
         });
 
         return groupRequestVOS;
@@ -150,13 +163,27 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
 
         List<InviteFriendVO> reviewUserList = enterGroupUsersDTO.getReviewUserList();
         List<Long> userIds = reviewUserList.stream().map(InviteFriendVO::getFriendId).collect(Collectors.toList());
+        userIds.add(userId);
         List<User> userList = userService.findUserByIds(userIds);
         // userList根据id为key转换成map
         Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, Function.identity(), (key1, key2) -> key2));
 
+        // 查询当前邀请的用户是否已在邀请中或申请中,
+        Set<Long> invitingUsers = this.lambdaQuery().in(GroupRequest::getUserId, userIds)
+                .eq(GroupRequest::getGroupId, enterGroupUsersDTO.getGroupId())
+                .eq(GroupRequest::getStatus, GroupRequestStatusEnum.APPLYING.getCode())
+                .select(GroupRequest::getUserId)
+                .list() // 转换成Set
+                .stream()
+                .map(GroupRequest::getUserId)
+                .collect(Collectors.toSet());
+
         List<GroupRequest> groupRequestList = reviewUserList.stream().map(item -> {
+            if (invitingUsers.contains(item.getFriendId())) {
+                return null;
+            }
             GroupRequest groupRequest = new GroupRequest();
-            groupRequest.setLaunchUserId(enterGroupUsersDTO.getLaunchUserId());
+            groupRequest.setLaunchUserId(userId);
             groupRequest.setUserId(item.getFriendId());
             groupRequest.setUserNickname(userMap.get(item.getFriendId()).getUserName());
             groupRequest.setUserHeadImage(userMap.get(item.getFriendId()).getHeadImage());
@@ -169,6 +196,10 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
             return groupRequest;
         }).collect(Collectors.toList());
 
+        groupRequestList = groupRequestList.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(groupRequestList)) {
+            return;
+        }
         this.saveBatch(groupRequestList);
         log.info("邀请进入群组待用户同意信息,groupId:{}, userIds:{}", enterGroupUsersDTO.getGroupId(), userIds);
 
@@ -182,13 +213,16 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         }
 
         Group group = groupService.getById(enterGroupUsersDTO.getGroupId());
+        User user = userMap.get(userId);
         for (GroupRequest item : groupRequestList) {
-            List<Long> recvIds = List.of(item.getUserId(), group.getOwnerId());
+            List<Long> recvIds = List.of(item.getUserId(), group.getOwnerId(), item.getLaunchUserId());
             GroupRequestVO groupRequestVO = BeanUtils.copyProperties(item, GroupRequestVO.class);
             groupRequestVO.setGroupName(group.getName());
             groupRequestVO.setGroupHeadImage(group.getHeadImage());
             groupRequestVO.setGroupType(group.getGroupType());
             groupRequestVO.setGroupOwnerId(group.getOwnerId());
+            groupRequestVO.setLaunchUserNickname(user.getNickName());
+            groupRequestVO.setLaunchUserHeadImage(user.getHeadImage());
             if (ObjectUtil.isNotNull(item.getTemplateCharacterId())) {
                 TemplateCharacter templateCharacter = characterMap.get(item.getTemplateCharacterId());
                 if (ObjectUtil.isNotNull(templateCharacter)) {
@@ -298,7 +332,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         groupRequest.setUpdateBy(userId);
         groupRequest.setStatus(GroupRequestStatusEnum.REFUSED.getCode());
         this.updateById(groupRequest);
-        List<Long> recvIds = List.of(group.getOwnerId(), groupRequest.getUserId());
+        List<Long> recvIds = List.of(group.getOwnerId(), groupRequest.getUserId(), groupRequest.getLaunchUserId());
         GroupRequestVO groupRequestVO = BeanUtils.copyProperties(groupRequest, GroupRequestVO.class);
         this.sendGroupRequestMessage(groupRequestVO, recvIds, MessageType.GROUP_JOIN_REQUEST_MODIFY.code());
     }
@@ -467,7 +501,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
             groupRequest.setUpdateBy(userId);
             groupRequest.setStatus(GroupRequestStatusEnum.AGREED.getCode());
             this.updateById(groupRequest);
-            List<Long> recvIds = List.of(group.getOwnerId(), groupRequest.getUserId());
+            List<Long> recvIds = List.of(group.getOwnerId(), groupRequest.getUserId(), groupRequest.getLaunchUserId());
             GroupRequestVO groupRequestVO = BeanUtils.copyProperties(groupRequest, GroupRequestVO.class);
             this.sendGroupRequestMessage(groupRequestVO, recvIds, MessageType.GROUP_JOIN_REQUEST_MODIFY.code());
 
@@ -494,6 +528,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
     }
 
     private void sendGroupRequestMessage(GroupRequestVO groupRequest, List<Long> recvIds, Integer type) {
+        recvIds = recvIds.stream().distinct().collect(Collectors.toList());
         GroupMessage groupMessage = new GroupMessage();
         groupMessage.setGroupId(groupRequest.getGroupId());
         groupMessage.setSendId(groupRequest.getLaunchUserId());

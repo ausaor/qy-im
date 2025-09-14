@@ -2,7 +2,7 @@
 	<div class="group-item" :class="active ? 'active' : ''">
 		<div class="avatar">
 			<head-image :size="45" :name="group.remark" :url="group.headImage"> </head-image>
-      <div class="group-activity" v-show="unreadTalkCount > 0 || unreadNotifyCount > 0"></div>
+      <div class="group-activity" v-show="unreadTalkCount > 0 || unreadNotifyCount > 0 || joinGroupRequestCount > 0"></div>
 		</div>
 		<div class="group-info">
       <div class="group-tag">
@@ -36,6 +36,9 @@
 			}
 		},
     computed: {
+      mine() {
+        return this.$store.state.userStore.userInfo;
+      },
       unreadTalkCount() {
         let talkMap =this.$store.state.talkStore.groupsTalks;
         let talks = talkMap.get(this.group.id);
@@ -51,6 +54,11 @@
           return count;
         }
         return 0;
+      },
+      joinGroupRequestCount() {
+        // 群组申请(当前用户是群主，待审核的加群申请)
+        return this.group?.ownerId === this.mine.id ? this.$store.state.groupStore.groupRequests
+            .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1 && r.groupId === this.group.id).length : 0;
       },
     }
 	}

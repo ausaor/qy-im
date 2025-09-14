@@ -65,6 +65,16 @@ public class GroupRequestVO {
     private Long launchUserId;
 
     /**
+     * 发起人昵称
+     */
+    private String launchUserNickname;
+
+    /**
+     * 发起人头像
+     */
+    private String launchUserHeadImage;
+
+    /**
      * 模板角色id
      */
     private Long templateCharacterId;

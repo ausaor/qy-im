@@ -53,12 +53,20 @@
                     <div class="info-text"><div>{{item.remark}}</div></div>
                   </div>
                   <div class="character-info" v-if="item.templateCharacterName">
+                    <div class="character-name">角色：</div>
                     <div class="character-avatar">
                       <head-image :size="30" :name="item.templateCharacterName" :url="item.templateCharacterAvatar"></head-image>
                     </div>
                     <div class="character-name">
                       {{item.templateCharacterName}}
                     </div>
+                  </div>
+                  <div class="launch-user-info">
+                    <div>邀请人：</div>
+                    <div class="launch-user-avatar">
+                      <head-image :size="30" :id="item.launchUserId" :name="item.launchUserNickname" :url="item.launchUserHeadImage"></head-image>
+                    </div>
+                    <div class="launch-user-name">{{item.launchUserNickname}}</div>
                   </div>
                   <div class="btn-group">
                     <el-button type="warning" size="mini" @click="modifyGroupRequest(item.id)">修改</el-button>
@@ -95,6 +103,7 @@
                     </div>
                   </div>
                   <div class="btn-group">
+                    <el-button type="warning" size="mini" @click="modifyGroupRequest(item.id)">修改</el-button>
                     <el-button type="danger" size="mini" @click="recallGroupRequest(item.id)">撤回</el-button>
                   </div>
                 </div>
@@ -175,9 +184,10 @@
                 </svg>
                 <span style="color: #b7eb81;margin-left: 10px;font-size: 16px;">群歌单</span>
               </div>
-              <div class="group-request-info">
+              <div class="group-request-info" @click="openGroupRequestPanel">
                 <head-image :size="28" :name="'群通知'" :url="require('@/assets/image/join_group.png')"></head-image>
                 <span style="color: rgb(119 158 242);margin-left: 10px;font-size: 16px;">群通知</span>
+                <div v-show="joinGroupRequestCount>0" class="unread-text">{{joinGroupRequestCount}}</div>
               </div>
             </div>
 					</div>
@@ -340,6 +350,7 @@
     </drawer>
     <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="activeGroup.id"></talk-notify>
     <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="activeGroup.id"></music-play>
+    <group-request-panel ref="groupRequestPanel" :is-owner="isOwner" :join-group-requests="joinGroupRequests" :invite-group-requests="inviteGroupRequests"></group-request-panel>
 	</el-container>
 </template>
 
@@ -364,6 +375,7 @@
   import TalkList from "@components/talk/TalkList.vue";
   import TalkNotify from "@components/talk/TalkNotify.vue";
   import MusicPlay from "@components/common/musicPlay.vue";
+  import GroupRequestPanel from "@components/group/GroupRequestPanel.vue";
 
 	export default {
 		name: "group",
@@ -387,6 +399,7 @@
       TemplateCharacterChoose,
       GroupTemplateCharacterChoose,
       TemplateCharacterChooseDialog,
+      GroupRequestPanel,
 		},
 		data() {
 			return {
@@ -889,6 +902,9 @@
       openGroupMusic() {
         this.$refs.musicPlayRef.show();
       },
+      openGroupRequestPanel() {
+        this.$refs.groupRequestPanel.show();
+      },
       closeDrawer() {
         this.groupSpaceVisible = false;
       },
@@ -951,11 +967,11 @@
 				return this.$store.state.groupStore;
 			},
 			ownerName() {
-				let member = this.groupMembers.find((m) => m.userId == this.activeGroup.ownerId);
+				let member = this.groupMembers.find((m) => m.userId === this.activeGroup.ownerId);
 				return member && member.aliasName;
 			},
 			isOwner() {
-				return this.activeGroup.ownerId == this.$store.state.userStore.userInfo.id;
+				return this.activeGroup.ownerId === this.mine.id;
 			},
       mine() {
         return this.$store.state.userStore.userInfo;
@@ -1000,6 +1016,14 @@
         // 群组申请(当前用户是群主，待审核的加群申请)
         return this.activeGroup?.ownerId === this.mine.id ? this.$store.state.groupStore.groupRequests
             .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1 && r.groupId === this.activeGroup.id) : [];
+      },
+      inviteGroupRequests() {
+        // 群组邀请(当前用户是群成员，正在邀请中的数据)
+        return this.activeGroup?.id ? this.$store.state.groupStore.groupRequests
+            .filter((r) => r.status === 1 && r.type === 2 && r.groupId === this.activeGroup.id && (r.launchUserId === this.mine.id || r.groupOwnerId === this.mine.id)) : [];
+      },
+      joinGroupRequestCount() {
+        return this.joinGroupRequests.length;
       }
 		},
 	}
@@ -1180,6 +1204,16 @@
             }
           }
 
+          .launch-user-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+
+            .launch-user-name {
+              margin-left: 10px;
+            }
+          }
+
           .btn-group {
             text-align: left !important;
             display: flex;
@@ -1315,10 +1349,26 @@
             }
 
             .group-request-info {
+              position: relative;
               display: flex;
               align-items: center;
               cursor: pointer;
               margin-top: 20px;
+
+              .unread-text {
+                position: absolute;
+                line-height: 16px;
+                background-color: #f56c6c;
+                left: 20%;
+                top: -5px;
+                color: white;
+                border-radius: 16px;
+                padding: 0 5px;
+                font-size: 10px;
+                text-align: center;
+                white-space: nowrap;
+                border: 1px solid #f1e5e5;
+              }
             }
           }
 				}

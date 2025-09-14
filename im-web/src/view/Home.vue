@@ -36,7 +36,7 @@
                 <use xlink:href="#icon-group"></use>
               </svg>
             </span>
-            <div v-show="groupActivity" class="unread-dot"></div>
+            <div v-show="groupActivity || (groupRequestCount > 0)" class="unread-dot"></div>
 					</router-link>
 				</el-menu-item>
         <el-menu-item title="经纬网">
@@ -765,6 +765,10 @@
       },
       friendRequestCount() {
         return this.$store.state.friendStore.friendRequest.filter((r) => r.status === 1 && r.recvId === this.mine.id).length
+      },
+      groupRequestCount() {
+        return this.$store.state.groupStore.groupRequests
+            .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length
       }
 		},
 		watch: {
