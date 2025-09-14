@@ -1,7 +1,7 @@
 <template>
 	<div class="group-member" @contextmenu.prevent="showRightMenu($event)">
     <head-image :id="member.userId" :name="member.aliasName"
-                :url="member.headImage" :size="50"
+                :url="member.headImage" :size="40"
                 :online="member.online" >
     </head-image>
     <div  v-if="showDel" @click.stop="onDelete()" class="btn-kick el-icon-error"></div>
@@ -92,7 +92,7 @@
 			display: none;
 			position: absolute;
 			right: -8px;
-			top: -8px;
+			top: -4px;
 			color: darkred;
 			font-size: 20px;
 			cursor: pointer;
@@ -101,6 +101,7 @@
 		&:hover .btn-kick{
 			display: block;
 			color: #ce1818;
+      z-index: 10;
 		}
 	}
 </style>

@@ -2,7 +2,7 @@
 	<el-container class="chat-page">
 		<el-aside width="260px" class="aside">
 			<div class="header">
-        <el-input class="search-text" placeholder="搜索" v-model="searchText">
+        <el-input class="search-text" placeholder="搜索" v-model="searchText" size="small">
           <i class="el-icon-search el-input__icon" slot="prefix"> </i>
         </el-input>
 			</div>

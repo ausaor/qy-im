@@ -2,7 +2,7 @@
   <el-container class="friend-page">
     <el-aside width="260px" class="aside">
       <div class="header">
-        <el-input class="search-text" placeholder="搜索" v-model="searchText">
+        <el-input class="search-text" size="small" placeholder="搜索" v-model="searchText">
           <i class="el-icon-search el-input__icon" slot="prefix"> </i>
         </el-input>
         <el-button plain class="add-btn" icon="el-icon-plus" title="添加好友" @click="onShowAddFriend()"></el-button>

@@ -2,7 +2,7 @@
 	<el-container class="group-page">
 		<el-aside width="260px" class="aside">
 			<div class="header">
-        <el-input class="search-text" placeholder="搜索" v-model="searchText">
+        <el-input class="search-text" size="small" placeholder="搜索" v-model="searchText">
           <i class="el-icon-search el-input__icon" slot="prefix"> </i>
         </el-input>
         <el-button plain class="add-btn" icon="el-icon-plus" title="创建群聊" @click="dialogVisible = true"></el-button>
@@ -122,28 +122,25 @@
 								<img v-if="activeGroup.headImage" :src="activeGroup.headImage" class="avatar">
 								<i v-else class="el-icon-plus avatar-uploader-icon"></i>
 							</file-upload>
-              <head-image  v-show="!isOwner" class="avatar" :size="200"
+              <head-image  v-show="!isOwner" class="avatar" :size="160"
                            :url="activeGroup.headImage"
                            :name="activeGroup.remark">
               </head-image>
-							<el-button class="send-btn" @click="onSendMessage()">发送消息</el-button>
+              <el-button class="send-btn" icon="el-icon-position" type="primary" @click="onSendMessage()" size="small">发消息</el-button>
 						</div>
             <div class="group-form-box">
               <el-form class="group-form" label-width="130px" :model="activeGroup" :rules="rules" ref="groupForm">
-                <el-form-item label="群聊名称" prop="name">
-                  <el-input v-model="activeGroup.name" :disabled="!isOwner || activeGroup.isTemplate" maxlength="20"></el-input>
-                </el-form-item>
                 <el-form-item label="群主">
-                  <el-input :value="ownerName" disabled></el-input>
+                  <div class="value">{{ownerName}}</div>
                 </el-form-item>
-                <el-form-item label="备注">
-                  <el-input v-model="activeGroup.remark" placeholder="群聊的备注仅自己可见" maxlength="20"></el-input>
+                <el-form-item label="群备注">
+                  <el-input v-model="activeGroup.remark" placeholder="群聊的备注仅自己可见" maxlength="20" size="small"></el-input>
                 </el-form-item>
                 <el-form-item label="我在本群的昵称">
-                  <el-input v-model="activeGroup.aliasName" :disabled="activeGroup.groupType!==0" placeholder="" maxlength="20"></el-input>
+                  <el-input v-model="activeGroup.aliasName" :disabled="activeGroup.groupType!==0" placeholder="" maxlength="20" size="small"></el-input>
                 </el-form-item>
                 <el-form-item label="备注名" v-show="activeGroup.groupType!==0">
-                  <el-input v-model="activeGroup.nickName" placeholder="" maxlength="10"></el-input>
+                  <el-input v-model="activeGroup.nickName" placeholder="" maxlength="10" size="small"></el-input>
                 </el-form-item>
                 <el-form-item label="群公告">
                   <el-input v-model="activeGroup.notice" :disabled="!isOwner" type="textarea" maxlength="1024" placeholder="群主未设置"></el-input>
@@ -151,16 +148,16 @@
               </el-form>
               <div class="buttons-box">
                 <div class="buttons">
-                  <el-button type="success" @click="onSaveGroup()">提交</el-button>
-                  <el-button type="danger" v-show="!isOwner" @click="onQuit()">退出群聊</el-button>
-                  <el-button type="danger" v-show="isOwner" @click="onDissolve()">解散群聊</el-button>
-                  <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(1)">切换模板群聊</el-button>
+                  <el-button type="success" @click="onSaveGroup()" size="small">提交</el-button>
+                  <el-button type="danger" v-show="!isOwner" @click="onQuit()" size="small">退出群聊</el-button>
+                  <el-button type="danger" v-show="isOwner" @click="onDissolve()" size="small">解散群聊</el-button>
+                  <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(1)" size="small">切换模板群聊</el-button>
                 </div>
                 <div class="buttons">
-                  <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(4)">切换模板角色群聊</el-button>
-                  <el-button type="warning" v-show="isOwner && activeGroup.groupType !== 2" @click="popupSwitchTemplateGroup(2)">切换多元角色群聊</el-button>
-                  <el-button type="info" v-show="isOwner && activeGroup.groupType !== 3" @click="popupSwitchTemplateGroup(3)">切换角色群聊</el-button>
-                  <el-button v-show="isOwner && activeGroup.groupType !== 0" @click="popupSwitchCommonGroup()">切换普通群聊</el-button>
+                  <el-button type="primary" size="small" v-show="isOwner" @click="popupSwitchTemplateGroup(4)" >切换模板角色群聊</el-button>
+                  <el-button type="warning" size="small" v-show="isOwner && activeGroup.groupType !== 2" @click="popupSwitchTemplateGroup(2)">切换多元角色群聊</el-button>
+                  <el-button type="info" size="small" v-show="isOwner && activeGroup.groupType !== 3" @click="popupSwitchTemplateGroup(3)">切换角色群聊</el-button>
+                  <el-button size="small" v-show="isOwner && activeGroup.groupType !== 0" @click="popupSwitchCommonGroup()">切换普通群聊</el-button>
                 </div>
               </div>
             </div>
@@ -193,15 +190,9 @@
 					</div>
 					<el-divider content-position="center"></el-divider>
 					<el-scrollbar style="height:200px;">
-						<div class="group-member-list">
-							<div v-for="(member) in groupMembers" :key="member.id">
-								<group-member v-show="!member.quit" class="group-member" :member="member" :showDel="isOwner&&member.userId!=activeGroup.ownerId"
-								 @del="onKick" :right-menu-items="member.isBanned ? [rightMenuItems[1]] : [rightMenuItems[0]]" :right-menu-visible="myGroupMemberInfo.isAdmin"
-                              @ban="banMemberMsg" @unban="unBanMemberMsg">
-                </group-member>
-							</div>
-              <div class="member-avatar-upload" v-show="!myGroupMemberInfo.isTemplate">
-                <div class="member-avatar-btn" title="上传我的群聊头像">
+						<div class="member-items">
+              <div class="member-tools" title="上传我的群聊头像" v-show="!myGroupMemberInfo.isTemplate">
+                <div class="tool-btn">
                   <file-upload class="avatar-uploader" :action="imageAction"
                                :showLoading="true" :maxSize="maxSize" @success="onUploadMemberAvatarSuccess"
                                :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
@@ -209,81 +200,37 @@
                     <i v-else class="el-icon-upload"></i>
                   </file-upload>
                 </div>
-                <div class="member-avatar-text">上传</div>
+                <div class="tool-text">上传</div>
               </div>
-							<div class="group-invite">
-								<div class="invite-member-btn" title="邀请好友进群聊" @click="onInviteMember()">
+							<div class="member-tools">
+								<div class="tool-btn" title="邀请好友进群聊" @click="onInviteMember()">
 									<i class="el-icon-plus"></i>
 								</div>
-								<div class="invite-member-text">邀请</div>
-								<add-group-member :visible="showAddGroupMember" :groupId="activeGroup.id" :members="groupMembers"
-                                  :isTemplate="activeGroup.isTemplate"
-                                  :templateGroupId="activeGroup.templateGroupId"
-                                  :selectableCharacters = "selectableCharacters"
-                                  :groupType="activeGroup.groupType"
-                                  @reload="loadGroupMembers"
-								 @close="onCloseAddGroupMember"></add-group-member>
+								<div class="tool-text">邀请</div>
 							</div>
-              <div class="switch-character" v-show="activeGroup.groupType !== 0">
-                <div class="switch-character-btn" title="切换角色" @click="switchCharacter()">
+              <div class="member-tools" v-show="activeGroup.groupType !== 0">
+                <div class="tool-btn" title="切换角色" @click="switchCharacter()">
                   <i class="el-icon-refresh"></i>
                 </div>
-                <div class="switch-character-text">切换</div>
-                <template-character-choose-dialog :characters="selectableCharacters" :visible="selectTemplateCharacterVisible"
-                    @close="() => {this.selectTemplateCharacterVisible = false}"
-                    @choose="chooseTemplateCharacterOk"></template-character-choose-dialog>
-                <template-character-choose :visible="characterSwitchVisible" @close="characterSwitchVisible = false" @confirm="switchCharacterEvent"></template-character-choose>
-                <group-template-character-choose
-                    :visible="groupTemplateCharacterVisible"
-                    :template-group-id="activeGroup.templateGroupId"
-                    @close="() => {this.groupTemplateCharacterVisible=false}"
-                    @choose="chooseCharacterOK">
-                </group-template-character-choose>
+                <div class="tool-text">切换</div>
               </div>
-              <div class="switch-character-avatar" v-show="activeGroup.groupType !== 0">
-                <div class="switch-character-avatar-btn" title="切换角色头像" @click="switchCharacterAvatar()">
+              <div class="member-tools" v-show="activeGroup.groupType !== 0">
+                <div class="tool-btn" title="切换角色头像" @click="switchCharacterAvatar()">
                   <i class="el-icon-user-solid"></i>
                 </div>
-                <div class="switch-character-avatar-text">选择</div>
-                <el-dialog
-                    width="30%"
-                    title="角色头像"
-                    :visible.sync="selectCharacterAvatarVisible"
-                    :before-close="closeSelectCharacterAvatar">
-                  <el-scrollbar style="height:400px;">
-                    <div v-for="(characterAvatar, index) in characterAvatars" :key="index">
-                      <character-avatar-item class="character-avatar-item-left" :characterAvatar="characterAvatar"></character-avatar-item>
-                      <div class="character-avatar-item-right">
-                        <el-button :type="avatarActiveIndex === index ? 'success' : ''"
-                                   icon="el-icon-check"
-                                   circle
-                                   @click="chooseCharacterAvatar(characterAvatar, index)"></el-button>
-                      </div>
-                      <p style="clear:both;"></p>
-                    </div>
-                  </el-scrollbar>
-                  <span slot="footer" class="dialog-footer">
-                    <el-button @click="closeSelectCharacterAvatar">取 消</el-button>
-                    <el-button type="primary" @click="chooseCharacterAvatarOk">确 定</el-button>
-                  </span>
-                </el-dialog>
+                <div class="tool-text">选择</div>
               </div>
-              <div class="member-info" v-show="activeGroup.groupType !== 0">
-                <div class="view-member-info-btn" title="群聊成员信息" @click="openGroupMemberInfoDialog">
+              <div class="member-tools" v-show="activeGroup.groupType !== 0">
+                <div class="tool-btn" title="群聊成员信息" @click="openGroupMemberInfoDialog">
                   <i class="el-icon-search"></i>
                 </div>
-                <div class="view-member-text">查看</div>
-                <el-dialog
-                    width="25%"
-                    title="群成员信息"
-                    :visible.sync="groupMemberVisible"
-                    :before-close="closeGroupMemberInfoDialog">
-                  <el-scrollbar style="height:400px;">
-                    <div v-for="(groupMember, index) in groupMembers" :key="index" v-show="!groupMember.quit">
-                      <template-group-member class="r-group-member" :member="groupMember"></template-group-member>
-                    </div>
-                  </el-scrollbar>
-                </el-dialog>
+                <div class="tool-text">查看</div>
+              </div>
+              <div v-for="(member) in groupMembers" :key="member.id">
+                <group-member v-show="!member.quit" class="member-item" :member="member" :showDel="isOwner&&member.userId!==activeGroup.ownerId"
+                              @del="onKick" :right-menu-items="member.isBanned ? [rightMenuItems[1]] : [rightMenuItems[0]]" :right-menu-visible="myGroupMemberInfo.isAdmin"
+                              @ban="banMemberMsg" @unban="unBanMemberMsg">
+                </group-member>
               </div>
 						</div>
 					</el-scrollbar>
@@ -307,6 +254,56 @@
         <el-button type="primary" @click="openCreateGroupDialog()">确 定</el-button>
       </span>
     </el-dialog>
+    <el-dialog
+        width="30%"
+        title="角色头像"
+        :visible.sync="selectCharacterAvatarVisible"
+        :before-close="closeSelectCharacterAvatar">
+      <el-scrollbar style="height:400px;">
+        <div v-for="(characterAvatar, index) in characterAvatars" :key="index">
+          <character-avatar-item class="character-avatar-item-left" :characterAvatar="characterAvatar"></character-avatar-item>
+          <div class="character-avatar-item-right">
+            <el-button :type="avatarActiveIndex === index ? 'success' : ''"
+                       icon="el-icon-check"
+                       circle
+                       @click="chooseCharacterAvatar(characterAvatar, index)"></el-button>
+          </div>
+          <p style="clear:both;"></p>
+        </div>
+      </el-scrollbar>
+      <span slot="footer" class="dialog-footer">
+                    <el-button @click="closeSelectCharacterAvatar">取 消</el-button>
+                    <el-button type="primary" @click="chooseCharacterAvatarOk">确 定</el-button>
+                  </span>
+    </el-dialog>
+    <el-dialog
+        width="25%"
+        title="群成员信息"
+        :visible.sync="groupMemberVisible"
+        :before-close="closeGroupMemberInfoDialog">
+      <el-scrollbar style="height:400px;">
+        <div v-for="(groupMember, index) in groupMembers" :key="index" v-show="!groupMember.quit">
+          <template-group-member class="r-group-member" :member="groupMember"></template-group-member>
+        </div>
+      </el-scrollbar>
+    </el-dialog>
+    <add-group-member :visible="showAddGroupMember" :groupId="activeGroup.id" :members="groupMembers"
+                      :isTemplate="activeGroup.isTemplate"
+                      :templateGroupId="activeGroup.templateGroupId"
+                      :selectableCharacters = "selectableCharacters"
+                      :groupType="activeGroup.groupType"
+                      @reload="loadGroupMembers"
+                      @close="onCloseAddGroupMember"></add-group-member>
+    <template-character-choose-dialog :characters="selectableCharacters" :visible="selectTemplateCharacterVisible"
+                                      @close="() => {this.selectTemplateCharacterVisible = false}"
+                                      @choose="chooseTemplateCharacterOk"></template-character-choose-dialog>
+    <template-character-choose :visible="characterSwitchVisible" @close="characterSwitchVisible = false" @confirm="switchCharacterEvent"></template-character-choose>
+    <group-template-character-choose
+        :visible="groupTemplateCharacterVisible"
+        :template-group-id="activeGroup.templateGroupId"
+        @close="() => {this.groupTemplateCharacterVisible=false}"
+        @choose="chooseCharacterOK">
+    </group-template-character-choose>
     <create-template-group :visible="showCreateTemplateGroup" :groupType="groupType" @close="handleCloseTemplateGroup"></create-template-group>
     <switch-template-group :visible="showSwitchTemplateGroup"
                            :group="activeGroup"
@@ -1224,6 +1221,7 @@
 
 			.group-container {
 				padding: 20px;
+
 				.group-info {
 					display: flex;
 					padding: 5px 20px;
@@ -1248,15 +1246,15 @@
               .avatar-uploader-icon {
                 font-size: 28px;
                 color: #8c939d;
-                width: 200px;
-                height: 200px;
-                line-height: 200px;
+                width: 160px;
+                height: 160px;
+                line-height: 160px;
                 text-align: center;
               }
 
               .avatar {
-                width: 200px;
-                height: 200px;
+                width: 160px;
+                height: 160px;
                 display: block;
               }
             }
@@ -1272,6 +1270,11 @@
               flex: 1;
               padding-left: 40px;
               min-width: 700px;
+
+              .value {
+                text-align: left;
+                color: #888;
+              }
             }
 
             .buttons-box {
@@ -1368,49 +1371,39 @@
           }
 				}
 
-				.group-member-list {
-					padding: 5px 20px;
-					display: flex;
-					align-items: center;
-					flex-wrap: wrap;
-					font-size: 16px;
-					text-align: center;
+        .member-items {
+          padding: 0 12px;
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          text-align: center;
 
-					.group-member {
-						margin-right: 15px;
-					}
+          .member-item {
+            margin-right: 5px;
+          }
 
-          .member-avatar-upload {
-            margin-right: 16px;
+          .member-tools {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 60px;
 
-            .member-avatar-btn {
-              width: 100%;
-              height: 60px;
-              line-height: 60px;
-              border: #cccccc solid 1px;
-              font-size: 25px;
+            .tool-btn {
+              width: 38px;
+              height: 38px;
+              line-height: 38px;
+              border: 1px solid #ebeef5;
+              font-size: 14px;
               cursor: pointer;
               box-sizing: border-box;
 
               &:hover {
                 border: #aaaaaa solid 1px;
               }
-
-              .avatar-uploader {
-
-                .member-avatar {
-                  width: 60px;
-                  height: 60px;
-                }
-              }
             }
 
-            .member-avatar-text {
-              font-size: 16px;
+            .tool-text {
+              font-size: 12px;
               text-align: center;
               width: 100%;
               height: 30px;
@@ -1421,154 +1414,23 @@
             }
           }
 
-					.group-invite {
-						display: flex;
-						flex-direction: column;
-						align-items: center;
-						width: 60px;
+          .avatar-uploader {
+            width: 38px;
+            height: 38px;
 
-						.invite-member-btn {
-							width: 100%;
-							height: 60px;
-							line-height: 60px;
-							border: #cccccc solid 1px;
-							font-size: 25px;
-							cursor: pointer;
-							box-sizing: border-box;
-
-							&:hover {
-								border: #aaaaaa solid 1px;
-							}
-						}
-
-						.invite-member-text {
-							font-size: 16px;
-							text-align: center;
-							width: 100%;
-							height: 30px;
-							line-height: 30px;
-							white-space: nowrap;
-							text-overflow: ellipsis;
-							overflow: hidden
-						}
-					}
-
-          .switch-character {
-            margin-left: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 60px;
-
-            .switch-character-btn {
-              width: 100%;
-              height: 60px;
-              line-height: 60px;
-              border: #cccccc solid 1px;
-              font-size: 25px;
-              cursor: pointer;
-              box-sizing: border-box;
-
-              &:hover {
-                border: #aaaaaa solid 1px;
-              }
-            }
-
-            .switch-character-text {
-              font-size: 16px;
-              text-align: center;
-              width: 100%;
-              height: 30px;
-              line-height: 30px;
-              white-space: nowrap;
-              text-overflow: ellipsis;
-              overflow: hidden
+            .member-avatar {
+              width: 38px;
+              height: 38px;
             }
           }
-
-          .switch-character-avatar {
-            margin-left: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 60px;
-
-            .switch-character-avatar-btn {
-              width: 100%;
-              height: 60px;
-              line-height: 60px;
-              border: #cccccc solid 1px;
-              font-size: 25px;
-              cursor: pointer;
-              box-sizing: border-box;
-
-              &:hover {
-                border: #aaaaaa solid 1px;
-              }
-            }
-
-            .switch-character-avatar-text {
-              font-size: 16px;
-              text-align: center;
-              width: 100%;
-              height: 30px;
-              line-height: 30px;
-              white-space: nowrap;
-              text-overflow: ellipsis;
-              overflow: hidden
-            }
-
-            .character-avatar-item-left {
-              float: left;
-            }
-            .character-avatar-item-right {
-              float: right;
-              margin-right: 10px;
-              height: 65px;
-              line-height: 65px;
-            }
-          }
-
-          .member-info {
-            margin-left: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 60px;
-
-            .view-member-info-btn {
-              width: 100%;
-              height: 60px;
-              line-height: 60px;
-              border: #cccccc solid 1px;
-              font-size: 25px;
-              cursor: pointer;
-              box-sizing: border-box;
-
-              &:hover {
-                border: #aaaaaa solid 1px;
-              }
-            }
-
-            .view-member-text {
-              font-size: 16px;
-              text-align: center;
-              width: 100%;
-              height: 30px;
-              line-height: 30px;
-              white-space: nowrap;
-              text-overflow: ellipsis;
-              overflow: hidden
-            }
-          }
-				}
+        }
 			}
 		}
 
     .avatar-uploader-group {
-      width: 200px;
-      height: 200px;
-      line-height: 200px;
+      width: 160px;
+      height: 160px;
+      line-height: 160px;
       margin-bottom: 20px;
       margin-left: 130px;
 
@@ -1587,17 +1449,27 @@
       .avatar-uploader-icon {
         font-size: 28px;
         color: #8c939d;
-        width: 200px;
-        height: 200px;
-        line-height: 200px;
+        width: 160px;
+        height: 160px;
+        line-height: 160px;
         text-align: center;
       }
 
       .avatar {
-        width: 200px;
-        height: 200px;
+        width: 160px;
+        height: 160px;
         display: block;
       }
+    }
+
+    .character-avatar-item-left {
+      float: left;
+    }
+    .character-avatar-item-right {
+      float: right;
+      margin-right: 10px;
+      height: 65px;
+      line-height: 65px;
     }
 	}
 </style>

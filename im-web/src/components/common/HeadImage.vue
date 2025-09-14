@@ -114,9 +114,9 @@
       bottom: 0;
       width: 12px;
       height: 12px;
-      background: limegreen;
+      background: #32cd32;
       border-radius: 50%;
-      border: 3px solid white;
+      border: 2px solid #fff;
     }
 	}
 </style>
