@@ -69,7 +69,7 @@
                     <div class="launch-user-name">{{item.launchUserNickname}}</div>
                   </div>
                   <div class="btn-group">
-                    <el-button type="warning" size="mini" @click="modifyGroupRequest(item.id)">修改</el-button>
+                    <el-button type="warning" size="mini" @click="modifyGroupRequest(item)">修改</el-button>
                     <el-button type="danger" size="mini" @click="rejectGroupRequest(item.id)">拒绝</el-button>
                     <el-button type="primary" size="mini" @click="approveGroupRequest(item.id)">同意</el-button>
                   </div>
@@ -103,7 +103,7 @@
                     </div>
                   </div>
                   <div class="btn-group">
-                    <el-button type="warning" size="mini" @click="modifyGroupRequest(item.id)">修改</el-button>
+                    <el-button type="warning" size="mini" @click="modifyGroupRequest(item)">修改</el-button>
                     <el-button type="danger" size="mini" @click="recallGroupRequest(item.id)">撤回</el-button>
                   </div>
                 </div>
@@ -348,6 +348,7 @@
     <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="activeGroup.id"></talk-notify>
     <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="activeGroup.id"></music-play>
     <group-request-panel ref="groupRequestPanel" :is-owner="isOwner" :join-group-requests="joinGroupRequests" :invite-group-requests="inviteGroupRequests"></group-request-panel>
+    <template-character-choose :visible="groupRequestChangeCharacterVisible" @close="groupRequestChangeCharacterVisible = false" @confirm="groupRequestChangeCharacterEvent"></template-character-choose>
 	</el-container>
 </template>
 
@@ -412,6 +413,7 @@
         showCreateTemplateGroup: false,
         showSwitchTemplateGroup: false,
         characterSwitchVisible: false,
+        groupRequestChangeCharacterVisible: false,
 				rules: {
 					name: [{
 						required: true,
@@ -453,6 +455,7 @@
         bannedTime: 1,
         groupSpaceVisible: false,
         showType: 0, // 0:不展示；1:新的群聊 2:群组信息
+        curGroupRequest: null,
 			};
 		},
     mounted() {
@@ -824,6 +827,20 @@
           this.loadGroup(this.activeGroup.id);
         })
       },
+      groupRequestChangeCharacterEvent(data) {
+        let param = {
+          id: this.curGroupRequest.id,
+          templateCharacterId: data.templateCharacter.id,
+        }
+        this.$http({
+          url: `/group/request/update`,
+          method: "post",
+          data: param,
+        }).then(() => {
+          this.curGroupRequest = null;
+          this.groupRequestChangeCharacterVisible = false;
+        })
+      },
       chooseCharacterOK(character) {
         this.groupTemplateCharacterVisible = false;
         let groupMemberVO = {
@@ -931,8 +948,9 @@
           data: params
         }).then(() => {})
       },
-      modifyGroupRequest() {
-
+      modifyGroupRequest(groupRequest) {
+        this.curGroupRequest = groupRequest;
+        this.groupRequestChangeCharacterVisible = true;
       },
       rejectGroupRequest(id) {
         this.$http({

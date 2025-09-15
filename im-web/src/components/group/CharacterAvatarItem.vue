@@ -37,7 +37,7 @@ export default {
   padding-left: 15px;
   align-items: center;
   padding-right: 5px;
-  background-color: var(--bg-color);
+  background-color: white;
   white-space: nowrap;
 
 .avatar {

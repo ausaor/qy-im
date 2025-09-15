@@ -4,6 +4,7 @@
       title="选择角色"
       :visible.sync="visible"
       :before-close="handleClose"
+      :modal="modal"
       :append-to-body="appendToBody">
     <div class="agm-container">
       <div class="agm-l-box">
@@ -51,6 +52,7 @@
         :visible="characterAvatarVisible"
         :appendToBody="appendToBody"
         :characterId="templateCharacter.id"
+        :modal="false"
         @close="closeCharacterAvatarVisible"
         @confirm="confirmCharacterAvatar">
     </character-avatar-choose>
@@ -78,6 +80,10 @@ export default {
     appendToBody: {
       type: Boolean,
       default: false
+    },
+    modal: {
+      type: Boolean,
+      default: true
     }
   },
   data() {

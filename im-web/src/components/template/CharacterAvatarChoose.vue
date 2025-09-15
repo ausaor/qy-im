@@ -4,6 +4,7 @@
       title="选择角色头像"
       :visible.sync="visible"
       :before-close="handleClose"
+      :modal="modal"
       :append-to-body="appendToBody">
     <el-scrollbar style="height:400px;">
       <div v-for="(characterAvatar, index) in characterAvatars" :key="index" class="character-avatar-item">
@@ -42,6 +43,10 @@ export default {
     characterId: {
       type: Number,
       default: null,
+    },
+    modal: {
+      type: Boolean,
+      default: false
     }
   },
   data() {

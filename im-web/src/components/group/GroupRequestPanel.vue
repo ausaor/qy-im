@@ -32,7 +32,7 @@
                 </div>
               </div>
               <div class="btn-group">
-                <el-button type="warning" size="mini" @click="modifyGroupRequest(item.id)">修改</el-button>
+                <el-button type="warning" size="mini" @click="modifyGroupRequest(item)">修改</el-button>
                 <el-button type="danger" size="mini" @click="rejectGroupRequest(item.id)">拒绝</el-button>
                 <el-button type="primary" size="mini" @click="approveGroupRequest(item.id)">同意</el-button>
               </div>
@@ -68,7 +68,7 @@
                 <div class="launch-user-name">{{item.launchUserNickname}}</div>
               </div>
               <div class="btn-group">
-                <el-button type="warning" size="mini" @click="modifyGroupRequest(item.id)">修改</el-button>
+                <el-button type="warning" size="mini" @click="modifyGroupRequest(item)">修改</el-button>
                 <el-button type="danger" size="mini" @click="recallGroupRequest(item.id)">撤回</el-button>
               </div>
             </div>
@@ -76,15 +76,17 @@
         </el-tab-pane>
       </el-tabs>
     </div>
+    <template-character-choose :modal="false" :visible="groupRequestChangeCharacterVisible" @close="groupRequestChangeCharacterVisible = false" @confirm="groupRequestChangeCharacterEvent"></template-character-choose>
   </el-drawer>
 </template>
 
 <script>
 import HeadImage from "@components/common/HeadImage.vue";
+import TemplateCharacterChoose from "@components/template/TemplateCharacterChoose.vue";
 
 export default {
   name: 'GroupRequestPanel',
-  components: {HeadImage},
+  components: {TemplateCharacterChoose, HeadImage},
   props: {
     isOwner: {
       type: Boolean,
@@ -102,6 +104,8 @@ export default {
   data() {
     return {
       drawerVisible: false,
+      groupRequestChangeCharacterVisible: false,
+      curGroupRequest: null,
     }
   },
   methods: {
@@ -111,8 +115,9 @@ export default {
     handleClose() {
       this.$emit('closed');
     },
-    modifyGroupRequest() {
-
+    modifyGroupRequest(groupRequest) {
+      this.curGroupRequest = groupRequest;
+      this.groupRequestChangeCharacterVisible = true;
     },
     rejectGroupRequest(id) {
       this.$http({
@@ -137,7 +142,21 @@ export default {
       }).then(() => {
 
       })
-    }
+    },
+    groupRequestChangeCharacterEvent(data) {
+      let param = {
+        id: this.curGroupRequest.id,
+        templateCharacterId: data.templateCharacter.id,
+      }
+      this.$http({
+        url: `/group/request/update`,
+        method: "post",
+        data: param,
+      }).then(() => {
+        this.curGroupRequest = null;
+        this.groupRequestChangeCharacterVisible = false;
+      })
+    },
   }
 }
 </script>

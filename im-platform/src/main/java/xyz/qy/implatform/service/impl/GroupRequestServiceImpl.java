@@ -373,18 +373,20 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
             if (size >= Constant.MAX_GROUP_MEMBER) {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "当前群聊人数已达上限");
             }
-            Optional<GroupMember> optional = members.stream().filter(m -> m.getUserId().equals(userId)).findFirst();
+            Optional<GroupMember> optional = members.stream().filter(m -> m.getUserId().equals(groupRequest.getUserId())).findFirst();
             if (optional.isPresent() && !optional.get().getQuit()) {
-                throw new GlobalException("您已加入当前群聊");
+                throw new GlobalException("用户已加入当前群聊");
             }
 
             GroupMember member = optional.orElseGet(GroupMember::new);
-            User user = userService.getById(userId);
+
+            // 要加入群聊的用户
+            User user = userService.getById(groupRequest.getUserId());
 
             // 普通群聊
             if (GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
                 member.setGroupId(group.getId());
-                member.setUserId(userId);
+                member.setUserId(user.getId());
                 member.setAliasName(user.getNickName());
                 member.setRemark(group.getName());
                 member.setHeadImage(user.getHeadImage());
@@ -412,7 +414,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 }
                 member = optional.orElseGet(GroupMember::new);
                 member.setGroupId(group.getId());
-                member.setUserId(userId);
+                member.setUserId(user.getId());
                 member.setRemark(group.getName());
                 member.setAliasName(templateCharacter.get(0).getName());
                 member.setHeadImage(templateCharacter.get(0).getAvatar());
@@ -442,7 +444,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 }
                 member = optional.orElseGet(GroupMember::new);
                 member.setGroupId(group.getId());
-                member.setUserId(userId);
+                member.setUserId(user.getId());
                 member.setAliasName(templateCharacter.getName());
                 member.setHeadImage(templateCharacter.getAvatar());
                 member.setTemplateCharacterId(templateCharacterId);
@@ -484,7 +486,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
 
                 member = optional.orElseGet(GroupMember::new);
                 member.setGroupId(group.getId());
-                member.setUserId(userId);
+                member.setUserId(user.getId());
                 member.setAliasName(templateCharacter.getName());
                 member.setHeadImage(templateCharacter.getAvatar());
                 member.setTemplateCharacterId(templateCharacterId);
@@ -520,8 +522,6 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
             messageSendUtil.sendTipMessage(group.getId(),
                     session.getUserId(), session.getNickName(), Collections.emptyList(),
                     content, GroupChangeTypeEnum.NEW_USER_JOIN.getCode());
-        } catch (Exception e) {
-            throw new GlobalException("系统异常");
         } finally {
             lock.unlock();
         }
