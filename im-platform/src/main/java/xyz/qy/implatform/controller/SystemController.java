@@ -4,9 +4,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import xyz.qy.implatform.config.WebrtcConfig;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
+import xyz.qy.implatform.service.IMediaMaterialService;
 import xyz.qy.implatform.service.impl.SystemService;
 import xyz.qy.implatform.vo.SystemConfigVO;
 
@@ -16,6 +16,8 @@ import xyz.qy.implatform.vo.SystemConfigVO;
 @RequiredArgsConstructor
 public class SystemController {
     private final SystemService systemService;
+
+    private final IMediaMaterialService mediaMaterialService;
 
     @GetMapping("/config")
     @ApiOperation(value = "加载系统配置", notes = "加载系统配置")
@@ -34,6 +36,19 @@ public class SystemController {
     @ApiOperation(value = "解除全局禁言", notes = "解除全局禁言")
     public Result unAllBanned() {
         systemService.unAllBanned();
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "设置媒体播放素材", notes = "设置媒体播放素材")
+    @RequestMapping("/setPlayMediaMaterial")
+    public Result setPlayMediaMaterial(Integer sort) {
+        return ResultUtils.success(mediaMaterialService.setLoginPagePlayMediaMaterial(sort));
+    }
+
+    @ApiOperation(value = "生成随机排序号", notes = "生成随机排序号")
+    @RequestMapping("/generateRandomSort")
+    public Result generateRandomSort() {
+        mediaMaterialService.generateRandomSort();
         return ResultUtils.success();
     }
 }

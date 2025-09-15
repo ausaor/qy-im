@@ -21,7 +21,7 @@ import javax.validation.Valid;
  * @since 2024-12-28
  */
 @Api(tags = "推送任务")
-@RequestMapping("/openApi/push/task")
+@RequestMapping("/push/task")
 @RestController
 public class PushTaskController {
     @Resource

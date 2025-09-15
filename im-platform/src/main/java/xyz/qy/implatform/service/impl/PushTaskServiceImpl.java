@@ -60,9 +60,9 @@ public class PushTaskServiceImpl extends ServiceImpl<PushTaskMapper, PushTask> i
     @Override
     public void pushSystemMessage(PushTaskDTO dto) {
         UserSession session = SessionContext.getSession();
-        /*if (!session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+        if (!session.getUserId().equals(Constant.ADMIN_USER_ID)) {
             throw new GlobalException("只有系统管理员才有权限操作");
-        }*/
+        }
 
         // 判断系统消息是否存在
         SystemMessage systemMessage = systemMessageService.getById(dto.getSysMsgId());

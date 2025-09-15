@@ -468,7 +468,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                     // 判断群聊模板的是否存在所选模板角色
                     List<TemplateCharacter> templateCharacters = templateCharacterService.findPublishedByTemplateGroupIdAndCharacterIds(group.getTemplateGroupId(), Collections.singletonList(templateCharacterId));
                     if (CollectionUtils.isEmpty(templateCharacters)) {
-                        throw new GlobalException("所选模板角色不存在");
+                        throw new GlobalException("所选模板角色不属于当前群聊模板");
                     }
                     templateCharacter = templateCharacters.get(0);
                 } else {

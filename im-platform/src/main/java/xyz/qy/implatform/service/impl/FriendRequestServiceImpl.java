@@ -8,14 +8,13 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.implatform.entity.FriendRequest;
-import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.FriendRequestStatusEnum;
 import xyz.qy.implatform.enums.MessageType;
+import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.FriendRequestMapper;
 import xyz.qy.implatform.service.IFriendRequestService;
@@ -71,6 +70,11 @@ public class FriendRequestServiceImpl extends ServiceImpl<FriendRequestMapper, F
         }
         if (!FriendRequestStatusEnum.APPLYING.getCode().equals(friendRequest.getStatus())) {
             throw new GlobalException("当前数据状态不能操作");
+        }
+
+        // 查询是否已是好友
+        if (friendService.isFriend(friendRequest.getSendId(), friendRequest.getRecvId())) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "已添加好友");
         }
 
         friendRequest.setStatus(FriendRequestStatusEnum.AGREED.getCode());

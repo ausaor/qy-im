@@ -119,9 +119,17 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         if (count >= 100) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "好友数量已达上限");
         }
+        // 查询是否已是好友
+        if (this.isFriend(userId, dto.getFriendId())) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "已添加好友");
+        }
+
         User friend = userMapper.selectById(dto.getFriendId());
         if (ObjectUtil.isNull(friend)) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户不存在");
+        }
+        if (friend.getIsDisable()) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "被封禁用户，不能添加");
         }
 
         User user = userMapper.selectById(userId);

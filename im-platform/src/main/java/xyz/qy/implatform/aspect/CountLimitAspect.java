@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 @Aspect
 @Order(99)
 @Component
-public class FileUploadLimitAspect {
+public class CountLimitAspect {
     @Resource
     private RedisCache redisCache;
 
