@@ -173,7 +173,7 @@ export default {
       // 分页信息
       pagination: {
         currentPage: 1,
-        pageSize: 20,
+        pageSize: 10,
         total: 0
       },
       // 消息类型选项
@@ -211,44 +211,6 @@ export default {
       }
     },
 
-    // 模拟API调用
-    mockApiCall(params) {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const mockData = []
-          for (let i = 1; i <= 10; i++) {
-            mockData.push({
-              id: i,
-              title: `系统消息标题 ${i}`,
-              coverUrl: i % 3 === 0 ? 'https://via.placeholder.com/60x60' : '',
-              intro: `这是第${i}条系统消息的简述内容，用于描述消息的主要信息`,
-              type: i % 6,
-              createUserName: `用户${i}`,
-              createTime: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString()
-            })
-          }
-
-          // 简单的筛选逻辑
-          let filteredData = mockData
-          if (params.title) {
-            filteredData = filteredData.filter(item =>
-                item.title.includes(params.title)
-            )
-          }
-          if (params.type !== '' && params.type !== null) {
-            filteredData = filteredData.filter(item =>
-                item.type === params.type
-            )
-          }
-
-          resolve({
-            data: filteredData.slice(0, params.size),
-            total: filteredData.length
-          })
-        }, 500)
-      })
-    },
-
     // 查询
     handleSearch() {
       this.pagination.currentPage = 1
@@ -279,9 +241,17 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        // 这里应该调用批量删除API
-        this.$message.success('删除成功')
-        this.loadData()
+        const param = {
+          ids: this.selectedRows.map(item => item.id)
+        }
+        this.$http({
+          url: `/message/system/batchDelete`,
+          method: "post",
+          data: param
+        }).then((data) => {
+          this.loadData()
+          this.$message.success('删除成功')
+        })
       }).catch(() => {
         this.$message.info('已取消删除')
       })
@@ -289,8 +259,7 @@ export default {
 
     // 修改
     handleEdit(row) {
-      this.$message.info(`编辑消息：${row.title}`)
-      // 这里应该跳转到编辑页面或打开编辑对话框
+      this.$router.push({ path: '/home/square/sysMsgEdit', query: { id: row.id }})
     },
 
     // 推送
@@ -314,9 +283,17 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        // 这里应该调用删除API
-        this.$message.success('删除成功')
-        this.loadData()
+        const param = {
+          ids: [row.id]
+        }
+        this.$http({
+          url: `/message/system/batchDelete`,
+          method: "post",
+          data: param
+        }).then((data) => {
+          this.loadData()
+          this.$message.success('删除成功')
+        })
       }).catch(() => {
         this.$message.info('已取消删除')
       })

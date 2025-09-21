@@ -12,10 +12,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import xyz.qy.imclient.IMClient;
 import xyz.qy.imcommon.model.IMSystemMessage;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
+import xyz.qy.implatform.dto.SysMsgDelDTO;
 import xyz.qy.implatform.dto.SysMsgQueryDTO;
 import xyz.qy.implatform.dto.SystemMessageDTO;
 import xyz.qy.implatform.entity.Pusher;
@@ -75,6 +77,25 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
     private RedisTemplate<String, Object> redisTemplate;
 
     @Override
+    public SystemMessageVO getBySysMsgId(Long id) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        if (!userId.equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("只有系统管理员有权限查看系统消息");
+        }
+        SystemMessage systemMessage = this.getById(id);
+        if (ObjectUtil.isNull(systemMessage)) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "系统消息不存在");
+        }
+        SystemMessageVO systemMessageVO = BeanUtils.copyProperties(systemMessage, SystemMessageVO.class);
+        User user = userService.getById(systemMessage.getCreateBy());
+        if (ObjectUtil.isNotNull(user)) {
+            systemMessageVO.setCreateByName(user.getNickName());
+        }
+        return systemMessageVO;
+    }
+
+    @Override
     public void save(SystemMessageDTO dto) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
@@ -86,6 +107,54 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
         systemMessage.setCreateBy(userId);
 
         this.save(systemMessage);
+    }
+
+    @Override
+    public void modify(SystemMessageDTO dto) {
+        Assert.notNull(dto.getId(), "系统消息id不能为空");
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        if (!userId.equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("只有系统管理员有权限修改系统消息");
+        }
+
+        SystemMessage systemMessage = this.getById(dto.getId());
+        if (ObjectUtil.isNull(systemMessage)) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "系统消息不存在");
+        }
+        if (!systemMessage.getType().equals(dto.getType())) {
+            throw new GlobalException("系统消息类型不能修改");
+        }
+
+        if (!systemMessage.getCreateBy().equals(userId)) {
+            throw new GlobalException("您不是创建者");
+        }
+
+        BeanUtils.copyProperties(dto, systemMessage);
+        systemMessage.setUpdateBy(userId);
+        this.updateById(systemMessage);
+    }
+
+    @Override
+    public void batchDeleteByIds(SysMsgDelDTO dto) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        if (!userId.equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("只有系统管理员有权限删除系统消息");
+        }
+        List<SystemMessage> systemMessages = this.listByIds(dto.getIds());
+        if (CollUtil.isEmpty(systemMessages)) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "系统消息不存在");
+        }
+        systemMessages.forEach(systemMessage -> {
+            if (!systemMessage.getCreateBy().equals(userId)) {
+                throw new GlobalException("您不是创建者");
+            }
+            systemMessage.setDeleted(true);
+            systemMessage.setUpdateBy(userId);
+        });
+
+        this.updateBatchById(systemMessages);
     }
 
     @Override

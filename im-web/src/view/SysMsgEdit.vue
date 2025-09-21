@@ -2,6 +2,9 @@
   <div class="message-form-container">
     <div class="form-header">
       <h2>{{ isEdit ? '编辑消息' : '新增消息' }}</h2>
+      <div class="back">
+        <el-button @click="handleBack" type="text">返回</el-button>
+      </div>
     </div>
 
     <el-form
@@ -284,9 +287,9 @@ export default {
     }
   },
   mounted() {
-    if (this.$route.params.id) {
+    if (this.$route.query.id) {
       this.isEdit = true
-      this.loadMessageData(this.$route.params.id)
+      this.loadMessageData(this.$route.query.id)
     }
   },
   methods: {
@@ -389,9 +392,6 @@ export default {
 
     // 图片上传成功
     handleImageSuccess(response, file, fileList) {
-      console.log(response)
-      console.log(file)
-      console.log(fileList)
       const imgItem = {
         url: response.data.originUrl,
         name: file.name,
@@ -555,8 +555,6 @@ export default {
           this.form.content = this.buildVideoContent(list)
           break
       }
-      console.log('list--', list)
-      console.log('this.form.content--', this.form.content)
     },
     buildImgContent(list) {
       return JSON.stringify(list.map(item => ({
@@ -596,8 +594,8 @@ export default {
 
     async loadMessageData(id) {
       try {
-        const response = await this.$http.get(`/api/messages/${id}`)
-        const data = response.data
+        const response = await this.$http.get(`/message/system/get?id=${id}`)
+        const data = response
 
         this.form = { ...data }
 
@@ -628,7 +626,6 @@ export default {
         if (valid) {
           this.loading = true
           try {
-            console.log('this.form--', this.form)
             const url = this.isEdit ? `/message/system/modify` : '/message/system/save'
             this.$http({
               url: url,
@@ -647,7 +644,7 @@ export default {
     },
 
     handleCancel() {
-      this.$router.push('/messages')
+      this.$router.push('/home/square/sysMsg')
     },
 
     handleReset() {
@@ -656,7 +653,11 @@ export default {
       this.fileList = []
       this.audioList = []
       this.videoList = []
-    }
+    },
+
+    handleBack() {
+      this.$router.push('/home/square/sysMsg')
+    },
   }
 }
 </script>
@@ -675,6 +676,13 @@ export default {
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid #e8e8e8;
+  display: flex;
+  justify-content: space-between;
+}
+
+.back {
+  font-size: 16px;
+  cursor: pointer;
 }
 
 .form-header h2 {
