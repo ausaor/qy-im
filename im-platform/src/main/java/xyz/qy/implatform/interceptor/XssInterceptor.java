@@ -17,18 +17,8 @@ import java.util.Map;
 @Slf4j
 @Component
 public class XssInterceptor implements HandlerInterceptor {
-    // 配置白名单
-    private static final String[] WHITE_LIST = new String[]{"/message/system/save", "/message/system/modify"};
-
     @Override
     public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) {
-        // 检查白名单
-        for (String white : WHITE_LIST) {
-            log.info("url：{}", request.getRequestURI());
-            if (white.equals(request.getRequestURI())) {
-                return true;
-            }
-        }
         // 检查参数
         Map<String, String[]> paramMap = request.getParameterMap();
         for (String[] values : paramMap.values()) {
