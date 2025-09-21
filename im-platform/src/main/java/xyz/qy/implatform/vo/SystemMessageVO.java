@@ -1,5 +1,6 @@
 package xyz.qy.implatform.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -50,4 +51,29 @@ public class SystemMessageVO {
     @ApiModelProperty(value = " 发送时间")
     @JsonSerialize(using = DateToLongSerializer.class)
     private Date sendTime;
+
+    /** 是否删除：0-否；1-是 */
+    @ApiModelProperty(value = "是否删除")
+    private Boolean deleted;
+
+    /** 创建者 */
+    @ApiModelProperty(value = "创建者")
+    private Long createBy;
+
+    @ApiModelProperty(value = "创建者名称")
+    private String createByName;
+
+    /** 创建时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
+    @ApiModelProperty(value = "创建时间")
+    private Date createTime;
+
+    /** 更新者 */
+    @ApiModelProperty(value = "更新者")
+    private Long updateBy;
+
+    /** 更新时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
+    @ApiModelProperty(value = "更新时间")
+    private Date updateTime;
 }

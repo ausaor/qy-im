@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.dto.SysMsgQueryDTO;
 import xyz.qy.implatform.dto.SystemMessageDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -49,5 +50,11 @@ public class SystemMessageController {
     public Result readedMessage(@RequestParam Long pusherId) {
         systemMessageService.readedMessage(pusherId);
         return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "分页查询系统消息", notes = "分页查询系统消息")
+    @PostMapping("/page")
+    public Result pageSysMsg(@RequestBody SysMsgQueryDTO queryDTO) {
+        return ResultUtils.success(systemMessageService.pageSysMsg(queryDTO));
     }
 }

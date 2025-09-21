@@ -3,26 +3,32 @@
     <!-- 查询表单 -->
     <el-form :inline="true" :model="searchForm" class="search-form">
       <el-form-item label="用户名">
-        <el-input v-model="searchForm.userName" placeholder="请输入用户名" clearable></el-input>
+        <el-input v-model="searchForm.userName" placeholder="请输入用户名" clearable size="mini"></el-input>
       </el-form-item>
       <el-form-item label="昵称">
-        <el-input v-model="searchForm.nickName" placeholder="请输入昵称" clearable></el-input>
+        <el-input v-model="searchForm.nickName" placeholder="请输入昵称" clearable size="mini"></el-input>
       </el-form-item>
       <el-form-item label="性别">
-        <el-select v-model="searchForm.sex" placeholder="请选择性别" clearable>
+        <el-select v-model="searchForm.sex" placeholder="请选择性别" clearable size="mini">
           <el-option label="男" :value="0"></el-option>
           <el-option label="女" :value="1"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
         <div class="action-buttons">
-          <el-button type="primary" @click="fetchUserData" size="medium">查询</el-button>
-          <el-button @click="resetSearch" size="medium">重置</el-button>
+          <el-button type="primary" @click="fetchUserData" size="mini">查询</el-button>
+          <el-button @click="resetSearch" size="mini">重置</el-button>
         </div>
       </el-form-item>
     </el-form>
     <!-- 用户表格 -->
-    <el-table :data="userList" class="user-table" stripe border v-loading="loading">
+    <el-table
+        :data="userList"
+        class="user-table"
+        stripe
+        border
+        v-loading="loading"
+        style="width: 100%">
       <el-table-column label="序号" width="80" align="center">
         <template slot-scope="scope">
           <div class="index-cell">
@@ -60,7 +66,7 @@
             </span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" min-width="200" class="operation-cell" align="center">
+      <el-table-column label="操作" min-width="200" class="operation-cell" align="center" fixed="right">
         <template slot-scope="scope">
           <el-button
               size="mini"
@@ -248,7 +254,7 @@ export default {
 
 <style scoped lang="scss">
 .user-management-container {
-  width: 100%;
+  max-width: 78vw;
   margin: 0 auto;
   padding: 20px;
   background: white;
@@ -258,15 +264,15 @@ export default {
 
 .search-form {
   background-color: #f8f9fa;
-  padding: 20px;
+  padding: 10px;
   border-radius: 4px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 20px;
 }
-.el-form-item {
-  margin-bottom: 18px;
+::v-deep .el-form-item {
+  margin-bottom: 0;
 }
 .action-buttons {
   display: flex;
@@ -274,6 +280,7 @@ export default {
 }
 .user-table {
   width: 100%;
+  overflow: hidden;
 }
 .avatar-cell {
   display: flex;
@@ -325,5 +332,12 @@ export default {
 .no-data i {
   font-size: 40px;
   margin-bottom: 10px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .user-management-container {
+    padding: 10px;
+  }
 }
 </style>

@@ -940,7 +940,6 @@
     flex: 1;
     padding: 0;
     background-color: #fff;
-    text-align: center;
   }
 }
 

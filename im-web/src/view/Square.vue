@@ -8,6 +8,8 @@
                         @click.native="handleActiveItem(communityList[1])"></community-item>
         <community-item v-if="mine.id===1" :community="communityList[2]" :active="communityList[2].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[2])"></community-item>
+        <community-item v-if="mine.id===1" :community="communityList[3]" :active="communityList[3].sort === activeIndex"
+                        @click.native="handleActiveItem(communityList[3])"></community-item>
       </div>
     </el-aside>
     <el-main class="community-box">
@@ -31,7 +33,8 @@ export default {
       communityList: [
         {name: "空间动态", sort: 1, route: '/home/square/friendActivity', iconId: '#icon-shejiaotubiao-40'},
         {name: "群聊模板", sort: 2, route: '/home/square/templateGroup', iconId: '#icon-qiqiaoban'},
-        {name: "用户管理", sort: 3, route: '/home/square/users', iconId: '#icon-person'}
+        {name: "用户管理", sort: 3, route: '/home/square/users', iconId: '#icon-person'},
+        {name: "系统消息", sort: 4, route: '/home/square/sysMsg', iconId: '#icon-xitongxiaoxi'},
       ],
       activeIndex: -1,
     }
@@ -94,6 +97,7 @@ export default {
 
   .community-box {
     margin-top: -10px;
+    flex: 1;
   }
 }
 </style>

@@ -1,8 +1,10 @@
 package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import xyz.qy.implatform.dto.SysMsgQueryDTO;
 import xyz.qy.implatform.dto.SystemMessageDTO;
 import xyz.qy.implatform.entity.SystemMessage;
+import xyz.qy.implatform.vo.PageResultVO;
 
 public interface ISystemMessageService extends IService<SystemMessage> {
     /**
@@ -25,4 +27,12 @@ public interface ISystemMessageService extends IService<SystemMessage> {
      * @param pusherId 推送主体id
      */
     void readedMessage(Long pusherId);
+
+    /**
+     * 分页查询系统消息
+     *
+     * @param queryDTO 查询参数
+     * @return 系统消息列表
+     */
+    PageResultVO pageSysMsg(SysMsgQueryDTO queryDTO);
 }

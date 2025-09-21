@@ -78,6 +78,11 @@ export default new VueRouter({
                   name: "Users",
                   path: "/home/square/users",
                   component: () => import("../view/Users.vue"),
+              },
+              {
+                  name: "SysMsg",
+                  path: "/home/square/sysMsg",
+                  component: () => import("../view/SysMsg.vue"),
               }
           ]
         }

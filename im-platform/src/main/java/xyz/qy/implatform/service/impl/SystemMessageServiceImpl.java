@@ -1,11 +1,14 @@
 package xyz.qy.implatform.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -13,11 +16,11 @@ import xyz.qy.imclient.IMClient;
 import xyz.qy.imcommon.model.IMSystemMessage;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
+import xyz.qy.implatform.dto.SysMsgQueryDTO;
 import xyz.qy.implatform.dto.SystemMessageDTO;
-import xyz.qy.implatform.entity.GroupMessage;
-import xyz.qy.implatform.entity.PushTask;
 import xyz.qy.implatform.entity.Pusher;
 import xyz.qy.implatform.entity.SystemMessage;
+import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.MessageStatus;
 import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
@@ -26,13 +29,15 @@ import xyz.qy.implatform.mapper.SystemMessageMapper;
 import xyz.qy.implatform.service.IPushTaskService;
 import xyz.qy.implatform.service.IPusherService;
 import xyz.qy.implatform.service.ISystemMessageService;
+import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.PageUtils;
+import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.SystemMessageVO;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -62,6 +67,9 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
 
     @Resource
     private IPushTaskService pushTaskService;
+
+    @Resource
+    private IUserService userService;
     
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
@@ -125,6 +133,40 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
         // 关闭加载中标志
         this.sendLoadingMessage(false);
         log.info("拉取离线系统消息,用户id:{},数量:{}", session.getUserId(), sendCount.get());
+    }
+
+    @Override
+    public PageResultVO pageSysMsg(SysMsgQueryDTO queryDTO) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        if (!userId.equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("不是系统管理员，无法操作");
+        }
+
+        LambdaQueryWrapper<SystemMessage> queryWrapper = Wrappers.lambdaQuery();
+        queryWrapper.eq(SystemMessage::getDeleted, false);
+        queryWrapper.eq(queryDTO.getType() != null, SystemMessage::getType, queryDTO.getType());
+        queryWrapper.like(StringUtils.isNotBlank(queryDTO.getTitle()), SystemMessage::getTitle, queryDTO.getTitle());
+        queryWrapper.orderByDesc(SystemMessage::getId);
+
+        Page<SystemMessage> page = new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize());
+        Page<SystemMessage> pageResult = this.page(page, queryWrapper);
+
+        List<SystemMessage> systemMessageList = pageResult.getRecords();
+        if (CollUtil.isEmpty(systemMessageList)) {
+            return PageResultVO.builder().data(Collections.emptyList()).build();
+        }
+        List<Long> userIds = systemMessageList.stream().map(SystemMessage::getCreateBy).collect(Collectors.toList());
+        List<User> userList = userService.findUserByIds(userIds);
+        // userList根据id为key转换成map
+        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, Function.identity(), (key1, key2) -> key2));
+
+        List<SystemMessageVO> systemMessageVOS = BeanUtils.copyPropertiesList(systemMessageList, SystemMessageVO.class);
+        systemMessageVOS.forEach(item -> {
+            item.setCreateByName(userMap.get(item.getCreateBy()).getNickName());
+        });
+
+        return PageResultVO.builder().data(systemMessageVOS).total(page.getTotal()).build();
     }
 
     @Override
