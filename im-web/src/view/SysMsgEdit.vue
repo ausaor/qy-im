@@ -1,0 +1,635 @@
+<template>
+  <div class="message-form-container">
+    <div class="form-header">
+      <h2>{{ isEdit ? '编辑消息' : '新增消息' }}</h2>
+    </div>
+
+    <el-form
+        ref="messageForm"
+        :model="form"
+        :rules="rules"
+        label-width="120px"
+        class="message-form"
+    >
+      <!-- 消息类型 -->
+      <el-form-item label="消息类型" prop="type">
+        <el-select
+            v-model="form.type"
+            placeholder="请选择消息类型"
+            @change="handleTypeChange"
+            style="width: 300px"
+        >
+          <el-option
+              v-for="item in messageTypes"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
+
+      <!-- 标题 -->
+      <el-form-item label="标题" prop="title">
+        <el-input
+            v-model="form.title"
+            placeholder="请输入消息标题"
+            style="width: 500px"
+        />
+      </el-form-item>
+
+      <!-- 封面图片 -->
+      <el-form-item label="封面图片" prop="coverUrl">
+        <el-upload
+            class="cover-uploader"
+            action="/api/upload"
+            :show-file-list="false"
+            :on-success="handleCoverSuccess"
+            :before-upload="beforeCoverUpload"
+        >
+          <img v-if="form.coverUrl" :src="form.coverUrl" class="cover-image">
+          <i v-else class="el-icon-plus cover-uploader-icon"></i>
+        </el-upload>
+        <div class="upload-tip">建议尺寸：750x400px，支持jpg、png格式</div>
+      </el-form-item>
+
+      <!-- 简述 -->
+      <el-form-item label="简述" prop="intro">
+        <el-input
+            v-model="form.intro"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入消息简述"
+            style="width: 500px"
+        />
+      </el-form-item>
+
+      <!-- 内容 - 根据消息类型显示不同的编辑器 -->
+      <el-form-item label="内容" prop="content">
+        <!-- 文字、外部链接 - 文本域 -->
+        <el-input
+            v-if="form.type === 0 || form.type === 5"
+            v-model="form.content"
+            type="textarea"
+            :rows="6"
+            :placeholder="form.type === 0 ? '请输入文字内容' : '请输入外部链接地址'"
+            style="width: 600px"
+        />
+
+        <!-- 富文本编辑器 -->
+        <div v-else-if="form.type === 9" class="quill-editor-container">
+          <quill-editor
+              v-model="form.content"
+              :options="editorOptions"
+              style="height: 300px"
+          />
+        </div>
+
+        <!-- 图片上传 - 最多9张 -->
+        <div v-else-if="form.type === 1" class="image-upload-container">
+          <el-upload
+              action="/api/upload"
+              list-type="picture-card"
+              :file-list="imageList"
+              :on-success="handleImageSuccess"
+              :on-remove="handleImageRemove"
+              :before-upload="beforeImageUpload"
+              :limit="9"
+              :on-exceed="handleImageExceed"
+          >
+            <i class="el-icon-plus"></i>
+          </el-upload>
+          <div class="upload-tip">最多可上传9张图片，支持jpg、png格式</div>
+        </div>
+
+        <!-- 文件上传 - 最多1个 -->
+        <div v-else-if="form.type === 2" class="file-upload-container">
+          <el-upload
+              action="/api/upload"
+              :file-list="fileList"
+              :on-success="handleFileSuccess"
+              :on-remove="handleFileRemove"
+              :before-upload="beforeFileUpload"
+              :limit="1"
+              :on-exceed="handleFileExceed"
+          >
+            <el-button size="small" type="primary">
+              <i class="el-icon-upload"></i> 选择文件
+            </el-button>
+          </el-upload>
+          <div class="upload-tip">支持常见文档格式，单个文件不超过50MB</div>
+        </div>
+
+        <!-- 音频上传 - 最多1个 -->
+        <div v-else-if="form.type === 3" class="audio-upload-container">
+          <el-upload
+              action="/api/upload"
+              :file-list="audioList"
+              :on-success="handleAudioSuccess"
+              :on-remove="handleAudioRemove"
+              :before-upload="beforeAudioUpload"
+              :limit="1"
+              :on-exceed="handleAudioExceed"
+          >
+            <el-button size="small" type="primary">
+              <i class="el-icon-microphone"></i> 选择音频
+            </el-button>
+          </el-upload>
+          <div class="upload-tip">支持mp3、wav、m4a格式，单个文件不超过100MB</div>
+
+          <!-- 音频播放器 -->
+          <div v-if="audioList.length > 0" class="audio-player">
+            <audio controls :src="audioList[0].url" style="width: 100%; margin-top: 10px;"></audio>
+          </div>
+        </div>
+
+        <!-- 视频上传 - 最多1个 -->
+        <div v-else-if="form.type === 4" class="video-upload-container">
+          <el-upload
+              action="/api/upload"
+              :file-list="videoList"
+              :on-success="handleVideoSuccess"
+              :on-remove="handleVideoRemove"
+              :before-upload="beforeVideoUpload"
+              :limit="1"
+              :on-exceed="handleVideoExceed"
+          >
+            <el-button size="small" type="primary">
+              <i class="el-icon-video-camera"></i> 选择视频
+            </el-button>
+          </el-upload>
+          <div class="upload-tip">支持mp4、avi、mov格式，单个文件不超过500MB</div>
+
+          <!-- 视频播放器 -->
+          <div v-if="videoList.length > 0" class="video-player">
+            <video
+                controls
+                :src="videoList[0].url"
+                style="width: 100%; max-width: 600px; margin-top: 10px;"
+            ></video>
+          </div>
+        </div>
+      </el-form-item>
+
+      <!-- 操作按钮 -->
+      <el-form-item class="form-actions">
+        <el-button type="primary" @click="handleSubmit" :loading="loading">
+          {{ isEdit ? '更新' : '保存' }}
+        </el-button>
+        <el-button @click="handleCancel">取消</el-button>
+        <el-button @click="handleReset">重置</el-button>
+      </el-form-item>
+    </el-form>
+  </div>
+</template>
+
+<script>
+import { quillEditor } from 'vue-quill-editor'
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+
+export default {
+  name: 'MessageForm',
+  components: {
+    quillEditor
+  },
+  data() {
+    return {
+      isEdit: false,
+      loading: false,
+      form: {
+        type: 0,
+        title: '',
+        coverUrl: '',
+        intro: '',
+        content: ''
+      },
+      messageTypes: [
+        { value: 0, label: '文字' },
+        { value: 1, label: '图片' },
+        { value: 2, label: '文件' },
+        { value: 3, label: '音频' },
+        { value: 4, label: '视频' },
+        { value: 5, label: '外部链接' },
+        { value: 9, label: '富文本' }
+      ],
+      rules: {
+        type: [
+          { required: true, message: '请选择消息类型', trigger: 'change' }
+        ],
+        title: [
+          { required: true, message: '请输入标题', trigger: 'blur' },
+          { min: 1, max: 100, message: '标题长度在1到100个字符', trigger: 'blur' }
+        ],
+        intro: [
+          { required: true, message: '请输入简述', trigger: 'blur' },
+          { max: 200, message: '简述不能超过200个字符', trigger: 'blur' }
+        ],
+        content: [
+          { required: true, message: '请输入内容', trigger: 'blur' }
+        ]
+      },
+      editorOptions: {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'header': 1 }, { 'header': 2 }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'script': 'sub'}, { 'script': 'super' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            [{ 'direction': 'rtl' }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'font': [] }],
+            [{ 'align': [] }],
+            ['clean'],
+            ['link', 'image', 'video']
+          ]
+        }
+      },
+      imageList: [],
+      fileList: [],
+      audioList: [],
+      videoList: []
+    }
+  },
+  mounted() {
+    // 检查是否为编辑模式
+    if (this.$route.params.id) {
+      this.isEdit = true
+      this.loadMessageData(this.$route.params.id)
+    }
+  },
+  methods: {
+    // 消息类型改变处理
+    handleTypeChange(type) {
+      // 清空内容和相关列表
+      this.form.content = ''
+      this.imageList = []
+      this.fileList = []
+      this.audioList = []
+      this.videoList = []
+    },
+
+    // 封面图片上传成功
+    handleCoverSuccess(response, file) {
+      this.form.coverUrl = response.data.url
+    },
+
+    // 封面图片上传前验证
+    beforeCoverUpload(file) {
+      const isImage = file.type.indexOf('image/') === 0
+      const isLt2M = file.size / 1024 / 1024 < 2
+
+      if (!isImage) {
+        this.$message.error('只能上传图片格式的文件!')
+        return false
+      }
+      if (!isLt2M) {
+        this.$message.error('上传图片大小不能超过 2MB!')
+        return false
+      }
+      return true
+    },
+
+    // 图片上传成功
+    handleImageSuccess(response, file, fileList) {
+      this.imageList = fileList
+      this.updateContentFromList('image')
+    },
+
+    // 图片移除
+    handleImageRemove(file, fileList) {
+      this.imageList = fileList
+      this.updateContentFromList('image')
+    },
+
+    // 图片上传前验证
+    beforeImageUpload(file) {
+      const isImage = file.type.indexOf('image/') === 0
+      const isLt5M = file.size / 1024 / 1024 < 5
+
+      if (!isImage) {
+        this.$message.error('只能上传图片格式的文件!')
+        return false
+      }
+      if (!isLt5M) {
+        this.$message.error('上传图片大小不能超过 5MB!')
+        return false
+      }
+      return true
+    },
+
+    // 图片数量超限
+    handleImageExceed() {
+      this.$message.warning('最多只能上传9张图片')
+    },
+
+    // 文件上传成功
+    handleFileSuccess(response, file, fileList) {
+      this.fileList = fileList
+      this.updateContentFromList('file')
+    },
+
+    // 文件移除
+    handleFileRemove(file, fileList) {
+      this.fileList = fileList
+      this.updateContentFromList('file')
+    },
+
+    // 文件上传前验证
+    beforeFileUpload(file) {
+      const isLt50M = file.size / 1024 / 1024 < 50
+
+      if (!isLt50M) {
+        this.$message.error('上传文件大小不能超过 50MB!')
+        return false
+      }
+      return true
+    },
+
+    // 文件数量超限
+    handleFileExceed() {
+      this.$message.warning('最多只能上传1个文件')
+    },
+
+    // 音频上传成功
+    handleAudioSuccess(response, file, fileList) {
+      this.audioList = fileList
+      this.updateContentFromList('audio')
+    },
+
+    // 音频移除
+    handleAudioRemove(file, fileList) {
+      this.audioList = fileList
+      this.updateContentFromList('audio')
+    },
+
+    // 音频上传前验证
+    beforeAudioUpload(file) {
+      const isAudio = file.type.indexOf('audio/') === 0
+      const isLt100M = file.size / 1024 / 1024 < 100
+
+      if (!isAudio) {
+        this.$message.error('只能上传音频格式的文件!')
+        return false
+      }
+      if (!isLt100M) {
+        this.$message.error('上传音频大小不能超过 100MB!')
+        return false
+      }
+      return true
+    },
+
+    // 音频数量超限
+    handleAudioExceed() {
+      this.$message.warning('最多只能上传1个音频文件')
+    },
+
+    // 视频上传成功
+    handleVideoSuccess(response, file, fileList) {
+      this.videoList = fileList
+      this.updateContentFromList('video')
+    },
+
+    // 视频移除
+    handleVideoRemove(file, fileList) {
+      this.videoList = fileList
+      this.updateContentFromList('video')
+    },
+
+    // 视频上传前验证
+    beforeVideoUpload(file) {
+      const isVideo = file.type.indexOf('video/') === 0
+      const isLt500M = file.size / 1024 / 1024 < 500
+
+      if (!isVideo) {
+        this.$message.error('只能上传视频格式的文件!')
+        return false
+      }
+      if (!isLt500M) {
+        this.$message.error('上传视频大小不能超过 500MB!')
+        return false
+      }
+      return true
+    },
+
+    // 视频数量超限
+    handleVideoExceed() {
+      this.$message.warning('最多只能上传1个视频文件')
+    },
+
+    // 根据文件列表更新内容字段
+    updateContentFromList(type) {
+      let list = []
+      switch (type) {
+        case 'image':
+          list = this.imageList
+          break
+        case 'file':
+          list = this.fileList
+          break
+        case 'audio':
+          list = this.audioList
+          break
+        case 'video':
+          list = this.videoList
+          break
+      }
+
+      this.form.content = JSON.stringify(list.map(item => ({
+        name: item.name,
+        url: item.url || item.response?.data?.url,
+        size: item.size,
+        type: item.raw?.type || item.type
+      })))
+    },
+
+    // 加载消息数据（编辑模式）
+    async loadMessageData(id) {
+      try {
+        // 模拟API调用
+        const response = await this.$http.get(`/api/messages/${id}`)
+        const data = response.data
+
+        this.form = { ...data }
+
+        // 根据消息类型初始化对应的文件列表
+        if (data.content && [1, 2, 3, 4].includes(data.type)) {
+          const contentData = JSON.parse(data.content)
+          switch (data.type) {
+            case 1:
+              this.imageList = contentData
+              break
+            case 2:
+              this.fileList = contentData
+              break
+            case 3:
+              this.audioList = contentData
+              break
+            case 4:
+              this.videoList = contentData
+              break
+          }
+        }
+      } catch (error) {
+        this.$message.error('加载数据失败')
+      }
+    },
+
+    // 提交表单
+    handleSubmit() {
+      this.$refs.messageForm.validate(async (valid) => {
+        if (valid) {
+          this.loading = true
+          try {
+            const url = this.isEdit ? `/api/messages/${this.$route.params.id}` : '/api/messages'
+            const method = this.isEdit ? 'put' : 'post'
+
+            await this.$http[method](url, this.form)
+
+            this.$message.success(this.isEdit ? '更新成功' : '保存成功')
+            this.$router.push('/messages')
+          } catch (error) {
+            this.$message.error(this.isEdit ? '更新失败' : '保存失败')
+          } finally {
+            this.loading = false
+          }
+        }
+      })
+    },
+
+    // 取消操作
+    handleCancel() {
+      this.$router.push('/messages')
+    },
+
+    // 重置表单
+    handleReset() {
+      this.$refs.messageForm.resetFields()
+      this.imageList = []
+      this.fileList = []
+      this.audioList = []
+      this.videoList = []
+    }
+  }
+}
+</script>
+
+<style scoped lang="scss">
+.message-form-container {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.form-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.form-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.message-form {
+  margin-top: 24px;
+}
+
+.cover-uploader {
+  display: inline-block;
+}
+
+.cover-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  width: 200px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cover-uploader .el-upload:hover {
+  border-color: #409EFF;
+}
+
+.cover-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+}
+
+.cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-tip {
+  margin-top: 8px;
+  color: #999;
+  font-size: 12px;
+}
+
+.quill-editor-container {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
+
+.image-upload-container,
+.file-upload-container,
+.audio-upload-container,
+.video-upload-container {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.audio-player,
+.video-player {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.form-actions {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.form-actions .el-button {
+  margin-right: 16px;
+}
+
+/* 富文本编辑器样式调整 */
+.quill-editor-container .ql-editor {
+  min-height: 200px;
+}
+
+/* 上传组件样式调整 */
+.el-upload-list--picture-card .el-upload-list__item {
+  width: 100px;
+  height: 100px;
+}
+
+.el-upload--picture-card {
+  width: 100px;
+  height: 100px;
+  line-height: 100px;
+}
+</style>

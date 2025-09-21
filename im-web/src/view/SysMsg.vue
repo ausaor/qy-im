@@ -264,8 +264,7 @@ export default {
 
     // 新增
     handleAdd() {
-      this.$message.info('跳转到新增页面')
-      // 这里应该跳转到新增页面或打开新增对话框
+      this.$router.push({ path: '/home/square/sysMsgEdit'})
     },
 
     // 批量删除

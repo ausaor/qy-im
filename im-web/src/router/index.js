@@ -83,6 +83,11 @@ export default new VueRouter({
                   name: "SysMsg",
                   path: "/home/square/sysMsg",
                   component: () => import("../view/SysMsg.vue"),
+              },
+              {
+                  name: "SysMsgEdit",
+                  path: "/home/square/sysMsgEdit",
+                  component: () => import("../view/SysMsgEdit.vue"),
               }
           ]
         }
