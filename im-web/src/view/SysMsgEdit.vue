@@ -86,7 +86,7 @@
               ref="quillEditor"
               v-model="form.content"
               :options="editorOptions"
-              style="height: 300px"
+              style="min-height: 300px"
           />
         </div>
 
