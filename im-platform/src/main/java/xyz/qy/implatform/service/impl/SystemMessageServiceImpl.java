@@ -77,12 +77,13 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
     @Override
     public void save(SystemMessageDTO dto) {
         UserSession session = SessionContext.getSession();
-//        if (!session.getUserId().equals(Constant.ADMIN_USER_ID)) {
-//            throw new GlobalException("只有系统管理员有权限新增系统消息");
-//        }
+        Long userId = session.getUserId();
+        if (!userId.equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("只有系统管理员有权限新增系统消息");
+        }
 
         SystemMessage systemMessage = BeanUtils.copyProperties(dto, SystemMessage.class);
-        systemMessage.setCreateBy(Constant.ADMIN_USER_ID);
+        systemMessage.setCreateBy(userId);
 
         this.save(systemMessage);
     }

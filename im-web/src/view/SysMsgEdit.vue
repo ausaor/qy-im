@@ -41,8 +41,10 @@
       <el-form-item label="封面图片" prop="coverUrl">
         <el-upload
             class="cover-uploader"
-            action="/api/upload"
+            action="/api/image/upload"
+            :headers="uploadHeaders"
             :show-file-list="false"
+            :accept="imgTypes.join(',')"
             :on-success="handleCoverSuccess"
             :before-upload="beforeCoverUpload"
         >
@@ -78,6 +80,7 @@
         <!-- 富文本编辑器 -->
         <div v-else-if="form.type === 9" class="quill-editor-container">
           <quill-editor
+              ref="quillEditor"
               v-model="form.content"
               :options="editorOptions"
               style="height: 300px"
@@ -87,7 +90,8 @@
         <!-- 图片上传 - 最多9张 -->
         <div v-else-if="form.type === 1" class="image-upload-container">
           <el-upload
-              action="/api/upload"
+              action="/api/image/upload"
+              :headers="uploadHeaders"
               list-type="picture-card"
               :file-list="imageList"
               :on-success="handleImageSuccess"
@@ -104,7 +108,8 @@
         <!-- 文件上传 - 最多1个 -->
         <div v-else-if="form.type === 2" class="file-upload-container">
           <el-upload
-              action="/api/upload"
+              action="/api/file/upload"
+              :headers="uploadHeaders"
               :file-list="fileList"
               :on-success="handleFileSuccess"
               :on-remove="handleFileRemove"
@@ -122,11 +127,13 @@
         <!-- 音频上传 - 最多1个 -->
         <div v-else-if="form.type === 3" class="audio-upload-container">
           <el-upload
-              action="/api/upload"
+              action="/api/audio/upload"
+              :headers="uploadHeaders"
               :file-list="audioList"
               :on-success="handleAudioSuccess"
               :on-remove="handleAudioRemove"
               :before-upload="beforeAudioUpload"
+              :accept="audioTypes.join(',')"
               :limit="1"
               :on-exceed="handleAudioExceed"
           >
@@ -134,7 +141,7 @@
               <i class="el-icon-microphone"></i> 选择音频
             </el-button>
           </el-upload>
-          <div class="upload-tip">支持mp3、wav、m4a格式，单个文件不超过100MB</div>
+          <div class="upload-tip">支持mp3、wav、m4a格式，单个文件不超过10MB</div>
 
           <!-- 音频播放器 -->
           <div v-if="audioList.length > 0" class="audio-player">
@@ -145,11 +152,13 @@
         <!-- 视频上传 - 最多1个 -->
         <div v-else-if="form.type === 4" class="video-upload-container">
           <el-upload
-              action="/api/upload"
+              action="/api/video/upload"
+              :headers="uploadHeaders"
               :file-list="videoList"
               :on-success="handleVideoSuccess"
               :on-remove="handleVideoRemove"
               :before-upload="beforeVideoUpload"
+              :accept="videoTypes.join(',')"
               :limit="1"
               :on-exceed="handleVideoExceed"
           >
@@ -157,12 +166,13 @@
               <i class="el-icon-video-camera"></i> 选择视频
             </el-button>
           </el-upload>
-          <div class="upload-tip">支持mp4、avi、mov格式，单个文件不超过500MB</div>
+          <div class="upload-tip">支持mp4、avi、mov格式，单个文件不超过50MB</div>
 
           <!-- 视频播放器 -->
           <div v-if="videoList.length > 0" class="video-player">
             <video
                 controls
+                :poster="videoList[0].coverUrl"
                 :src="videoList[0].url"
                 style="width: 100%; max-width: 600px; margin-top: 10px;"
             ></video>
@@ -195,9 +205,13 @@ export default {
   },
   data() {
     return {
+      imgTypes: ['image/jpeg', 'image/png', 'image/jpg'],
+      audioTypes: ['audio/mp3', 'audio/wav', 'audio/m4a'],
+      videoTypes: ['video/mp4', 'video/avi', 'video/mov'],
       isEdit: false,
       loading: false,
       form: {
+        id: null,
         type: 0,
         title: '',
         coverUrl: '',
@@ -232,22 +246,28 @@ export default {
       editorOptions: {
         theme: 'snow',
         modules: {
-          toolbar: [
-            ['bold', 'italic', 'underline', 'strike'],
-            ['blockquote', 'code-block'],
-            [{ 'header': 1 }, { 'header': 2 }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'script': 'sub'}, { 'script': 'super' }],
-            [{ 'indent': '-1'}, { 'indent': '+1' }],
-            [{ 'direction': 'rtl' }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'font': [] }],
-            [{ 'align': [] }],
-            ['clean'],
-            ['link', 'image', 'video']
-          ]
+          toolbar: {
+            container: [
+              ['bold', 'italic', 'underline', 'strike'],
+              ['blockquote', 'code-block'],
+              [{ 'header': 1 }, { 'header': 2 }],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              [{ 'script': 'sub'}, { 'script': 'super' }],
+              [{ 'indent': '-1'}, { 'indent': '+1' }],
+              [{ 'direction': 'rtl' }],
+              [{ 'size': ['small', false, 'large', 'huge'] }],
+              [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+              [{ 'color': [] }, { 'background': [] }],
+              [{ 'font': [] }],
+              [{ 'align': [] }],
+              ['clean'],
+              ['link', 'image', 'video']
+            ],
+            handlers: {
+              image: this.handleQuillImageUpload,
+              video: this.handleQuillVideoUpload
+            }
+          }
         }
       },
       imageList: [],
@@ -256,17 +276,89 @@ export default {
       videoList: []
     }
   },
+  computed: {
+    uploadHeaders() {
+      return {
+        'accessToken': `${this.getAccessToken()}`
+      }
+    }
+  },
   mounted() {
-    // 检查是否为编辑模式
     if (this.$route.params.id) {
       this.isEdit = true
       this.loadMessageData(this.$route.params.id)
     }
   },
   methods: {
-    // 消息类型改变处理
+    getAccessToken() {
+      return sessionStorage.getItem('accessToken') || ''
+    },
+
+    handleQuillImageUpload() {
+      const input = document.createElement('input')
+      input.setAttribute('type', 'file')
+      input.setAttribute('accept', 'image/*')
+      input.click()
+
+      input.onchange = () => {
+        const file = input.files[0]
+        if (file) {
+          const formData = new FormData()
+          formData.append('file', file)
+
+          fetch('/api/upload', {
+            method: 'POST',
+            headers: this.uploadHeaders,
+            body: formData
+          })
+              .then(response => response.json())
+              .then(result => {
+                if (result.success) {
+                  const quill = this.$refs.quillEditor.quill
+                  const range = quill.getSelection()
+                  quill.insertEmbed(range.index, 'image', result.data.url)
+                }
+              })
+              .catch(error => {
+                this.$message.error('图片上传失败')
+              })
+        }
+      }
+    },
+
+    handleQuillVideoUpload() {
+      const input = document.createElement('input')
+      input.setAttribute('type', 'file')
+      input.setAttribute('accept', 'video/*')
+      input.click()
+
+      input.onchange = () => {
+        const file = input.files[0]
+        if (file) {
+          const formData = new FormData()
+          formData.append('file', file)
+
+          fetch('/api/upload', {
+            method: 'POST',
+            headers: this.uploadHeaders,
+            body: formData
+          })
+              .then(response => response.json())
+              .then(result => {
+                if (result.success) {
+                  const quill = this.$refs.quillEditor.quill
+                  const range = quill.getSelection()
+                  quill.insertEmbed(range.index, 'video', result.data.url)
+                }
+              })
+              .catch(error => {
+                this.$message.error('视频上传失败')
+              })
+        }
+      }
+    },
+
     handleTypeChange(type) {
-      // 清空内容和相关列表
       this.form.content = ''
       this.imageList = []
       this.fileList = []
@@ -276,7 +368,7 @@ export default {
 
     // 封面图片上传成功
     handleCoverSuccess(response, file) {
-      this.form.coverUrl = response.data.url
+      this.form.coverUrl = response.data.originUrl
     },
 
     // 封面图片上传前验证
@@ -297,7 +389,17 @@ export default {
 
     // 图片上传成功
     handleImageSuccess(response, file, fileList) {
-      this.imageList = fileList
+      console.log(response)
+      console.log(file)
+      console.log(fileList)
+      const imgItem = {
+        url: response.data.originUrl,
+        name: file.name,
+        originName: response.data.name,
+        type: 'image',
+        size: file.size
+      }
+      this.imageList.push(imgItem)
       this.updateContentFromList('image')
     },
 
@@ -330,7 +432,13 @@ export default {
 
     // 文件上传成功
     handleFileSuccess(response, file, fileList) {
-      this.fileList = fileList
+      const fileItem = {
+        url: response.data,
+        name: file.name,
+        type: 'file',
+        size: file.size
+      }
+      this.fileList.push(fileItem)
       this.updateContentFromList('file')
     },
 
@@ -351,113 +459,148 @@ export default {
       return true
     },
 
-    // 文件数量超限
     handleFileExceed() {
       this.$message.warning('最多只能上传1个文件')
     },
 
-    // 音频上传成功
     handleAudioSuccess(response, file, fileList) {
-      this.audioList = fileList
+      const audioItem = {
+        url: response.data.url,
+        originalName: response.data.originalName,
+        name: file.name,
+        type: 'audio',
+        size: file.size
+      }
+      this.audioList.push(audioItem)
       this.updateContentFromList('audio')
     },
 
-    // 音频移除
     handleAudioRemove(file, fileList) {
       this.audioList = fileList
       this.updateContentFromList('audio')
     },
 
-    // 音频上传前验证
     beforeAudioUpload(file) {
       const isAudio = file.type.indexOf('audio/') === 0
-      const isLt100M = file.size / 1024 / 1024 < 100
+      const isLt10M = file.size / 1024 / 1024 < 10
 
       if (!isAudio) {
         this.$message.error('只能上传音频格式的文件!')
         return false
       }
-      if (!isLt100M) {
+      if (!isLt10M) {
         this.$message.error('上传音频大小不能超过 100MB!')
         return false
       }
       return true
     },
 
-    // 音频数量超限
     handleAudioExceed() {
       this.$message.warning('最多只能上传1个音频文件')
     },
 
-    // 视频上传成功
     handleVideoSuccess(response, file, fileList) {
-      this.videoList = fileList
+      const videoItem = {
+        url: response.data.videoUrl,
+        coverUrl: response.data.coverUrl,
+        name: file.name,
+        type: 'video',
+        size: file.size
+      }
+      this.videoList.push(videoItem)
       this.updateContentFromList('video')
     },
 
-    // 视频移除
     handleVideoRemove(file, fileList) {
       this.videoList = fileList
       this.updateContentFromList('video')
     },
 
-    // 视频上传前验证
     beforeVideoUpload(file) {
       const isVideo = file.type.indexOf('video/') === 0
-      const isLt500M = file.size / 1024 / 1024 < 500
+      const isLt50M = file.size / 1024 / 1024 < 50
 
       if (!isVideo) {
         this.$message.error('只能上传视频格式的文件!')
         return false
       }
-      if (!isLt500M) {
+      if (!isLt50M) {
         this.$message.error('上传视频大小不能超过 500MB!')
         return false
       }
       return true
     },
 
-    // 视频数量超限
     handleVideoExceed() {
       this.$message.warning('最多只能上传1个视频文件')
     },
 
-    // 根据文件列表更新内容字段
     updateContentFromList(type) {
       let list = []
       switch (type) {
         case 'image':
           list = this.imageList
+          this.form.content = this.buildImgContent(list)
           break
         case 'file':
           list = this.fileList
+          this.form.content = this.buildFileContent(list)
           break
         case 'audio':
           list = this.audioList
+          this.form.content = this.buildAudioContent(list)
           break
         case 'video':
           list = this.videoList
+          this.form.content = this.buildVideoContent(list)
           break
       }
-
-      this.form.content = JSON.stringify(list.map(item => ({
+      console.log('list--', list)
+      console.log('this.form.content--', this.form.content)
+    },
+    buildImgContent(list) {
+      return JSON.stringify(list.map(item => ({
         name: item.name,
-        url: item.url || item.response?.data?.url,
+        originalName: item.originalName,
+        url: item.url,
         size: item.size,
-        type: item.raw?.type || item.type
+        type: item.type
+      })))
+    },
+    buildVideoContent(list) {
+      return JSON.stringify(list.map(item => ({
+        name: item.name,
+        url: item.url,
+        coverUrl: item.coverUrl,
+        size: item.size,
+        type: item.type
+      })))
+    },
+    buildAudioContent(list) {
+      return JSON.stringify(list.map(item => ({
+        name: item.name,
+        originalName: item.originalName,
+        url: item.url,
+        size: item.size,
+        type: item.type
+      })))
+    },
+    buildFileContent(list) {
+      return JSON.stringify(list.map(item => ({
+        name: item.name,
+        url: item.url,
+        size: item.size,
+        type: item.type
       })))
     },
 
-    // 加载消息数据（编辑模式）
     async loadMessageData(id) {
       try {
-        // 模拟API调用
         const response = await this.$http.get(`/api/messages/${id}`)
         const data = response.data
 
         this.form = { ...data }
 
-        // 根据消息类型初始化对应的文件列表
         if (data.content && [1, 2, 3, 4].includes(data.type)) {
           const contentData = JSON.parse(data.content)
           switch (data.type) {
@@ -480,19 +623,20 @@ export default {
       }
     },
 
-    // 提交表单
     handleSubmit() {
       this.$refs.messageForm.validate(async (valid) => {
         if (valid) {
           this.loading = true
           try {
-            const url = this.isEdit ? `/api/messages/${this.$route.params.id}` : '/api/messages'
-            const method = this.isEdit ? 'put' : 'post'
-
-            await this.$http[method](url, this.form)
-
-            this.$message.success(this.isEdit ? '更新成功' : '保存成功')
-            this.$router.push('/messages')
+            console.log('this.form--', this.form)
+            const url = this.isEdit ? `/message/system/modify` : '/message/system/save'
+            this.$http({
+              url: url,
+              method: "post",
+              data: this.form
+            }).then((data) => {
+              this.$message.success(this.isEdit ? '更新成功' : '保存成功')
+            })
           } catch (error) {
             this.$message.error(this.isEdit ? '更新失败' : '保存失败')
           } finally {
@@ -502,12 +646,10 @@ export default {
       })
     },
 
-    // 取消操作
     handleCancel() {
       this.$router.push('/messages')
     },
 
-    // 重置表单
     handleReset() {
       this.$refs.messageForm.resetFields()
       this.imageList = []
@@ -519,7 +661,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .message-form-container {
   background: #fff;
   padding: 24px;
@@ -573,9 +715,12 @@ export default {
 }
 
 .cover-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 300px;
+  max-height: 200px;
+  width:auto;
+  height:auto;
+  object-fit: contain; /* 保持比例，完整显示图片 */
+  border-radius: 8px;
 }
 
 .upload-tip {
