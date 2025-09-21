@@ -308,23 +308,20 @@ export default {
         if (file) {
           const formData = new FormData()
           formData.append('file', file)
-
-          fetch('/api/upload', {
+          this.$http({
+            url: '/image/upload',
             method: 'POST',
-            headers: this.uploadHeaders,
-            body: formData
+            data: formData,
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }).then(result => {
+            if (result.originUrl) {
+              const quill = this.$refs.quillEditor.quill
+              const range = quill.getSelection()
+              quill.insertEmbed(range.index, 'image', result.originUrl)
+            }
           })
-              .then(response => response.json())
-              .then(result => {
-                if (result.success) {
-                  const quill = this.$refs.quillEditor.quill
-                  const range = quill.getSelection()
-                  quill.insertEmbed(range.index, 'image', result.data.url)
-                }
-              })
-              .catch(error => {
-                this.$message.error('图片上传失败')
-              })
         }
       }
     },
@@ -341,22 +338,20 @@ export default {
           const formData = new FormData()
           formData.append('file', file)
 
-          fetch('/api/upload', {
+          this.$http({
+            url: '/video/upload',
             method: 'POST',
-            headers: this.uploadHeaders,
-            body: formData
+            data: formData,
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }).then(result => {
+            if (result.videoUrl) {
+              const quill = this.$refs.quillEditor.quill
+              const range = quill.getSelection()
+              quill.insertEmbed(range.index, 'video', result.videoUrl)
+            }
           })
-              .then(response => response.json())
-              .then(result => {
-                if (result.success) {
-                  const quill = this.$refs.quillEditor.quill
-                  const range = quill.getSelection()
-                  quill.insertEmbed(range.index, 'video', result.data.url)
-                }
-              })
-              .catch(error => {
-                this.$message.error('视频上传失败')
-              })
         }
       }
     },
