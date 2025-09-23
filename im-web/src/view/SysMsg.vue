@@ -151,6 +151,124 @@
           :total="pagination.total"
       ></el-pagination>
     </div>
+
+    <el-dialog
+        title="推送通知"
+        :visible.sync="visible"
+        width="500px"
+        :close-on-click-modal="false"
+    >
+      <el-form
+          ref="pushForm"
+          :model="form"
+          :rules="rules"
+          label-width="100px"
+      >
+        <!-- 标题输入 -->
+        <el-form-item label="标题" prop="title">
+          <el-input
+              v-model="form.title"
+              placeholder="请输入标题"
+              maxlength="50"
+          ></el-input>
+        </el-form-item>
+
+        <!-- 推送者选择（固定选项） -->
+        <el-form-item label="推送者" prop="pusherId" style="margin-top: 12px;">
+          <el-select
+              v-model="form.pusherId"
+              placeholder="请选择推送者"
+              style="width: 100%"
+          >
+            <el-option
+                v-for="pusher in pushers"
+                :key="pusher.id"
+                :label="pusher.name"
+                :value="pusher.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
+        <!-- 接收用户选择 -->
+        <el-form-item label="接收用户" prop="receiveType" style="margin-top: 12px;">
+          <el-radio-group
+              v-model="form.receiveType"
+              @change="handleReceiveTypeChange"
+          >
+            <el-radio label="all">全部用户</el-radio>
+            <el-radio label="part">指定用户</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <!-- 指定用户选择区域 -->
+        <el-form-item
+            v-if="form.receiveType === 'part'"
+            label=" "
+            prop="selectedUserIds"
+            style="margin-top: 12px;"
+        >
+          <div class="user-selector">
+            <!-- 用户搜索输入框 -->
+            <el-input
+                v-model="searchUser"
+                placeholder="请输入用户名搜索"
+                clearable
+            >
+              <el-button
+                  slot="append"
+                  icon="el-icon-search"
+                  @click="handleUserSearch"
+              ></el-button>
+            </el-input>
+
+            <!-- 搜索结果下拉框 -->
+            <el-select
+                v-model="form.selectedUserIds"
+                multiple
+                collapse-tags
+                :popper-append-to-body="false"
+                @change="handleUserSelect"
+                v-if="showUserDropdown"
+            >
+              <el-option
+                  v-for="user in filteredUsers"
+                  :key="user.id"
+                  :label="user.nickName"
+                  :value="user.id"
+              ></el-option>
+            </el-select>
+
+            <!-- 已选择用户标签 -->
+            <div class="selected-users" v-if="form.selectedUserIds.length > 0">
+              <el-tag
+                  v-for="userId in form.selectedUserIds"
+                  :key="userId"
+                  closable
+                  @close="removeUser(userId)"
+              >
+                {{ getUserNameById(userId) }}
+              </el-tag>
+            </div>
+          </div>
+        </el-form-item>
+
+        <!-- 推送时间选择 -->
+        <el-form-item label="推送时间" prop="pushTime" style="margin-top: 12px;">
+          <el-date-picker
+              v-model="form.pushTime"
+              type="datetime"
+              placeholder="选择推送时间"
+              style="width: 100%"
+          ></el-date-picker>
+        </el-form-item>
+      </el-form>
+
+      <!-- 底部按钮 -->
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="visible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmit">确定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -185,7 +303,55 @@ export default {
         { value: 4, label: '视频' },
         { value: 5, label: '外部链接' },
         { value: 9, label: '富文本' }
-      ]
+      ],
+      pushers: [],
+      visible: false,
+      // 固定的推送者列表
+      // 表单数据
+      form: {
+        title: '',
+        pusherId: null, // 推送者ID
+        receiveType: 'all', // 默认全部用户
+        selectedUserIds: [], // 选中的用户ID数组
+        selectedUsers: [], // 选中的用户数组
+        pushTime: ''
+      },
+      // 表单验证规则
+      rules: {
+        title: [
+          { required: true, message: '请输入标题', trigger: 'blur' },
+          { max: 50, message: '标题不能超过50个字符', trigger: 'blur' }
+        ],
+        pusherId: [
+          { required: true, message: '请选择推送者', trigger: 'change' }
+        ],
+        receiveType: [
+          { required: true, message: '请选择接收用户类型', trigger: 'change' }
+        ],
+        pushTime: [
+          { required: true, message: '请选择推送时间', trigger: 'change' }
+        ],
+        selectedUserIds: [
+          {
+            required: true,
+            message: '请选择至少一个用户',
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              // 只有选择指定用户时才验证
+              if (this.form.receiveType === 'part' && value.length === 0) {
+                callback(new Error('请选择至少一个用户'));
+              } else {
+                callback();
+              }
+            }
+          }
+        ]
+      },
+      // 用户搜索相关
+      searchUser: '',
+      filteredUsers: [], // 搜索到的用户列表
+      showUserDropdown: false, // 是否显示用户下拉框
+      allUsers: [] // 所有用户数据缓存
     }
   },
   mounted() {
@@ -264,16 +430,18 @@ export default {
 
     // 推送
     handlePush(row) {
-      this.$confirm(`确定要推送消息"${row.title}"吗？`, '推送确认', {
-        confirmButtonText: '确定推送',
-        cancelButtonText: '取消',
-        type: 'info'
-      }).then(() => {
-        // 这里应该调用推送API
-        this.$message.success('推送成功')
-      }).catch(() => {
-        this.$message.info('已取消推送')
-      })
+      this.getPushers();
+      this.visible = true
+      // this.$confirm(`确定要推送消息"${row.title}"吗？`, '推送确认', {
+      //   confirmButtonText: '确定推送',
+      //   cancelButtonText: '取消',
+      //   type: 'info'
+      // }).then(() => {
+      //   // 这里应该调用推送API
+      //   this.$message.success('推送成功')
+      // }).catch(() => {
+      //   this.$message.info('已取消推送')
+      // })
     },
 
     // 删除
@@ -348,6 +516,135 @@ export default {
         hour: '2-digit',
         minute: '2-digit'
       })
+    },
+    getPushers() {
+      this.$http({
+        url: `/pusher/list`,
+        method: "get",
+      }).then((data) => {
+        this.pushers = data
+        console.log(data)
+      })
+    },
+    // 处理接收用户类型变化
+    handleReceiveTypeChange(val) {
+      // 如果切换到全部用户，清空已选用户
+      if (val === 'all') {
+        this.form.selectedUserIds = [];
+        this.form.selectedUsers = [];
+      }
+      // 触发表单验证
+      this.$refs.pushForm.validateField('selectedUserIds');
+    },
+
+    // 搜索用户
+    async handleUserSearch() {
+      if (!this.searchUser.trim()) {
+        this.filteredUsers = [];
+        this.showUserDropdown = false;
+        return;
+      }
+
+      try {
+        // 调用后端接口查询用户
+        this.$http({
+          url: `/user/findByName?name=${this.searchUser.trim()}`,
+          method: "get",
+        }).then((response) => {
+          console.log("response", response)
+          // 过滤掉已选择的用户
+          this.filteredUsers = response.filter(user =>
+              !this.form.selectedUserIds.includes(user.id)
+          );
+
+          this.showUserDropdown = this.filteredUsers.length > 0;
+        });
+      } catch (error) {
+        this.$message.error('查询用户失败，请稍后重试');
+        console.error('用户查询错误:', error);
+      }
+    },
+
+    // 处理用户选择
+    handleUserSelect(values) {
+      console.log("values", values.join(','))
+      // 在filteredUsers中查找id在values中的用户
+      let selectedUsers = this.filteredUsers.filter(user => values.includes(user.id));
+      console.log("selectedUsers", selectedUsers)
+      // 在filteredUsers中查找id不在values中的用户
+      const unselectedUsers = this.filteredUsers.filter(user => !values.includes(user.id));
+      console.log("unselectedUsers", unselectedUsers)
+      if (unselectedUsers.length > 0) {
+        // 获取unselectedUsers中对象的id属性，并转换成Set
+        const unselectedIds = new Set(unselectedUsers.map(user => user.id));
+        // 将this.form.selectedUsers中对象属性id在unselectedIds中的元素移除
+        this.form.selectedUsers = this.form.selectedUsers.filter(user => !unselectedIds.has(user.id));
+      }
+      // 将selectedUsers对象的id与this.form.selectedUsers中对象id相同的元素去掉
+      if (selectedUsers.length > 0) {
+        selectedUsers = selectedUsers.filter(user => !this.form.selectedUsers.some(item => user.id === item.id));
+      }
+      this.form.selectedUsers.push(...selectedUsers);
+
+      console.log("this.form.selectedUsers", this.form.selectedUsers.map(user => user.id).join(','))
+      console.log("this.form.selectedUserIds", this.form.selectedUserIds.join(','))
+
+      //this.searchUser = '';
+      //this.showUserDropdown = false;
+    },
+
+    // 移除已选择的用户
+    removeUser(userId) {
+      this.form.selectedUserIds = this.form.selectedUserIds.filter(id => id !== userId);
+      this.$refs.pushForm.validateField('selectedUserIds');
+    },
+
+    // 根据用户ID获取用户名
+    getUserNameById(userId) {
+      //console.log("getUserNameById-this.form.selectedUsers", this.form.selectedUsers)
+      const user = this.allUsers.find(u => u.id === userId) ||
+          this.form.selectedUsers.find(u => u.id === userId);
+      return user ? user.nickName : '未知用户';
+    },
+
+    // 提交表单
+    async handleSubmit() {
+      this.$refs.pushForm.validate(async (valid) => {
+        if (valid) {
+          try {
+            // 构造提交数据
+            const submitData = {
+              title: this.form.title,
+              pusherId: this.form.pusherId,
+              receiveType: this.form.receiveType,
+              pushTime: this.form.pushTime,
+              // 只有选择指定用户时才需要传用户ID
+              userIds: this.form.receiveType === 'part' ? this.form.selectedUserIds : []
+            };
+
+            // 调用后端接口提交数据
+            await this.$api.submitPushForm(submitData);
+
+            this.$message.success('提交成功');
+            this.visible = false;
+            // 通知父组件刷新数据
+            this.$emit('submitSuccess');
+            // 重置表单
+            this.resetForm();
+          } catch (error) {
+            this.$message.error('提交失败，请稍后重试');
+            console.error('表单提交错误:', error);
+          }
+        }
+      });
+    },
+
+    // 重置表单
+    resetForm() {
+      this.$refs.pushForm.resetFields();
+      this.searchUser = '';
+      this.filteredUsers = [];
+      this.showUserDropdown = false;
     }
   }
 }
@@ -444,6 +741,21 @@ export default {
 ::v-deep .el-form-item__label {
   font-weight: 500;
   color: #606266;
+}
+
+.user-selector {
+  width: 100%;
+}
+
+.selected-users {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+::v-deep .el-select__tags {
+  flex-wrap: wrap;
 }
 
 /* 响应式设计 */

@@ -1,11 +1,6 @@
 package xyz.qy.implatform.contant;
 
 public final class Constant {
-    /**
-     * 系统用户id
-     */
-    public static final Long SYS_USER_ID = 0L;
-
     // 管理员用户id
     public static final long ADMIN_USER_ID = 1L;
 
@@ -28,8 +23,8 @@ public final class Constant {
     // 常量0：否
     public static final String NO_STR = "0";
 
-    // 模板群聊切换时间间隔30MIN
-    public static final int SWITCH_INTERVAL = 30;
+    // 模板群聊切换时间间隔720MIN
+    public static final int SWITCH_INTERVAL = 720;
     // 媒体播放字典key
     public static final String MEDIA_SWITCH = "sys_media_switch";
     // 首页媒体播放字典key

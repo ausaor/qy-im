@@ -39,7 +39,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 
 /**
- * 执行次数限制切面
+ * 判断是否禁言切面
  *
  * @author Polaris
  * @since 2024-10-21

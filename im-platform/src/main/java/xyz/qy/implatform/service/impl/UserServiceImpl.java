@@ -579,7 +579,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public List<Long> getAllUserIds() {
-        return lambdaQuery().select(User::getId).list().stream().map(User::getId).collect(Collectors.toList());
+        return lambdaQuery().eq(User::getIsDisable, false)
+                .select(User::getId).list().stream().map(User::getId).collect(Collectors.toList());
     }
 
     @Override
