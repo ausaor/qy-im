@@ -9,14 +9,17 @@
           <div class="chat-msg-tip">{{$date.toTimeText(msgInfo.sendTime)}}</div>
           <div class="message-box">
             <div class="title">{{msgInfo.title}}</div>
-            <div v-if="msgInfo.type === 0 || msgInfo.type === 2 || msgInfo.type === 9" class="content" :style="bgStyle(msgInfo)">
+            <div v-if="msgInfo.type === 0 || msgInfo.type === 9" class="content" :style="bgStyle(msgInfo)">
               {{msgInfo.content}}
             </div>
+            <div v-if="msgInfo.type === 1" class="image-content">
+              <image-carousel :images="JSON.parse(msgInfo.content)" :height="'240px'"></image-carousel>
+            </div>
             <div v-if="msgInfo.type===4" class="content">
-              <video class="video-msg" controls="controls" preload="none" :src="JSON.parse(msgInfo.content).videoUrl" :poster="JSON.parse(msgInfo.content).coverUrl"></video>
+              <video class="video-msg" controls="controls" preload="none" :src="JSON.parse(msgInfo.content)[0].videoUrl" :poster="JSON.parse(msgInfo.content)[0].coverUrl"></video>
             </div>
             <div v-if="msgInfo.type===3" class="audio-content">
-              <vue-audio :width="400" :audio-source="JSON.parse(msgInfo.content).url"></vue-audio>
+              <vue-audio :width="400" :audio-source="JSON.parse(msgInfo.content)[0].url"></vue-audio>
             </div>
             <div class="intro" v-if="msgInfo.intro">
               {{msgInfo.intro}}
@@ -32,8 +35,13 @@
 </template>
 
 <script>
+import ImageCarousel from "@components/common/ImageCarousel.vue";
+
 export default {
   name: "ChatSystemBox",
+  components: {
+    ImageCarousel,
+  },
   props: {
     chat: {
       type: Object
@@ -159,6 +167,11 @@ export default {
             height: 100%;
             object-fit: cover;
           }
+        }
+
+        .image-content {
+          width: 100%;
+          border: 1px solid #eeeeee;
         }
 
         .audio-content {
