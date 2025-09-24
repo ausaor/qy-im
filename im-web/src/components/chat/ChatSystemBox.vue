@@ -123,6 +123,7 @@ export default {
         line-height: 20px;
         font-size: 12px;
         color: #999999;
+        text-align: center;
       }
 
       .message-box {

@@ -309,6 +309,7 @@ export default {
       // 固定的推送者列表
       // 表单数据
       form: {
+        sysMsgId: null, // 消息ID
         title: '',
         pusherId: null, // 推送者ID
         receiveType: 'all', // 默认全部用户
@@ -327,9 +328,6 @@ export default {
         ],
         receiveType: [
           { required: true, message: '请选择接收用户类型', trigger: 'change' }
-        ],
-        pushTime: [
-          { required: true, message: '请选择推送时间', trigger: 'change' }
         ],
         selectedUserIds: [
           {
@@ -351,7 +349,6 @@ export default {
       searchUser: '',
       filteredUsers: [], // 搜索到的用户列表
       showUserDropdown: false, // 是否显示用户下拉框
-      allUsers: [] // 所有用户数据缓存
     }
   },
   mounted() {
@@ -431,17 +428,9 @@ export default {
     // 推送
     handlePush(row) {
       this.getPushers();
+      this.form.title = row.title
+      this.form.sysMsgId = row.id
       this.visible = true
-      // this.$confirm(`确定要推送消息"${row.title}"吗？`, '推送确认', {
-      //   confirmButtonText: '确定推送',
-      //   cancelButtonText: '取消',
-      //   type: 'info'
-      // }).then(() => {
-      //   // 这里应该调用推送API
-      //   this.$message.success('推送成功')
-      // }).catch(() => {
-      //   this.$message.info('已取消推送')
-      // })
     },
 
     // 删除
@@ -523,7 +512,6 @@ export default {
         method: "get",
       }).then((data) => {
         this.pushers = data
-        console.log(data)
       })
     },
     // 处理接收用户类型变化
@@ -551,7 +539,6 @@ export default {
           url: `/user/findByName?name=${this.searchUser.trim()}`,
           method: "get",
         }).then((response) => {
-          console.log("response", response)
           // 过滤掉已选择的用户
           this.filteredUsers = response.filter(user =>
               !this.form.selectedUserIds.includes(user.id)
@@ -561,19 +548,15 @@ export default {
         });
       } catch (error) {
         this.$message.error('查询用户失败，请稍后重试');
-        console.error('用户查询错误:', error);
       }
     },
 
     // 处理用户选择
     handleUserSelect(values) {
-      console.log("values", values.join(','))
       // 在filteredUsers中查找id在values中的用户
       let selectedUsers = this.filteredUsers.filter(user => values.includes(user.id));
-      console.log("selectedUsers", selectedUsers)
       // 在filteredUsers中查找id不在values中的用户
       const unselectedUsers = this.filteredUsers.filter(user => !values.includes(user.id));
-      console.log("unselectedUsers", unselectedUsers)
       if (unselectedUsers.length > 0) {
         // 获取unselectedUsers中对象的id属性，并转换成Set
         const unselectedIds = new Set(unselectedUsers.map(user => user.id));
@@ -585,25 +568,18 @@ export default {
         selectedUsers = selectedUsers.filter(user => !this.form.selectedUsers.some(item => user.id === item.id));
       }
       this.form.selectedUsers.push(...selectedUsers);
-
-      console.log("this.form.selectedUsers", this.form.selectedUsers.map(user => user.id).join(','))
-      console.log("this.form.selectedUserIds", this.form.selectedUserIds.join(','))
-
-      //this.searchUser = '';
-      //this.showUserDropdown = false;
     },
 
     // 移除已选择的用户
     removeUser(userId) {
       this.form.selectedUserIds = this.form.selectedUserIds.filter(id => id !== userId);
+      this.form.selectedUsers = this.form.selectedUsers.filter(user => user.id !== userId);
       this.$refs.pushForm.validateField('selectedUserIds');
     },
 
     // 根据用户ID获取用户名
     getUserNameById(userId) {
-      //console.log("getUserNameById-this.form.selectedUsers", this.form.selectedUsers)
-      const user = this.allUsers.find(u => u.id === userId) ||
-          this.form.selectedUsers.find(u => u.id === userId);
+      const user = this.form.selectedUsers.find(u => u.id === userId);
       return user ? user.nickName : '未知用户';
     },
 
@@ -614,26 +590,27 @@ export default {
           try {
             // 构造提交数据
             const submitData = {
+              sysMsgId: this.form.sysMsgId,
               title: this.form.title,
               pusherId: this.form.pusherId,
-              receiveType: this.form.receiveType,
-              pushTime: this.form.pushTime,
+              recvRange: this.form.receiveType,
+              sendTime: this.form.pushTime,
               // 只有选择指定用户时才需要传用户ID
-              userIds: this.form.receiveType === 'part' ? this.form.selectedUserIds : []
+              recvUserIds: this.form.receiveType === 'part' ? this.form.selectedUserIds : []
             };
 
-            // 调用后端接口提交数据
-            await this.$api.submitPushForm(submitData);
-
-            this.$message.success('提交成功');
-            this.visible = false;
-            // 通知父组件刷新数据
-            this.$emit('submitSuccess');
-            // 重置表单
-            this.resetForm();
+            this.$http({
+              url: '/push/task/pushSystemMessage',
+              method: "post",
+              data: submitData
+            }).then((data) => {
+              this.$message.success('提交成功');
+              this.visible = false;
+            }).finally(() => {
+              this.resetForm();
+            })
           } catch (error) {
             this.$message.error('提交失败，请稍后重试');
-            console.error('表单提交错误:', error);
           }
         }
       });
