@@ -9,8 +9,10 @@
           <div class="chat-msg-tip">{{$date.toTimeText(msgInfo.sendTime)}}</div>
           <div class="message-box">
             <div class="title">{{msgInfo.title}}</div>
-            <div v-if="msgInfo.type === 0 || msgInfo.type === 9" class="content" :style="bgStyle(msgInfo)">
+            <div v-if="msgInfo.type === 0" class="content" :style="bgStyle(msgInfo)">
               {{msgInfo.content}}
+            </div>
+            <div v-if="msgInfo.type === 9" class="content" :style="bgStyle(msgInfo)">
             </div>
             <div v-if="msgInfo.type === 1" class="image-content">
               <image-carousel :images="JSON.parse(msgInfo.content)" :height="'240px'"></image-carousel>
@@ -24,12 +26,24 @@
             <div class="intro" v-if="msgInfo.intro">
               {{msgInfo.intro}}
             </div>
-            <div class="to-detail" v-if="msgInfo.type === 9">
+            <div class="to-detail" v-if="msgInfo.type === 9" @click="viewDetail(msgInfo)">
               查看详情
             </div>
           </div>
         </div>
       </el-main>
+      <div class="chat-system-content" v-show="showSysMsgContent">
+        <el-container>
+          <el-header style="height: 50px;">
+            <span class="back el-icon-back" @click="goBack"></span>
+          </el-header>
+          <el-main>
+            <span class="title">{{curMsgInfo?.title}}</span>
+            <div class="rich-text" v-html="contentDetail?.richText">
+            </div>
+          </el-main>
+        </el-container>
+      </div>
     </el-container>
   </div>
 </template>
@@ -45,6 +59,13 @@ export default {
   props: {
     chat: {
       type: Object
+    }
+  },
+  data() {
+    return {
+      showSysMsgContent: false,
+      curMsgInfo: {},
+      contentDetail: {}
     }
   },
   methods: {
@@ -65,6 +86,21 @@ export default {
         let div = document.getElementById("chat-system-box");
         div.scrollTop = div.scrollHeight;
       });
+    },
+    viewDetail(msgInfo) {
+      this.curMsgInfo = msgInfo;
+      this.$http({
+        url: `/message/system/content?id=${msgInfo.id}`,
+        method: 'get'
+      }).then((data) => {
+        this.showSysMsgContent = true;
+        this.contentDetail = data
+      })
+    },
+    goBack() {
+      this.contentDetail = {}
+      this.curMsgInfo = {};
+      this.showSysMsgContent = false;
     },
   },
   computed: {
@@ -100,6 +136,8 @@ export default {
 </script>
 
 <style scoped lang="scss">
+/* 引入Quill核心样式（必须） */
+@import '~quill/dist/quill.snow.css';
 .chat-system-box {
   display: flex;
   flex-direction: column;
@@ -199,6 +237,34 @@ export default {
           color: #00f;
         }
       }
+    }
+  }
+
+  .chat-system-content {
+    z-index: 10;
+    position: absolute;
+    background-color: #fff;
+    width: 100%;
+    height: 100%;
+
+    .back {
+      position: absolute;
+      left: 20px;
+      line-height: 50px;
+      font-size: 26px;
+      cursor: pointer;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: bolder;
+      text-align: center;
+      display: block;
+      margin-top: 10px;
+    }
+
+    .rich-text {
+      padding: 10px 20px 20px 20px;
     }
   }
 }

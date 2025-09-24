@@ -5,6 +5,7 @@ import xyz.qy.implatform.dto.SysMsgDelDTO;
 import xyz.qy.implatform.dto.SysMsgQueryDTO;
 import xyz.qy.implatform.dto.SystemMessageDTO;
 import xyz.qy.implatform.entity.SystemMessage;
+import xyz.qy.implatform.vo.ContentDetailVO;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.SystemMessageVO;
 
@@ -59,4 +60,12 @@ public interface ISystemMessageService extends IService<SystemMessage> {
      * @return 系统消息列表
      */
     PageResultVO pageSysMsg(SysMsgQueryDTO queryDTO);
+
+    /**
+     * 获取系统消息内容详情
+     *
+     * @param id 系统消息id
+     * @return 系统消息内容详情
+     */
+    ContentDetailVO getContent(Long id);
 }

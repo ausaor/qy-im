@@ -236,11 +236,10 @@ export default {
         ],
         title: [
           { required: true, message: '请输入标题', trigger: 'blur' },
-          { min: 1, max: 100, message: '标题长度在1到100个字符', trigger: 'blur' }
+          { min: 1, max: 50, message: '标题长度在1到50个字符', trigger: 'blur' }
         ],
         intro: [
-          { required: true, message: '请输入简述', trigger: 'blur' },
-          { max: 200, message: '简述不能超过200个字符', trigger: 'blur' }
+          { max: 100, message: '简述不能超过100个字符', trigger: 'blur' }
         ],
         content: [
           { required: true, message: '请输入内容', trigger: 'blur' }

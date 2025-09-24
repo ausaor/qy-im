@@ -36,6 +36,7 @@ import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
+import xyz.qy.implatform.vo.ContentDetailVO;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.SystemMessageVO;
 
@@ -263,6 +264,18 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
         String key = StrUtil.join(":", RedisKey.IM_SYSTEM_READED_POSITION, pusherId);
         // 记录已读消息位置
         redisTemplate.opsForHash().put(key, session.getUserId().toString(), seqNo);
+    }
+
+    @Override
+    public ContentDetailVO getContent(Long id) {
+        SystemMessage systemMessage = this.getById(id);
+        if (ObjectUtil.isNull(systemMessage) || systemMessage.getDeleted()) {
+            throw new GlobalException("要查看的内容不存在");
+        }
+        ContentDetailVO contentDetailVO = new ContentDetailVO();
+        contentDetailVO.setRichText(systemMessage.getContent());
+        contentDetailVO.setId(systemMessage.getId());
+        return contentDetailVO;
     }
 
     private void sendLoadingMessage(Boolean isLoading){

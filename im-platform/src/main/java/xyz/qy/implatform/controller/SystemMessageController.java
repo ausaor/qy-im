@@ -79,4 +79,10 @@ public class SystemMessageController {
     public Result pageSysMsg(@RequestBody SysMsgQueryDTO queryDTO) {
         return ResultUtils.success(systemMessageService.pageSysMsg(queryDTO));
     }
+
+    @ApiOperation(value = "获取内容详情", notes = "获取内容详情")
+    @GetMapping("/content")
+    public Result getContent(@RequestParam Long id) {
+        return ResultUtils.success(systemMessageService.getContent(id));
+    }
 }
