@@ -18,7 +18,11 @@
               <image-carousel :images="JSON.parse(msgInfo.content)" :height="'240px'"></image-carousel>
             </div>
             <div v-if="msgInfo.type===4" class="content">
-              <video class="video-msg" controls="controls" preload="none" :src="JSON.parse(msgInfo.content)[0].videoUrl" :poster="JSON.parse(msgInfo.content)[0].coverUrl"></video>
+              <div class="video-msg">
+                <img :src="JSON.parse(msgInfo.content)[0].coverUrl">
+                <span class="play-icon el-icon-video-play" @click="onPlayVideo(JSON.parse(msgInfo.content)[0].url, JSON.parse(msgInfo.content)[0].coverUrl)"></span>
+              </div>
+<!--              <video class="video-msg" controls="controls" preload="none" :src="JSON.parse(msgInfo.content)[0].url" :poster="JSON.parse(msgInfo.content)[0].coverUrl"></video>-->
             </div>
             <div v-if="msgInfo.type===3" class="audio-content">
               <vue-audio :width="400" :audio-source="JSON.parse(msgInfo.content)[0].url"></vue-audio>
@@ -45,15 +49,18 @@
         </el-container>
       </div>
     </el-container>
+    <video-play ref="videoPlay" :videoUrl="videoUrl" :posterUrl="posterUrl" @close="closeVideoPlay"></video-play>
   </div>
 </template>
 
 <script>
 import ImageCarousel from "@components/common/ImageCarousel.vue";
+import VideoPlay from "@components/common/VideoPlay.vue";
 
 export default {
   name: "ChatSystemBox",
   components: {
+    VideoPlay,
     ImageCarousel,
   },
   props: {
@@ -65,7 +72,9 @@ export default {
     return {
       showSysMsgContent: false,
       curMsgInfo: {},
-      contentDetail: {}
+      contentDetail: {},
+      videoUrl: '',
+      posterUrl: '',
     }
   },
   methods: {
@@ -101,6 +110,15 @@ export default {
       this.contentDetail = {}
       this.curMsgInfo = {};
       this.showSysMsgContent = false;
+    },
+    onPlayVideo(videoUrl, coverImageUrl) {
+      this.videoUrl = videoUrl;
+      this.posterUrl = coverImageUrl;
+      this.$refs.videoPlay.onPlayVideo()
+    },
+    closeVideoPlay() {
+      this.videoUrl = '';
+      this.posterUrl = '';
     },
   },
   computed: {
@@ -201,9 +219,31 @@ export default {
           border: 1px solid #eeeeee;
 
           .video-msg {
+            position: relative;
             width: 100%;
             height: 100%;
             object-fit: cover;
+
+            img {
+              max-width: 100%;  /* 图片宽度不超过父元素宽度 */
+              max-height: 100%; /* 图片高度不超过父元素高度 */
+              display: block;   /* 去除图片底部的空白间隙 */
+              margin: 0 auto;   /* 可选：让图片水平居中 */
+            }
+
+            .play-icon {
+              display: block;
+              position: absolute;
+              font-size: 80px;
+              font-weight: 500;
+              width: 80px;
+              height: 80px;
+              left: 50%;
+              top: 50%;
+              transform: translate(-50%, -50%);
+              cursor: pointer;
+              color: #ffffff;
+            }
           }
         }
 
