@@ -196,10 +196,13 @@
 </template>
 
 <script>
-import { quillEditor } from 'vue-quill-editor'
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
+// 引入富文本quill-editor相关组件依赖
+import { quillEditor, Quill } from 'vue-quill-editor'
+//import { container, QuillWatch } from 'quill-image-extend-module'
+import ImageResize from 'quill-image-resize-module' // 引用，调整图片大小
+Quill.register('modules/imageResize', ImageResize)
+// import {ImageDrop} from 'quill-image-drop-module'// 引用，粘贴图片
+// Quill.register('modules/imageDrop', ImageDrop) //粘贴图片
 
 export default {
   name: 'MessageForm',
@@ -248,6 +251,15 @@ export default {
       editorOptions: {
         theme: 'snow',
         modules: {
+          // 调整图片大小
+          imageResize: {
+            displayStyles: {
+              backgroundColor: 'black',
+              border: 'none',
+              color: 'white'
+            },
+            modules: [ 'Resize', 'DisplaySize', 'Toolbar' ]
+          },
           toolbar: {
             container: [
               ['bold', 'italic', 'underline', 'strike'],

@@ -51,6 +51,17 @@ Vue.prototype.$uuid = {
 Vue.prototype.$shortId = () => uuidv4().split('-')[0];
 Vue.config.productionTip = false;
 
+// 引入富文本编辑器
+import VueQuillEditor from 'vue-quill-editor'
+// 富文本编辑器对应的样式
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+
+// 注册富文本编辑器组件为全局组件
+Vue.use(VueQuillEditor)
+
+
 import hljs from 'highlight.js';
 
 import 'highlight.js/styles/atom-one-dark-reasonable.css' //样式
