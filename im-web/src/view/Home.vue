@@ -74,19 +74,19 @@
             </div>
           </div>
           <div class="botoom">
-            <div class="bottom-item" @click="showSetting">
+<!--            <div class="bottom-item" @click="showSetting">
               <span>
                 <svg class="icon svg-icon" aria-hidden="true">
                   <use xlink:href="#icon-shezhi"></use>
                 </svg>
               </span>
-            </div>
+            </div>-->
             <div class="bottom-item" @click="showOperation">
               <span>
                 <svg class="icon svg-icon" aria-hidden="true">
-                  <use xlink:href="#icon-operation"></use>
+                  <use xlink:href="#icon-shezhi"></use>
                 </svg>
-            </span>
+              </span>
             </div>
             <div class="bottom-item" @click="onExit()" title="退出">
               <span>
@@ -771,8 +771,7 @@
         return this.$store.state.friendStore.friendRequest.filter((r) => r.status === 1 && r.recvId === this.mine.id).length
       },
       groupRequestCount() {
-        return this.$store.state.groupStore.groupRequests
-            .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length
+        return this.$store.state.groupStore.groupRequests.filter((r) => r.userId === this.mine.id && r.status === 1 && r.type === 2).length
       }
 		},
 		watch: {
@@ -907,7 +906,7 @@
           width: 12px;
           height: 12px;
           border-radius: 50%;
-          background-color: red;
+          background-color: #f56c6c;
         }
       }
     }

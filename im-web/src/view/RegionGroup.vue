@@ -341,6 +341,7 @@ export default {
         margin: 5px auto;
         border-radius: 6px;
         cursor: pointer;
+        text-align: center;
       }
 
       .group-list-items {

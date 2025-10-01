@@ -1,10 +1,10 @@
 <template>
   <div class="chat-box" @click="closeRefBox()" @mousemove="readedMessage()">
     <el-container>
-      <el-header height="60px">
+      <el-header height="60px" style="text-align: center">
         <span class="region-group-name">{{title}}</span>
         <span class="btn-side">
-          <span title="刷新群聊信息" style="color: greenyellow;margin-right: 10px" class="el-icon-refresh" @click="loadRegionGroup(chat.targetId)"></span>
+<!--          <span title="刷新群聊信息" style="color: greenyellow;margin-right: 10px" class="el-icon-refresh" @click="loadRegionGroup(chat.targetId)"></span>-->
           <span title="群聊信息" class="el-icon-more" @click="showSide=!showSide"></span>
         </span>
 

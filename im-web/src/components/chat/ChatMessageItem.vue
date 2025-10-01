@@ -445,6 +445,7 @@
 		.chat-msg-tip {
 			line-height: 50px;
       font-size: 14px;
+      text-align: center;
 		}
 
 		.chat-msg-normal {

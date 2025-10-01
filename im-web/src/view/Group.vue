@@ -126,7 +126,7 @@
                            :url="activeGroup.headImage"
                            :name="activeGroup.remark">
               </head-image>
-              <el-button class="send-btn" icon="el-icon-position" type="primary" @click="onSendMessage()" size="small">发消息</el-button>
+              <el-button class="send-btn" icon="el-icon-position" type="primary" @click="onSendMessage()" size="mini">发消息</el-button>
 						</div>
             <div class="group-form-box">
               <el-form class="group-form" label-width="130px" :model="activeGroup" :rules="rules" ref="groupForm">
@@ -148,16 +148,16 @@
               </el-form>
               <div class="buttons-box">
                 <div class="buttons">
-                  <el-button type="success" @click="onSaveGroup()" size="small">提交</el-button>
-                  <el-button type="danger" v-show="!isOwner" @click="onQuit()" size="small">退出群聊</el-button>
-                  <el-button type="danger" v-show="isOwner" @click="onDissolve()" size="small">解散群聊</el-button>
-                  <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(1)" size="small">切换模板群聊</el-button>
+                  <el-button type="success" @click="onSaveGroup()" size="mini">提交</el-button>
+                  <el-button type="danger" v-show="!isOwner" @click="onQuit()" size="mini">退出群聊</el-button>
+                  <el-button type="danger" v-show="isOwner" @click="onDissolve()" size="mini">解散群聊</el-button>
+                  <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(1)" size="mini">切换模板群聊</el-button>
                 </div>
                 <div class="buttons">
-                  <el-button type="primary" size="small" v-show="isOwner" @click="popupSwitchTemplateGroup(4)" >切换模板角色群聊</el-button>
-                  <el-button type="warning" size="small" v-show="isOwner && activeGroup.groupType !== 2" @click="popupSwitchTemplateGroup(2)">切换多元角色群聊</el-button>
-                  <el-button type="info" size="small" v-show="isOwner && activeGroup.groupType !== 3" @click="popupSwitchTemplateGroup(3)">切换角色群聊</el-button>
-                  <el-button size="small" v-show="isOwner && activeGroup.groupType !== 0" @click="popupSwitchCommonGroup()">切换普通群聊</el-button>
+                  <el-button type="primary" size="mini" v-show="isOwner" @click="popupSwitchTemplateGroup(4)" >切换模板角色群聊</el-button>
+                  <el-button type="warning" size="mini" v-show="isOwner && activeGroup.groupType !== 2" @click="popupSwitchTemplateGroup(2)">切换多元角色群聊</el-button>
+                  <el-button type="info" size="mini" v-show="isOwner && activeGroup.groupType !== 3" @click="popupSwitchTemplateGroup(3)">切换角色群聊</el-button>
+                  <el-button size="mini" v-show="isOwner && activeGroup.groupType !== 0" @click="popupSwitchCommonGroup()">切换普通群聊</el-button>
                 </div>
               </div>
             </div>
@@ -1245,6 +1245,7 @@
 					padding: 5px 20px;
 
           .avatar-box {
+            text-align: center;
 
             .avatar-uploader {
               text-align: left;

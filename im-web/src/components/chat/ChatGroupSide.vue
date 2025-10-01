@@ -48,25 +48,25 @@
       <el-divider content-position="center"></el-divider>
 			<el-form labelPosition="top" class="group-side-form" :model="group">
 				<el-form-item label="群聊名称">
-					<el-input v-model="group.name" disabled maxlength="20"></el-input>
+					<el-input v-model="group.name" disabled maxlength="20" size="mini"></el-input>
 				</el-form-item>
 				<el-form-item label="群主">
-					<el-input :value="ownerName" disabled></el-input>
+					<el-input :value="ownerName" size="mini" disabled></el-input>
 				</el-form-item>
 				<el-form-item label="群公告">
-					<el-input v-model="group.notice" disabled type="textarea" maxlength="1024" placeholder="群主未设置"></el-input>
+					<el-input v-model="group.notice" size="mini" disabled type="textarea" maxlength="1024" placeholder="群主未设置"></el-input>
 				</el-form-item>
 				<el-form-item label="备注">
-					<el-input v-model="group.remark" :disabled="!editing" placeholder="群聊的备注仅自己可见" maxlength="20"></el-input>
+					<el-input v-model="group.remark" size="mini" :disabled="!editing" placeholder="群聊的备注仅自己可见" maxlength="20"></el-input>
 				</el-form-item>
 				<el-form-item label="我在本群的昵称">
-					<el-input v-model="group.aliasName" :disabled="!editing || group.groupType!==0" placeholder="xx" maxlength="20"></el-input>
+					<el-input v-model="group.aliasName" size="mini" :disabled="!editing || group.groupType!==0" placeholder="xx" maxlength="20"></el-input>
 				</el-form-item>
         <el-form-item label="昵称前缀" v-show="group.groupType!==0">
-          <el-input v-model="group.aliasNamePrefix" :disabled="!editing" placeholder="xx" maxlength="10"></el-input>
+          <el-input v-model="group.aliasNamePrefix" size="mini" :disabled="!editing" placeholder="xx" maxlength="10"></el-input>
         </el-form-item>
         <el-form-item label="昵称后缀" v-show="group.groupType!==0">
-          <el-input v-model="group.aliasNameSuffix" :disabled="!editing" placeholder="xx" maxlength="10"></el-input>
+          <el-input v-model="group.aliasNameSuffix" size="mini" :disabled="!editing" placeholder="xx" maxlength="10"></el-input>
         </el-form-item>
         <el-form-item label="群成员名称显示" v-if="group.groupType!==0" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
           <el-switch
@@ -108,9 +108,9 @@
         </el-form-item>
 
 				<div v-show="!group.quit" class="btn-group">
-					<el-button v-show="editing" type="success" @click="onSaveGroup()">提交</el-button>
-					<el-button v-show="!editing" type="primary" @click="editing=!editing">编辑</el-button>
-					<el-button type="danger" v-show="!isOwner" @click="onQuit()">退出群聊</el-button>
+					<el-button v-show="editing" type="success" size="mini" @click="onSaveGroup()">提交</el-button>
+					<el-button v-show="!editing" type="primary" size="mini" @click="editing=!editing">编辑</el-button>
+					<el-button type="danger" v-show="!isOwner" size="mini" @click="onQuit()">退出群聊</el-button>
 				</div>
 			</el-form>
 		</el-scrollbar>

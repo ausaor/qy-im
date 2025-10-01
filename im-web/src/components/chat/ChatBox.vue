@@ -4,7 +4,7 @@
       <el-header height="60px">
         <span>{{title}}</span>
         <span class="btn-side" v-show="this.chat.type=='GROUP'">
-          <span title="刷新群聊信息" style="color: greenyellow;margin-right: 10px" class="el-icon-refresh" @click="loadGroup(chat.targetId)"></span>
+<!--          <span title="刷新群聊信息" style="color: greenyellow;margin-right: 10px" class="el-icon-refresh" @click="loadGroup(chat.targetId)"></span>-->
           <span title="群聊信息" class="el-icon-more" @click="showSide=!showSide"></span>
         </span>
 
