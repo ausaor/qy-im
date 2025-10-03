@@ -860,7 +860,7 @@
 
       .router-link-active .menu-item {
         color: #fff;
-        background: white;
+        background: #E1FFFF;
       }
 
       .link:not(.router-link-active) .menu-item:hover {

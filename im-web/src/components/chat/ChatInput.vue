@@ -199,7 +199,7 @@
 					setTimeout(() => {
 						let s = this.$refs.content.innerHTML.trim();
 						// 空dom时，需要刷新dom
-						console.log(s);
+						//console.log(s);
 						if (s === '' || s === '<br>' || s === '<div>&nbsp;</div>' ) {
 							// 拼接随机长度的空格，以刷新dom
 							this.empty();
@@ -516,7 +516,7 @@
 							}
 						} else if (nodeName === 'span') {
 							if(node.dataset.id){
-								tempText += node.innerHTML;
+								tempText += (node.innerHTML + `#{${node.dataset.id}}`);
 								atUserIds.push(node.dataset.id)
 							}else {
 								tempText += node.outerHtml;

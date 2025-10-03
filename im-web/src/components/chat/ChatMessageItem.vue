@@ -27,7 +27,7 @@
 				</div>
 				<div class="chat-msg-bottom" @contextmenu.prevent="showRightMenu($event)">
           <div ref="chatMsgBox">
-            <span class="chat-msg-text" v-if="msgInfo.type==$enums.MESSAGE_TYPE.TEXT"
+            <span ref="textChatMsg" class="chat-msg-text" v-if="msgInfo.type==$enums.MESSAGE_TYPE.TEXT"
                   v-html="htmlText"></span>
             <div class="chat-msg-image" v-if="msgInfo.type==$enums.MESSAGE_TYPE.IMAGE">
               <div class="img-load-box" v-loading="loading" element-loading-text="上传中.."
@@ -238,6 +238,15 @@
 		},
     beforeDestroy() {
       // 组件销毁时移除监听
+      if (this.$refs.textChatMsg) {
+        this.$refs.textChatMsg.removeEventListener('click', this.handleAtClick);
+      }
+    },
+    mounted() {
+      // 添加事件监听器处理@用户名的点击
+      if (this.$refs.textChatMsg) {
+        this.$refs.textChatMsg.addEventListener('click', this.handleAtClick);
+      }
     },
 		methods: {
       onSendFail() {
@@ -344,8 +353,36 @@
       onPlayVideo(url, coverImageUrl) {
         this.$emit('playVideo', {videoUrl: url, coverImageUrl: coverImageUrl});
       },
+      showUserInfo(e, userId){
+        if(userId && userId>0){
+          this.$http({
+            url: `/user/find/${userId}`,
+            method: 'get'
+          }).then((user) => {
+            this.$store.commit("setUserInfoBoxPos",e);
+            this.$store.commit("showUserInfoBox",user);
+          })
+        }
+      },
+      handleAtClick(event) {
+        if (event.target.classList.contains('at-user')) {
+          const userId = parseInt(event.target.getAttribute('data-userid'));
+          // 判断userId是否数字
+          if (isNaN(userId)) {
+            return;
+          }
+          this.showUserInfo(event, userId);
+        }
+      },
+      formatMessage(content) {
+        // 将@用户名#{id}格式转换为可点击的span
+        // 使用正则表达式匹配 @用户名#{数字} 格式
+        return content.replace(/@([^#]+)#\{(\d+)\}/g,
+            '<span class="at-user" data-userid="$2" style="cursor: pointer;">@$1</span>'
+        );
+      },
 		},
-		computed: {
+    computed: {
 			loading() {
 				return this.msgInfo.loadStatus && this.msgInfo.loadStatus === "loading";
 			},
@@ -420,7 +457,8 @@
       htmlText() {
         let color = this.msgInfo.selfSend ? 'white' : '';
         let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.content, color)
-        return this.$emo.transform(text)
+        text = this.$emo.transform(text)
+        return this.formatMessage(text)
       },
       htmlQuoteText() {
         let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.quoteMsg?.content, '')
@@ -531,6 +569,10 @@
               overflow: hidden;
               border-width: 10px;
 						}
+
+            .at-user {
+              cursor: pointer;
+            }
 					}
 
 					.chat-msg-image {
@@ -858,13 +900,6 @@
               display: inline-block;
             }
           }
-
-          .chat-at-user {
-            background-color: #4cd964;
-            padding: 2px 5px;
-            color: white;
-            border-radius: 3px;
-          }
 				}
 			}
 
@@ -907,6 +942,10 @@
 								right: -10px;
                 border-top-color: rgb(88, 127, 240);
 							}
+
+              .at-user {
+                cursor: pointer;
+              }
 						}
 
             .chat-msg-word-voice {
