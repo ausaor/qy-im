@@ -12,10 +12,10 @@
 				:name="showInfo.showName" size="small"></head-image>
 			<view class="chat-msg-content">
 				<view v-if="(msgInfo.groupId || msgInfo.regionGroupId) && !msgInfo.selfSend" class="chat-msg-top">
-					<text :style="nameColorStyle">{{ showInfo.showName }}</text>
-          <text v-show="myGroupMemberInfo.showNickName" style="margin-left: 20rpx;">{{showInfo.nickName}}</text>
-          <text v-if="isOwner && msgInfo.groupId" style="margin-left: 20rpx;" class="group-owner">群主</text>
-          <text v-if="msgInfo.sendId===1" style="margin-left: 20rpx;" class="blogger">博主</text>
+					<text :style="nameColorStyle" class="alias-name">{{ showInfo.showName }}</text>
+          <text v-show="myGroupMemberInfo.showNickName" class="nick-name">{{showInfo.nickName}}</text>
+          <text v-if="isOwner && msgInfo.groupId" class="group-owner">群主</text>
+          <text v-if="msgInfo.sendId===1" class="blogger">博主</text>
 				</view>
 				<view class="chat-msg-bottom">
 					<view v-if="msgInfo.type == $enums.MESSAGE_TYPE.TEXT">
@@ -472,14 +472,25 @@ export default {
 			text-align: left;
 
 			.chat-msg-top {
+        height: auto;
 				display: flex;
+        align-items: flex-start;
 				flex-wrap: nowrap;
 				color: $im-text-color-lighter;
 				font-size: $im-font-size-smaller;
 				line-height: $im-font-size-smaller;
-				height: $im-font-size-smaller;
+
+        .alias-name {
+          max-width: 240rpx;
+        }
+
+        .nick-name {
+          margin-left: 20rpx;
+          max-width: 240rpx;
+        }
 
         .group-owner {
+          margin-left: 20rpx;
           background-color: orange;
           color: white;
           font-size: 14rpx;
@@ -491,6 +502,7 @@ export default {
         }
 
         .blogger {
+          margin-left: 20rpx;
           background-color: #1E90FF;
           color: white;
           font-size: 14rpx;
@@ -523,7 +535,6 @@ export default {
 					color: $im-text-color;
 					font-size: $im-font-size;
 					text-align: left;
-					display: block;
 					word-break: break-all;
 					white-space: pre-line;
           display: inline-flex;
@@ -727,7 +738,8 @@ export default {
             .send-user {
               margin-right: 20rpx;
               font-weight: 600;
-              white-space: nowrap;
+              overflow-wrap: break-word;
+              max-width: 80rpx;
             }
 
             .quote-content {
