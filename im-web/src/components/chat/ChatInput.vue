@@ -540,12 +540,53 @@
 			},
       removeQuoteMsg() {
         this.$emit('removeQuoteMsg')
+      },
+      formatMessage(content, atUserIds) {
+        // 将@用户名#{id}格式转换为可点击的span
+        const regex = /@([^#]+)#\{(\d+)\}/g;
+        let result = content;
+        let match;
+
+        // 用于存储已处理的匹配项
+        const processedMatches = [];
+
+        // 迭代所有匹配项
+        while ((match = regex.exec(content)) !== null) {
+          const fullMatch = match[0];
+          const username = match[1];
+          const userId = parseInt(match[2]);
+
+          // 检查这个匹配是否已经处理过（避免重复处理）
+          if (processedMatches.includes(fullMatch)) {
+            continue;
+          }
+
+          processedMatches.push(fullMatch);
+
+          // 检查用户ID是否在atUserIds中
+          if (atUserIds.includes(userId)) {
+            // 如果在，转换为可点击元素
+            const replacement = `<span class="at-user" data-userid="${userId}">@${username}</span>`;
+            result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), replacement);
+          } else {
+            // 如果不在，转换为不可点击元素
+            const replacement = `<span class="at-user-disabled">@${username}</span>`;
+            result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), replacement);
+          }
+        }
+
+        return result;
+      },
+      // 转义正则表达式特殊字符
+      escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       }
 		},
     computed: {
       htmlText() {
         let text = this.$url.replaceURLWithHTMLLinks(this.quoteMessage.msgInfo?.content, '')
-        return this.$emo.transform(text)
+        text = this.$emo.transform(text)
+        return this.formatMessage(text, this.quoteMessage.msgInfo.atUserIds)
       },
       data() {
         return JSON.parse(this.quoteMessage.msgInfo.content)

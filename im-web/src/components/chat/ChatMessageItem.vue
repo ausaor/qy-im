@@ -210,7 +210,7 @@
 			isOwner: {
         type: Boolean,
         default: false
-      }
+      },
 		},
 		data() {
 			return {
@@ -374,13 +374,46 @@
           this.showUserInfo(event, userId);
         }
       },
-      formatMessage(content) {
+      formatMessage(content, atUserIds) {
         // 将@用户名#{id}格式转换为可点击的span
-        // 使用正则表达式匹配 @用户名#{数字} 格式
-        return content.replace(/@([^#]+)#\{(\d+)\}/g,
-            '<span class="at-user" data-userid="$2" style="cursor: pointer;">@$1</span>'
-        );
+        const regex = /@([^#]+)#\{(\d+)\}/g;
+        let result = content;
+        let match;
+
+        // 用于存储已处理的匹配项
+        const processedMatches = [];
+
+        // 迭代所有匹配项
+        while ((match = regex.exec(content)) !== null) {
+          const fullMatch = match[0];
+          const username = match[1];
+          const userId = parseInt(match[2]);
+
+          // 检查这个匹配是否已经处理过（避免重复处理）
+          if (processedMatches.includes(fullMatch)) {
+            continue;
+          }
+
+          processedMatches.push(fullMatch);
+
+          // 检查用户ID是否在atUserIds中
+          if (atUserIds.includes(userId)) {
+            // 如果在，转换为可点击元素
+            const replacement = `<span class="at-user" data-userid="${userId}" style="cursor: pointer;">@${username}</span>`;
+            result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), replacement);
+          } else {
+            // 如果不在，转换为不可点击元素
+            const replacement = `<span class="at-user-disabled">@${username}</span>`;
+            result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), replacement);
+          }
+        }
+
+        return result;
       },
+      // 转义正则表达式特殊字符
+      escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
 		},
     computed: {
 			loading() {
@@ -458,11 +491,12 @@
         let color = this.msgInfo.selfSend ? 'white' : '';
         let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.content, color)
         text = this.$emo.transform(text)
-        return this.formatMessage(text)
+        return this.formatMessage(text, this.msgInfo.atUserIds)
       },
       htmlQuoteText() {
         let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.quoteMsg?.content, '')
-        return this.$emo.transform(text)
+        text = this.$emo.transform(text)
+        return this.formatMessage(text, this.msgInfo.quoteMsg?.atUserIds ? this.msgInfo.quoteMsg.atUserIds : [])
       },
       nameColorStyle() {
         let index = 0;
