@@ -21,7 +21,7 @@ public class CommaTextUtils {
     /**
      * 文本转列表
      *
-     * @param strText 文件
+     * @param strText 文本
      * @return 列表
      */
     public static List<String> asList(String strText) {
@@ -30,6 +30,19 @@ public class CommaTextUtils {
         }
         return new LinkedList<>(Arrays.asList(strText.split(",")));
 
+    }
+
+    /**
+     * 文本转Long列表
+     *
+     * @param strText 文本
+     * @return 列表
+     */
+    public static List<Long> asLongList(String strText) {
+        if (StrUtil.isEmpty(strText)) {
+            return new LinkedList<>();
+        }
+        return Arrays.stream(strText.split(",")).map(Long::parseLong).collect(Collectors.toCollection(LinkedList::new));
     }
 
     /**

@@ -2,6 +2,8 @@ package xyz.qy.implatform.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class QuoteMsg {
     private Long id;
@@ -13,4 +15,6 @@ public class QuoteMsg {
     private Integer status;
 
     private Integer type;
+
+    private List<Long> atUserIds;
 }

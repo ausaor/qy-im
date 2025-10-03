@@ -151,6 +151,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         quoteMsg.setStatus(message.getStatus());
         quoteMsg.setType(message.getType());
         quoteMsg.setSendId(message.getSendId());
+        quoteMsg.setAtUserIds(CommaTextUtils.asLongList(message.getAtUserIds()));
         return quoteMsg;
     }
 
