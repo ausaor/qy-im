@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.annotation.RepeatSubmit;
 import xyz.qy.implatform.dto.GroupBanDTO;
+import xyz.qy.implatform.dto.GroupQueryDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IGroupService;
@@ -61,6 +62,12 @@ public class GroupController {
     @GetMapping("/find/{groupId}")
     public Result<GroupVO> findGroup(@NotNull(message = "群聊id不能为空") @PathVariable Long groupId) {
         return ResultUtils.success(groupService.findById(groupId));
+    }
+
+    @ApiOperation(value = "分页查询群聊", notes = "分页查询群聊")
+    @PostMapping("/page")
+    public Result pageGroups(@RequestBody GroupQueryDTO dto) {
+        return ResultUtils.success(groupService.pageGroups(dto));
     }
 
     @ApiOperation(value = "查询群聊列表", notes = "查询群聊列表")

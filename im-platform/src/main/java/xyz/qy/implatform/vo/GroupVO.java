@@ -6,6 +6,7 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.Date;
 
 @Data
 @ApiModel("群信息VO")
@@ -17,6 +18,9 @@ public class GroupVO {
     @NotEmpty(message = "群名称不可为空")
     @ApiModelProperty(value = "群名称")
     private String name;
+
+    @ApiModelProperty(value = "群主")
+    private String owner;
 
     @ApiModelProperty(value = "群主id")
     private Long ownerId;
@@ -35,7 +39,7 @@ public class GroupVO {
     @ApiModelProperty(value = "用户在群显示昵称")
     private String aliasName;
 
-    @Length(max = 20, message = "群聊显示长度不能大于20")
+    @Length(max = 20, message = "群聊显示备注不能大于20")
     @ApiModelProperty(value = "群聊显示备注")
     private String remark;
 
@@ -80,4 +84,7 @@ public class GroupVO {
 
     @ApiModelProperty(value = "加群审核")
     private Boolean enterReview;
+
+    @ApiModelProperty(value = "创建时间")
+    private Date createdTime;
 }

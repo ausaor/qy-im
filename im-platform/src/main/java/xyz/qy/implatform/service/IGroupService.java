@@ -2,6 +2,7 @@ package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.qy.implatform.dto.GroupBanDTO;
+import xyz.qy.implatform.dto.GroupQueryDTO;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.User;
@@ -46,6 +47,14 @@ public interface IGroupService extends IService<Group> {
     Group getAndCheckById(Long groupId);
 
     GroupVO findById(Long groupId);
+
+    /**
+     * 分页查询群聊
+     *
+     * @param dto 查询参数
+     * @return 群聊列表
+     */
+    PageResultVO pageGroups(GroupQueryDTO dto);
 
     List<GroupMemberVO> findGroupMembers(Long groupId);
 

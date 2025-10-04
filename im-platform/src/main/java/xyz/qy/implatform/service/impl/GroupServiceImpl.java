@@ -31,6 +31,7 @@ import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.EnterGroupUsersDTO;
 import xyz.qy.implatform.dto.GroupBanDTO;
+import xyz.qy.implatform.dto.GroupQueryDTO;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.GroupMember;
@@ -342,6 +343,38 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         vo.setNickName(member.getNickname());
         vo.setShowNickName(member.getShowNickName());
         return vo;
+    }
+
+    @Override
+    public PageResultVO pageGroups(GroupQueryDTO dto) {
+        LambdaQueryWrapper<Group> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Group::getDeleted, false);
+        wrapper.like(StringUtils.isNotBlank(dto.getName()), Group::getName, dto.getName());
+        wrapper.eq(ObjectUtil.isNotNull(dto.getGroupType()), Group::getGroupType, dto.getGroupType());
+        wrapper.eq(ObjectUtil.isNotNull(dto.getOwnerId()), Group::getOwnerId, dto.getOwnerId());
+        wrapper.orderByDesc(Group::getId);
+
+        // 分页查询群聊
+        Page<Group> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
+        if (CollUtil.isEmpty(page.getRecords())) {
+            return PageResultVO.builder().data(new ArrayList<>()).total(0).build();
+        }
+
+        List<Group> groups = page.getRecords();
+        List<Long> ownerIds = groups.stream().map(Group::getOwnerId).collect(Collectors.toList());
+        List<User> userList = userService.findUserByIds(ownerIds);
+        // userList根据id分组获取Map
+        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, user -> user));
+
+        List<GroupVO> groupVOS = BeanUtils.copyProperties(groups, GroupVO.class);
+        groupVOS.forEach(groupVO -> {
+            User user = userMap.get(groupVO.getOwnerId());
+            if (ObjectUtil.isNotNull(user)) {
+                groupVO.setOwner(user.getUserName());
+            }
+        });
+
+        return PageResultVO.builder().data(groupVOS).total(page.getTotal()).build();
     }
 
     /**
@@ -1573,10 +1606,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
             groupMemberService.updateById(groupMember);
             String content = null;
-            if (session.getUserId().equals(Constant.ADMIN_USER_ID)) {
-                content = "您已被系统禁言，禁言时长" + dto.getBanDuration() + "分钟";
-            } else {
+            if (session.getUserId().equals(group.getOwnerId())) {
                 content = "您已被群主禁言，禁言时长" + dto.getBanDuration() + "分钟";
+            } else {
+                content = "您已被系统禁言，禁言时长" + dto.getBanDuration() + "分钟";
             }
 
             messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
@@ -1603,7 +1636,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             // 全局禁言解除，判断被禁言类型
             if (BanTypeEnum.SYS.getCode().equals(group.getBanType())
                     && !session.getUserId().equals(Constant.ADMIN_USER_ID)) {
-                throw new GlobalException("当前地区群聊被系统禁言，您无权限解除！");
+                throw new GlobalException("当前群聊被系统禁言，您无权限解除！");
             }
 
             LambdaUpdateWrapper<Group> updateWrapper = new LambdaUpdateWrapper<>();

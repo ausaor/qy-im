@@ -189,6 +189,7 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         quoteMsg.setStatus(message.getStatus());
         quoteMsg.setType(message.getType());
         quoteMsg.setSendId(message.getSendId());
+        quoteMsg.setAtUserIds(CommaTextUtils.asLongList(message.getAtUserIds()));
         return quoteMsg;
     }
 

@@ -80,6 +80,11 @@ export default new VueRouter({
                   component: () => import("../view/Users.vue"),
               },
               {
+                  name: "Groups",
+                  path: "/home/square/groups",
+                  component: () => import("../view/GroupManagement.vue"),
+              },
+              {
                   name: "SysMsg",
                   path: "/home/square/sysMsg",
                   component: () => import("../view/SysMsg.vue"),

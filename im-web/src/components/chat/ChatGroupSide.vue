@@ -357,15 +357,16 @@
           this.$message.warning('不能禁言自己');
           return
         }
-        this.$confirm(`【用户禁言】请确认是否禁言群成员【${member.aliasName}】${this.bannedTime}分钟`, {
+        this.$prompt('请输入禁言时长（分钟）', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
+          inputPattern: /^([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|60000)$/,
+          inputErrorMessage: '只能输入正整数(1~60000)'
+        }).then(({ value }) => {
           let paramVO = {
             id: this.group.id,
             userId: member.userId,
-            banDuration: this.bannedTime,
+            banDuration: value,
             banType: 'master'
           }
           this.$http({
