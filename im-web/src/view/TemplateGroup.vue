@@ -113,35 +113,38 @@
           <div class="template-character-item" v-for="(templateCharacter, index) in templateCharacters"
                :key="templateCharacter.id">
             <div class="avatar-box">
-              <head-image class="avatar-uploader" :size="45" :url="templateCharacter.avatar"></head-image>
+              <head-image class="avatar-uploader" :size="36" :url="templateCharacter.avatar"></head-image>
             </div>
-            <el-input
-                class="name-input"
-                type="text"
-                placeholder="请输入内容"
-                v-model="templateCharacter.name"
-                maxlength="20"
-                :disabled="!curTemplateGroup.isOwner"
-                show-word-limit
-            />
+            <div style="line-height: 45px;">
+              <el-input
+                  class="name-input"
+                  type="text"
+                  placeholder="请输入内容"
+                  v-model="templateCharacter.name"
+                  maxlength="20"
+                  :disabled="!curTemplateGroup.isOwner"
+                  show-word-limit
+                  size="small"
+              />
+            </div>
             <div class="status-tag">
-              <el-tag class="tag" v-if="templateCharacter.status==='3'" effect="dark" size="small" type="danger">未通过
+              <el-tag class="tag" v-if="templateCharacter.status==='3'" effect="dark" size="mini" type="danger">未通过
               </el-tag>
-              <el-tag class="tag" v-if="templateCharacter.status==='2'" effect="dark" size="small" type="success">已发布
+              <el-tag class="tag" v-if="templateCharacter.status==='2'" effect="dark" size="mini" type="success">已发布
               </el-tag>
-              <el-tag class="tag" v-if="templateCharacter.status==='1'" effect="dark" size="small" type="warning">审核中
+              <el-tag class="tag" v-if="templateCharacter.status==='1'" effect="dark" size="mini" type="warning">审核中
               </el-tag>
-              <el-tag class="tag" v-if="templateCharacter.status==='0'" effect="dark" size="small" type="info">待审批
+              <el-tag class="tag" v-if="templateCharacter.status==='0'" effect="dark" size="mini" type="info">待审批
               </el-tag>
             </div>
             <el-button class="edit-character-avatar" type="warning" icon="el-icon-orange" circle
-                       @click="openCharacterAvatarDialog(templateCharacter)"></el-button>
-            <el-button style="margin-left: 8px;" type="primary" circle
+                       @click="openCharacterAvatarDialog(templateCharacter)" size="mini"></el-button>
+            <el-button style="margin-left: 8px;" type="primary" circle size="mini"
                        @click="openCharacterWordDialog({templateGroup: curTemplateGroup, character: templateCharacter})">词</el-button>
-            <el-button style="margin-left: 8px;" icon="icon iconfont icon-biaoqing" circle
+            <el-button style="margin-left: 8px;" icon="icon iconfont icon-biaoqing" circle size="mini"
                        @click="openCharacterEmoDialog({templateGroup: curTemplateGroup, character: templateCharacter})"></el-button>
             <el-button v-if="curTemplateGroup.isOwner" class="delete-button"
-                       type="danger" icon="el-icon-delete" circle
+                       type="danger" icon="el-icon-delete" circle size="mini"
                        @click="deleteTemplateCharacter(templateCharacter, index)"></el-button>
           </div>
         </el-scrollbar>
@@ -180,17 +183,21 @@
           <div class="character-avatar-item" v-for="(characterAvatar, index) in characterAvatars"
                :key="characterAvatar.id">
             <div class="avatar-box">
-              <head-image class="avatar-uploader" :size="45" :url="characterAvatar.avatar"></head-image>
+              <head-image class="avatar-uploader" :size="36" :url="characterAvatar.avatar"></head-image>
             </div>
-            <el-input
-                class="name-input"
-                type="text"
-                placeholder="请输入内容"
-                v-model="characterAvatar.name"
-                maxlength="20"
-                :disabled="!curTemplateCharacter.isOwner"
-                show-word-limit
-            />
+            <div style="line-height: 45px;">
+              <el-input
+                  class="name-input"
+                  type="text"
+                  placeholder="请输入内容"
+                  v-model="characterAvatar.name"
+                  maxlength="20"
+                  :disabled="!curTemplateCharacter.isOwner"
+                  show-word-limit
+                  size="small"
+              />
+            </div>
+
 <!--            <el-select class="select-item" v-model="characterAvatar.level" placeholder="请选择"
                        :disabled="!curTemplateCharacter.isOwner">
               <el-option
@@ -200,18 +207,18 @@
                   :value="item.value">
               </el-option>
             </el-select>-->
-            <el-input-number style="width: 80px;margin-left: 20px;" controls-position="right" v-model="characterAvatar.level" :min="0" :max="10"></el-input-number>
+            <el-input-number style="width: 80px;margin-left: 20px;" controls-position="right" v-model="characterAvatar.level" :min="0" :max="10" size="mini"></el-input-number>
             <div class="status-tag">
-              <el-tag class="tag" v-if="characterAvatar.status==='3'" effect="dark" size="small" type="danger">未通过
+              <el-tag class="tag" v-if="characterAvatar.status==='3'" effect="dark" size="mini" type="danger">未通过
               </el-tag>
-              <el-tag class="tag" v-if="characterAvatar.status==='2'" effect="dark" size="small" type="success">已发布
+              <el-tag class="tag" v-if="characterAvatar.status==='2'" effect="dark" size="mini" type="success">已发布
               </el-tag>
-              <el-tag class="tag" v-if="characterAvatar.status==='1'" effect="dark" size="small" type="warning">审核中
+              <el-tag class="tag" v-if="characterAvatar.status==='1'" effect="dark" size="mini" type="warning">审核中
               </el-tag>
-              <el-tag class="tag" v-if="characterAvatar.status==='0'" effect="dark" size="small" type="info">待审批
+              <el-tag class="tag" v-if="characterAvatar.status==='0'" effect="dark" size="mini" type="info">待审批
               </el-tag>
             </div>
-            <el-button  v-if="curTemplateCharacter.isOwner" class="delete-button"
+            <el-button  v-if="curTemplateCharacter.isOwner" class="delete-button" size="mini"
                        type="danger" icon="el-icon-delete" circle
                        @click="deleteCharacterAvatar(characterAvatar, index)"></el-button>
           </div>
@@ -251,10 +258,10 @@
               <i class="el-icon-upload"></i>
             </file-upload>
             <div style="margin-left: 8px;">
-              <el-tag v-if="item.status==='3'" effect="dark" size="small" type="danger">未通过</el-tag>
-              <el-tag v-if="item.status==='2'" effect="dark" size="small" type="success">已发布</el-tag>
-              <el-tag v-if="item.status==='1'" effect="dark" size="small" type="warning">审核中</el-tag>
-              <el-tag v-if="item.status==='0'" effect="dark" size="small" type="info">待发布</el-tag>
+              <el-tag v-if="item.status==='3'" effect="dark" size="mini" type="danger">未通过</el-tag>
+              <el-tag v-if="item.status==='2'" effect="dark" size="mini" type="success">已发布</el-tag>
+              <el-tag v-if="item.status==='1'" effect="dark" size="mini" type="warning">审核中</el-tag>
+              <el-tag v-if="item.status==='0'" effect="dark" size="mini" type="info">待发布</el-tag>
             </div>
             <el-button v-if="curTemplateGroup.isOwner" :type="activeWordIndex === index ? 'success' : ''" icon="el-icon-check" circle
                        style="margin-left: 8px;" @click="chooseWord(index)"></el-button>
@@ -978,6 +985,7 @@ export default {
     cursor: pointer;
     box-sizing: border-box;
     margin-left: 15px;
+    text-align: center;
   }
 
   .template-character-box {
@@ -1045,6 +1053,7 @@ export default {
     cursor: pointer;
     box-sizing: border-box;
     margin-left: 15px;
+    text-align: center;
   }
 
   .character-avatar-box {
@@ -1147,6 +1156,7 @@ export default {
       font-size: 25px;
       cursor: pointer;
       box-sizing: border-box;
+      text-align: center;
     }
 
     .character-emo-item {
