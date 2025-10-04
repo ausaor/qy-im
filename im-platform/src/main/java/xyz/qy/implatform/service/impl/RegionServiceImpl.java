@@ -1,20 +1,25 @@
 package xyz.qy.implatform.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import xyz.qy.implatform.contant.RedisKey;
+import xyz.qy.implatform.dto.RegionQueryDTO;
 import xyz.qy.implatform.entity.Region;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.RegionMapper;
 import xyz.qy.implatform.service.IRegionService;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.LocationServicesUtil;
+import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.util.RedisCache;
+import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.RegionVO;
 
 import javax.annotation.Resource;
@@ -61,6 +66,26 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
         }
 
         return BeanUtils.copyPropertiesList(regionList, RegionVO.class);
+    }
+
+    @Override
+    public PageResultVO pageRegions(RegionQueryDTO dto) {
+        LambdaQueryWrapper<Region> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Region::getDeleted, false);
+        wrapper.like(StringUtils.isNotBlank(dto.getName()), Region::getName, dto.getName());
+        wrapper.eq(StringUtils.isNotBlank(dto.getCode()), Region::getCode, dto.getCode());
+        wrapper.eq(StringUtils.isNotBlank(dto.getParentCode()), Region::getParentCode, dto.getParentCode());
+        wrapper.eq(ObjectUtil.isNotNull(dto.getLevel()), Region::getLevel, dto.getLevel());
+        wrapper.orderByAsc(Region::getCode);
+
+        Page<Region> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
+        if (CollUtil.isEmpty(page.getRecords())) {
+            return PageResultVO.builder().data(Collections.emptyList()).build();
+        }
+        List<Region> regionList = page.getRecords();
+        List<RegionVO> regionVOS = BeanUtils.copyPropertiesList(regionList, RegionVO.class);
+
+        return PageResultVO.builder().data(regionVOS).total(page.getTotal()).build();
     }
 
     @Override

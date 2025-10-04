@@ -546,25 +546,31 @@ export default {
 
 				.chat-msg-top {
 					display: flex;
+          align-items: center;
 					flex-wrap: nowrap;
 					color: #333;
 					font-size: 14px;
 					line-height: 20px;
 
           .group-master {
+            display: inline-block;
+            height: 15px;
             background-color: orange;
             color: white;
-            font-size: 12px;
+            font-size: 10px;
             padding: 0 5px;
             border-radius: 10px;
+            line-height: 15px;
           }
 
           .blogger {
             background-color: #1E90FF;
+            height: 15px;
             color: white;
             font-size: 12px;
             padding: 0 5px;
             border-radius: 10px;
+            line-height: 15px;
           }
 
 					span {

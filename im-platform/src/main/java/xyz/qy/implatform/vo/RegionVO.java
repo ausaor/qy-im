@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 地区Vo
  *
@@ -55,4 +57,10 @@ public class RegionVO {
      * 是否删除
      */
     private Boolean deleted;
+
+    @ApiModelProperty(value = "子地区")
+    private List<RegionVO> children;
+
+    @ApiModelProperty(value = "是否有子地区")
+    private Boolean hasChildren = true;
 }

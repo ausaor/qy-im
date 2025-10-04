@@ -1,11 +1,11 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4728505 */
-  src: url('iconfont.eot?t=1759299975187'); /* IE9 */
-  src: url('iconfont.eot?t=1759299975187#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1759299975187') format('woff2'),
-       url('iconfont.woff?t=1759299975187') format('woff'),
-       url('iconfont.ttf?t=1759299975187') format('truetype'),
-       url('iconfont.svg?t=1759299975187#iconfont') format('svg');
+  src: url('iconfont.eot?t=1759555469086'); /* IE9 */
+  src: url('iconfont.eot?t=1759555469086#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1759555469086') format('woff2'),
+       url('iconfont.woff?t=1759555469086') format('woff'),
+       url('iconfont.ttf?t=1759555469086') format('truetype'),
+       url('iconfont.svg?t=1759555469086#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,6 +14,14 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-diquguanli:before {
+  content: "\e652";
+}
+
+.icon-qunliaoguanli:before {
+  content: "\e6c5";
 }
 
 .icon-man:before {

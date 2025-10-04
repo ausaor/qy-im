@@ -12,6 +12,8 @@
                         @click.native="handleActiveItem(communityList[3])"></community-item>
         <community-item v-if="mine.id===1" :community="communityList[4]" :active="communityList[4].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[4])"></community-item>
+        <community-item v-if="mine.id===1" :community="communityList[5]" :active="communityList[5].sort === activeIndex"
+                        @click.native="handleActiveItem(communityList[5])"></community-item>
       </div>
     </el-aside>
     <el-main class="community-box">
@@ -36,8 +38,9 @@ export default {
         {name: "空间动态", sort: 1, route: '/home/square/friendActivity', iconId: '#icon-shejiaotubiao-40'},
         {name: "群聊模板", sort: 2, route: '/home/square/templateGroup', iconId: '#icon-qiqiaoban'},
         {name: "用户管理", sort: 3, route: '/home/square/users', iconId: '#icon-person'},
-        {name: "群聊管理", sort: 4, route: '/home/square/groups', iconId: '#icon-group'},
-        {name: "系统消息", sort: 5, route: '/home/square/sysMsg', iconId: '#icon-xitongxiaoxi'},
+        {name: "群聊管理", sort: 4, route: '/home/square/groups', iconId: '#icon-qunliaoguanli'},
+        {name: "地区管理", sort: 5, route: '/home/square/regions', iconId: '#icon-diquguanli'},
+        {name: "系统消息", sort: 6, route: '/home/square/sysMsg', iconId: '#icon-xitongxiaoxi'},
       ],
       activeIndex: -1,
     }

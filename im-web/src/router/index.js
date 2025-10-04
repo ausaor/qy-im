@@ -85,6 +85,11 @@ export default new VueRouter({
                   component: () => import("../view/GroupManagement.vue"),
               },
               {
+                  name: "Regions",
+                  path: "/home/square/regions",
+                  component: () => import("../view/RegionsManagement.vue"),
+              },
+              {
                   name: "SysMsg",
                   path: "/home/square/sysMsg",
                   component: () => import("../view/SysMsg.vue"),

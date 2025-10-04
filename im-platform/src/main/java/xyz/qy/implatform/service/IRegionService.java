@@ -1,7 +1,9 @@
 package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import xyz.qy.implatform.dto.RegionQueryDTO;
 import xyz.qy.implatform.entity.Region;
+import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.RegionVO;
 
 import java.util.List;
@@ -28,6 +30,14 @@ public interface IRegionService extends IService<Region> {
      * @return 地区列表
      */
     List<RegionVO> findRegionByParentCode(String parentCode);
+
+    /**
+     * 分页查询地区
+     *
+     * @param dto 查询参数
+     * @return 地区列表
+     */
+    PageResultVO pageRegions(RegionQueryDTO dto);
 
     /**
      * 根据上级编码递归查询所有上级地区

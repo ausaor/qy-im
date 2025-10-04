@@ -5,9 +5,11 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.dto.RegionQueryDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IRegionService;
@@ -36,6 +38,12 @@ public class RegionController {
     @GetMapping("/findSubRegion")
     public Result<List<RegionVO>> findRegionByParentCode(String parentCode) {
         return ResultUtils.success(regionService.findRegionByParentCode(parentCode));
+    }
+
+    @ApiOperation(value = "分页查询地区列表", notes = "分页查询地区列表")
+    @PostMapping("/page")
+    public Result pageRegions(@RequestBody RegionQueryDTO dto) {
+        return ResultUtils.success(regionService.pageRegions(dto));
     }
 
     @ApiOperation(value = "获取地区经纬度", notes = "获取地区经纬度")
