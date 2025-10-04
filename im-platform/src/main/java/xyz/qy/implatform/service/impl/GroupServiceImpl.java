@@ -708,6 +708,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     public List<GroupMemberVO> findGroupMembers(Long groupId) {
         Group group = this.GetById(groupId);
         List<GroupMember> members = groupMemberService.findByGroupId(groupId);
+        // 判断用户是否群主，群成员、系统管理员
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
+        boolean hasAuth = userId.equals(group.getOwnerId())
+                || members.stream().anyMatch(m -> m.getUserId().equals(userId) && !m.getQuit())
+                || userId.equals(Constant.ADMIN_USER_ID);
+        if (!hasAuth) {
+            throw new GlobalException("您无权限查看群成员");
+        }
+
         List<Long> userIds = members.stream().map(GroupMember::getUserId).collect(Collectors.toList());
         List<User> userList = userService.listByIds(userIds);
         List<Long> onlineUserIds = imClient.getOnlineUser(userIds);
@@ -717,6 +728,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         return members.stream().map(m -> {
             GroupMemberVO vo = BeanUtils.copyProperties(m, GroupMemberVO.class);
             User user = userMap.get(vo.getUserId());
+
+            vo.setUserName(user.getUserName());
             if (user.getId().equals(group.getOwnerId())) {
                 vo.setIsAdmin(true);
             }

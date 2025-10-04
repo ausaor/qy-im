@@ -4,11 +4,16 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 @ApiModel("群成员信息VO")
 public class GroupMemberVO {
     @ApiModelProperty("用户id")
     private Long userId;
+
+    @ApiModelProperty("用户名称")
+    private String userName;
 
     @ApiModelProperty("群内显示名称")
     private String aliasName;
@@ -75,4 +80,7 @@ public class GroupMemberVO {
 
     @ApiModelProperty(value = "是否禁言")
     private Boolean isBanned;
+
+    @ApiModelProperty(value = "创建时间")
+    private Date createdTime;
 }

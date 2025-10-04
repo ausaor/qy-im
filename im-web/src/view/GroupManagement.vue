@@ -158,7 +158,7 @@
     <el-drawer
         title="群成员列表"
         :visible.sync="memberDrawerVisible"
-        :size="700"
+        :size="960"
         direction="rtl"
         :before-close="handleDrawerClose"
         :destroy-on-close="true"
@@ -173,42 +173,45 @@
             element-loading-spinner="el-icon-loading"
             element-loading-background="rgba(0, 0, 0, 0.1)"
         >
-          <el-table-column prop="userName" label="用户名" align="center"></el-table-column>
-
-          <el-table-column prop="aliasName" label="群员昵称" align="center"></el-table-column>
-
-          <el-table-column label="头像" align="center" width="100">
+          <el-table-column prop="userName" label="用户名" align="center" width="120">
             <template slot-scope="scope">
-              <el-avatar
-                  :src="scope.row.headImage"
-                  class="member-avatar"
-                  :alt="scope.row.aliasName || scope.row.userName"
-              ></el-avatar>
+              <div class="group-name-cell">
+                <span>{{ scope.row.userName }}</span>
+                <el-tag size="mini" v-if="scope.row.isAdmin">群主</el-tag>
+              </div>
             </template>
           </el-table-column>
 
-          <el-table-column prop="createdTime" label="加入时间" align="center">
+          <el-table-column prop="aliasName" label="群员昵称" align="center" min-width="120" :show-overflow-tooltip="true"></el-table-column>
+
+          <el-table-column label="头像" align="center" width="90">
+            <template slot-scope="scope">
+              <div class="avatar-cell">
+                <head-image :url="scope.row.headImage" :name="scope.row.aliasName" :id="scope.row.userId" :online="scope.row.online" :size="40"></head-image>
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column prop="createdTime" label="加入时间" align="center" min-width="120">
             <template slot-scope="scope">
               {{ formatDateTime(scope.row.createdTime) }}
             </template>
           </el-table-column>
 
-          <el-table-column prop="isBanned" label="是否禁言" align="center">
+          <el-table-column prop="isBanned" label="是否禁言" align="center" min-width="90">
             <template slot-scope="scope">
-              <el-switch
-                  v-model="scope.row.isBanned"
-                  :active-color="scope.row.isBanned ? '#F56C6C' : '#409EFF'"
-                  @change="handleMemberBanChange(scope.row)"
-                  :disabled="true"
-              ></el-switch>
+              <span :class="['status-tag', scope.row.isBanned ? 'banned-tag' : 'active-tag']">
+                {{ scope.row.isBanned ? '已禁言' : '正常' }}
+            </span>
             </template>
           </el-table-column>
 
-          <el-table-column label="操作" align="center" width="200">
+          <el-table-column label="操作" align="center" width="150" fixed="right">
             <template slot-scope="scope">
               <el-button
+                  v-if="!scope.row.isBanned"
                   size="mini"
-                  type="danger"
+                  type="text"
                   @click="handleBanMember(scope.row)"
                   :disabled="scope.row.isBanned"
                   :loading="scope.row.banLoading"
@@ -217,8 +220,9 @@
                 禁言
               </el-button>
               <el-button
+                  v-if="scope.row.isBanned"
                   size="mini"
-                  type="success"
+                  type="text"
                   @click="handleUnbanMember(scope.row)"
                   :disabled="!scope.row.isBanned"
                   :loading="scope.row.unbanLoading"
@@ -387,6 +391,7 @@ export default {
             row.isBanned = true;
             this.$message.success("操作成功");
           }).catch((e) => {
+            this.$message.error('操作失败');
           })
         })
       } catch (e) {
@@ -413,6 +418,7 @@ export default {
         row.isBanned = false;
         this.$message.success("操作成功");
       }).catch((e) => {
+        this.$message.error('操作失败');
       }).finally(() => {
         row.unbanLoading = false;
       })
@@ -425,29 +431,17 @@ export default {
       this.memberDrawerVisible = true;
       this.memberTableLoading = true;
 
-      // 模拟加载群成员数据
-      setTimeout(() => {
-        // 生成模拟成员数据
-        const memberCount = 5 + Math.floor(Math.random() * 20);
-        const members = [];
-
-        for (let i = 1; i <= memberCount; i++) {
-          members.push({
-            id: `member_${row.id}_${i}`,
-            userName: `user${i}`,
-            aliasName: `群昵称${i}`,
-            headImage: `https://picsum.photos/seed/member${i}${row.id}/200`,
-            createdTime: new Date(Date.now() - Math.random() * 15 * 24 * 60 * 60 * 1000),
-            isBanned: Math.random() > 0.8,
-            banLoading: false,
-            unbanLoading: false
-          });
-        }
-
+      this.$http({
+        url: `/group/members/${row.id}`,
+        method: "get"
+      }).then((members) => {
         this.currentGroupMembers = members;
+      }).catch((e) => {
+        this.$message.error('获取群成员失败');
+      }).finally(() => {
         this.memberTableLoading = false;
         row.viewMembersLoading = false;
-      }, 800);
+      })
     },
 
     // 关闭抽屉
@@ -466,24 +460,59 @@ export default {
     handleBanMember(row) {
       row.banLoading = true;
 
-      // 模拟API请求
-      setTimeout(() => {
-        row.isBanned = true;
+      try {
+        this.$prompt('请输入禁言时长（分钟）', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /^([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|60000)$/,
+          inputErrorMessage: '只能输入正整数(1~60000)'
+        }).then(({ value }) => {
+          let paramVO = {
+            id: row.groupId,
+            userId: row.userId,
+            banDuration: value,
+            banType: 'sys'
+          }
+          this.$http({
+            url: '/group/banMsg',
+            method: 'post',
+            data: paramVO
+          }).then(() => {
+            row.isBanned = true;
+            this.$message.success("操作成功");
+          }).catch((e) => {
+            this.$message.error('操作失败');
+          })
+        })
+      } catch (e) {
+        this.$message.error('操作失败');
+      } finally {
         row.banLoading = false;
-        this.$message.success('成员禁言成功');
-      }, 600);
+      }
     },
 
     // 解除成员禁言
     handleUnbanMember(row) {
       row.unbanLoading = true;
 
-      // 模拟API请求
-      setTimeout(() => {
+      let paramVO = {
+        id: row.groupId,
+        userId: row.userId,
+        banDuration: 1,
+        banType: 'sys'
+      }
+      this.$http({
+        url: '/group/unBanMsg',
+        method: 'post',
+        data: paramVO
+      }).then(() => {
         row.isBanned = false;
+        this.$message.success("操作成功");
+      }).catch((e) => {
+        this.$message.error('操作失败');
+      }).finally(() => {
         row.unbanLoading = false;
-        this.$message.success('解除成员禁言成功');
-      }, 600);
+      })
     }
   }
 };

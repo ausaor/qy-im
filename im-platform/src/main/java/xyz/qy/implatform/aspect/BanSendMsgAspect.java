@@ -165,7 +165,7 @@ public class BanSendMsgAspect {
                     if (userId.equals(group.getOwnerId())) {
                         return;
                     }
-                    groupMemberMsgCheck(groupId, userId);
+                    groupMemberMsgCheck(group, userId);
                 }
                 if (StringUtils.isNotBlank(msg)) {
                     throw new GlobalException(msg);
@@ -189,7 +189,7 @@ public class BanSendMsgAspect {
                     groupService.updateById(group);
 
                     // 判断群聊成员是否被禁止发言
-                    groupMemberMsgCheck(group.getId(), userId);
+                    groupMemberMsgCheck(group, userId);
                 } else {
                     // 计算两个时间之间的差值
                     int between = (int)DateUtil.between(now, expireTime, DateUnit.SECOND);
@@ -197,16 +197,12 @@ public class BanSendMsgAspect {
                 }
             }
         } else {
-            // 群主不用做校验
-            if (userId.equals(group.getOwnerId())) {
-                return;
-            }
-            groupMemberMsgCheck(group.getId(), userId);
+            groupMemberMsgCheck(group, userId);
         }
     }
 
-    private void groupMemberMsgCheck(Long groupId, Long userId) {
-        GroupMember groupMember = groupMemberService.findByGroupAndUserId(groupId, userId);
+    private void groupMemberMsgCheck(Group group, Long userId) {
+        GroupMember groupMember = groupMemberService.findByGroupAndUserId(group.getId(), userId);
         if (groupMember == null) {
             throw new GlobalException("您不是当前群聊成员");
         }
