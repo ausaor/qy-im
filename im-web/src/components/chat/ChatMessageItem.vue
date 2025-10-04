@@ -141,11 +141,11 @@
 </template>
 
 <script>
-	import HeadImage from "../common/HeadImage.vue";
-	import RightMenu from '../common/RightMenu.vue';
-  import ChatGroupReaded from './ChatGroupReaded.vue';
+import HeadImage from "../common/HeadImage.vue";
+import RightMenu from '../common/RightMenu.vue';
+import ChatGroupReaded from './ChatGroupReaded.vue';
 
-	export default {
+export default {
 		name: "messageItem",
 		components: {
 			HeadImage,
@@ -402,9 +402,8 @@
             const replacement = `<span class="at-user" data-userid="${userId}" style="cursor: pointer;">@${username}</span>`;
             result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), replacement);
           } else {
-            // 如果不在，转换为不可点击元素
-            const replacement = `<span class="at-user-disabled">@${username}</span>`;
-            result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), replacement);
+            // 如果不在，保留原有内容
+            result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), fullMatch);
           }
         }
 

@@ -1,6 +1,7 @@
 import http from '../api/httpRequest.js'
 import { generateShortId } from '../utils/id-generator.js'
 import { MESSAGE_TYPE, MESSAGE_STATUS } from "../api/enums.js"
+import { processAtUsers } from '../api/common.js'
 import userStore from './userStore';
 import localForage from 'localforage';
 
@@ -194,7 +195,11 @@ export default {
 			} else if (msgInfo.type == MESSAGE_TYPE.TEXT ||
 				msgInfo.type == MESSAGE_TYPE.RECALL ||
 				msgInfo.type == MESSAGE_TYPE.TIP_TEXT) {
-				chat.lastContent = msgInfo.content;
+				if (msgInfo.atUserIds && msgInfo.atUserIds.length > 0) {
+					chat.lastContent = processAtUsers(msgInfo.content, msgInfo.atUserIds);
+				} else {
+					chat.lastContent = msgInfo.content;
+				}
 			}
 			chat.lastSendTime = msgInfo.sendTime;
 			chat.sendNickName = msgInfo.sendNickName;
