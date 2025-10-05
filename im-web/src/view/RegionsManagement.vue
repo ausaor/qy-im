@@ -3,13 +3,13 @@
     <!-- 查询条件区域 -->
     <el-form :inline="true" :model="searchForm" class="search-form" label-width="80px">
       <el-form-item label="地区编码" prop="code">
-        <el-input v-model="searchForm.code" placeholder="请输入地区编码" clearable></el-input>
+        <el-input size="mini" :style="{ width: '120px' }" v-model="searchForm.code" placeholder="请输入地区编码" clearable></el-input>
       </el-form-item>
       <el-form-item label="地区名称" prop="name">
-        <el-input v-model="searchForm.name" placeholder="请输入地区名称" clearable></el-input>
+        <el-input size="mini" :style="{ width: '120px' }" v-model="searchForm.name" placeholder="请输入地区名称" clearable></el-input>
       </el-form-item>
       <el-form-item label="地区级别" prop="level">
-        <el-select v-model="searchForm.level" placeholder="请选择地区级别" clearable>
+        <el-select v-model="searchForm.level" :style="{ width: '120px' }" placeholder="请选择地区级别" size="mini" clearable>
           <el-option label="省" value="1"></el-option>
           <el-option label="市" value="2"></el-option>
           <el-option label="县/区" value="3"></el-option>
@@ -18,11 +18,11 @@
         </el-select>
       </el-form-item>
       <el-form-item label="上级编码" prop="parentCode">
-        <el-input v-model="searchForm.parentCode" placeholder="请输入上级地区编码" clearable></el-input>
+        <el-input size="mini" :style="{ width: '120px' }" v-model="searchForm.parentCode" placeholder="请输入上级地区编码" clearable></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="handleSearch">查询</el-button>
-        <el-button @click="resetForm">重置</el-button>
+        <el-button size="mini" type="primary" @click="handleSearch">查询</el-button>
+        <el-button size="mini" @click="resetForm">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -644,14 +644,14 @@ export default {
 
 <style lang="scss" scoped>
 .region-management {
-  padding: 20px;
+  padding: 15px;
   background-color: #fff;
   min-height: calc(100% - 40px);
 }
 
 .search-form {
-  margin-bottom: 20px;
-  padding: 15px;
+  margin-bottom: 10px;
+  padding: 10px;
   background-color: #f5f7fa;
   border-radius: 4px;
 }
@@ -682,6 +682,10 @@ export default {
 .rotate-icon {
   transform: rotate(90deg);
   transition: transform 0.3s ease;
+}
+
+::v-deep .el-form-item{
+  margin-bottom: 0;
 }
 
 ::v-deep .el-table__expand-icon {
