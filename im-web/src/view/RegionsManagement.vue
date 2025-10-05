@@ -60,9 +60,9 @@
       </el-table-column>
       <el-table-column prop="longitude" label="经度" width="100"></el-table-column>
       <el-table-column prop="latitude" label="纬度" width="100"></el-table-column>
-      <el-table-column prop="isBanned" align="center" label="是否禁言" width="100">
+      <el-table-column prop="isBanned" align="center" label="是否禁言" width="90">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.isBanned ? 'danger' : 'success'">
+          <el-tag size="mini" :type="scope.row.isBanned ? 'danger' : 'success'">
             {{ scope.row.isBanned ? '是' : '否' }}
           </el-tag>
         </template>
@@ -124,40 +124,40 @@
           v-loading="groupLoading"
           element-loading-text="加载中..."
       >
-        <el-table-column prop="regionGroupName" label="群名称" width="150"></el-table-column>
-        <el-table-column prop="num" label="群编号" width="120"></el-table-column>
-        <el-table-column prop="groupAdmin" label="群主" width="120"></el-table-column>
-        <el-table-column prop="effectiveTime" label="群主生效时间" width="160">
+        <el-table-column prop="regionGroupName" label="群名称" min-width="150"></el-table-column>
+        <el-table-column prop="num" label="群编号" width="90" align="center"></el-table-column>
+        <el-table-column prop="groupAdmin" label="群主" width="120" align="center"></el-table-column>
+        <el-table-column prop="effectiveTime" label="群主生效时间" width="150">
           <template slot-scope="scope">
             {{ formatDate(scope.row.effectiveTime) }}
           </template>
         </el-table-column>
-        <el-table-column prop="expirationTime" label="群主失效时间" width="160">
+        <el-table-column prop="expirationTime" label="群主失效时间" width="150">
           <template slot-scope="scope">
             {{ formatDate(scope.row.expirationTime) }}
           </template>
         </el-table-column>
-        <el-table-column prop="isBanned" label="是否禁言" width="100">
+        <el-table-column prop="isBanned" label="是否禁言" align="center" width="90">
           <template slot-scope="scope">
-            <el-tag :type="scope.row.isBanned ? 'danger' : 'success'">
+            <el-tag size="mini" :type="scope.row.isBanned ? 'danger' : 'success'">
               {{ scope.row.isBanned ? '是' : '否' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注"></el-table-column>
-        <el-table-column label="操作" width="200">
+        <el-table-column label="操作" width="180" fixed="right">
           <template slot-scope="scope">
             <el-button
                 size="mini"
-                type="danger"
+                type="text"
                 @click="handleGroupBan(scope.row)"
                 v-if="!scope.row.isBanned"
             >
-              禁言
+              <span style="color: red;">禁言</span>
             </el-button>
             <el-button
                 size="mini"
-                type="success"
+                type="text"
                 @click="handleGroupUnban(scope.row)"
                 v-if="scope.row.isBanned"
             >
@@ -165,7 +165,7 @@
             </el-button>
             <el-button
                 size="mini"
-                type="primary"
+                type="text"
                 @click="openGroupMemberDrawer(scope.row)"
             >
               查看
@@ -204,14 +204,14 @@
             {{ formatDate(scope.row.createdTime) }}
           </template>
         </el-table-column>
-        <el-table-column prop="joinType" label="加入方式" width="100">
+        <el-table-column prop="joinType" label="加入方式" width="90">
           <template slot-scope="scope">
             {{ formatJoinType(scope.row.joinType) }}
           </template>
         </el-table-column>
-        <el-table-column prop="isBanned" label="是否禁言" width="100">
+        <el-table-column prop="isBanned" label="是否禁言" align="center" width="90">
           <template slot-scope="scope">
-            <el-tag :type="scope.row.isBanned ? 'danger' : 'success'">
+            <el-tag size="mini" :type="scope.row.isBanned ? 'danger' : 'success'">
               {{ scope.row.isBanned ? '是' : '否' }}
             </el-tag>
           </template>
@@ -432,30 +432,16 @@ export default {
     // 加载地区群列表
     loadRegionGroupList(regionCode) {
       this.groupLoading = true;
-      // 模拟API请求
-      setTimeout(() => {
-        this.regionGroupList = [
-          {
-            regionGroupName: `${this.currentRegion.name}地区一群`,
-            num: `G${regionCode}001`,
-            groupAdmin: 'admin1',
-            effectiveTime: '2023-01-01 00:00:00',
-            expirationTime: '2024-01-01 00:00:00',
-            isBanned: false,
-            remark: '地区交流群'
-          },
-          {
-            regionGroupName: `${this.currentRegion.name}地区二群`,
-            num: `G${regionCode}002`,
-            groupAdmin: 'admin2',
-            effectiveTime: '2023-02-01 00:00:00',
-            expirationTime: '2024-02-01 00:00:00',
-            isBanned: true,
-            remark: '地区公告群'
-          }
-        ];
+      this.$http({
+        url: `/region/group/findRegionGroupsByCode?code=${regionCode}`,
+        method: 'get',
+      }).then((data) => {
+        this.regionGroupList = data;
+      }).catch((e) => {
+        this.$message.error('查询失败');
+      }).finally(() => {
         this.groupLoading = false;
-      }, 500);
+      })
     },
 
     // 关闭地区群抽屉时的回调
@@ -469,44 +455,59 @@ export default {
 
     // 处理地区群禁言
     handleGroupBan(row) {
-      this.$confirm('确定要禁言该地区群吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        row.isBanned = true;
-        this.$message({
-          type: 'success',
-          message: '禁言成功!'
-        });
-        // 实际项目中应调用API
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消禁言'
-        });
-      });
+      try {
+        this.$prompt('请输入禁言时长（小时）', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /^([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|60000)$/,
+          inputErrorMessage: '只能输入正整数(1~60000)'
+        }).then(({ value }) => {
+          let param = {
+            code: row.code,
+            num: row.num,
+            id: row.id,
+            allBanned: true,
+            banDuration: value,
+            banType: 'sys'
+          }
+
+          this.$http({
+            url: '/region/group/banMsg',
+            method: 'post',
+            data: param
+          }).then(() => {
+            row.isBanned = true;
+            this.$message.success("操作成功");
+          }).catch((e) => {
+            this.$message.error('操作失败');
+          })
+        })
+      } catch (e) {
+        this.$message.error('操作失败');
+      }
     },
 
     // 处理地区群解除禁言
     handleGroupUnban(row) {
-      this.$confirm('确定要解除该地区群的禁言吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'info'
+      let param = {
+        code: row.code,
+        num: row.num,
+        id: row.id,
+        allBanned: true,
+        banDuration: 1,
+        banType: 'sys'
+      }
+
+      this.$http({
+        url: '/region/group/unBanMsg',
+        method: 'post',
+        data: param
       }).then(() => {
         row.isBanned = false;
-        this.$message({
-          type: 'success',
-          message: '解除禁言成功!'
-        });
-        // 实际项目中应调用API
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消解除禁言'
-        });
-      });
+        this.$message.success("操作成功");
+      }).catch((e) => {
+        this.$message.error('操作失败');
+      })
     },
 
     // 打开地区群成员抽屉

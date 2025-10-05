@@ -173,6 +173,38 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
     }
 
     @Override
+    public List<RegionGroupVO> findRegionGroupsByCode(String code) {
+        LambdaQueryWrapper<RegionGroup> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(RegionGroup::getCode, code);
+        wrapper.eq(RegionGroup::getDeleted, false);
+        List<RegionGroup> regionGroups = this.list(wrapper);
+        if (CollectionUtils.isEmpty(regionGroups)) {
+            return Collections.emptyList();
+        }
+
+        List<RegionGroupVO> regionGroupVOS = BeanUtils.copyProperties(regionGroups, RegionGroupVO.class);
+
+        // 获取群主信息
+        List<Long> userIds = regionGroups.stream().map(RegionGroup::getLeaderId)
+                .filter(Objects::nonNull).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(userIds)) {
+            List<User> userList = userService.findUserByIds(userIds);
+            // userList根据id分组获取Map
+            Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, Function.identity()));
+            regionGroupVOS.forEach(item -> {
+               if (ObjectUtil.isNotNull(item.getLeaderId())) {
+                   User user = userMap.get(item.getLeaderId());
+                   if (ObjectUtil.isNotNull(user)) {
+                       item.setGroupAdmin(user.getUserName());
+                   }
+               }
+            });
+        }
+
+        return regionGroupVOS;
+    }
+
+    @Override
     public RegionGroupMemberVO modifyRegionGroupMember(RegionGroupMemberDTO dto) {
         // 只有常驻成员可以修改群昵称和头像
         UserSession session = SessionContext.getSession();

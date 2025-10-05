@@ -2,11 +2,13 @@ package xyz.qy.implatform.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.dto.RegionGroupBanDTO;
 import xyz.qy.implatform.dto.RegionGroupDTO;
@@ -19,6 +21,7 @@ import xyz.qy.implatform.vo.RegionGroupVO;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -29,6 +32,7 @@ import java.util.List;
  * @since 2024-10-26
  */
 @Api(tags = "地区群聊")
+@Validated
 @RestController
 @RequestMapping("/region/group")
 public class RegionGroupController {
@@ -44,6 +48,12 @@ public class RegionGroupController {
     @GetMapping("/find/{regionGroupId}")
     public Result<RegionGroupVO> findGroup(@NotNull(message = "群聊id不能为空") @PathVariable Long regionGroupId) {
         return ResultUtils.success(regionGroupService.findById(regionGroupId));
+    }
+
+    @ApiOperation(value = "查询地区群聊", notes = "查询地区群聊")
+    @GetMapping("/findRegionGroupsByCode")
+    public Result<List<RegionGroupVO>> findRegionGroupsByCode(@NotBlank(message = "地区群聊code不能为空") @RequestParam String code) {
+        return ResultUtils.success(regionGroupService.findRegionGroupsByCode(code));
     }
 
     @ApiOperation(value = "修改地区群聊成员信息", notes = "修改地区群聊成员信息")

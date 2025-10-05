@@ -22,7 +22,7 @@ import java.util.List;
 @ApiModel("地区群聊消息VO")
 public class RegionGroupMessageDTO {
     @ApiModelProperty(value = "地区编码")
-    @NotNull(message = "地区编码不可为空")
+    //@NotNull(message = "地区编码不可为空")
     private String code;
 
     @NotNull(message = "地区群聊id不可为空")

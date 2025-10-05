@@ -41,6 +41,11 @@ public class RegionGroupVO {
     private Long leaderId;
 
     /**
+     * 群主用户名
+     */
+    private String groupAdmin;
+
+    /**
      * 是否删除
      */
     private Boolean deleted;

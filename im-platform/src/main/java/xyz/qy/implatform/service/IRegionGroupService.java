@@ -27,6 +27,14 @@ public interface IRegionGroupService extends IService<RegionGroup> {
     RegionGroupVO findById(Long regionGroupId);
 
     /**
+     * 查询地区群聊
+     *
+     * @param code 地区编码
+     * @return 地区群聊列表
+     */
+    List<RegionGroupVO> findRegionGroupsByCode(String code);
+
+    /**
      * 修改地区群聊成员信息
      *
      * @param dto 入参
