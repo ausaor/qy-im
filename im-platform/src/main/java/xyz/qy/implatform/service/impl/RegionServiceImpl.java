@@ -188,7 +188,7 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
             region.setBanType(dto.getBanType());
             region.setIsBanned(true);
             if (ObjectUtil.isNotNull(dto.getBanDuration()) && dto.getBanDuration() > 0) {
-                DateTime dateTime = DateUtil.offsetMinute(now, dto.getBanDuration());
+                DateTime dateTime = DateUtil.offsetHour(now, dto.getBanDuration());
                 region.setBanExpireTime(dateTime);
             }
         });

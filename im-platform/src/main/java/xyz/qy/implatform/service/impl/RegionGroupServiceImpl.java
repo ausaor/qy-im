@@ -1,6 +1,7 @@
 package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
@@ -62,6 +63,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -237,12 +239,18 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             throw new GlobalException("当前地区群聊不存在");
         }
 
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
         // 查询所有常驻用户（包含已退出）
         List<RegionGroupMember> regionGroupMembers = regionGroupMemberService.findByRegionGroupId(regionGroupId);
 
+        AtomicBoolean hasAuth = new AtomicBoolean(false);
         // 查询当前地区群聊临时加入用户
         Collection<String> keys = redisCache.keys(IMRedisKey.IM_REGION_GROUP_NUM_TEMP_USER + regionGroup.getCode() + ":" + regionGroup.getNum() + ":*");
+        List<RegionGroupMemberVO> allMembers = new ArrayList<>();
         List<RegionGroupMemberVO> tempMemberVos = new ArrayList<>();
+        Date now = new Date();
         for (String key : keys) {
             Object object = redisCache.getCacheObject(key);
             if (ObjectUtil.isNull(object)) {
@@ -250,6 +258,9 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             }
             UserSession userSession = Convert.convert(UserSession.class, object);
             UserVO userVO = userService.findUserById(userSession.getUserId());
+            if (userId.equals(userVO.getId())) {
+                hasAuth.set(true);
+            }
             RegionGroupMemberVO memberVO = new RegionGroupMemberVO();
             memberVO.setRegionGroupId(regionGroup.getId());
             memberVO.setQuit(false);
@@ -257,9 +268,27 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             memberVO.setAliasName(userVO.getNickName());
             memberVO.setRemark(userVO.getNickName());
             memberVO.setUserId(userVO.getId());
+            memberVO.setUserName(userVO.getUserName());
             memberVO.setJoinType(0);
+            Object banMsg = redisCache.getCacheObject(RedisKey.IM_REGION_GROUP_MEMBER_MSG_SWITCH + regionGroup.getId() + ":" + userVO.getId());
+            if (ObjectUtil.isNotNull(banMsg)) {
+                memberVO.setIsBanned(true);
+            }
+            // 剩余过期时间
+            long expire = redisCache.getExpire(IMRedisKey.IM_USER_TEMP_REGION_GROUP + userVO.getId() + ":" + regionGroup.getCode(), TimeUnit.MILLISECONDS);
+
+            // 已加入时间
+            int duration = (int) (RegionGroupConst.TEMP_MEMBER_DURATION * 60 * 60 * 1000 - expire);
+            // 计算当前时间之前的duration的时间点
+            Date joinTime = DateUtil.offset(now, DateField.MILLISECOND, -duration);
+            memberVO.setCreateTime(joinTime);
+
             memberVO.setOnline(imClient.isOnline(userVO.getId()));
             tempMemberVos.add(memberVO);
+        }
+
+        if (CollectionUtils.isNotEmpty(tempMemberVos)) {
+            allMembers.addAll(tempMemberVos);
         }
 
         if (CollectionUtils.isEmpty(regionGroupMembers) && CollectionUtils.isEmpty(tempMemberVos)) {
@@ -273,9 +302,13 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, Function.identity()));
             List<RegionGroupMemberVO> groupMemberVOS = regionGroupMembers.stream().map(m -> {
                 RegionGroupMemberVO vo = BeanUtils.copyProperties(m, RegionGroupMemberVO.class);
+                User user = userMap.get(vo.getUserId());
                 if (StringUtils.isBlank(vo.getHeadImage())) {
-                    User user = userMap.get(vo.getUserId());
                     vo.setHeadImage(user.getHeadImage());
+                }
+                vo.setUserName(user.getUserName());
+                if (userId.equals(m.getUserId()) && !m.getQuit() ) {
+                    hasAuth.set(true);
                 }
                 if (vo.getUserId().equals(regionGroup.getLeaderId()) && date.before(regionGroup.getExpirationTime())) {
                     vo.setIsLeader(true);
@@ -284,12 +317,16 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 vo.setOnline(onlineUserIds.contains(m.getUserId()));
                 return vo;
             }).collect(Collectors.toList());
-            groupMemberVOS.addAll(tempMemberVos);
-            return groupMemberVOS.stream().sorted((m1,m2)-> m2.getOnline().compareTo(m1.getOnline()))
-                    .collect(Collectors.toList());
+            allMembers.addAll(groupMemberVOS);
+        }
+        if (userId.equals(Constant.ADMIN_USER_ID)) {
+            hasAuth.set(true);
+        }
+        if (!hasAuth.get()) {
+            throw new GlobalException("您没有权限");
         }
 
-        return tempMemberVos.stream().sorted((m1,m2)-> m2.getOnline().compareTo(m1.getOnline()))
+        return allMembers.stream().sorted((m1,m2)-> m2.getOnline().compareTo(m1.getOnline()))
                 .collect(Collectors.toList());
     }
 

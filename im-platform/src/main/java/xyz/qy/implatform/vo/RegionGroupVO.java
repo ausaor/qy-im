@@ -46,6 +46,16 @@ public class RegionGroupVO {
     private String groupAdmin;
 
     /**
+     * 群主生效时间
+     */
+    private Date effectiveTime;
+
+    /**
+     * 群聊失效时间
+     */
+    private Date expirationTime;
+
+    /**
      * 是否删除
      */
     private Boolean deleted;

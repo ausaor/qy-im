@@ -90,6 +90,18 @@ public class RedisCache
     }
 
     /**
+     * 获取有效时间
+     *
+     * @param key Redis键
+     * @param unit 时间单位
+     * @return 有效时间
+     */
+    public long getExpire(final String key, final TimeUnit unit)
+    {
+        return redisTemplate.getExpire(key, unit);
+    }
+
+    /**
      * 判断 key是否存在
      *
      * @param key 键

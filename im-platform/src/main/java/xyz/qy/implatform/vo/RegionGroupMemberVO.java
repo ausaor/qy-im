@@ -3,6 +3,8 @@ package xyz.qy.implatform.vo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * 地区群聊成员信息VO
  *
@@ -24,6 +26,11 @@ public class RegionGroupMemberVO {
     private Long userId;
 
     /**
+     * 用户名称
+     */
+    private String userName;
+
+    /**
      * 聊天名称
      */
     private String aliasName;
@@ -39,6 +46,11 @@ public class RegionGroupMemberVO {
     private Boolean quit;
 
     /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
      * 备注
      */
     private String remark;
@@ -47,6 +59,8 @@ public class RegionGroupMemberVO {
     private Boolean online;
 
     private Integer joinType;
+
+    private Boolean isBanned = false;
 
     /**
      * 是否通知群成员

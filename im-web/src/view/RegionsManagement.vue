@@ -179,7 +179,7 @@
     <el-drawer
         title="地区群成员列表"
         :visible.sync="groupMemberDrawerVisible"
-        :size="860"
+        :size="810"
         direction="rtl"
         :before-close="handleMemberDrawerClose"
     >
@@ -190,23 +190,31 @@
           v-loading="memberLoading"
           element-loading-text="加载中..."
       >
-        <el-table-column prop="userName" label="用户名" width="120"></el-table-column>
-        <el-table-column prop="aliasName" label="群员昵称" width="120"></el-table-column>
-        <el-table-column prop="headImage" label="头像" width="80">
+        <el-table-column prop="userName" label="用户名" width="150" align="left">
           <template slot-scope="scope">
-            <el-avatar :src="scope.row.headImage" :alt="scope.row.aliasName">
-              <span v-if="!scope.row.headImage">{{ scope.row.aliasName.charAt(0) }}</span>
-            </el-avatar>
+            <div class="group-name-cell">
+              <span>{{ scope.row.userName }}</span>
+              <el-tag size="mini" v-if="scope.row.isLeader">群主</el-tag>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="aliasName" label="群员昵称" width="120" align="center"></el-table-column>
+        <el-table-column prop="headImage" label="头像" align="center" width="80">
+          <template slot-scope="scope">
+            <div class="avatar-cell">
+              <head-image :url="scope.row.headImage" :name="scope.row.aliasName" :id="scope.row.userId" :online="scope.row.online" :size="40"></head-image>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="createdTime" label="加入时间" width="160">
           <template slot-scope="scope">
-            {{ formatDate(scope.row.createdTime) }}
+            {{ formatDate(scope.row.createTime) }}
           </template>
         </el-table-column>
         <el-table-column prop="joinType" label="加入方式" width="90">
           <template slot-scope="scope">
-            {{ formatJoinType(scope.row.joinType) }}
+            <el-tag size="mini" type="success" v-if="scope.row.joinType===1">常驻</el-tag>
+            <el-tag size="mini" type="warning" v-if="scope.row.joinType===0">临时</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="isBanned" label="是否禁言" align="center" width="90">
@@ -216,7 +224,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="160">
+        <el-table-column label="操作" width="120">
           <template slot-scope="scope">
             <el-button
                 size="mini"
@@ -242,8 +250,11 @@
 </template>
 
 <script>
+import HeadImage from "@components/common/HeadImage.vue";
+
 export default {
   name: 'RegionsManagement',
+  components: {HeadImage},
   data() {
     return {
       // 查询表单
@@ -368,7 +379,7 @@ export default {
     // 处理地区禁言
     handleBan(row) {
       try {
-        this.$prompt('请输入禁言时长（分钟）', '提示', {
+        this.$prompt('请输入禁言时长（小时）', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           inputPattern: /^([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|60000)$/,
@@ -516,42 +527,24 @@ export default {
       this.groupMemberDrawerVisible = true;
 
       // 加载地区群成员数据
-      this.loadGroupMemberList(group.num);
+      this.loadGroupMemberList(group.id);
     },
 
     // 加载地区群成员列表
-    loadGroupMemberList(groupNum) {
+    loadGroupMemberList(groupId) {
       this.memberLoading = true;
-      // 模拟API请求
-      setTimeout(() => {
-        this.groupMemberList = [
-          {
-            userName: 'user001',
-            aliasName: '成员一',
-            headImage: 'https://cube.elemecdn.com/3/7c/3ea6beec6434fdc64360c98b40e3b48d55aaa515cb08f700515c7509jpeg.jpeg',
-            createdTime: '2023-01-10 10:30:00',
-            joinType: 1,
-            isBanned: false
-          },
-          {
-            userName: 'user002',
-            aliasName: '成员二',
-            headImage: 'https://cube.elemecdn.com/9/c2/f0ee8a3c7c7c51a5542383b92978a96b3c27973b9a208d97c03392513f6e51.jpeg',
-            createdTime: '2023-01-15 14:20:00',
-            joinType: 0,
-            isBanned: true
-          },
-          {
-            userName: 'user003',
-            aliasName: '成员三',
-            headImage: '',
-            createdTime: '2023-02-01 09:10:00',
-            joinType: 1,
-            isBanned: false
-          }
-        ];
+      this.$http({
+        url: `/region/group/members/${groupId}`,
+        method: 'get',
+      }).then((data) => {
+        if (data && data.length > 0) {
+          this.groupMemberList = data.filter((item) => !item.quit);
+        }
+      }).catch((e) => {
+        this.$message.error('查询失败');
+      }).finally(() => {
         this.memberLoading = false;
-      }, 500);
+      })
     },
 
     // 关闭成员抽屉时的回调
@@ -566,51 +559,84 @@ export default {
 
     // 处理成员禁言
     handleMemberBan(row) {
-      this.$confirm('确定要禁言该成员吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        row.isBanned = true;
-        this.$message({
-          type: 'success',
-          message: '禁言成功!'
-        });
-        // 实际项目中应调用API
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消禁言'
-        });
-      });
+      try {
+        this.$prompt('请输入禁言时长（小时）', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /^([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|60000)$/,
+          inputErrorMessage: '只能输入正整数(1~60000)'
+        }).then(({ value }) => {
+          let param = {
+            code: this.currentRegionGroup.code,
+            num: this.currentRegionGroup.num,
+            id: this.currentRegionGroup.id,
+            userId: row.userId,
+            joinType: row.joinType,
+            aliasName: row.aliasName,
+            banDuration: value,
+            allBanned: false,
+            banType: 'sys'
+          }
+
+          this.$http({
+            url: "/region/group/banMsg",
+            method: 'post',
+            data: param
+          }).then(() => {
+            row.isBanned = true;
+            this.$message.success("操作成功");
+          }).catch((e) => {
+            this.$message.error('操作失败');
+          })
+        })
+      } catch (e) {
+        this.$message.error('操作失败');
+      }
     },
 
     // 处理成员解除禁言
     handleMemberUnban(row) {
-      this.$confirm('确定要解除该成员的禁言吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'info'
+      let param = {
+        code: this.currentRegionGroup.code,
+        num: this.currentRegionGroup.num,
+        id: this.currentRegionGroup.id,
+        userId: row.userId,
+        joinType: row.joinType,
+        aliasName: row.aliasName,
+        banDuration: 1,
+        allBanned: false,
+        banType: 'sys'
+      }
+
+      this.$http({
+        url: "/region/group/unBanMsg",
+        method: 'post',
+        data: param
       }).then(() => {
         row.isBanned = false;
-        this.$message({
-          type: 'success',
-          message: '解除禁言成功!'
-        });
-        // 实际项目中应调用API
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消解除禁言'
-        });
-      });
+        this.$message.success("操作成功");
+      }).catch((e) => {
+        this.$message.error('操作失败');
+      })
     },
 
     // 格式化日期
-    formatDate(dateStr) {
-      if (!dateStr) return '';
-      // 简单格式化，实际项目中可以使用moment.js等库
-      return dateStr;
+    formatDate(date) {
+      if (!date) return '';
+
+      // 如果是字符串，转换为Date对象
+      if (typeof date === 'string') {
+        date = new Date(date);
+      }
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
   }
 }
@@ -639,6 +665,18 @@ export default {
   color: #409eff;
   cursor: pointer;
   text-decoration: underline;
+}
+
+.group-name-cell {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+.avatar-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .rotate-icon {
