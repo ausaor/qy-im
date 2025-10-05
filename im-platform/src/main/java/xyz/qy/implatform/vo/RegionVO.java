@@ -21,41 +21,49 @@ public class RegionVO {
     /**
      * 上级地区编码
      */
+    @ApiModelProperty(value = "上级地区编码")
     private String parentCode;
 
     /**
      * 地区级别
      */
+    @ApiModelProperty(value = "地区级别")
     private Integer level;
 
     /**
      * 地区名称
      */
+    @ApiModelProperty(value = "地区名称")
     private String name;
 
     /**
      * 全称
      */
+    @ApiModelProperty(value = "全称")
     private String fullName;
-
-    /**
-     * 地区领导称呼
-     */
-    private String leaderCallName;
 
     /**
      * 纬度
      */
+    @ApiModelProperty(value = "纬度")
     private String latitude;
 
     /**
      * 经度
      */
+    @ApiModelProperty(value = "经度")
     private String longitude;
+
+    /**
+     * 是否禁言
+     */
+    @ApiModelProperty(value = "是否禁言")
+    private Boolean isBanned;
 
     /**
      * 是否删除
      */
+    @ApiModelProperty(value = "是否删除")
     private Boolean deleted;
 
     @ApiModelProperty(value = "子地区")

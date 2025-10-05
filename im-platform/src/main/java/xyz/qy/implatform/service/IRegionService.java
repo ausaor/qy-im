@@ -1,6 +1,7 @@
 package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import xyz.qy.implatform.dto.RegionBanDTO;
 import xyz.qy.implatform.dto.RegionQueryDTO;
 import xyz.qy.implatform.entity.Region;
 import xyz.qy.implatform.vo.PageResultVO;
@@ -61,4 +62,18 @@ public interface IRegionService extends IService<Region> {
      * @return 地区信息VO
      */
     List<RegionVO> findActivityRegions();
+
+    /**
+     * 禁言操作
+     *
+     * @param dto 入参
+     */
+    void banMsg(RegionBanDTO dto);
+
+    /**
+     * 解除禁言
+     *
+     * @param dto 入参
+     */
+    void unBanMsg(RegionBanDTO dto);
 }

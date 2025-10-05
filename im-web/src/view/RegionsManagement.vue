@@ -367,44 +367,57 @@ export default {
 
     // 处理地区禁言
     handleBan(row) {
-      this.$confirm('确定要禁言该地区吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        row.isBanned = true;
-        this.$message({
-          type: 'success',
-          message: '禁言成功!'
-        });
-        // 实际项目中应调用API
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消禁言'
-        });
-      });
+      try {
+        this.$prompt('请输入禁言时长（分钟）', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /^([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|60000)$/,
+          inputErrorMessage: '只能输入正整数(1~60000)'
+        }).then(({ value }) => {
+          let param = {
+            codes: [row.code],
+            banDuration: value,
+            banType: 'sys'
+          }
+          this.$http({
+            url: '/region/banMsg',
+            method: 'post',
+            data: param
+          }).then(() => {
+            row.isBanned = true;
+            this.$message({
+              type: 'success',
+              message: '禁言成功!'
+            });
+          }).catch((e) => {
+            this.$message.error('操作失败');
+          })
+        })
+      } catch (e) {
+        this.$message.error('操作失败');
+      }
     },
 
     // 处理地区解除禁言
     handleUnban(row) {
-      this.$confirm('确定要解除该地区的禁言吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'info'
+      let param = {
+        codes: [row.code],
+        banDuration: 1,
+        banType: 'sys'
+      }
+      this.$http({
+        url: '/region/unBanMsg',
+        method: 'post',
+        data: param
       }).then(() => {
         row.isBanned = false;
         this.$message({
           type: 'success',
-          message: '解除禁言成功!'
+          message: '解除成功!'
         });
-        // 实际项目中应调用API
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消解除禁言'
-        });
-      });
+      }).catch((e) => {
+        this.$message.error('操作失败');
+      })
     },
 
     // 打开地区群抽屉

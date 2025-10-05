@@ -1,20 +1,29 @@
 package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
+import xyz.qy.implatform.dto.RegionBanDTO;
 import xyz.qy.implatform.dto.RegionQueryDTO;
 import xyz.qy.implatform.entity.Region;
+import xyz.qy.implatform.enums.BanTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.RegionMapper;
 import xyz.qy.implatform.service.IRegionService;
+import xyz.qy.implatform.session.SessionContext;
+import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.LocationServicesUtil;
 import xyz.qy.implatform.util.PageUtils;
@@ -26,6 +35,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -154,5 +164,57 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
             return regionVOS;
         }
         return Collections.emptyList();
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void banMsg(RegionBanDTO dto) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        if (!userId.equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("无权限操作");
+        }
+        if (!StringUtils.equalsAny(dto.getBanType(), BanTypeEnum.SYS.getCode())) {
+            throw new GlobalException("禁言类型错误");
+        }
+
+        List<Region> regions = this.listByIds(dto.getCodes());
+        if (CollectionUtils.isEmpty(regions)) {
+            throw new GlobalException("地区不存在");
+        }
+
+        Date now = new Date();
+        regions.forEach(region -> {
+            region.setBanType(dto.getBanType());
+            region.setIsBanned(true);
+            if (ObjectUtil.isNotNull(dto.getBanDuration()) && dto.getBanDuration() > 0) {
+                DateTime dateTime = DateUtil.offsetMinute(now, dto.getBanDuration());
+                region.setBanExpireTime(dateTime);
+            }
+        });
+
+        this.updateBatchById(regions);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void unBanMsg(RegionBanDTO dto) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        if (!userId.equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("无权限操作");
+        }
+
+        List<Region> regions = this.listByIds(dto.getCodes());
+        if (CollectionUtils.isEmpty(regions)) {
+            throw new GlobalException("地区不存在");
+        }
+
+        LambdaUpdateWrapper<Region> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(Region::getIsBanned, false);
+        updateWrapper.set(Region::getBanType, null);
+        updateWrapper.set(Region::getBanExpireTime, null);
+        updateWrapper.in(Region::getCode, dto.getCodes());
+        this.update(updateWrapper);
     }
 }

@@ -21,6 +21,7 @@ import xyz.qy.implatform.dto.GroupMessageDTO;
 import xyz.qy.implatform.dto.RegionGroupMessageDTO;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.GroupMember;
+import xyz.qy.implatform.entity.Region;
 import xyz.qy.implatform.entity.RegionGroup;
 import xyz.qy.implatform.entity.RegionGroupMember;
 import xyz.qy.implatform.enums.BanTypeEnum;
@@ -29,6 +30,7 @@ import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IGroupService;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
 import xyz.qy.implatform.service.IRegionGroupService;
+import xyz.qy.implatform.service.IRegionService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.DateTimeUtils;
@@ -64,6 +66,9 @@ public class BanSendMsgAspect {
 
     @Resource
     private IRegionGroupMemberService regionGroupMemberService;
+
+    @Resource
+    private IRegionService regionService;
 
     @Pointcut("@annotation(xyz.qy.imclient.annotation.BanSendMsg)")
     public void banSendMagAspect() {
@@ -235,6 +240,26 @@ public class BanSendMsgAspect {
         if (group == null) {
             throw new GlobalException("当前群聊不存在");
         }
+
+        Region region = regionService.getById(group.getCode());
+        if (ObjectUtil.isNull(region) || region.getDeleted()) {
+            throw new GlobalException("当前地区不存在");
+        }
+        if (region.getIsBanned()) {
+            Date now = new Date();
+            if (region.getBanExpireTime() == null) {
+                throw new GlobalException("当前地区已被系统禁止发送消息");
+            } else if (now.before(region.getBanExpireTime())) {
+                long between = DateUtil.between(now, region.getBanExpireTime(), DateUnit.SECOND);
+                throw new GlobalException("当前地区已被系统禁止发送消息，请在" + DateTimeUtils.getTimeValueDesc(between) + "后再尝试");
+            } else {
+                // 已过系统禁止时间
+                region.setIsBanned(false);
+                region.setBanType("");
+                regionService.updateById(region);
+            }
+        }
+
         if (group.getIsBanned()) {
             Date now = new Date();
             // 被系统禁止

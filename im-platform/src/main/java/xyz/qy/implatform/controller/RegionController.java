@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.dto.RegionBanDTO;
 import xyz.qy.implatform.dto.RegionQueryDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -16,6 +17,7 @@ import xyz.qy.implatform.service.IRegionService;
 import xyz.qy.implatform.vo.RegionVO;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
 
@@ -56,5 +58,19 @@ public class RegionController {
     @GetMapping("/findActivityRegions")
     public Result<List<RegionVO>> findActivityRegions() {
         return ResultUtils.success(regionService.findActivityRegions());
+    }
+
+    @ApiOperation(value = "地区禁止发送消息", notes = "地区禁止发送消息")
+    @PostMapping("/banMsg")
+    public Result banMsg(@Valid @RequestBody RegionBanDTO dto) {
+        regionService.banMsg(dto);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "取消地区禁止发送消息", notes = "取消地区禁止发送消息")
+    @PostMapping("/unBanMsg")
+    public Result unBanMsg(@Valid @RequestBody RegionBanDTO dto) {
+        regionService.unBanMsg(dto);
+        return ResultUtils.success();
     }
 }
