@@ -1,5 +1,5 @@
 <template>
-	<view class="page chat-box" id="chatBox">
+	<view class="page chat-box" id="chatBox" :chatidx="chatIdx">
 		<nav-bar backHome more :refresh="chat.type === 'GROUP'" @more="onShowMore" @refresh="refreshChat" @gotoHome="gotoHome">{{ title }}</nav-bar>
 		<view class="chat-main-box" :style="{height: chatMainHeight+'px'}">
 			<view class="chat-msg" @click="switchChatTabBox('none')">
@@ -170,6 +170,7 @@ export default {
   },
 	data() {
 		return {
+      chatIdx: null,
 			chat: {},
 			friend: {},
 			group: {},
@@ -1383,6 +1384,7 @@ export default {
 	onLoad(options) {
     uni.$on('group-change-event', this.handleGroupChangeEvent);
     uni.$on('group-audio-event', this.handleGroupAudioEvent);
+    this.chatIdx = options.chatIdx;
 		// 聊天数据
 		this.chat = this.chatStore.chats[options.chatIdx];
 		// 初始状态只显示20条消息

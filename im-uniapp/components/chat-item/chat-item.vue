@@ -52,9 +52,15 @@ export default {
 				})
 				return;
 			}
-			uni.navigateTo({
-				url: "/pages/chat/chat-box?chatIdx=" + this.index
-			})
+      if (this.chat.type == 'SYSTEM') {
+        uni.navigateTo({
+          url: "/pages/chat/chat-system-box?chatIdx=" + this.index
+        })
+		  } else {
+        uni.navigateTo({
+          url: "/pages/chat/chat-box?chatIdx=" + this.index
+        })
+      }
 		}
 	},
 	computed: {
