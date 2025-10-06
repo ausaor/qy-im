@@ -10,8 +10,10 @@ export default defineStore('chatStore', {
 			chats: [],
 			privateMsgMaxId: 0,
 			groupMsgMaxId: 0,
+			systemMsgMaxSeqNo: 0,
 			loadingPrivateMsg: false,
-			loadingGroupMsg: false
+			loadingGroupMsg: false,
+			loadingSystemMsg: false,
 		}
 	},
 	actions: {
@@ -29,6 +31,7 @@ export default defineStore('chatStore', {
 			}
 			this.privateMsgMaxId = chatsData.privateMsgMaxId || 0;
 			this.groupMsgMaxId = chatsData.groupMsgMaxId || 0;
+			this.systemMsgMaxSeqNo = chatsData.systemMsgMaxSeqNo || 0;
 			// 防止图片一直处在加载中状态
 			cacheChats.forEach((chat) => {
 				chat.messages.forEach((msg) => {
@@ -128,6 +131,15 @@ export default defineStore('chatStore', {
 				}
 			}
 		},
+		removeSystemChat(pusherId) {
+			let chats = this.curChats;
+			for (let idx in chats) {
+				if (chats[idx].type == 'SYSTEM' &&
+					chats[idx].targetId == pusherId) {
+					this.removeChat(idx);
+				}
+			}
+		},
 		moveTop(idx) {
 			if (this.isLoading()) {
 				return;
@@ -151,6 +163,9 @@ export default defineStore('chatStore', {
 			}
 			if (msgInfo.id && type == "GROUP" && msgInfo.id > this.groupMsgMaxId) {
 				this.groupMsgMaxId = msgInfo.id;
+			}
+			if (msgInfo.seqNo && type == "SYSTEM" && msgInfo.seqNo > this.systemMsgMaxSeqNo) {
+				this.systemMsgMaxSeqNo = msgInfo.seqNo;
 			}
 			// 如果是已存在消息，则覆盖旧的消息数据
 			let chat = this.findChat(chatInfo);
@@ -182,6 +197,9 @@ export default defineStore('chatStore', {
 				msgInfo.type == MESSAGE_TYPE.RECALL ||
 				msgInfo.type == MESSAGE_TYPE.TIP_TEXT) {
 				chat.lastContent = msgInfo.content;
+			}
+			if (type === 'SYSTEM') {
+				chat.lastContent = msgInfo.title;
 			}
 			chat.lastSendTime = msgInfo.sendTime;
 			chat.sendNickName = msgInfo.sendNickName;
@@ -296,6 +314,12 @@ export default defineStore('chatStore', {
 				this.refreshChats()
 			}
 		},
+		setLoadingSystemMsg(loading) {
+			this.loadingSystemMsg = loading;
+			if (!this.isLoading()) {
+				this.refreshChats()
+			}
+		},
 		refreshChats() {
 			if (!cacheChats) {
 				return;
@@ -338,6 +362,7 @@ export default defineStore('chatStore', {
 			let chatsData = {
 				privateMsgMaxId: this.privateMsgMaxId,
 				groupMsgMaxId: this.groupMsgMaxId,
+				systemMsgMaxSeqNo: this.systemMsgMaxSeqNo,
 				chatKeys: chatKeys
 			}
 			uni.setStorageSync(key, chatsData)
@@ -349,8 +374,10 @@ export default defineStore('chatStore', {
 			this.chats = [];
 			this.privateMsgMaxId = 0;
 			this.groupMsgMaxId = 0;
+			this.systemMsgMaxSeqNo = 0;
 			this.loadingPrivateMsg = false;
 			this.loadingGroupMsg = false;
+			this.loadingSystemMsg = false;
 		},
 		loadChat(context) {
 			return new Promise((resolve, reject) => {
@@ -376,7 +403,7 @@ export default defineStore('chatStore', {
 	},
 	getters: {
 		isLoading: (state) => () => {
-			return state.loadingPrivateMsg || state.loadingGroupMsg
+			return state.loadingPrivateMsg || state.loadingGroupMsg || state.loadingSystemMsg;
 		},
 		curChats: (state) => {
 			if (cacheChats && state.isLoading()) {
@@ -406,6 +433,10 @@ export default defineStore('chatStore', {
 		findChatByGroup: (state) => (gid) => {
 			return state.curChats.find(chat => chat.type == 'GROUP' &&
 				chat.targetId == gid)
+		},
+		findChatBySystem: (state) => (pusherId) => {
+			return state.curChats.find(chat => chat.type == 'SYSTEM' &&
+				chat.targetId == pusherId)
 		},
 		findMessage: (state) => (chat, msgInfo) => {
 			if (!chat) {

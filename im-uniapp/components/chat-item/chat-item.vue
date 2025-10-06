@@ -10,6 +10,7 @@
 				<view class="chat-name-text">
 					<view>{{ chat.showName }}</view>
 					<uni-tag v-if="chat.type == 'GROUP'" circle text="群" size="small" type="primary"></uni-tag>
+					<uni-tag v-if="chat.type == 'SYSTEM'" circle text="官方" size="small" type="error"></uni-tag>
 				</view>
 				<view class="chat-time">{{ $date.toTimeText(chat.lastSendTime, true) }}</view>
 			</view>

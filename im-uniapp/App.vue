@@ -44,6 +44,7 @@ export default {
 				// 加载离线消息
 				this.pullPrivateOfflineMessage(this.chatStore.privateMsgMaxId);
 				this.pullGroupOfflineMessage(this.chatStore.groupMsgMaxId);
+        this.pullSystemOfflineMessage(this.chatStore.systemMsgMaxSeqNo);
         this.pullRegionGroupOfflineMessage(this.regionStore.regionGroupMsgMaxId);
         this.pullOfflineTalks(this.talkStore.privateTalkMaxId);
         this.pullFriendRequests();
@@ -124,6 +125,15 @@ export default {
 				this.chatStore.setLoadingGroupMsg(false)
 			})
 		},
+    pullSystemOfflineMessage(minSeqNo) {
+      this.chatStore.setLoadingSystemMsg(true)
+      http({
+        url: "/message/system/pullOfflineMessage?minSeqNo=" + minSeqNo,
+        method: 'GET'
+      }).catch(() => {
+        this.chatStore.setLoadingSystemMsg(false)
+      })
+    },
     pullRegionGroupOfflineMessage(minId) {
       this.regionStore.setLoadingRegionGroupMsg(true)
       http({
@@ -359,7 +369,24 @@ export default {
 					showCancel: false,
 				})
 				this.exit();
+        return
 			}
+      // 消息加载标志
+      if (msg.type == enums.MESSAGE_TYPE.LOADING) {
+        this.chatStore.setLoadingSystemMsg(JSON.parse(msg.content))
+        return;
+      }
+      // 消息已读处理
+      if (msg.type == enums.MESSAGE_TYPE.READED) {
+        // 我已读对方的消息，清空已读数量
+        let chatInfo = {
+          type: 'SYSTEM',
+          targetId: msg.pusherId
+        }
+        this.chatStore.resetUnreadCount(chatInfo)
+        return;
+      }
+      this.insertSystemMessage(msg);
 		},
 		insertGroupMessage(group, msg) {
 			// 群视频信令
@@ -403,6 +430,20 @@ export default {
 			// 播放提示音
 			this.playAudioTip();
 		},
+    insertSystemMessage(msg) {
+      let chatInfo = {
+        type: 'SYSTEM',
+        targetId: msg.pusherId,
+        showName: msg.pusherName,
+        headImage: msg.pusherHeadImage
+      };
+      // 打开会话
+      this.chatStore.openChat(chatInfo);
+      // 插入消息
+      this.chatStore.insertMessage(msg, chatInfo);
+      // 播放提示音
+      this.playAudioTip();
+    },
     insertRegionGroupMessage(group, msg) {
       // 群视频信令
       if (msgType.isRtcGroup(msg.type)) {
