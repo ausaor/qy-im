@@ -14,6 +14,13 @@
                 <view class="message-content" v-if="msgInfo.type === 0" :style="bgStyle(msgInfo)">
                   {{msgInfo.content}}
                 </view>
+                <view class="image-content" v-if="msgInfo.type === 1">
+                  <swiper class="media-swiper" :indicator-dots="true">
+                    <swiper-item v-for="(item, index) in JSON.parse(msgInfo.content)" :key="index" class="media-item">
+                      <image :src="item.url" mode="aspectFill" class="media-content cursor-pointer" @click="previewImage([item.url], 0)" />
+                    </swiper-item>
+                  </swiper>
+                </view>
                 <view class="video-content" v-if="msgInfo.type === 4">
                   <image class="video-cover" :src="JSON.parse(msgInfo.content)[0].coverUrl"
                          mode="aspectFill"/>
@@ -323,7 +330,13 @@ export default {
       this.videoSrc = "";
       this.videoCoverImage = "";
       this.viewVideo = false;
-    }
+    },
+    previewImage(images, current) {
+      uni.previewImage({
+        urls: images,
+        current: images[current]
+      });
+    },
   },
   computed: {
     mine() {
@@ -400,6 +413,29 @@ export default {
             width: 100%;
             height: 10.9375rem;
             border-bottom: 1px #eee solid;
+          }
+
+          .image-content {
+            padding: 10rpx;
+            width: 100%;
+            height: 10.9375rem;
+
+            .media-swiper {
+              height: 100%;
+              border-radius: 8rpx;
+              overflow: hidden;
+              object-fit: cover;
+            }
+
+            .media-item {
+              width: 100%;
+              height: 100%;
+            }
+
+            .media-content {
+              width: 100%;
+              height: 100%;
+            }
           }
 
           .video-content {
