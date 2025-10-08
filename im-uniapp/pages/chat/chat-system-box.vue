@@ -7,17 +7,42 @@
                    :scroll-into-view="'chat-item-' + scrollMsgIdx" :scroll-top="scrollTop">
         <view v-if="chat" class="chat-wrap">
           <view class="system-chat-item" v-for="(msgInfo, idx) in chat.messages" :key="idx">
-            <view :id="'chat-item-' + idx" v-if="msgInfo.type !== 20">{{msgInfo.title}}</view>
+            <view :id="'chat-item-' + idx" v-if="msgInfo.type !== 20">
+              <view class="chat-msg-tip">{{$date.toTimeText(msgInfo.sendTime)}}</view>
+              <view class="message-box">
+                <view class="title">{{msgInfo.title}}</view>
+                <view class="message-content" v-if="msgInfo.type === 0" :style="bgStyle(msgInfo)">
+                  {{msgInfo.content}}
+                </view>
+                <view class="video-content" v-if="msgInfo.type === 4">
+                  <image class="video-cover" :src="JSON.parse(msgInfo.content)[0].coverUrl"
+                         mode="aspectFill"/>
+                  <text class="play-icon iconfont icon-play" @click.stop="onPlayVideo(JSON.parse(msgInfo.content)[0].url, JSON.parse(msgInfo.content)[0].coverUrl)"></text>
+                </view>
+              </view>
+            </view>
           </view>
         </view>
       </scroll-view>
     </view>
+    <!-- 视频弹窗组件 -->
+    <video-play
+        v-if="viewVideo"
+        :video-url="videoSrc"
+        :cover-url="videoCoverImage"
+        :visible.sync="viewVideo"
+        @close="handleVideoClose"
+        @error="handleVideoError"
+    ></video-play>
   </view>
 </template>
 
 <script>
+import VideoPlay from "../../components/video-play/video-play.vue";
+
 export default {
   name: "chat-system-box",
+  components: {VideoPlay},
   data() {
     return {
       chatIdx: 0,
@@ -37,6 +62,9 @@ export default {
       timer: null, // 防抖计时器
       newMessageSize: 0, // 滚动条不在底部时新的消息数量
       isInBottom: true, // 滚动条是否在底部
+      viewVideo: true,
+      videoSrc: '',
+      videoCoverImage: '',
     }
   },
   onLoad(options) {
@@ -275,6 +303,25 @@ export default {
       this.isShowKeyBoard = false;
       this.reCalChatMainHeight();
     },
+    onPlayVideo(url, coverImageUrl) {
+      this.videoSrc = url;
+      this.videoCoverImage = coverImageUrl;
+      this.viewVideo = true;
+    },
+    // 视频弹窗关闭回调
+    handleVideoClose() {
+      console.log('Video popup closed');
+      this.videoSrc = "";
+      this.videoCoverImage = "";
+      this.viewVideo = false;
+    },
+    // 视频错误回调
+    handleVideoError(e) {
+      console.error('Video error in parent component:', e)
+      this.videoSrc = "";
+      this.videoCoverImage = "";
+      this.viewVideo = false;
+    }
   },
   computed: {
     mine() {
@@ -292,6 +339,16 @@ export default {
       }
       return this.chat.messages.length;
     },
+    bgStyle() {
+      return (msgInfo) => {
+        if (msgInfo.coverUrl) {
+          let bgImg = msgInfo.coverUrl;
+          return `background-image: url(${bgImg}); background-size:100% 100%;background-repeat:no-repeat;color:white;`
+        } else {
+          return '';
+        }
+      }
+    }
   }
 }
 </script>
@@ -307,6 +364,64 @@ export default {
 
     .scroll-box {
       height: 100%;
+
+      .system-chat-item {
+
+        .chat-msg-tip {
+          line-height: 1.875rem;
+          text-align: center;
+          color: #555;
+          font-size: .75rem;
+          padding: .3125rem;
+        }
+
+        .message-box {
+          background-color: #fff;
+          text-align: left;
+          border-radius: 3%;
+          margin: 0 .625rem 1.5625rem;
+          padding: .15625rem .625rem;
+          cursor: pointer;
+
+          .title {
+            text-align: center;
+            font-size: .9375rem;
+            padding: .46875rem;
+            font-weight: 600;
+            height: 1.5625rem;
+            line-height: 1.5625rem;
+            overflow: hidden;
+          }
+
+          .message-content {
+            padding: 10rpx;
+            width: 100%;
+            height: 10.9375rem;
+            border-bottom: 1px #eee solid;
+          }
+
+          .video-content {
+            position: relative;
+            width: 100%;
+            height: 10.9375rem;
+            border-bottom: 1px #eee solid;
+
+            .video-cover {
+              width: 100%;
+              height: 100%;
+            }
+
+            .play-icon {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              font-size: 100rpx;
+              color: white;
+            }
+          }
+        }
+      }
     }
   }
 }
