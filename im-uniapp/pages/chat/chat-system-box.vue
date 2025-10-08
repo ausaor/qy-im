@@ -19,6 +19,8 @@
                          mode="aspectFill"/>
                   <text class="play-icon iconfont icon-play" @click.stop="onPlayVideo(JSON.parse(msgInfo.content)[0].url, JSON.parse(msgInfo.content)[0].coverUrl)"></text>
                 </view>
+                <view class="intro" v-if="msgInfo.intro">{{msgInfo.intro}}</view>
+                <view class="bottom-bar" v-if="msgInfo.type === 9">查看详情</view>
               </view>
             </view>
           </view>
@@ -62,7 +64,7 @@ export default {
       timer: null, // 防抖计时器
       newMessageSize: 0, // 滚动条不在底部时新的消息数量
       isInBottom: true, // 滚动条是否在底部
-      viewVideo: true,
+      viewVideo: false,
       videoSrc: '',
       videoCoverImage: '',
     }
@@ -419,6 +421,21 @@ export default {
               font-size: 100rpx;
               color: white;
             }
+          }
+
+          .intro {
+            padding: .5rem;
+            font-size: 1rem;
+            border-bottom: 1px #eee solid;
+            overflow-wrap: break-word;
+          }
+
+          .bottom-bar {
+            font-size: .8125rem;
+            padding: .5rem;
+            text-align: left;
+            color: #00f;
+            height: 1.25rem;
           }
         }
       }
