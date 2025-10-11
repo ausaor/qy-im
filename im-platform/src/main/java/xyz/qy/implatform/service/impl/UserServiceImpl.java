@@ -40,6 +40,7 @@ import xyz.qy.implatform.enums.FriendRequestStatusEnum;
 import xyz.qy.implatform.enums.LoginTypeEnum;
 import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.UserMapper;
 import xyz.qy.implatform.service.IFriendRequestService;
@@ -250,6 +251,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             user.setCity(ipGeoInfo.getCity());
         }
         user.setNickName(SensitiveUtil.filter(user.getNickName()));
+        user.setRole(RoleEnum.USER.getCode());
         this.save(user);
         redisCache.deleteObject(RedisKey.CAPTCHA_CODE_KEY + vo.getUuid());
 

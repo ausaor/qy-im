@@ -596,6 +596,7 @@ create table im_user
     head_image       varchar(255)  default ''                  null comment '用户头像',
     head_image_thumb varchar(255)  default ''                  null comment '用户头像缩略图',
     password         varchar(255)                              not null comment '密码(明文)',
+    role             varchar(20)                               not null comment '角色',
     sex              tinyint(1)    default 0                   null comment '性别 0:男 1::女',
     type             smallint(1)   default 1                   null comment '用户类型 1:普通用户 2:审核账户',
     signature        varchar(1024) default ''                  null comment '个性签名',

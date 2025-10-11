@@ -28,6 +28,9 @@ public class UserVO {
     @ApiModelProperty(value = "邮箱")
     private String email;
 
+    @ApiModelProperty(value = "角色")
+    private String role;
+
     @ApiModelProperty(value = "性别")
     private Integer sex;
 

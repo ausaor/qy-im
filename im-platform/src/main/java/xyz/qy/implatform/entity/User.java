@@ -50,6 +50,12 @@ public class User extends Model<User> {
     private String email;
 
     /**
+     * 角色
+     */
+    @TableField("role")
+    private String role;
+
+    /**
      * 性别
      */
     @TableField("sex")
