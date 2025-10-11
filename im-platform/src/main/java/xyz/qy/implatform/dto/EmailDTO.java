@@ -3,6 +3,7 @@ package xyz.qy.implatform.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import xyz.qy.implatform.annotation.ValidEmailSuffix;
 import xyz.qy.implatform.enums.EmailCategoryEnum;
 import xyz.qy.implatform.enums.ValidEnum;
 
@@ -15,6 +16,7 @@ import javax.validation.constraints.NotBlank;
 public class EmailDTO {
     @Email(message = "邮箱格式错误")
     @NotBlank(message = "邮箱不可为空")
+    @ValidEmailSuffix
     private String toEmail;
 
     @NotBlank(message = "邮件分类不可为空")

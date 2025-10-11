@@ -7,7 +7,7 @@
 					<el-input type="userName" v-model="registerForm.userName" autocomplete="off"></el-input>
 				</el-form-item>
         <el-form-item label="邮箱" prop="email">
-          <el-input type="email" v-model="registerForm.email" autocomplete="off"></el-input>
+          <el-input type="email" v-model="registerForm.email" autocomplete="off" placeholder="仅支持126.com,163.com,qq.com,yeah.net,foxmail.com,sina.com,aliyun.com后缀邮箱"></el-input>
         </el-form-item>
 				<el-form-item label="昵称" prop="nickName">
 					<el-input type="nickName" v-model="registerForm.nickName" autocomplete="off"></el-input>
