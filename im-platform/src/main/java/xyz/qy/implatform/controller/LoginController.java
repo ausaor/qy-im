@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.annotation.FeatureControl;
 import xyz.qy.implatform.dto.LoginDTO;
 import xyz.qy.implatform.dto.RegisterDTO;
+import xyz.qy.implatform.enums.FeatureCodeEnum;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IUserService;
@@ -38,6 +40,7 @@ public class LoginController {
         return ResultUtils.success(vo);
     }
 
+    @FeatureControl(value = "FEATURE_REGISTER")
     @PostMapping("/register")
     @ApiOperation(value = "用户注册", notes = "用户注册")
     public Result register(@Valid @RequestBody RegisterDTO dto) {

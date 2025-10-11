@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.imclient.annotation.BanSendMsg;
 import xyz.qy.imclient.annotation.CountLimit;
+import xyz.qy.implatform.annotation.FeatureControl;
 import xyz.qy.implatform.dto.PrivateMessageDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -32,6 +33,7 @@ public class PrivateMessageController {
     @Resource
     private IPrivateMessageService privateMessageService;
 
+    @FeatureControl(value = "FEATURE_PRIVATE_MESSAGE_SEND")
     @BanSendMsg(msgType = "private")
     @PostMapping("/send")
     @CountLimit(limitType = "private-msg:", count = 500, time = 24, description = "发送私聊消息")

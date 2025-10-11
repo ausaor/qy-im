@@ -114,4 +114,9 @@ public final class RedisKey {
      * 音乐播放次数
      */
     public static final String IM_MUSIC_PLAY_COUNT = IM_CACHE + "music:play-count:";
+
+    /**
+     * 功能项禁用
+     */
+    public static final String IM_FEATURE_BAN = IM_CACHE + "feature-ban:";
 }
