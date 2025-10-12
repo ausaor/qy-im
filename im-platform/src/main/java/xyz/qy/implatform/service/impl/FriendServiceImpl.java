@@ -85,6 +85,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     public List<Friend> findFriendByUserId(Long userId) {
         LambdaQueryWrapper<Friend> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.eq(Friend::getUserId, userId);
+        queryWrapper.eq(Friend::getDeleted, false);
         return this.list(queryWrapper);
     }
 
