@@ -171,6 +171,19 @@ export default {
     this.innerAudioContext.destroy();
   },
   methods: {
+    clearAudio() {
+      if (this.innerAudioContext) {
+        this.innerAudioContext.stop();
+        this.innerAudioContext.destroy();
+        this.innerAudioContext = null;
+      }
+    },
+    stopAudio() {
+      if (this.innerAudioContext) {
+        this.innerAudioContext.stop();
+        this.isPlaying = false;
+      }
+    },
     // 设置音频源
     initAudioContext() {
       if (!this.innerAudioContext) {

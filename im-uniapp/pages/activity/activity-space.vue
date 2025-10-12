@@ -63,7 +63,7 @@
                 />
                 <video v-else-if="fileItem.fileType === 2" :src="fileItem.url" :poster="fileItem.coverUrl" class="content-video" :controls="true"></video>
                 <view class="content-audio" v-else-if="fileItem.fileType === 3">
-                  <music-player :audio-url="fileItem.url"></music-player>
+                  <music-player ref="musicPlayerRef" :audio-url="fileItem.url"></music-player>
                 </view>
               </view>
             </view>
@@ -260,6 +260,7 @@ export default {
       //     console.log(res.tempFilePaths);
       //   }
       // });
+      this.stopALlAudio();
       let url = `/pages/activity/activity-add?category=${this.category}`;
       if (this.groupId) {
         url += `&groupId=${this.groupId}`;
@@ -717,6 +718,36 @@ export default {
     collapseComments(talkId) {
       this.$set(this.commentDisplayCounts, talkId, 5)
     },
+    clearAllAudio() {
+      // 1. 获取所有组件实例（数组形式）
+      const components = this.$refs.musicPlayerRef
+
+      // 2. 遍历数组，调用每个组件的方法
+      if (components) {
+        // 处理单个组件的情况（确保是数组）
+        const componentList = Array.isArray(components) ? components : [components]
+
+        componentList.forEach(component => {
+          // 调用组件内部的方法
+          component.clearAudio()
+        })
+      }
+    },
+    stopALlAudio() {
+      // 1. 获取所有组件实例（数组形式）
+      const components = this.$refs.musicPlayerRef
+
+      // 2. 遍历数组，调用每个组件的方法
+      if (components) {
+        // 处理单个组件的情况（确保是数组）
+        const componentList = Array.isArray(components) ? components : [components]
+
+        componentList.forEach(component => {
+          // 调用组件内部的方法
+          component.stopAudio();
+        })
+      }
+    }
   },
   computed: {
     mine() {
@@ -793,22 +824,13 @@ export default {
     if (this.playingAudio) {
       this.playingAudio.isPlaying = false;
     }
-    if (this.innerAudioContext) {
-      this.audioPlayState = 'STOP';
-      this.innerAudioContext.pause();
-    }
   },
   onUnload() {
     console.log('页面卸载');
     if (this.playingAudio) {
       this.playingAudio.isPlaying = false;
     }
-    if (this.innerAudioContext) {
-      this.audioUrl = null;
-      this.audioPlayState = 'STOP';
-      this.innerAudioContext.pause();
-      this.innerAudioContext = null;
-    }
+    this.clearAllAudio()
   },
 };
 </script>

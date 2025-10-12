@@ -22,7 +22,9 @@
                   </swiper>
                 </view>
                 <view v-if="msgInfo.type === 3" class="audio-content">
-                  <music-player class="music-item" :audio-url="JSON.parse(msgInfo.content)[0].url"
+                  <music-player class="music-item"
+                                ref="musicPlayerRef"
+                                :audio-url="JSON.parse(msgInfo.content)[0].url"
                                 :cover-img-url="msgInfo.coverUrl"
                                 :audio-name="JSON.parse(msgInfo.content)[0].originalName"
                                 :audio-duration="JSON.parse(msgInfo.content)[0].duration"></music-player>
@@ -117,6 +119,7 @@ export default {
   },
   onUnload() {
     this.unListenKeyboard();
+    this.clearAllAudio();
   },
   methods: {
     onScroll(e) {
@@ -344,6 +347,21 @@ export default {
         current: images[current]
       });
     },
+    clearAllAudio() {
+      // 1. 获取所有组件实例（数组形式）
+      const components = this.$refs.musicPlayerRef
+
+      // 2. 遍历数组，调用每个组件的方法
+      if (components) {
+        // 处理单个组件的情况（确保是数组）
+        const componentList = Array.isArray(components) ? components : [components]
+
+        componentList.forEach(component => {
+          // 调用组件内部的方法
+          component.clearAudio()
+        })
+      }
+    }
   },
   computed: {
     mine() {
