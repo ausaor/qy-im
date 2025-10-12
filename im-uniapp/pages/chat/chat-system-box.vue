@@ -14,6 +14,7 @@
                 <view class="message-content" v-if="msgInfo.type === 0" :style="bgStyle(msgInfo)">
                   {{msgInfo.content}}
                 </view>
+                <view class="message-content" v-if="msgInfo.type === 9" :style="bgStyle(msgInfo)"></view>
                 <view class="image-content" v-if="msgInfo.type === 1">
                   <swiper class="media-swiper" :indicator-dots="true">
                     <swiper-item v-for="(item, index) in JSON.parse(msgInfo.content)" :key="index" class="media-item">
@@ -35,7 +36,7 @@
                   <text class="play-icon iconfont icon-play" @click.stop="onPlayVideo(JSON.parse(msgInfo.content)[0].url, JSON.parse(msgInfo.content)[0].coverUrl)"></text>
                 </view>
                 <view class="intro" v-if="msgInfo.intro">{{msgInfo.intro}}</view>
-                <view class="bottom-bar" v-if="msgInfo.type === 9">查看详情</view>
+                <view class="bottom-bar" v-if="msgInfo.type === 9" @click.stop="viewDetail(msgInfo)">查看详情</view>
               </view>
             </view>
           </view>
@@ -375,6 +376,11 @@ export default {
       }).then(() => {
         this.chatStore.resetUnreadCount(this.chat)
         this.scrollToBottom();
+      })
+    },
+    viewDetail(msgInfo) {
+      uni.navigateTo({
+        url: `/pages/chat/chat-system-content?id=${msgInfo.id}&title=${msgInfo.title}`
       })
     }
   },

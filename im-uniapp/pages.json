@@ -60,6 +60,9 @@
 			}
 		},
 		{
+			"path": "pages/chat/chat-system-content"
+		},
+		{
 			"path": "pages/chat/chat-private-video"
 		},
 		{
