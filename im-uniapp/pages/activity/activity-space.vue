@@ -52,7 +52,7 @@
               <up-parse class="rich-text" :showImgMenu="false" :content="nodesText(item.content)"></up-parse>
             </view>
 
-            <view class="image-grid" v-if="item.fileList && item.fileList.length  && item.showType==='grid'">
+            <view class="image-grid" v-if="item.fileList && item.fileList.length">
               <view v-for="(fileItem, fileIndex) in item.fileList"
                     :key="fileIndex" class="grid-item">
                 <image v-if="fileItem.fileType === 1"
@@ -62,47 +62,10 @@
                        @click="previewImage([fileItem.url], 0)"
                 />
                 <video v-else-if="fileItem.fileType === 2" :src="fileItem.url" :poster="fileItem.coverUrl" class="content-video" :controls="true"></video>
-                <view class="content-audio" v-else-if="fileItem.fileType === 3" @click.stop="toggleAudio(fileItem)">
-                  <svg-icon v-show="!fileItem.isPlaying" :icon-class="'yinpinbofang'" style="width: 220rpx;height: 220rpx;" :class-name="'yinpinColor'"></svg-icon>
-                  <view class="rc-wave" v-show="fileItem.isPlaying">
-                    <text class="note" style="--d: 0"></text>
-                    <text class="note" style="--d: 1"></text>
-                    <text class="note" style="--d: 2"></text>
-                    <text class="note" style="--d: 3"></text>
-                    <text class="note" style="--d: 4"></text>
-                    <text class="note" style="--d: 5"></text>
-                    <text class="note" style="--d: 6"></text>
-                    <text class="note" style="--d: 7"></text>
-                    <text class="note" style="--d: 8"></text>
-                    <text class="note" style="--d: 9"></text>
-                  </view>
+                <view class="content-audio" v-else-if="fileItem.fileType === 3">
+                  <music-player :audio-url="fileItem.url"></music-player>
                 </view>
               </view>
-            </view>
-
-            <!-- 媒体内容区域 -->
-            <view class="media-container" v-if="item.showType==='swiper' && item.fileList && item.fileList.length > 0">
-              <swiper class="media-swiper" :indicator-dots="true">
-                <swiper-item v-for="(media, mediaIndex) in item.fileList" :key="mediaIndex" class="media-item">
-                  <image v-if="media.fileType === 1" :src="media.url" mode="aspectFill" class="media-content cursor-pointer" @click="previewImage([media.url], 0)" />
-                  <video v-else-if="media.fileType === 2" :src="media.url" :poster="media.coverUrl" class="media-content" :controls="true" />
-                  <view v-else-if="media.fileType === 3" class="media-content audio-player" @click.stop="toggleAudio(media)">
-                    <svg-icon v-show="!media.isPlaying" :icon-class="'yinpinbofang'" style="width: 220rpx;height: 220rpx;" :class-name="'yinpinColor'"></svg-icon>
-                    <view class="rc-wave" v-show="media.isPlaying">
-                      <text class="note" style="--d: 0"></text>
-                      <text class="note" style="--d: 1"></text>
-                      <text class="note" style="--d: 2"></text>
-                      <text class="note" style="--d: 3"></text>
-                      <text class="note" style="--d: 4"></text>
-                      <text class="note" style="--d: 5"></text>
-                      <text class="note" style="--d: 6"></text>
-                      <text class="note" style="--d: 7"></text>
-                      <text class="note" style="--d: 8"></text>
-                      <text class="note" style="--d: 9"></text>
-                    </view>
-                  </view>
-                </swiper-item>
-              </swiper>
             </view>
           </view>
 
@@ -120,10 +83,6 @@
                 <view class="action-btn cursor-pointer" @click="doComment(null, item)">
                   <uni-icons type="chat" size="20" color="#666"/>
                   <text class="count">{{item.talkCommentVOS.length}}</text>
-                </view>
-                <view class="action-btn cursor-pointer" @click.stop="toggleShowType(item)">
-                  <uni-icons v-show="!item.showType || item.showType!=='swiper'" custom-prefix="iconfont" type="icon-grid" size="20" color="#666"/>
-                  <uni-icons v-show="item.showType ==='swiper'" custom-prefix="iconfont" type="icon-swiper" size="20" color="#666"/>
                 </view>
               </view>
             </view>
@@ -209,9 +168,10 @@ import CharacterList from "../../components/character-list/character-list.vue";
 import {throttle} from "../../common/throttle";
 import CharacterAvatarList from "../../components/character-avatar-list/character-avatar-list.vue";
 import CommentBox from "../../components/comment-box/comment-box.vue";
+import MusicPlayer  from "../../components/music-player/music-player.vue";
 
 export default {
-  components: {CommentBox, CharacterAvatarList, CharacterList, GroupTemplateList, SvgIcon, HeadImage},
+  components: {CommentBox, CharacterAvatarList, CharacterList, GroupTemplateList, SvgIcon, HeadImage, MusicPlayer},
   data() {
     return {
       showNotify: true,
