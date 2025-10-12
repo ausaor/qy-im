@@ -473,6 +473,7 @@ export default {
       const audioItem = {
         url: response.data.url,
         originalName: response.data.originalName,
+        duration: response.data.duration,
         name: file.name,
         type: 'audio',
         size: file.size
@@ -584,6 +585,7 @@ export default {
       return JSON.stringify(list.map(item => ({
         name: item.name,
         originalName: item.originalName,
+        duration: item.duration,
         url: item.url,
         size: item.size,
         type: item.type

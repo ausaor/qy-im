@@ -21,6 +21,12 @@
                     </swiper-item>
                   </swiper>
                 </view>
+                <view v-if="msgInfo.type === 3" class="audio-content">
+                  <music-player class="music-item" :audio-url="JSON.parse(msgInfo.content)[0].url"
+                                :cover-img-url="msgInfo.coverUrl"
+                                :audio-name="JSON.parse(msgInfo.content)[0].originalName"
+                                :audio-duration="JSON.parse(msgInfo.content)[0].duration"></music-player>
+                </view>
                 <view class="video-content" v-if="msgInfo.type === 4">
                   <image class="video-cover" :src="JSON.parse(msgInfo.content)[0].coverUrl"
                          mode="aspectFill"/>
@@ -48,10 +54,11 @@
 
 <script>
 import VideoPlay from "../../components/video-play/video-play.vue";
+import MusicPlayer  from "../../components/music-player/music-player.vue";
 
 export default {
   name: "chat-system-box",
-  components: {VideoPlay},
+  components: {VideoPlay, MusicPlayer},
   data() {
     return {
       chatIdx: 0,
@@ -433,6 +440,16 @@ export default {
             }
 
             .media-content {
+              width: 100%;
+              height: 100%;
+            }
+          }
+
+          .audio-content {
+            width: 100%;
+            border-bottom: 1px #eee solid;
+
+            .music-item {
               width: 100%;
               height: 100%;
             }
