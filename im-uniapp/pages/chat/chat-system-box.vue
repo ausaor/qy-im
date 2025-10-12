@@ -90,6 +90,9 @@ export default {
 
     this.chat = this.chatStore.chats[options.chatIdx];
     console.log(this.chat);
+
+    // 消息已读
+    this.readedMessage();
     // 初始状态只显示20条消息
     let size = this.messageSize;
     this.showMinIdx = size > 20 ? size - 20 : 0;
@@ -361,9 +364,27 @@ export default {
           component.clearAudio()
         })
       }
+    },
+    readedMessage() {
+      if (this.chat.unreadCount === 0) {
+        return;
+      }
+      this.$http({
+        url: `/message/system/readed?pusherId=${this.chat.targetId}`,
+        method: 'PUT'
+      }).then(() => {
+        this.chatStore.resetUnreadCount(this.chat)
+        this.scrollToBottom();
+      })
     }
   },
   computed: {
+    unreadCount() {
+      if (!this.chat || !this.chat.unreadCount) {
+        return 0;
+      }
+      return this.chat.unreadCount;
+    },
     mine() {
       return this.userStore.userInfo;
     },
@@ -386,6 +407,16 @@ export default {
           return `background-image: url(${bgImg}); background-size:100% 100%;background-repeat:no-repeat;color:white;`
         } else {
           return '';
+        }
+      }
+    }
+  },
+  watch: {
+    unreadCount: {
+      handler(newCount, oldCount) {
+        if (newCount > 0) {
+          // 消息已读
+          this.readedMessage()
         }
       }
     }
