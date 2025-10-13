@@ -389,7 +389,7 @@ export default {
           }
         }
         if (!showInfoObj.headImage) {
-          if (msgInfo.sendUserAvatar) {
+          if (msgInfo.sendUserAvatar && this.group.groupType !== 0) {
             showInfoObj.headImage = msgInfo.sendUserAvatar;
           }
         }
@@ -981,13 +981,15 @@ export default {
 			if (this.reqQueue.length && !this.isSending) {
 				this.isSending = true;
 				const reqData = this.reqQueue.shift();
+        if (this.chat.type === "GROUP") {
+          reqData.msgInfo.characterId = this.myGroupMemberInfo.templateCharacterId;
+        }
         if (this.quoteMsgInfo.msgInfo) {
           reqData.msgInfo.quoteId = this.quoteMsgInfo.msgInfo.id;
           this.quoteMsgInfo.msgInfo = null;
           this.quoteMsgInfo.quoteContent = '';
           this.quoteMsgInfo.show = false;
         }
-        console.log("quoteMsgInfo", this.quoteMsgInfo)
 				this.$http({
 					url: this.messageAction,
 					method: 'post',

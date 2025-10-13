@@ -18,6 +18,9 @@ public class GroupMessageDTO {
     @ApiModelProperty(value = "群聊id")
     private Long groupId;
 
+    @ApiModelProperty(value = "角色id")
+    private Long characterId;
+
     @Length(max=1024,message = "发送内容长度不得大于1024")
     @NotEmpty(message="发送内容不可为空")
     @ApiModelProperty(value = "发送内容")

@@ -99,6 +99,15 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         if (Objects.isNull(member) || member.getQuit()) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "您已不在群聊里面，无法发送消息");
         }
+        if (ObjectUtil.isNotNull(member.getTemplateCharacterId())
+                && !member.getTemplateCharacterId().equals(dto.getCharacterId())) {
+            throw new GlobalException("角色参数异常");
+        }
+        if (ObjectUtil.isNull(member.getTemplateCharacterId())
+                && MessageType.WORD_VOICE.code().equals(dto.getType())) {
+            throw new GlobalException("当前群聊类型不支持语音台词类型消息");
+        }
+
         // 判断是否在群里
         List<Long> userIds = groupMemberService.findUserIdsByGroupId(group.getId());
         if (dto.getReceipt() && userIds.size() > Constant.RECEIPT_LIMIT_MEMBERS) {
