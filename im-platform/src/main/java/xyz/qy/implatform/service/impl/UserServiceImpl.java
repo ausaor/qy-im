@@ -329,7 +329,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 更新好友昵称和头像
         if (!user.getNickName().equals(vo.getNickName()) || !user.getHeadImage().equals(vo.getHeadImage())) {
             QueryWrapper<Friend> queryWrapper = new QueryWrapper<>();
-            queryWrapper.lambda().eq(Friend::getFriendId, session.getUserId());
+            queryWrapper.lambda().eq(Friend::getFriendId, session.getUserId()).eq(Friend::getDeleted, false);
             List<Friend> friends = friendService.list(queryWrapper);
             for (Friend friend : friends) {
                 friend.setFriendNickName(vo.getNickName());

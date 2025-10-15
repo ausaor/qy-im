@@ -843,10 +843,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         jsonObject.put("notifyCount", notifyCount);
 
         // 查询好友列表
-        List<Long> friendIds = friendService.lambdaQuery()
-                .eq(Friend::getUserId, userId)
-                .select(Friend::getFriendId).list()
-                .stream().map(Friend::getFriendId).collect(Collectors.toList());
+        List<Long> friendIds = friendService.getFriendIdsByUserId(userId);
 
         if (CollectionUtils.isEmpty(friendIds)) {
             return jsonObject;
