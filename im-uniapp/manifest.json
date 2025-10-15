@@ -127,7 +127,7 @@
     },
     "vueVersion" : "3",
     "h5" : {
-        "title" : "輕語",
+        "title" : "青語",
         "router" : {
             "base" : "/h5/"
         }

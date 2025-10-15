@@ -107,7 +107,7 @@ import BIRDS from "vanta/src/vanta.birds";
         callback();
       };
 			return {
-        websiteName: '輕語',
+        websiteName: '青語',
         codeUrl: '',
         validateBtn: '获取验证码',
         disabled: false,
@@ -159,7 +159,6 @@ import BIRDS from "vanta/src/vanta.birds";
     },
     created() {
       this.getCode();
-      this.websiteName = Math.floor(Math.random()*2) === 0 ? '輕語' : '青語';
     },
     methods: {
       getCode() {

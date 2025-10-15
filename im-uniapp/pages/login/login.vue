@@ -100,7 +100,6 @@ export default {
 	},
 
 	onLoad() {
-    this.title = Math.floor(Math.random()*2) === 0 ? '輕語' : '青語';
     this.getCode();
 		this.loginForm.userName = uni.getStorageSync("userName");
 		this.loginForm.password = uni.getStorageSync("password");
