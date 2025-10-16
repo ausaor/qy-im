@@ -24,10 +24,10 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
         <mybatisplus.version>3.4.0</mybatisplus.version>
-        <fastjson.version>1.2.40</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <velocity.version>1.7</velocity.version>
         <swagger.version>2.10.0</swagger.version>
-        <hutool.version>5.8.16</hutool.version>
+        <hutool.version>5.8.21</hutool.version>
         <druid.version>1.2.4</druid.version>
         <commons-lang3.version>3.8.1</commons-lang3.version>
         <lombok.version>1.18.16</lombok.version>
