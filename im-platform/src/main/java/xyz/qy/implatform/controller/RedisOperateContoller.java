@@ -10,6 +10,7 @@
 //import xyz.qy.implatform.util.RedisCache;
 //
 //import javax.annotation.Resource;
+//import java.util.concurrent.TimeUnit;
 //
 //@RequestMapping("/openApi/redis")
 //@RestController
@@ -24,6 +25,14 @@
 //        Double score = jsonObject.getDouble("score");
 //        Double resultScore = redisCache.recordKeyValueScore(key, value, score);
 //        System.out.println(resultScore);
+//        return ResultUtils.success();
+//    }
+//
+//    @PostMapping("/setRedisKeyValue")
+//    public Result setRedisKeyValue(@RequestBody JSONObject jsonObject) {
+//        String key = jsonObject.getString("key");
+//        String value = jsonObject.getString("value");
+//        redisCache.setCacheObject(key, value, 15, TimeUnit.SECONDS);
 //        return ResultUtils.success();
 //    }
 //}
