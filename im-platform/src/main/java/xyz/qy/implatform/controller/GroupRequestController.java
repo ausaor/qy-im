@@ -30,6 +30,12 @@ public class GroupRequestController {
         return ResultUtils.success(groupRequestService.groupRequestList());
     }
 
+    @ApiOperation(value = "获取群组请求信息", notes = "获取群组请求信息")
+    @GetMapping("/detail")
+    public Result<GroupRequestVO> getGroupRequestById(@RequestParam Long id) {
+        return ResultUtils.success(groupRequestService.getGroupRequestById(id));
+    }
+
     @ApiOperation(value = "撤回加入群聊请求", notes = "撤回加入群聊请求")
     @PostMapping("/recall")
     public Result recall(@RequestParam Long id) {

@@ -5,18 +5,25 @@ export default defineStore('groupStore', {
 	state: () => {
 		return {
 			groups: [],
-			activeIndex: -1
+			activeIndex: -1,
+			groupRequests: [],
 		}
 	},
 	actions: {
 		setGroups(groups) {
 			this.groups = groups;
 		},
+		setGroupRequests(groupRequests) {
+			this.groupRequests = groupRequests;
+		},
 		activeGroup(index) {
 			this.activeIndex = index;
 		},
 		addGroup(group) {
 			this.groups.unshift(group);
+		},
+		addGroupRequest(groupRequest) {
+			this.groupRequests.push(groupRequest);
 		},
 		removeGroup(groupId) {
 			this.groups.forEach((g, index) => {
@@ -31,6 +38,14 @@ export default defineStore('groupStore', {
 		updateGroup(group) {
 			let g = this.findGroup(group.id);
 			Object.assign(g, group);
+		},
+		updateGroupRequest(groupRequest) {
+			this.groupRequests.forEach((g, idx) => {
+				if (g.id === groupRequest.id) {
+					// 拷贝属性
+					Object.assign(this.groupRequests[idx], groupRequest);
+				}
+			})
 		},
 		clear() {
 			this.groups = [];

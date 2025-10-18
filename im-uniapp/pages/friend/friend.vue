@@ -18,6 +18,14 @@
           <uni-badge v-show="friendRequestCount > 0" :text="friendRequestCount" />
         </view>
       </view>
+      <view class="socializes-item" @click.stop="toGroupRequestPage">
+        <view class="item-icon">
+          <svg-icon class="svg-icon" icon-class="qunliao"></svg-icon>
+        </view>
+        <view class="item-info">
+          <view class="item-name">新的群聊</view>
+        </view>
+      </view>
       <view class="socializes-item" @click.stop="toGroupPage">
         <view class="item-icon">
           <svg-icon class="svg-icon" icon-class="qunliao"></svg-icon>
@@ -83,6 +91,11 @@ export default {
     toFriendRequestPage() {
       uni.navigateTo({
         url: "/pages/friend/friend-request"
+      })
+    },
+    toGroupRequestPage() {
+      uni.navigateTo({
+        url: "/pages/group/group-request"
       })
     },
     refreshUnreadBadge() {

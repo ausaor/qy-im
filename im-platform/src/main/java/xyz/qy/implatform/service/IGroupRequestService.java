@@ -24,6 +24,14 @@ public interface IGroupRequestService extends IService<GroupRequest> {
     List<GroupRequestVO> groupRequestList();
 
     /**
+     * 获取群组请求详情
+     *
+     * @param id 请求id
+     * @return 群组请求详情
+     */
+    GroupRequestVO getGroupRequestById(Long id);
+
+    /**
      * 保存进群请求信息
      *
      * @param enterGroupUsersDTO 进群信息

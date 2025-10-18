@@ -152,6 +152,46 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         return groupRequestVOS;
     }
 
+    @Override
+    public GroupRequestVO getGroupRequestById(Long id) {
+        GroupRequest groupRequest = this.getById(id);
+        if (ObjectUtil.isNull(groupRequest)) {
+            throw new GlobalException("数据不存在");
+        }
+        Long userId = SessionContext.getSession().getUserId();
+
+        GroupRequestVO groupRequestVO = BeanUtils.copyProperties(groupRequest, GroupRequestVO.class);
+        Group group = groupService.getById(groupRequest.getGroupId());
+
+        // 判断用户是否有数据权限
+        if (!groupRequest.getUserId().equals(userId) && !groupRequest.getLaunchUserId().equals(userId)
+            && !group.getOwnerId().equals(userId)) {
+            throw new GlobalException("您没有权限查看该数据");
+        }
+
+        if (ObjectUtil.isNotNull(group)) {
+            groupRequestVO.setGroupName(group.getName());
+            groupRequestVO.setGroupHeadImage(group.getHeadImage());
+            groupRequestVO.setGroupType(group.getGroupType());
+            groupRequestVO.setGroupOwnerId(group.getOwnerId());
+        }
+
+        if (ObjectUtil.isNotNull(groupRequest.getTemplateCharacterId())) {
+            TemplateCharacter templateCharacter = templateCharacterService.findPublishedById(groupRequest.getTemplateCharacterId());
+            if (ObjectUtil.isNotNull(templateCharacter)) {
+                groupRequestVO.setTemplateCharacterAvatar(templateCharacter.getAvatar());
+                groupRequestVO.setTemplateCharacterName(templateCharacter.getName());
+            }
+        }
+        User launchUser = userService.getById(groupRequest.getLaunchUserId());
+        if (ObjectUtil.isNotNull(launchUser)) {
+            groupRequestVO.setLaunchUserNickname(launchUser.getNickName());
+            groupRequestVO.setLaunchUserHeadImage(launchUser.getHeadImage());
+        }
+
+        return groupRequestVO;
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void saveEnterGroupRequestInfo(EnterGroupUsersDTO enterGroupUsersDTO) {

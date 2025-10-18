@@ -93,6 +93,12 @@
 			"path": "pages/group/group-switch"
 		},
 		{
+			"path": "pages/group/group-request"
+		},
+		{
+			"path": "pages/group/group-request-detail"
+		},
+		{
 			"path": "pages/region-group/region-group-info"
 		},
 		{

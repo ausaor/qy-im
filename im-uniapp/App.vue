@@ -48,6 +48,7 @@ export default {
         this.pullRegionGroupOfflineMessage(this.regionStore.regionGroupMsgMaxId);
         this.pullOfflineTalks(this.talkStore.privateTalkMaxId);
         this.pullFriendRequests();
+        this.pullGroupRequests();
 			});
 			wsApi.onMessage((cmd, msgInfo) => {
 				if (cmd == 2) {
@@ -159,6 +160,15 @@ export default {
         method: 'GET'
       }).then((data) => {
         this.friendStore.setFriendRequests(data);
+      }).catch(() => {
+      })
+    },
+    pullGroupRequests() {
+      http({
+        url: "/group/request/list",
+        method: 'GET'
+      }).then((data) => {
+        this.groupStore.setGroupRequests(data);
       }).catch(() => {
       })
     },
