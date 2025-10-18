@@ -3,7 +3,7 @@
     <div class="agm-container">
       <div class="agm-l-box">
         <el-input width="200px" placeholder="搜索模板群聊" class="input-with-select" v-model="searchText">
-          <el-button slot="append" icon="el-icon-search"></el-button>
+          <i class="el-icon-search el-input__icon" slot="prefix"></i>
         </el-input>
         <el-scrollbar style="height:400px;">
           <div v-for="(templateGroup,index) in templateGroupList" :key="templateGroup.id" class="template-group-box">

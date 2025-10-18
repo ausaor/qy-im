@@ -8,7 +8,7 @@
     <div class="character-choose-box">
       <div>
         <el-input width="200px" placeholder="搜索角色" class="input-with-select" v-model="characterSearchText">
-          <el-button slot="append" icon="el-icon-search"></el-button>
+          <i class="el-icon-search el-input__icon" slot="prefix"></i>
         </el-input>
       </div>
       <el-scrollbar style="height:400px;">

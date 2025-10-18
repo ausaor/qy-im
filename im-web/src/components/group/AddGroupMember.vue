@@ -3,7 +3,7 @@
     <div class="agm-container">
       <div class="agm-l-box">
         <el-input width="200px" placeholder="搜索好友" class="input-with-select" v-model="searchText">
-          <el-button slot="append" icon="el-icon-search"></el-button>
+          <i class="el-icon-search el-input__icon" slot="prefix"></i>
         </el-input>
         <el-scrollbar style="height:400px;">
           <div v-for="(friend,index) in friends" :key="friend.id" v-show="friend.nickName.startsWith(searchText)">
@@ -41,7 +41,7 @@
         append-to-body>
       <div>
         <el-input width="200px" placeholder="搜索角色" class="input-with-select" v-model="characterSearchText">
-          <el-button slot="append" icon="el-icon-search"></el-button>
+          <i class="el-icon-search el-input__icon" slot="prefix"></i>
         </el-input>
       </div>
       <el-scrollbar style="height:400px;">
@@ -67,7 +67,7 @@
       <div class="template-group-container">
         <div class="agm-l-box">
           <el-input width="200px" placeholder="搜索模板群聊" class="input-with-select" v-model="searchText" >
-            <el-button slot="append" icon="el-icon-search" ></el-button>
+            <i class="el-icon-search el-input__icon" slot="prefix"></i>
           </el-input>
           <el-scrollbar style="height:400px;">
             <div v-for="(templateGroup,index) in templateGroupList" :key="templateGroup.id"
@@ -84,7 +84,7 @@
         </div>
         <div class="agm-r-box">
           <el-input width="200px" placeholder="搜索角色" class="input-with-select" v-model="characterSearchText" >
-            <el-button slot="append" icon="el-icon-search" ></el-button>
+            <i class="el-icon-search el-input__icon" slot="prefix"></i>
           </el-input>
           <el-scrollbar style="height:400px;">
             <div class="template-character-box" v-for="(templateCharacter,index) in templateCharacterList"

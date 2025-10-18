@@ -2,7 +2,7 @@
   <el-dialog title="查询群聊" :visible.sync="dialogVisible" width="36%" :before-close="handleClose">
     <el-input  placeholder="输入群聊名称,最多展示10条" class="input-with-select"
                v-model="searchText" @keyup.enter.native="searchByKeyWord()">
-      <el-button slot="append" icon="el-icon-search" @click="searchByKeyWord()"></el-button>
+      <i class="el-icon-search el-input__icon" slot="prefix"></i>
     </el-input>
     <el-scrollbar style="height:400px">
       <div v-for="(group) in groups" :key="group.id">
@@ -14,14 +14,13 @@
             {{group.name}}
           </div>
           <div class="status-tag">
-            <el-tag class="tag" v-if="group.groupType===1" effect="dark" size="medium" type="warning">模板群聊</el-tag>
-            <el-tag class="tag" v-if="group.groupType===2" effect="dark" size="medium" type="warning">多元角色群聊</el-tag>
-            <el-tag class="tag" v-if="group.groupType===3" effect="dark" size="medium" type="warning">角色群聊</el-tag>
-            <el-tag class="tag" v-if="group.groupType===4" effect="dark" size="medium" type="warning">模板角色群聊</el-tag>
+            <el-tag class="tag" v-if="group.groupType===1" effect="dark" size="mini" type="warning">模板群聊</el-tag>
+            <el-tag class="tag" v-if="group.groupType===2" effect="dark" size="mini" type="warning">多元角色群聊</el-tag>
+            <el-tag class="tag" v-if="group.groupType===3" effect="dark" size="mini" type="warning">角色群聊</el-tag>
+            <el-tag class="tag" v-if="group.groupType===4" effect="dark" size="mini" type="warning">模板角色群聊</el-tag>
           </div>
           <div class="btn">
-            <el-button icon="el-icon-search" circle @click="viewGroup(group)" title="查看"></el-button>
-            <el-button type="primary" size="medium" @click="joinGroup(group)">加入</el-button>
+            <el-button type="primary" size="mini" @click="joinGroup(group)">加入</el-button>
           </div>
         </div>
       </div>
@@ -45,7 +44,7 @@
         append-to-body>
       <div>
         <el-input width="200px" placeholder="搜索角色" class="input-with-select" v-model="characterSearchText">
-          <el-button slot="append" icon="el-icon-search"></el-button>
+          <i class="el-icon-search el-input__icon" slot="prefix"></i>
         </el-input>
       </div>
       <el-scrollbar style="height:400px;">

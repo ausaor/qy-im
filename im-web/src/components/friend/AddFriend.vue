@@ -2,7 +2,7 @@
 	<el-dialog title="添加好友" :visible.sync="dialogVisible" width="35%" :before-close="handleClose">
 		<el-input  placeholder="输入好友昵称或用户名,最多展示10条" class="input-with-select"
                v-model="searchText" @keyup.enter.native="searchByKeyWord()">
-			<el-button slot="append" icon="el-icon-search" @click="searchByKeyWord()"></el-button>
+      <i class="el-icon-search el-input__icon" slot="prefix"></i>
 		</el-input>
 		<el-scrollbar style="height:400px">
 			<div v-for="(user) in users" :key="user.id" v-show="user.id != $store.state.userStore.userInfo.id">
