@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { MESSAGE_TYPE, MESSAGE_STATUS } from '@/common/enums.js';
 import useUserStore from './userStore';
+import {processAtUsers} from "../common/common.js";
 import { v4 as uuidv4 } from 'uuid'
 
 let cacheChats = [];
@@ -196,7 +197,11 @@ export default defineStore('chatStore', {
 			} else if (msgInfo.type == MESSAGE_TYPE.TEXT ||
 				msgInfo.type == MESSAGE_TYPE.RECALL ||
 				msgInfo.type == MESSAGE_TYPE.TIP_TEXT) {
-				chat.lastContent = msgInfo.content;
+				if (msgInfo.atUserIds && msgInfo.atUserIds.length > 0) {
+					chat.lastContent = processAtUsers(msgInfo.content, msgInfo.atUserIds);
+				} else {
+					chat.lastContent = msgInfo.content;
+				}
 			}
 			if (type === 'SYSTEM') {
 				chat.lastContent = msgInfo.title;

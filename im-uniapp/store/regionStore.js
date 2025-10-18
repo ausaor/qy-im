@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import http from '@/common/request';
 import { MESSAGE_TYPE, MESSAGE_STATUS } from '@/common/enums.js';
+import {processAtUsers} from "../common/common.js";
 import useUserStore from './userStore';
 import { v4 as uuidv4 } from 'uuid'
 
@@ -277,7 +278,11 @@ export default defineStore('regionStore', {
             } else if (msgInfo.type == MESSAGE_TYPE.TEXT ||
                 msgInfo.type == MESSAGE_TYPE.RECALL ||
                 msgInfo.type == MESSAGE_TYPE.TIP_TEXT) {
-                chat.lastContent = msgInfo.content;
+                if (msgInfo.atUserIds && msgInfo.atUserIds.length > 0) {
+                    chat.lastContent = processAtUsers(msgInfo.content, msgInfo.atUserIds);
+                } else {
+                    chat.lastContent = msgInfo.content;
+                }
             }
             chat.lastSendTime = msgInfo.sendTime;
             chat.sendNickName = msgInfo.sendNickName;
