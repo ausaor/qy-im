@@ -44,7 +44,7 @@
 						:read-only="isReadOnly" @focus="onEditorFocus" @blur="onEditorBlur" @ready="onEditorReady" @input="onTextInput">
 					</editor>
           <view class="quote-message" v-if="quoteMsgInfo.show">
-            <view class="quote-text">{{quoteMsgInfo.quoteContent}}</view>
+            <view class="quote-text">{{quoteContent}}</view>
             <uni-icons type="clear" size="20" color="#888888" @click="cancelQuote"></uni-icons>
           </view>
 				</view>
@@ -489,7 +489,7 @@ export default {
 				} else {
 					let member = this.groupMembers.find((m) => m.userId == id);
 					if (member) {
-						atText += ` @${member.aliasName}`;
+						atText += ` @${member.aliasName}#{${member.userId}}`;
 					}
 				}
 			})
@@ -1354,6 +1354,9 @@ export default {
 		},
     friends() {
       return this.friendStore.friends;
+    },
+    quoteContent() {
+      return this.$commonUtil.processAtUsers(this.quoteMsgInfo.quoteContent, this.quoteMsgInfo.msgInfo?.atUserIds || []);
     }
 	},
 	watch: {

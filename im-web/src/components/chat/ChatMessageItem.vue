@@ -399,7 +399,7 @@ export default {
           // 检查用户ID是否在atUserIds中
           if (atUserIds.includes(userId)) {
             // 如果在，转换为可点击元素
-            const replacement = `<span class="at-user" data-userid="${userId}" style="cursor: pointer;">@${username}</span>`;
+            const replacement = `<span class="at-user" data-userid="${userId}" style="cursor: pointer;font-weight: bolder;">@${username}</span>`;
             result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), replacement);
           } else {
             // 如果不在，保留原有内容

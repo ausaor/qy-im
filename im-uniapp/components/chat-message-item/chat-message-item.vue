@@ -21,7 +21,7 @@
 					<view v-if="msgInfo.type == $enums.MESSAGE_TYPE.TEXT">
 						<long-press-menu :items="menuItems" @select="onSelectMenu">
 <!--							<up-parse class="chat-msg-text" :showImgMenu="false" :content="nodesText"></up-parse>-->
-							 <rich-text class="chat-msg-text" :nodes="nodesText"></rich-text>
+							 <rich-text class="chat-msg-text" :nodes="nodesText" @itemclick="onLinkClick"></rich-text>
 						</long-press-menu>
 					</view>
           <view v-if="msgInfo.type == $enums.MESSAGE_TYPE.WORD_VOICE" class="chat-msg-word-voice">
@@ -331,6 +331,58 @@ export default {
     onPlayVideo(url, coverImageUrl) {
       this.$emit('playVideo', {videoUrl: url, coverImageUrl: coverImageUrl});
     },
+    formatMessage(content, atUserIds) {
+      // 将@用户名#{id}格式转换为可点击的span
+      const regex = /@([^#]+)#\{(\d+)\}/g;
+      let result = content;
+      let match;
+
+      // 用于存储已处理的匹配项
+      const processedMatches = [];
+
+      // 迭代所有匹配项
+      while ((match = regex.exec(content)) !== null) {
+        const fullMatch = match[0];
+        const username = match[1];
+        const userId = parseInt(match[2]);
+
+        // 检查这个匹配是否已经处理过（避免重复处理）
+        if (processedMatches.includes(fullMatch)) {
+          continue;
+        }
+
+        processedMatches.push(fullMatch);
+
+        // 检查用户ID是否在atUserIds中
+        if (atUserIds.includes(userId)) {
+          // 如果在，转换为可点击元素
+          const replacement = `<a href="javascript:void(0)" class="at-user" data-userid="${userId}" style="cursor: pointer;">@${username}</a>`;
+          result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), replacement);
+        } else {
+          // 如果不在，保留原有内容
+          result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), fullMatch);
+        }
+      }
+
+      return result;
+    },
+    // 转义正则表达式特殊字符
+    escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    },
+    onLinkClick(event) {
+      console.log('点击了@链接')
+      const { node } = event.detail;
+      if (node.attrs && node.attrs.class === 'at-user') {
+        const userId = node.attrs['data-userid'];
+        console.log('点击了@用户:', userId)
+        if (userId && userId > 0) {
+          uni.navigateTo({
+            url: "/pages/common/user-info?id=" + userId
+          })
+        }
+      }
+    }
 	},
 	computed: {
 		loading() {
@@ -423,11 +475,13 @@ export default {
 		nodesText() {
 			let color = this.msgInfo.selfSend ? 'white' : '';
 			let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.content, color)
-			return this.$emo.transform(text, 'emoji-normal')
+			text = this.$emo.transform(text, 'emoji-normal')
+      return this.formatMessage(text, this.msgInfo.atUserIds)
 		},
     nodesTextQuote() {
       let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.quoteMsg.content, '')
-      return this.$emo.transform(text, 'emoji-normal')
+      text = this.$emo.transform(text, 'emoji-normal')
+      return this.$commonUtil.processAtUsers(text, this.msgInfo.quoteMsg.atUserIds)
     },
     nameColorStyle() {
       let index = 0;
@@ -552,6 +606,11 @@ export default {
 						overflow: hidden;
 						border-width: 18rpx;
 					}
+
+          .at-user {
+            text-decoration: none; /* 去掉下划线 */
+            color: #3498db; /* 自定义颜色（示例：蓝色） */
+          }
 				}
 
         .chat-msg-word-voice {
@@ -917,6 +976,11 @@ export default {
 							right: -9px;
 							border-top-color: $im-color-primary-light-2;
 						}
+
+            .at-user {
+              text-decoration: none; /* 去掉下划线 */
+              color: white; /* 自定义颜色（示例：蓝色） */
+            }
 					}
 
           .chat-msg-word-voice {
