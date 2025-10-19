@@ -20,7 +20,7 @@
       </view>
       <view class="socializes-item" @click.stop="toGroupRequestPage">
         <view class="item-icon">
-          <svg-icon class="svg-icon" icon-class="qunliao"></svg-icon>
+          <svg-icon class="svg-icon" icon-class="group"></svg-icon>
         </view>
         <view class="item-info">
           <view class="item-name">新的群聊</view>
@@ -31,7 +31,7 @@
           <svg-icon class="svg-icon" icon-class="qunliao"></svg-icon>
         </view>
         <view class="item-info">
-          <view class="item-name">群聊</view>
+          <view class="item-name">我的群聊</view>
         </view>
       </view>
     </view>
