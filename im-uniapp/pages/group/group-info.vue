@@ -47,6 +47,16 @@
           <uni-icons type="right" size="20" color="#888888"></uni-icons>
         </view>
       </view>
+      <view class="form-item" @click="toGroupRequest">
+        <view class="form-item-left">
+          <svg-icon icon-class="notice" style="width: 60rpx;height: 60rpx;"></svg-icon>
+          <text style="margin-left: 10rpx;margin-right: 10rpx;">群通知</text>
+          <view v-show="joinGroupRequestCount > 0" class="notify-count">{{joinGroupRequestCount}}</view>
+        </view>
+        <view class="form-item-right">
+          <uni-icons type="right" size="20" color="#888888"></uni-icons>
+        </view>
+      </view>
 			<view class="form-item">
 				<view class="label">群聊名称</view>
 				<view class="value">{{group.name}}</view>
@@ -157,6 +167,11 @@ export default {
       this.talkStore.resetGroupTalk(Number(this.groupId));
       uni.navigateTo({
         url: `/pages/activity/activity-space?category=group&section=group&groupId=${this.groupId}&spaceTitle=群空间动态`
+      })
+    },
+    toGroupRequest() {
+      uni.navigateTo({
+        url: `/pages/group/group-request-list?groupId=${this.groupId}&groupOwnerId=${this.group.ownerId}`
       })
     },
 		onSendMessage() {
@@ -435,6 +450,14 @@ export default {
       }
       return 0;
     },
+    joinGroupRequests() {
+      // 群组申请(当前用户是群主，待审核的加群申请)
+      return this.group?.ownerId === this.mine.id ? this.groupStore.groupRequests
+          .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1 && r.groupId === this.group.id) : [];
+    },
+    joinGroupRequestCount() {
+      return this.joinGroupRequests.length;
+    }
 	},
 	onLoad(options) {
 		this.groupId = options.id;

@@ -24,6 +24,28 @@ uni-button[type='warn'][plain] {
 	background-color: transparent !important;
 }
 
+uni-button[type='info'] {
+	color: #fff !important;
+	background-color: $im-color-info !important;
+}
+
+uni-button[type='info'][plain] {
+	color: $im-color-info !important;
+	border: 1px solid $im-color-info !important;
+	background-color: transparent !important;
+}
+
+uni-button[type='success'] {
+	color: #fff !important;
+	background-color: $im-color-success !important;
+}
+
+uni-button[type='success'][plain] {
+	color: $im-color-success !important;
+	border: 1px solid $im-color-success !important;
+	background-color: transparent !important;
+}
+
 uni-button[size='mini'] {
 	font-size: $im-font-size-smaller !important;
 }
@@ -53,6 +75,28 @@ button[type='warn'] {
 button[type='warn'][plain] {
 	color: $im-color-danger !important;
 	border: 1px solid $im-color-danger !important;
+	background-color: transparent !important;
+}
+
+button[type='info'] {
+	color: #fff !important;
+	background-color: $im-color-info !important;
+}
+
+button[type='info'][plain] {
+	color: $im-color-info !important;
+	border: 1px solid $im-color-info !important;
+	background-color: transparent !important;
+}
+
+button[type='success'] {
+	color: #fff !important;
+	background-color: $im-color-success !important;
+}
+
+button[type='success'][plain] {
+	color: $im-color-success !important;
+	border: 1px solid $im-color-success !important;
 	background-color: transparent !important;
 }
 

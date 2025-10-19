@@ -1,27 +1,21 @@
 <template>
   <view class="page group-request">
-    <nav-bar back>新的群聊</nav-bar>
+    <nav-bar back>群聊请求</nav-bar>
     <view class="tab-control">
       <view class="tabs">
-        <view class="tab" :class="{active: curTab === 1}" @click.stop="curTab = 1">我收到的({{receivedGroupRequest.length}})</view>
-        <view class="tab" :class="{active: curTab === 2}" @click.stop="curTab = 2">我发起的({{launchGroupRequest.length}})</view>
+        <view class="tab" :class="{active: curTab === 1}" @click.stop="curTab = 1">申请中的({{joinGroupRequests.length}})</view>
+        <view class="tab" :class="{active: curTab === 2}" @click.stop="curTab = 2">邀请中的({{inviteGroupRequests.length}})</view>
       </view>
     </view>
     <view class="content" v-if="curTab === 1">
-      <view class="request-item" v-for="request in receivedGroupRequest" :key="request.id">
+      <view class="request-item" v-for="request in joinGroupRequests" :key="request.id">
         <view class="group-request-item">
-          <head-image :url="request.groupHeadImage" :name="request.groupName" size="small"></head-image>
+          <head-image :url="request.userHeadImage" :name="request.userNickname" size="small"></head-image>
           <view class="request-info">
-            <view class="group-name">{{request.groupName}}</view>
+            <view class="user-name">{{request.userNickname}}</view>
             <view class="info-text">
               <view class="remark">{{request.remark}}</view>
             </view>
-          </view>
-          <view class="group-info">
-            <uni-tag v-if="request.groupType===1" :circle="true" text="模板群聊" type="primary" size="mini" custom-style="background-color: rgb(0,47,167);border-color: rgb(0,47,167);" />
-            <uni-tag v-if="request.groupType===2" :circle="true" text="多元角色群聊" type="primary" size="mini" custom-style="background-color: rgb(105,149,114);border-color: rgb(105,149,114);" />
-            <uni-tag v-if="request.groupType===3" :circle="true" text="角色群聊" type="primary" size="mini" custom-style="background-color: rgb(144,0,33);border-color: rgb(144,0,33);" />
-            <uni-tag v-if="request.groupType===4" :circle="true" text="模板角色群聊" type="primary" size="mini" custom-style="background-color: rgb(176,89,35);border-color: rgb(176,89,35);" />
           </view>
           <view class="btn-group">
             <button size="mini" type="primary" @click="viewGroupRequestDetail(request.id, '1')">查看</button>
@@ -30,20 +24,14 @@
       </view>
     </view>
     <view class="content" v-if="curTab === 2">
-      <view class="request-item" v-for="request in launchGroupRequest" :key="request.id">
+      <view class="request-item" v-for="request in inviteGroupRequests" :key="request.id">
         <view class="group-request-item">
-          <head-image :url="request.groupHeadImage" :name="request.groupName" size="small"></head-image>
+          <head-image :url="request.userHeadImage" :name="request.userNickname" size="small"></head-image>
           <view class="request-info">
-            <view class="group-name">{{request.groupName}}</view>
+            <view class="user-name">{{request.userNickname}}</view>
             <view class="info-text">
               <view class="remark">{{request.remark}}</view>
             </view>
-          </view>
-          <view class="group-info">
-            <uni-tag v-if="request.groupType===1" :circle="true" text="模板群聊" type="primary" size="mini" custom-style="background-color: rgb(0,47,167);border-color: rgb(0,47,167);" />
-            <uni-tag v-if="request.groupType===2" :circle="true" text="多元角色群聊" type="primary" size="mini" custom-style="background-color: rgb(105,149,114);border-color: rgb(105,149,114);" />
-            <uni-tag v-if="request.groupType===3" :circle="true" text="角色群聊" type="primary" size="mini" custom-style="background-color: rgb(144,0,33);border-color: rgb(144,0,33);" />
-            <uni-tag v-if="request.groupType===4" :circle="true" text="模板角色群聊" type="primary" size="mini" custom-style="background-color: rgb(176,89,35);border-color: rgb(176,89,35);" />
           </view>
           <view class="btn-group">
             <button size="mini" type="primary" @click="viewGroupRequestDetail(request.id, '2')">查看</button>
@@ -56,10 +44,12 @@
 
 <script>
 export default {
-  name: "group-request",
+  name: "group-request-list",
   data() {
     return {
       curTab: 1,
+      groupId: null,
+      groupOwnerId: null,
     }
   },
   methods: {
@@ -73,15 +63,20 @@ export default {
     mine() {
       return this.userStore.userInfo;
     },
-    receivedGroupRequest() {
-      return this.groupStore.groupRequests.filter((r) => r.userId === this.mine.id && r.status === 1 && r.type === 2)
+    joinGroupRequests() {
+      // 群组申请(当前用户是群主，待审核的加群申请)
+      return this.groupOwnerId === this.mine.id ? this.groupStore.groupRequests
+          .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1 && r.groupId === this.groupId) : [];
     },
-    launchGroupRequest() {
-      return this.groupStore.groupRequests.filter((r) => r.userId === this.mine.id && r.status === 1 && r.type === 1)
+    inviteGroupRequests() {
+      // 群组邀请(当前用户是群成员，正在邀请中的数据)
+      return this.groupId ? this.groupStore.groupRequests
+          .filter((r) => r.status === 1 && r.type === 2 && r.groupId === this.groupId && (r.launchUserId === this.mine.id || r.groupOwnerId === this.mine.id)) : [];
     },
   },
   onLoad(options) {
-
+    this.groupId = Number(options.groupId);
+    this.groupOwnerId = Number(options.groupOwnerId);
   }
 }
 </script>
@@ -142,7 +137,7 @@ export default {
           padding-left: .625rem;
           text-align: left;
 
-          .group-name {
+          .user-name {
             font-size: .9375rem;
             white-space: nowrap;
             overflow: hidden;
@@ -163,10 +158,6 @@ export default {
               text-overflow: ellipsis;
             }
           }
-        }
-
-        .group-info {
-          margin-right: 18rpx;
         }
 
         .btn-group {

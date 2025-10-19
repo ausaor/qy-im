@@ -2,43 +2,78 @@
   <view class="page group-request-detail">
     <nav-bar back>群聊请求详情</nav-bar>
     <view class="content">
-      <view class="group-info">
-        <head-image :url="request.groupHeadImage" :name="request.groupName" size="small"></head-image>
-        <view class="info">
-          <view class="group-name">
-            <text>{{request.groupName}}</text>
-            <text class="group-type">
-              <uni-tag v-if="request.groupType===1" :circle="true" text="模板群聊" type="primary" size="mini" custom-style="background-color: rgb(0,47,167);border-color: rgb(0,47,167);" />
-              <uni-tag v-if="request.groupType===2" :circle="true" text="多元角色群聊" type="primary" size="mini" custom-style="background-color: rgb(105,149,114);border-color: rgb(105,149,114);" />
-              <uni-tag v-if="request.groupType===3" :circle="true" text="角色群聊" type="primary" size="mini" custom-style="background-color: rgb(144,0,33);border-color: rgb(144,0,33);" />
-              <uni-tag v-if="request.groupType===4" :circle="true" text="模板角色群聊" type="primary" size="mini" custom-style="background-color: rgb(176,89,35);border-color: rgb(176,89,35);" />
-            </text>
-          </view>
-          <view class="info-text">
-            <view class="remark">{{request.remark}}</view>
+      <!-- 群聊信息卡片 -->
+      <view class="card group-info-card">
+        <view class="card-header">
+          <text class="card-title">群聊信息</text>
+        </view>
+        <view class="card-body">
+          <view class="group-info">
+            <head-image :url="request.groupHeadImage" :name="request.groupName" size="small"></head-image>
+            <view class="info">
+              <view class="group-name">
+                <text class="name-text">{{request.groupName}}</text>
+                <view class="group-type" :style="{marginLeft: '10px'}">
+                  <uni-tag v-if="request.groupType===1" :circle="true" text="模板群聊" type="primary" size="mini" custom-style="background-color: rgb(0,47,167);border-color: rgb(0,47,167);" />
+                  <uni-tag v-if="request.groupType===2" :circle="true" text="多元角色群聊" type="primary" size="mini" custom-style="background-color: rgb(105,149,114);border-color: rgb(105,149,114);" />
+                  <uni-tag v-if="request.groupType===3" :circle="true" text="角色群聊" type="primary" size="mini" custom-style="background-color: rgb(144,0,33);border-color: rgb(144,0,33);" />
+                  <uni-tag v-if="request.groupType===4" :circle="true" text="模板角色群聊" type="primary" size="mini" custom-style="background-color: rgb(176,89,35);border-color: rgb(176,89,35);" />
+                </view>
+              </view>
+              <view class="info-text" v-if="request.remark">
+                <text class="label">备注：</text>
+                <text class="remark">{{request.remark}}</text>
+              </view>
+            </view>
           </view>
         </view>
       </view>
-      <view class="user-info">
-        <view>用户信息：</view>
-        <head-image :url="request.userHeadImage" :name="request.userNickname" :size="60"></head-image>
-        <view class="user-name">{{request.userNickname}}</view>
+
+      <!-- 用户信息卡片 -->
+      <view class="card user-info-card">
+        <view class="card-header">
+          <text class="card-title">用户信息</text>
+        </view>
+        <view class="card-body">
+          <view class="user-info">
+            <head-image :url="request.userHeadImage" :name="request.userNickname" :size="60"></head-image>
+            <view class="user-name">{{request.userNickname}}</view>
+          </view>
+        </view>
       </view>
-      <view class="character-info" v-if="request.templateCharacterName">
-        <view>角色信息：</view>
-        <head-image :url="request.templateCharacterAvatar" :name="request.templateCharacterName" :size="60"></head-image>
-        <view class="character-name">{{request.templateCharacterName}}</view>
+
+      <!-- 角色信息卡片（条件渲染） -->
+      <view class="card character-info-card" v-if="request.templateCharacterName">
+        <view class="card-header">
+          <text class="card-title">角色信息</text>
+        </view>
+        <view class="card-body">
+          <view class="character-info">
+            <head-image :url="request.templateCharacterAvatar" :name="request.templateCharacterName" :size="60"></head-image>
+            <view class="character-name">{{request.templateCharacterName}}</view>
+          </view>
+        </view>
       </view>
-      <view class="launch-user">
-        <view>发起用户：</view>
-        <head-image :url="request.launchUserHeadImage" :name="request.launchUserNickname" :size="60"></head-image>
-        <view class="user-name">{{request.launchUserNickname}}</view>
+
+      <!-- 发起用户卡片 -->
+      <view class="card launch-user-card">
+        <view class="card-header">
+          <text class="card-title">发起用户</text>
+        </view>
+        <view class="card-body">
+          <view class="launch-user">
+            <head-image :url="request.launchUserHeadImage" :name="request.launchUserNickname" :size="60"></head-image>
+            <view class="user-name">{{request.launchUserNickname}}</view>
+          </view>
+        </view>
       </view>
+
+      <!-- 操作按钮区域 -->
       <view class="btn-group">
-        <button size="mini" type="primary">同意</button>
-        <button size="mini" type="warn">拒绝</button>
-        <button size="mini" type="success">撤回</button>
-        <button size="mini" type="primary">修改</button>
+        <button v-if="type === '1'" size="mini" type="success" class="operation-btn" @click="approveGroupRequest(request.id)">同意</button>
+        <button v-if="type === '1'" size="mini" type="warn" class="operation-btn" @click="rejectGroupRequest(request.id)">拒绝</button>
+        <button v-if="type === '2'" size="mini" type="info" class="operation-btn" @click="recallGroupRequest(request.id)">撤回</button>
+        <button size="mini" type="primary" class="operation-btn">修改</button>
       </view>
     </view>
   </view>
@@ -49,7 +84,8 @@ export default {
   name: "group-request-detail",
   data() {
     return {
-      request: {}
+      request: {},
+      type: '',
     };
   },
   methods: {
@@ -60,11 +96,41 @@ export default {
       }).then((data) => {
         this.request = data;
       }).catch(() => {
-
       });
+    },
+    rejectGroupRequest(id) {
+      this.$http({
+        url: `/group/request/reject?id=${id}`,
+        method: "post",
+      }).then(() => {
+        uni.navigateBack({
+          delta: 1
+        })
+      })
+    },
+    approveGroupRequest(id) {
+      this.$http({
+        url: `/group/request/approve?id=${id}`,
+        method: "post",
+      }).then(() => {
+        uni.navigateBack({
+          delta: 1
+        })
+      })
+    },
+    recallGroupRequest(id) {
+      this.$http({
+        url: `/group/request/recall?id=${id}`,
+        method: "post",
+      }).then(() => {
+        uni.navigateBack({
+          delta: 1
+        })
+      })
     }
   },
   onLoad(options) {
+    this.type = options.type;
     this.getRequestDetail(options.id)
   }
 }
@@ -74,82 +140,114 @@ export default {
 .group-request-detail {
   display: flex;
   flex-direction: column;
-  background-color: #fff;
+  background-color: #f5f7fa;
+  min-height: 100vh;
 
   .content {
-    padding: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; // 卡片间距
+  }
 
+  // 卡片基础样式
+  .card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); // hover增强阴影
+    }
+
+    .card-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f2f5;
+
+      .card-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: #1d2129;
+      }
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+  }
+
+  // 群聊信息卡片
+  .group-info-card {
     .group-info {
       display: flex;
       align-items: center;
 
       .info {
-        margin-left: 10px;
-        flex-direction: column;
+        margin-left: 12px;
+        flex: 1;
       }
 
       .group-name {
-        flex: 1;
-        font-size: .9375rem;
-        white-space: nowrap;
-        overflow: hidden;
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
 
-        .group-type {
-          margin-left: 10px;
+        .name-text {
+          font-size: 0.9375rem;
+          font-weight: 500;
+          color: #1d2129;
         }
       }
 
       .info-text {
-        display: flex;
-        font-size: .8125rem;
+        font-size: 0.8125rem;
         color: #909399;
-        padding-top: .25rem;
+        display: flex;
         align-items: center;
-        white-space: nowrap;
-        max-width: 13.125rem;
-        overflow: hidden;
+
+        .label {
+          margin-right: 4px;
+        }
 
         .remark {
           overflow: hidden;
           text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: calc(100% - 40px);
         }
       }
     }
+  }
 
-    .user-info {
-      display: flex;
-      align-items: center;
-      padding-top: 10rpx;
-
-      .user-name {
-        margin-left: 14rpx;
-      }
-    }
-
-    .character-info {
-      display: flex;
-      align-items: center;
-      padding-top: 10rpx;
-
-      .character-name {
-        margin-left: 14rpx;
-      }
-    }
-
+  // 用户信息卡片
+  .user-info-card,
+  .character-info-card,
+  .launch-user-card {
+    .user-info,
+    .character-info,
     .launch-user {
       display: flex;
       align-items: center;
-      padding-top: 10rpx;
 
-      .user-name {
+      .user-name,
+      .character-name {
         margin-left: 14rpx;
+        font-size: 0.875rem;
+        color: #1d2129;
       }
     }
+  }
 
-    .btn-group {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+  // 按钮区域
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+
+    .operation-btn {
+      border-radius: 8px;
+      font-size: 0.8125rem;
     }
   }
 }

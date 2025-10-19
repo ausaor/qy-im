@@ -267,6 +267,29 @@ export default {
 				this.chatStore.setLoadingGroupMsg(JSON.parse(msg.content))
 				return;
 			}
+
+      // --------------------------群聊申请类消息start--------------------------
+      if (msg.type ===  enums.MESSAGE_TYPE.GROUP_JOIN_REQUEST) {
+        this.groupStore.addGroupRequest(JSON.parse(msg.content));
+        return;
+      }
+      if (msg.type ===  enums.MESSAGE_TYPE.GROUP_JOIN_REQUEST_MODIFY) {
+        this.groupStore.updateGroupRequest(JSON.parse(msg.content));
+        return;
+      }
+      // --------------------------群聊申请类消息end--------------------------
+
+      // 新增群
+      if (msg.type === enums.MESSAGE_TYPE.GROUP_NEW) {
+        this.groupStore.addGroup(JSON.parse(msg.content));
+        return;
+      }
+      // 删除群
+      if (msg.type === enums.MESSAGE_TYPE.GROUP_DEL) {
+        this.groupStore.removeGroup(msg.groupId);
+        return;
+      }
+
       // 群聊有变更
       if (msg.type == enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
         uni.$emit('group-change-event', msg);
