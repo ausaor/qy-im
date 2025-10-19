@@ -73,19 +73,27 @@
         <button v-if="type === '1'" size="mini" type="success" class="operation-btn" @click="approveGroupRequest(request.id)">同意</button>
         <button v-if="type === '1'" size="mini" type="warn" class="operation-btn" @click="rejectGroupRequest(request.id)">拒绝</button>
         <button v-if="type === '2'" size="mini" type="info" class="operation-btn" @click="recallGroupRequest(request.id)">撤回</button>
-        <button size="mini" type="primary" class="operation-btn">修改</button>
+        <button size="mini" type="primary" class="operation-btn" @click="modifyGroupRequest">修改</button>
       </view>
     </view>
+    <group-template-list ref="templateGroupList" :group-templates="templateGroupList" @confirm="chooseGroupTemplate"></group-template-list>
+    <character-list ref="characterList" :characters="characters" @confirm="chooseCharacter"></character-list>
   </view>
 </template>
 
 <script>
+import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
+import CharacterList from "../../components/character-list/character-list.vue";
+
 export default {
   name: "group-request-detail",
+  components: {CharacterList, GroupTemplateList},
   data() {
     return {
       request: {},
       type: '',
+      templateGroupList: [],
+      characters: [],
     };
   },
   methods: {
@@ -127,7 +135,55 @@ export default {
           delta: 1
         })
       })
-    }
+    },
+    async modifyGroupRequest() {
+      await this.queryTemplateGroup();
+      this.$refs.templateGroupList.open();
+    },
+    async chooseGroupTemplate(templateGroup) {
+      await this.queryTemplateCharacter(templateGroup.id);
+      this.$refs.characterList.open();
+    },
+    chooseCharacter(templateCharacter) {
+      let param = {
+        id: this.request.id,
+        templateCharacterId: templateCharacter.id,
+      }
+      this.$http({
+        url: `/group/request/update`,
+        method: "post",
+        data: param,
+      }).then(() => {
+        this.request.templateCharacterId = templateCharacter.id;
+        this.request.templateCharacterName = templateCharacter.name;
+        this.request.templateCharacterAvatar = templateCharacter.avatar;
+        // 提示修改成功
+        uni.showToast({
+          title: "修改成功",
+          icon: 'none'
+        })
+      })
+    },
+    async queryTemplateGroup(){
+      if (this.templateGroupList.length) {
+        return;
+      }
+      await this.$http({
+        url: "/templateGroup/list",
+        method: 'get',
+        params: ''
+      }).then(data => {
+        this.templateGroupList = data;
+      })
+    },
+    async queryTemplateCharacter(templateGroupId) {
+      await this.$http({
+        url: `/templateCharacter/list/${templateGroupId}`,
+        method: 'get'
+      }).then(result => {
+        this.characters = result;
+      });
+    },
   },
   onLoad(options) {
     this.type = options.type;
