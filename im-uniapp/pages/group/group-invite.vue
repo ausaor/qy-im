@@ -74,28 +74,25 @@ export default {
         }
       }
 			let inviteVo = {
-				groupId: this.groupId,
-				friendIds: [],
-        characterInviteVOList: [],
+        groupId: this.groupId,
+        inviteFriends: [],
         isTemplate: this.group.isTemplate,
         groupType: this.group.groupType,
 			}
 			this.friendItems.forEach((f) => {
 				if (f.checked && !f.disabled) {
-					inviteVo.friendIds.push(f.id);
-          if (this.group.groupType !== 0) {
-            let obj = {
-              friendId: f.id,
-              templateCharacterId: f.templateCharacterId,
-              templateCharacterAvatar: f.templateCharacterAvatar,
-              templateCharacterName: f.templateCharacterName
-            }
-            inviteVo.characterInviteVOList.push(obj);
+          let obj = {
+            friendId: f.id,
+            templateCharacterId: f.templateCharacterId,
+            templateCharacterAvatar: f.templateCharacterAvatar,
+            templateCharacterName: f.templateCharacterName
           }
+          inviteVo.inviteFriends.push(obj);
 				}
 			})
+
       if (this.group.groupType === 1 || this.group.groupType === 2) {
-        const templateCharacterIds = inviteVo.characterInviteVOList.map(item => item["templateCharacterId"]);
+        const templateCharacterIds = inviteVo.inviteFriends.map(item => item["templateCharacterId"]);
         let templateCharacterIdSet = new Set(templateCharacterIds);
         if (templateCharacterIdSet.size !== templateCharacterIds.length) {
           uni.showToast({
@@ -105,7 +102,7 @@ export default {
           return;
         }
       }
-			if (inviteVo.friendIds.length > 0) {
+			if (inviteVo.inviteFriends.length > 0) {
 				this.$http({
 					url: "/group/invite",
 					method: 'POST',

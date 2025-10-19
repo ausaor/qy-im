@@ -3,7 +3,7 @@
     <nav-bar back>群聊请求</nav-bar>
     <view class="tab-control">
       <view class="tabs">
-        <view class="tab" :class="{active: curTab === 1}" @click.stop="curTab = 1">申请中的({{joinGroupRequests.length}})</view>
+        <view class="tab" v-if="isOwner" :class="{active: curTab === 1}" @click.stop="curTab = 1">申请中的({{joinGroupRequests.length}})</view>
         <view class="tab" :class="{active: curTab === 2}" @click.stop="curTab = 2">邀请中的({{inviteGroupRequests.length}})</view>
       </view>
     </view>
@@ -62,6 +62,9 @@ export default {
   computed: {
     mine() {
       return this.userStore.userInfo;
+    },
+    isOwner() {
+      return this.groupOwnerId === this.mine.id;
     },
     joinGroupRequests() {
       // 群组申请(当前用户是群主，待审核的加群申请)
