@@ -31,9 +31,11 @@
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>${mybatisplus.version}</version>
         </dependency>
+        <!-- Druid 连接池 -->
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>druid</artifactId>
+            <artifactId>druid-spring-boot-starter</artifactId>
+            <version>1.2.18</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -99,7 +101,7 @@
             <artifactId>okhttp</artifactId>
             <version>4.9.0</version>
         </dependency>
-        <!--thumbnailator图片处理-->
+        <!--thumbnailator图片处理 高质量缩略图生成库-->
         <dependency>
             <groupId>net.coobird</groupId>
             <artifactId>thumbnailator</artifactId>
@@ -178,6 +180,8 @@
             <artifactId>javacv-platform</artifactId>
             <version>1.5.9</version>
         </dependency>-->
+
+        <!--获取视频封面图-->
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
@@ -195,6 +199,7 @@
             <artifactId>ffmpeg</artifactId>
             <version>6.0-1.5.9</version>
             <classifier>windows-x86_64</classifier> <!-- 按平台修改 -->
+            <!--<classifier>linux-x86_64</classifier>-->
         </dependency>
 
         <!-- IP定位 -->

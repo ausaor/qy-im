@@ -7,10 +7,55 @@ spring:
       maxRequestSize: 50MB
 
   datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/qy-im?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
     username: root
     password: root
+
+    # Druid连接池专属配置
+    druid:
+      # 1. 连接池核心参数
+      initial-size: 5               # 初始化连接数（默认0）
+      max-active: 20                # 最大连接数（默认8）
+      min-idle: 5                   # 最小空闲连接数（默认0）
+      max-wait: 60000               # 获取连接的最大等待时间（毫秒，默认-1表示无限等待）
+      time-between-eviction-runs-millis: 60000  # 间隔多久检测空闲连接（毫秒）
+      min-evictable-idle-time-millis: 300000    # 连接最小空闲时间（毫秒，超过则被回收）
+      validation-query: SELECT 1    # 验证连接有效性的SQL（MySQL示例，其他数据库需调整）
+      test-while-idle: true         # 空闲时是否验证连接（推荐true，避免连接失效）
+      test-on-borrow: false         # 获取连接时是否验证（建议false，提高性能）
+      test-on-return: false         # 归还连接时是否验证（建议false，提高性能）
+      pool-prepared-statements: true  # 是否缓存PreparedStatement（PSCache）
+      max-pool-prepared-statement-per-connection-size: 20  # 每个连接的PSCache大小
+
+      # 2. 监控配置（StatViewServlet：Druid监控页面）
+      stat-view-servlet:
+        enabled: true               # 是否启用监控页面
+        url-pattern: /druid/*       # 监控页面访问路径（默认/druid/*）
+        login-username: admin       # 监控页面登录用户名（自定义）
+        login-password: admin       # 监控页面登录密码（自定义）
+        allow: 127.0.0.1,192.168.1.0/24  # 允许访问的IP（*表示所有）
+        deny: 192.168.1.100         # 禁止访问的IP（优先级高于allow）
+        reset-enable: false         # 是否允许重置统计数据（建议false，防止误操作）
+
+      # 3. Web监控过滤器（WebStatFilter：监控Web应用的数据库访问）
+      web-stat-filter:
+        enabled: true               # 是否启用
+        url-pattern: /*             # 过滤所有请求
+        exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"  # 排除静态资源和监控页面
+        session-stat-enable: true   # 是否监控Session
+        session-stat-max-count: 100 # 最多监控100个Session
+        profile-enable: true        # 是否监控Cookie
+
+      # 4. 过滤器配置（可选，如防SQL注入的WallFilter）
+      filters: stat,wall,log4j2    # 启用的过滤器（stat：统计；wall：防注入；log4j2：日志，需对应日志依赖）
+      filter:
+        wall:
+          enabled: true
+          config:
+            multi-statement-allow: true  # 允许执行多语句SQL（谨慎开启）
+            drop-table-allow: false      # 禁止删除表操作
 
   redis:
     host: 127.0.0.1
