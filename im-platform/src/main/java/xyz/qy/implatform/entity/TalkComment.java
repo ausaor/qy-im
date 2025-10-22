@@ -73,6 +73,12 @@ public class TalkComment extends BaseEntity {
     private Long replyCommentId;
 
     /**
+     * 顶级回复的评论id
+     */
+    @TableField(value = "top_reply_comment_id")
+    private Long topReplyCommentId;
+
+    /**
      * 回复用户id
      */
     @TableField(value = "reply_user_id")

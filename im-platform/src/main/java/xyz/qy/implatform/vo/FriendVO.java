@@ -28,4 +28,7 @@ public class FriendVO {
 
     @ApiModelProperty(value = "是否删除")
     private Boolean deleted;
+
+    @ApiModelProperty(value = "角色")
+    private String role;
 }

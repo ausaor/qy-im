@@ -31,6 +31,7 @@ import xyz.qy.implatform.dto.RegisterDTO;
 import xyz.qy.implatform.dto.ResetPwdDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
+import xyz.qy.implatform.dto.UserUpdateDTO;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.FriendRequest;
 import xyz.qy.implatform.entity.GroupMember;
@@ -308,6 +309,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         LambdaQueryWrapper<User> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.eq(User::getEmail, email);
         return this.getOne(queryWrapper);
+    }
+
+    @Override
+    public void updateByAdmin(UserUpdateDTO dto) {
+        if (dto.getUserId().equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "不允许修改超级管理员信息");
+        }
+        User user = this.getById(dto.getUserId());
+        if (ObjectUtil.isNull(user)) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户不存在");
+        }
+
+        if (user.getIsDisable()) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户已禁用");
+        }
+        user.setRole(dto.getRole());
+        this.updateById(user);
     }
 
     /**
@@ -612,10 +630,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public void bandUser(UserBanDTO dto) {
-        UserSession session = SessionContext.getSession();
-        if (!session.getUserId().equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("只有系统管理员有权限操作");
-        }
         if (dto.getUserId().equals(Constant.ADMIN_USER_ID)) {
             throw new GlobalException("系统管理员不能被禁言");
         }
@@ -636,19 +650,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public void unBandUser(UserBanDTO dto) {
-        UserSession session = SessionContext.getSession();
-        if (!session.getUserId().equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("只有系统管理员有权限操作");
-        }
         redisCache.deleteObject(RedisKey.IM_USER_MSG_SWITCH + dto.getUserId());
     }
 
     @Override
     public void banAccount(Long userId) {
-        UserSession session = SessionContext.getSession();
-        if (!session.getUserId().equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("只有系统管理员有权限操作");
-        }
         if (userId.equals(Constant.ADMIN_USER_ID)) {
             throw new GlobalException("系统管理员不能被封禁");
         }
@@ -678,11 +684,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public void unBanAccount(Long userId) {
-        UserSession session = SessionContext.getSession();
-        if (!session.getUserId().equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("只有系统管理员有权限操作");
-        }
-
         User user = this.getById(userId);
         if (ObjectUtil.isNull(user)) {
             throw new GlobalException("用户不存在");

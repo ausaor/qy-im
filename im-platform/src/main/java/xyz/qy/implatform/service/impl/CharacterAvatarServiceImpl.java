@@ -180,9 +180,6 @@ public class CharacterAvatarServiceImpl extends ServiceImpl<CharacterAvatarMappe
     public void submitAuditConclusion(ReviewVO reviewVO) {
         UserSession session = SessionContext.getSession();
         Long userid = session.getUserId();
-        if (!userid.equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("当前只有管理员才能审批");
-        }
         Long templateCharacterId = reviewVO.getTemplateCharacterId();
         TemplateCharacter templateCharacter = templateCharacterService.getById(templateCharacterId);
         if (ObjectUtil.isNull(templateCharacter) || templateCharacter.getDeleted()) {
@@ -209,11 +206,6 @@ public class CharacterAvatarServiceImpl extends ServiceImpl<CharacterAvatarMappe
 
     @Override
     public List<TemplateCharacterVO> findReviewingCharacterAvatar() {
-        UserSession session = SessionContext.getSession();
-        Long userid = session.getUserId();
-        if (!userid.equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("当前只有管理员才能审批");
-        }
         LambdaQueryWrapper<CharacterAvatar> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CharacterAvatar::getStatus, ReviewEnum.REVIEWING.getCode());
         queryWrapper.eq(CharacterAvatar::getDeleted, false);

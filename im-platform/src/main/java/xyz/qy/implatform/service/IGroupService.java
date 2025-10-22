@@ -2,6 +2,7 @@ package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.qy.implatform.dto.GroupBanDTO;
+import xyz.qy.implatform.dto.GroupMemberDTO;
 import xyz.qy.implatform.dto.GroupQueryDTO;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.GroupMember;
@@ -128,4 +129,18 @@ public interface IGroupService extends IService<Group> {
      * @param sendToSelf 是否发送给自己
      */
     void sendAddGroupMessage(GroupVO group, List<Long> recvIds, Boolean sendToSelf);
+
+    /**
+     * 设置群聊管理员
+     *
+     * @param dto 入参
+     */
+    void setGroupAdmin(GroupMemberDTO dto);
+
+    /**
+     * 移除群聊管理员
+     *
+     * @param dto 入参
+     */
+    void removeGroupAdmin(GroupMemberDTO dto);
 }

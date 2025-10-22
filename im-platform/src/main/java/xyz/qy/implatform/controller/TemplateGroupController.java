@@ -2,6 +2,8 @@ package xyz.qy.implatform.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
+import xyz.qy.implatform.annotation.RequireRoles;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -90,12 +92,14 @@ public class TemplateGroupController {
     }
 
     @ApiOperation(value = "查询审批中的模板群聊", notes = "查询审批中的模板群聊")
+    @RequireRoles(value = {RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN})
     @GetMapping("/findReviewingTemplateGroups")
     public Result<List<TemplateGroupVO>> findReviewingTemplateGroups() {
         return ResultUtils.success(templateGroupService.findReviewingTemplateGroups());
     }
 
     @ApiOperation(value = "提交审核结论", notes = "提交审核结论")
+    @RequireRoles(value = {RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN})
     @PostMapping("/submitAuditConclusion")
     public Result submitAuditConclusion(@RequestBody ReviewVO reviewVO) {
         templateGroupService.submitAuditConclusion(reviewVO);

@@ -16,6 +16,7 @@ import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.AuditResultEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TemplateGroupMapper;
 import xyz.qy.implatform.service.ITemplateCharacterService;
@@ -52,7 +53,7 @@ public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, T
     public void addOrModify(TemplateGroupVO vo) {
         UserSession session = SessionContext.getSession();
         // 新增判断用户已创建的模板群聊数量是否大于10
-        if (ObjectUtil.isNull(vo.getId()) && !session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+        if (ObjectUtil.isNull(vo.getId()) && !session.getRole().equals(RoleEnum.SUPER_ADMIN.getCode())) {
             int count = this.countUserTemplateGroup();
             if (count >= Constant.USER_MAX_TEMPLATE_GROUP_NUM) {
                 throw new GlobalException("每位用户最多只能创建" + Constant.USER_MAX_TEMPLATE_GROUP_NUM + "个模板群聊");
@@ -239,11 +240,6 @@ public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, T
 
     @Override
     public List<TemplateGroupVO> findReviewingTemplateGroups() {
-        UserSession session = SessionContext.getSession();
-        Long userid = session.getUserId();
-        if (!userid.equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("当前只有管理员才能审批");
-        }
         LambdaQueryWrapper<TemplateGroup> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TemplateGroup::getDeleted, false);
         queryWrapper.eq(TemplateGroup::getStatus, ReviewEnum.REVIEWING.getCode());
@@ -271,9 +267,6 @@ public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, T
     public void submitAuditConclusion(ReviewVO reviewVO) {
         UserSession session = SessionContext.getSession();
         Long userid = session.getUserId();
-        if (!userid.equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("当前只有管理员才能审批");
-        }
         Long templateGroupId = reviewVO.getTemplateGroupId();
         TemplateGroup templateGroup = baseMapper.selectById(templateGroupId);
         if (!ReviewEnum.REVIEWING.getCode().equals(templateGroup.getStatus())) {

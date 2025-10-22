@@ -35,6 +35,7 @@ import xyz.qy.implatform.enums.BanTypeEnum;
 import xyz.qy.implatform.enums.GroupChangeTypeEnum;
 import xyz.qy.implatform.enums.LeaderVoteNumEnum;
 import xyz.qy.implatform.enums.ResultCode;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.RegionGroupMapper;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
@@ -257,25 +258,26 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 continue;
             }
             UserSession userSession = Convert.convert(UserSession.class, object);
-            UserVO userVO = userService.findUserById(userSession.getUserId());
-            if (userId.equals(userVO.getId())) {
+            User user = userService.getById(userSession.getUserId());
+            if (userId.equals(user.getId())) {
                 hasAuth.set(true);
             }
             RegionGroupMemberVO memberVO = new RegionGroupMemberVO();
             memberVO.setRegionGroupId(regionGroup.getId());
             memberVO.setQuit(false);
-            memberVO.setHeadImage(userVO.getHeadImage());
-            memberVO.setAliasName(userVO.getNickName());
-            memberVO.setRemark(userVO.getNickName());
-            memberVO.setUserId(userVO.getId());
-            memberVO.setUserName(userVO.getUserName());
+            memberVO.setRole(user.getRole());
+            memberVO.setHeadImage(user.getHeadImage());
+            memberVO.setAliasName(user.getNickName());
+            memberVO.setRemark(user.getNickName());
+            memberVO.setUserId(user.getId());
+            memberVO.setUserName(user.getUserName());
             memberVO.setJoinType(0);
-            Object banMsg = redisCache.getCacheObject(RedisKey.IM_REGION_GROUP_MEMBER_MSG_SWITCH + regionGroup.getId() + ":" + userVO.getId());
+            Object banMsg = redisCache.getCacheObject(RedisKey.IM_REGION_GROUP_MEMBER_MSG_SWITCH + regionGroup.getId() + ":" + user.getId());
             if (ObjectUtil.isNotNull(banMsg)) {
                 memberVO.setIsBanned(true);
             }
             // 剩余过期时间
-            long expire = redisCache.getExpire(IMRedisKey.IM_USER_TEMP_REGION_GROUP + userVO.getId() + ":" + regionGroup.getCode(), TimeUnit.MILLISECONDS);
+            long expire = redisCache.getExpire(IMRedisKey.IM_USER_TEMP_REGION_GROUP + user.getId() + ":" + regionGroup.getCode(), TimeUnit.MILLISECONDS);
 
             // 已加入时间
             int duration = (int) (RegionGroupConst.TEMP_MEMBER_DURATION * 60 * 60 * 1000 - expire);
@@ -283,7 +285,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             Date joinTime = DateUtil.offset(now, DateField.MILLISECOND, -duration);
             memberVO.setCreateTime(joinTime);
 
-            memberVO.setOnline(imClient.isOnline(userVO.getId()));
+            memberVO.setOnline(imClient.isOnline(user.getId()));
             tempMemberVos.add(memberVO);
         }
 
@@ -306,6 +308,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 if (StringUtils.isBlank(vo.getHeadImage())) {
                     vo.setHeadImage(user.getHeadImage());
                 }
+                vo.setRole(user.getRole());
                 vo.setUserName(user.getUserName());
                 if (userId.equals(m.getUserId()) && !m.getQuit() ) {
                     hasAuth.set(true);
@@ -319,7 +322,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             }).collect(Collectors.toList());
             allMembers.addAll(groupMemberVOS);
         }
-        if (userId.equals(Constant.ADMIN_USER_ID)) {
+        if (session.getRole().equals(RoleEnum.SUPER_ADMIN.getCode())) {
             hasAuth.set(true);
         }
         if (!hasAuth.get()) {
@@ -878,7 +881,8 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
 
         Date now = new Date();
         // 判断用户是否群主或系统管理员
-        if (!session.getUserId().equals(Constant.ADMIN_USER_ID) && !isRegionGroupLeader(session.getUserId(), regionGroup)) {
+        if (!StringUtils.equalsAny(session.getRole(), RoleEnum.SUPER_ADMIN.getCode(), RoleEnum.ADMIN.getCode())
+            && !isRegionGroupLeader(session.getUserId(), regionGroup)) {
             throw new GlobalException("您不是群主或系统管理员，无权限操作");
         }
         if (!StringUtils.equalsAny(dto.getBanType(), BanTypeEnum.SYS.getCode(), BanTypeEnum.MASTER.getCode())) {
@@ -895,7 +899,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             }
             this.updateById(regionGroup);
             String content = null;
-            if (session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+            if (StringUtils.equalsAny(session.getRole(), RoleEnum.SUPER_ADMIN.getCode(), RoleEnum.ADMIN.getCode())) {
                 content = "当前群聊已被系统禁言，禁言时长" + dto.getBanDuration() + "小时";
             } else {
                 content = "群主已开启全员禁言，禁言时长" + dto.getBanDuration() + "小时";
@@ -928,7 +932,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             }
 
             String content = null;
-            if (session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+            if (StringUtils.equalsAny(session.getRole(), RoleEnum.SUPER_ADMIN.getCode(), RoleEnum.ADMIN.getCode()))) {
                 content = "群成员【"+ dto.getAliasName() + "】已被系统禁言，禁言时长" + dto.getBanDuration() + "小时";
             } else {
                 content = "群成员【"+ dto.getAliasName() + "】已被群主禁言，禁言时长" + dto.getBanDuration() + "小时";
@@ -945,7 +949,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         RegionGroup regionGroup = this.getById(dto.getId());
 
         // 判断用户是否群主或系统管理员
-        if (!session.getUserId().equals(Constant.ADMIN_USER_ID) && !isRegionGroupLeader(session.getUserId(), regionGroup)) {
+        if (!StringUtils.equalsAny(session.getRole(), RoleEnum.SUPER_ADMIN.getCode(), RoleEnum.ADMIN.getCode()) && !isRegionGroupLeader(session.getUserId(), regionGroup)) {
             throw new GlobalException("您不是群主或系统管理员，无权限操作");
         }
 
@@ -956,7 +960,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             }
             // 全局禁言解除，判断被禁言类型
             if (BanTypeEnum.SYS.getCode().equals(regionGroup.getBanType())
-                    && !session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+                    && !StringUtils.equalsAny(session.getRole(), RoleEnum.SUPER_ADMIN.getCode(), RoleEnum.ADMIN.getCode())) {
                 throw new GlobalException("当前地区群聊被系统禁言，您无权限解除！");
             }
 
@@ -982,7 +986,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 }
 
                 if (BanTypeEnum.SYS.getCode().equals(regionGroupMember.getBanType())
-                        && !session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+                        && !StringUtils.equalsAny(session.getRole(), RoleEnum.SUPER_ADMIN.getCode(), RoleEnum.ADMIN.getCode())) {
                     throw new GlobalException("用户被系统禁言，您无权限解除！");
                 }
                 LambdaUpdateWrapper<RegionGroupMember> updateWrapper = new LambdaUpdateWrapper<>();
@@ -1000,7 +1004,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 }
 
                 if (BanTypeEnum.SYS.getCode().equals(object.toString())
-                        && !session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+                        && !StringUtils.equalsAny(session.getRole(), RoleEnum.SUPER_ADMIN.getCode(), RoleEnum.ADMIN.getCode())) {
                     throw new GlobalException("用户被系统禁言，您无权限解除！");
                 }
 

@@ -25,6 +25,7 @@ import xyz.qy.implatform.entity.Region;
 import xyz.qy.implatform.entity.RegionGroup;
 import xyz.qy.implatform.entity.RegionGroupMember;
 import xyz.qy.implatform.enums.BanTypeEnum;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IGroupService;
@@ -80,7 +81,7 @@ public class BanSendMsgAspect {
         Long userId = session.getUserId();
 
         // 网站管理员无需校验
-        if (userId.equals(Constant.ADMIN_USER_ID)) {
+        if (StringUtils.equalsAny(session.getRole(), RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode())) {
             return point.proceed();
         }
 

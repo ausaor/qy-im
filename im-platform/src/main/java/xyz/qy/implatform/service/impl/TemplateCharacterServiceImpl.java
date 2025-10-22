@@ -10,6 +10,7 @@ import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.enums.ReviewEnum;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TemplateCharacterMapper;
 import xyz.qy.implatform.service.IGroupMemberService;
@@ -134,7 +135,7 @@ public class TemplateCharacterServiceImpl extends ServiceImpl<TemplateCharacterM
         if (CollectionUtils.isEmpty(templateCharacterVOList)) {
             throw new GlobalException("模板人物数据为空");
         }
-        if (!session.getUserId().equals(Constant.ADMIN_USER_ID)
+        if (!session.getRole().equals(RoleEnum.SUPER_ADMIN.getCode())
                 && templateGroupVO.getTemplateCharacterVOList().size() > Constant.USER_MAX_TEMPLATE_CHARACTER_NUM) {
             throw new GlobalException("每个模板群聊最多只能创建" + Constant.USER_MAX_TEMPLATE_CHARACTER_NUM + "个模板人物");
         }

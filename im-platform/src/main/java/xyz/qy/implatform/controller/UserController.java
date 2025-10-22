@@ -11,12 +11,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.annotation.RequireRoles;
 import xyz.qy.implatform.dto.EmailBindDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
 import xyz.qy.implatform.dto.ResetPwdDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
+import xyz.qy.implatform.dto.UserUpdateDTO;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IUserService;
@@ -69,6 +72,14 @@ public class UserController {
         return ResultUtils.success(userService.findUserById(id));
     }
 
+    @ApiOperation(value = "超级管理员修改用户信息", notes = "超级管理员修改用户信息")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
+    @PostMapping("/updateByAdmin")
+    public Result updateByAdmin(@RequestBody @Valid UserUpdateDTO dto) {
+        userService.updateByAdmin(dto);
+        return ResultUtils.success();
+    }
+
     @PutMapping("/update")
     @ApiOperation(value = "修改用户信息", notes = "修改用户信息，仅允许修改登录用户信息")
     public Result update(@Valid @RequestBody UserVO vo) {
@@ -116,6 +127,7 @@ public class UserController {
     }
 
     @ApiOperation(value = "禁言用户",notes="禁言用户")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN})
     @PostMapping ("/bandUser")
     public Result banUser(@Valid @RequestBody UserBanDTO dto){
         userService.bandUser(dto);
@@ -123,6 +135,7 @@ public class UserController {
     }
 
     @ApiOperation(value = "解禁用户",notes="解禁用户")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN})
     @PostMapping ("/unBandUser")
     public Result unBandUser(@Valid @RequestBody UserBanDTO dto){
         userService.unBandUser(dto);
@@ -130,6 +143,7 @@ public class UserController {
     }
 
     @ApiOperation(value = "封禁账号",notes="封禁账号")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
     @GetMapping ("/banAccount")
     public Result banAccount(@RequestParam Long userId) {
         userService.banAccount(userId);
@@ -137,6 +151,7 @@ public class UserController {
     }
 
     @ApiOperation(value = "解封账号",notes="解封账号")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
     @GetMapping ("/unBanAccount")
     public Result unBanAccount(@RequestParam Long userId) {
         userService.unBanAccount(userId);

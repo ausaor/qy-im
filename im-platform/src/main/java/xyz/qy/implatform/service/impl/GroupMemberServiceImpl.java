@@ -342,7 +342,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         groupMember.setHeadImage(templateCharacter.getAvatar());
         groupMember.setSwitchTime(new Date());
 
-        this.saveOrUpdateBatch(group.getId(), Collections.singletonList(groupMember));
+        this.updateById(groupMember);
         String content = "用户【" + session.getNickName() + "】将模板角色切换成【" + groupMember.getAliasName() + "】";
         messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
                 Collections.emptyList(), content, GroupChangeTypeEnum.TEMPLATE_CHARACTER_CHANGE.getCode());
@@ -428,7 +428,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         groupMember.setAvatarAlias(characterAvatar.getName());
         groupMember.setSwitchTime(new Date());
 
-        this.saveOrUpdateBatch(group.getId(), Collections.singletonList(groupMember));
+        this.updateById(groupMember);
 
         String content = "用户【" + session.getNickName() + "】切换了模板角色头像";
         messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),

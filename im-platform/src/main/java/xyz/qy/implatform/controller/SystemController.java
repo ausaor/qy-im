@@ -4,6 +4,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import xyz.qy.implatform.annotation.RequireRoles;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IMediaMaterialService;
@@ -25,6 +27,7 @@ public class SystemController {
         return ResultUtils.success(systemService.getSystemConfig());
     }
 
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
     @GetMapping("/allBanned")
     @ApiOperation(value = "全局禁言", notes = "全局禁言")
     public Result allBanned(Integer time) {
@@ -32,6 +35,7 @@ public class SystemController {
         return ResultUtils.success();
     }
 
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
     @GetMapping("/unAllBanned")
     @ApiOperation(value = "解除全局禁言", notes = "解除全局禁言")
     public Result unAllBanned() {

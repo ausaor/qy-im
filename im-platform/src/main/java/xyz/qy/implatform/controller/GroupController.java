@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.annotation.RepeatSubmit;
 import xyz.qy.implatform.dto.GroupBanDTO;
+import xyz.qy.implatform.dto.GroupMemberDTO;
 import xyz.qy.implatform.dto.GroupQueryDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -164,6 +165,20 @@ public class GroupController {
     @PostMapping("/unBanMsg")
     public Result unBanMsg(@Valid @RequestBody GroupBanDTO dto) {
         groupService.unBanMsg(dto);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "设置群聊管理员", notes = "设置群聊管理员")
+    @PostMapping("/setGroupAdmin")
+    public Result setGroupAdmin(@RequestBody @Valid GroupMemberDTO dto) {
+        groupService.setGroupAdmin(dto);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "取消群聊管理员", notes = "取消群聊管理员")
+    @PostMapping("/removeGroupAdmin")
+    public Result removeGroupAdmin(@RequestBody @Valid GroupMemberDTO dto) {
+        groupService.removeGroupAdmin(dto);
         return ResultUtils.success();
     }
 }

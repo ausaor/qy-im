@@ -82,7 +82,7 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
         }
         if (!Objects.isNull(talkCommentDTO.getCharacterId())) {
             if (talkService.verifyTalkCommentCharacter(talkId, talkCommentDTO.getCharacterId(), talkCommentDTO.getAvatarId())) {
-                throw new GlobalException("只能使用选择过的角色");
+                throw new GlobalException("只能使用选择过的角色或角色已被使用");
             }
         }
 
@@ -141,6 +141,11 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
             if (!Objects.isNull(replyTalkComment)) {
                 if (myUserId.equals(replyTalkComment.getUserId())) {
                     throw new GlobalException("不能回复自己的评论");
+                }
+                if (ObjectUtil.isNull(replyTalkComment.getTopReplyCommentId())) {
+                    talkComment.setTopReplyCommentId(replyTalkComment.getId());
+                } else {
+                    talkComment.setTopReplyCommentId(replyTalkComment.getTopReplyCommentId());
                 }
                 talkComment.setReplyUserCharacterId(replyTalkComment.getCharacterId());
                 talkComment.setReplyCommentId(replyTalkComment.getId());

@@ -31,6 +31,7 @@ import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.EnterGroupUsersDTO;
 import xyz.qy.implatform.dto.GroupBanDTO;
+import xyz.qy.implatform.dto.GroupMemberDTO;
 import xyz.qy.implatform.dto.GroupQueryDTO;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.Group;
@@ -41,11 +42,13 @@ import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.BanTypeEnum;
 import xyz.qy.implatform.enums.GroupChangeTypeEnum;
+import xyz.qy.implatform.enums.GroupRoleEnum;
 import xyz.qy.implatform.enums.GroupTypeEnum;
 import xyz.qy.implatform.enums.MessageStatus;
 import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.enums.ReviewEnum;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.GroupMapper;
 import xyz.qy.implatform.mapper.GroupMessageMapper;
@@ -149,6 +152,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         GroupMember groupMember = new GroupMember();
         groupMember.setGroupId(group.getId());
         groupMember.setUserId(user.getId());
+        groupMember.setGroupRole(GroupRoleEnum.OWNER.getCode());
         groupMember.setHeadImage(user.getHeadImage());
         groupMember.setAliasName(StringUtils.isEmpty(vo.getAliasName()) ? session.getNickName() : vo.getAliasName());
         groupMember.setRemark(StringUtils.isEmpty(vo.getRemark()) ? group.getName() : vo.getRemark());
@@ -714,7 +718,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
         boolean hasAuth = userId.equals(group.getOwnerId())
                 || members.stream().anyMatch(m -> m.getUserId().equals(userId) && !m.getQuit())
-                || userId.equals(Constant.ADMIN_USER_ID);
+                || StringUtils.equalsAny(session.getRole(), RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode());
         if (!hasAuth) {
             throw new GlobalException("您无权限查看群成员");
         }
@@ -729,6 +733,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             GroupMemberVO vo = BeanUtils.copyProperties(m, GroupMemberVO.class);
             User user = userMap.get(vo.getUserId());
 
+            vo.setRole(user.getRole());
             vo.setUserName(user.getUserName());
             if (user.getId().equals(group.getOwnerId())) {
                 vo.setIsAdmin(true);
@@ -827,6 +832,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         groupMember.setAliasName(templateCharacter.getName());
         groupMember.setAliasNamePrefix(templateGroupCreateVO.getAliasNamePrefix());
         groupMember.setAliasNameSuffix(templateGroupCreateVO.getAliasNameSuffix());
+        groupMember.setGroupRole(GroupRoleEnum.OWNER.getCode());
         groupMember.setHeadImage(templateCharacter.getAvatar());
         groupMember.setTemplateCharacterId(templateCharacter.getId());
         groupMember.setIsTemplate(true);
@@ -923,7 +929,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             groupMember.setAvatarAlias(null);
         }
         baseMapper.updateById(group);
-        groupMemberService.saveOrUpdateBatch(group.getId(), noQuitGroupMembers);
+        groupMemberService.updateBatchById(noQuitGroupMembers);
         GroupVO groupVO = BeanUtils.copyProperties(group, GroupVO.class);
         groupVO.setAliasName(groupMemberMap.get(user.getId()).getTemplateCharacterName());
 
@@ -1003,7 +1009,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         // 更新群信息
         baseMapper.updateById(group);
         // 更新群用户信息
-        groupMemberService.saveOrUpdateBatch(vo.getGroupId(), groupMemberList);
+        groupMemberService.updateBatchById(groupMemberList);
         GroupVO groupVO = BeanUtils.copyProperties(group, GroupVO.class);
         groupVO.setAliasName(groupMemberMap.get(user.getId()).getAliasName());
         messageSendUtil.sendTipMessage(group.getId(),
@@ -1090,7 +1096,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             groupMember.setAvatarAlias(null);
         }
         baseMapper.updateById(group);
-        groupMemberService.saveOrUpdateBatch(group.getId(), noQuitGroupMembers);
+        groupMemberService.updateBatchById(noQuitGroupMembers);
 
         GroupVO groupVO = BeanUtils.copyProperties(group, GroupVO.class);
         assert groupVO != null;
@@ -1179,7 +1185,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             group.setHeadImageThumb("");
         }
         baseMapper.updateById(group);
-        groupMemberService.saveOrUpdateBatch(group.getId(), noQuitGroupMembers);
+        groupMemberService.updateBatchById(noQuitGroupMembers);
 
         GroupVO groupVO = BeanUtils.copyProperties(group, GroupVO.class);
         assert groupVO != null;
@@ -1271,7 +1277,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             groupMember.setAvatarAlias(null);
         }
         baseMapper.updateById(group);
-        groupMemberService.saveOrUpdateBatch(group.getId(), noQuitGroupMembers);
+        groupMemberService.updateBatchById(noQuitGroupMembers);
         GroupVO groupVO = BeanUtils.copyProperties(group, GroupVO.class);
         groupVO.setAliasName(groupMemberMap.get(user.getId()).getTemplateCharacterName());
 
@@ -1572,7 +1578,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         Group group = this.getById(dto.getId());
 
         // 判断用户是否群主或系统管理员
-        if (!session.getUserId().equals(Constant.ADMIN_USER_ID) && !session.getUserId().equals(group.getOwnerId())) {
+        if (!StringUtils.equalsAny(session.getRole(), RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode())
+                && !session.getUserId().equals(group.getOwnerId())) {
             throw new GlobalException("您不是群主或系统管理员，无权限操作");
         }
         if (!StringUtils.equalsAny(dto.getBanType(), BanTypeEnum.SYS.getCode(), BanTypeEnum.MASTER.getCode())) {
@@ -1590,7 +1597,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
             this.updateById(group);
             String content = null;
-            if (session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+            if (StringUtils.equalsAny(session.getRole(), RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode())) {
                 content = "当前群聊已被系统禁言，禁言时长" + dto.getBanDuration() + "分钟";
             } else {
                 content = "群主已开启全员禁言，禁言时长" + dto.getBanDuration() + "分钟";
@@ -1637,7 +1644,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         Group group = this.getById(dto.getId());
 
         // 判断用户是否群主或系统管理员
-        if (!session.getUserId().equals(Constant.ADMIN_USER_ID) && !session.getUserId().equals(group.getOwnerId())) {
+        if (!StringUtils.equalsAny(session.getRole(), RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode())
+                && !session.getUserId().equals(group.getOwnerId())) {
             throw new GlobalException("您不是群主或系统管理员，无权限操作");
         }
 
@@ -1648,7 +1656,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
             // 全局禁言解除，判断被禁言类型
             if (BanTypeEnum.SYS.getCode().equals(group.getBanType())
-                    && !session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+                    && !StringUtils.equalsAny(session.getRole(), RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode())) {
                 throw new GlobalException("当前群聊被系统禁言，您无权限解除！");
             }
 
@@ -1674,7 +1682,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
 
             if (BanTypeEnum.SYS.getCode().equals(groupMember.getBanType())
-                    && !session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+                    && !StringUtils.equalsAny(session.getRole(), RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode())) {
                 throw new GlobalException("用户被系统禁言，您无权限解除！");
             }
             LambdaUpdateWrapper<GroupMember> updateWrapper = new LambdaUpdateWrapper<>();
@@ -1737,6 +1745,71 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         sendMessage.setSendResult(false);
         sendMessage.setSendToSelf(sendToSelf);
         imClient.sendGroupMessage(sendMessage);
+    }
+
+    @Override
+    public void setGroupAdmin(GroupMemberDTO dto) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
+        if (userId.equals(dto.getUserId())) {
+            throw new GlobalException("不能设置自己的群角色");
+        }
+
+        // 判断当前登录用户是否群主
+        Group group = this.getById(dto.getGroupId());
+        if (ObjectUtil.isNull(group) || group.getDeleted()) {
+            throw new GlobalException("群聊不存在");
+        }
+        if (!userId.equals(group.getOwnerId())) {
+            throw new GlobalException("您不是群主，无此权限");
+        }
+        GroupMember member = groupMemberService.findByGroupAndUserId(dto.getGroupId(), dto.getUserId());
+        if (ObjectUtil.isNull(member) || member.getQuit()) {
+            throw new GlobalException("用户不在群聊中");
+        }
+        if (member.getGroupRole().equals(GroupRoleEnum.ADMIN.getCode())) {
+            throw new GlobalException("用户已经是管理员");
+        }
+        member.setGroupRole(GroupRoleEnum.ADMIN.getCode());
+        groupMemberService.updateById(member);
+        log.info("设置群聊管理员成功：groupId：{}，userId：{}", member.getGroupId(), member.getUserId());
+
+        String content = String.format("群主已将群成员%s设置为管理员", member.getAliasName());
+        messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
+                null, content, GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
+    }
+
+    @Override
+    public void removeGroupAdmin(GroupMemberDTO dto) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
+        if (userId.equals(dto.getUserId())) {
+            throw new GlobalException("不能设置自己的群角色");
+        }
+
+        // 判断当前登录用户是否群主
+        Group group = this.getById(dto.getGroupId());
+        if (ObjectUtil.isNull(group) || group.getDeleted()) {
+            throw new GlobalException("群聊不存在");
+        }
+        if (!userId.equals(group.getOwnerId())) {
+            throw new GlobalException("您不是群主，无此权限");
+        }
+        GroupMember member = groupMemberService.findByGroupAndUserId(dto.getGroupId(), dto.getUserId());
+        if (ObjectUtil.isNull(member) || member.getQuit()) {
+            throw new GlobalException("用户不在群聊中");
+        }
+        if (!member.getGroupRole().equals(GroupRoleEnum.ADMIN.getCode())) {
+            throw new GlobalException("用户不是管理员");
+        }
+        member.setGroupRole(GroupRoleEnum.MEMBER.getCode());
+        groupMemberService.updateById(member);
+        log.info("取消群聊管理员成功：groupId：{}，userId：{}", member.getGroupId(), member.getUserId());
+        String content = String.format("群主已取消群成员%s的管理员权限", member.getAliasName());
+        messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
+                null, content, GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
     }
 
     private void sendDelGroupMessage(Long groupId, List<Long> recvIds) {

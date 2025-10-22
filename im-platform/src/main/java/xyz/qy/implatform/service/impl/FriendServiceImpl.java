@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.cache.annotation.CacheConfig;
@@ -43,8 +44,10 @@ import xyz.qy.implatform.vo.FriendVO;
 import xyz.qy.implatform.vo.PrivateMessageVO;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -64,7 +67,18 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     @Override
     public List<FriendVO> findFriends() {
         List<Friend> friends = this.findAllFriends();
-        return friends.stream().map(this::convert).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(friends)) {
+            return Collections.emptyList();
+        }
+        List<Long> friendIds = friends.stream().map(Friend::getFriendId).collect(Collectors.toList());
+        List<User> users = userMapper.selectBatchIds(friendIds);
+
+        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, user -> user));
+        return friends.stream().map(friend -> {
+                    FriendVO friendVO = this.convert(friend);
+                    friendVO.setRole(userMap.get(friend.getFriendId()).getRole());
+                    return friendVO;
+        }).collect(Collectors.toList());
     }
 
     @Override

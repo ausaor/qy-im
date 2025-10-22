@@ -63,6 +63,12 @@ public class GroupMember extends Model<GroupMember> {
     private String aliasNameSuffix;
 
     /**
+     * 群角色
+     */
+    @TableField("group_role")
+    private Integer groupRole;
+
+    /**
      * 用户昵称（用于非普通群聊时备注）
      */
     @TableField("nickname")

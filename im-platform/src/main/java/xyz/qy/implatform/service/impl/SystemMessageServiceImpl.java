@@ -79,11 +79,6 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
 
     @Override
     public SystemMessageVO getBySysMsgId(Long id) {
-        UserSession session = SessionContext.getSession();
-        Long userId = session.getUserId();
-        if (!userId.equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("只有系统管理员有权限查看系统消息");
-        }
         SystemMessage systemMessage = this.getById(id);
         if (ObjectUtil.isNull(systemMessage)) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "系统消息不存在");
@@ -100,9 +95,6 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
     public void save(SystemMessageDTO dto) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
-        if (!userId.equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("只有系统管理员有权限新增系统消息");
-        }
 
         SystemMessage systemMessage = BeanUtils.copyProperties(dto, SystemMessage.class);
         systemMessage.setCreateBy(userId);
@@ -115,9 +107,6 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
         Assert.notNull(dto.getId(), "系统消息id不能为空");
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
-        if (!userId.equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("只有系统管理员有权限修改系统消息");
-        }
 
         SystemMessage systemMessage = this.getById(dto.getId());
         if (ObjectUtil.isNull(systemMessage)) {
@@ -140,9 +129,6 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
     public void batchDeleteByIds(SysMsgDelDTO dto) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
-        if (!userId.equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("只有系统管理员有权限删除系统消息");
-        }
         List<SystemMessage> systemMessages = this.listByIds(dto.getIds());
         if (CollUtil.isEmpty(systemMessages)) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "系统消息不存在");
@@ -208,12 +194,6 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
 
     @Override
     public PageResultVO pageSysMsg(SysMsgQueryDTO queryDTO) {
-        UserSession session = SessionContext.getSession();
-        Long userId = session.getUserId();
-        if (!userId.equals(Constant.ADMIN_USER_ID)) {
-            throw new GlobalException("不是系统管理员，无法操作");
-        }
-
         LambdaQueryWrapper<SystemMessage> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.eq(SystemMessage::getDeleted, false);
         queryWrapper.eq(queryDTO.getType() != null, SystemMessage::getType, queryDTO.getType());

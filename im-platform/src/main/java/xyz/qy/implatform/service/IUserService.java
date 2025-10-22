@@ -8,6 +8,7 @@ import xyz.qy.implatform.dto.RegisterDTO;
 import xyz.qy.implatform.dto.ResetPwdDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
+import xyz.qy.implatform.dto.UserUpdateDTO;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.vo.LoginVO;
 import xyz.qy.implatform.vo.OnlineTerminalVO;
@@ -29,6 +30,8 @@ public interface IUserService extends IService<User> {
     User findUserByUserName(String username);
 
     User findUserByEmail(String email);
+
+    void updateByAdmin(UserUpdateDTO dto);
 
     void update(UserVO vo);
 

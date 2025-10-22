@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.annotation.RequireRoles;
 import xyz.qy.implatform.dto.SysMsgDelDTO;
 import xyz.qy.implatform.dto.SysMsgQueryDTO;
 import xyz.qy.implatform.dto.SystemMessageDTO;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.ISystemMessageService;
@@ -34,12 +36,14 @@ public class SystemMessageController {
     private ISystemMessageService systemMessageService;
 
     @ApiOperation(value = "获取系统消息", notes = "获取系统消息")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
     @GetMapping("/get")
     public Result<SystemMessageVO> get(@RequestParam Long id) {
         return ResultUtils.success(systemMessageService.getBySysMsgId(id));
     }
 
     @ApiOperation(value = "保存系统消息", notes = "保存系统消息")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
     @PostMapping("/save")
     public Result save(@Valid @RequestBody SystemMessageDTO dto) {
         systemMessageService.save(dto);
@@ -47,6 +51,7 @@ public class SystemMessageController {
     }
 
     @ApiOperation(value = "修改系统消息", notes = "修改系统消息")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
     @PostMapping("/modify")
     public Result modify(@Valid @RequestBody SystemMessageDTO dto) {
         systemMessageService.modify(dto);
@@ -54,6 +59,7 @@ public class SystemMessageController {
     }
 
     @ApiOperation(value = "批量删除系统消息", notes = "批量删除系统消息")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
     @PostMapping("/batchDelete")
     public Result batchDelete(@Valid @RequestBody SysMsgDelDTO dto) {
         systemMessageService.batchDeleteByIds(dto);
@@ -75,6 +81,7 @@ public class SystemMessageController {
     }
 
     @ApiOperation(value = "分页查询系统消息", notes = "分页查询系统消息")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
     @PostMapping("/page")
     public Result pageSysMsg(@RequestBody SysMsgQueryDTO queryDTO) {
         return ResultUtils.success(systemMessageService.pageSysMsg(queryDTO));

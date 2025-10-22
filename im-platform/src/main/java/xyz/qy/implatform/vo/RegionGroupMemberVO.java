@@ -31,6 +31,11 @@ public class RegionGroupMemberVO {
     private String userName;
 
     /**
+     * 角色
+     */
+    private String role;
+
+    /**
      * 聊天名称
      */
     private String aliasName;

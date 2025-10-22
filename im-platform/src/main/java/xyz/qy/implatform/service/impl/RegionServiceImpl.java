@@ -19,6 +19,7 @@ import xyz.qy.implatform.dto.RegionBanDTO;
 import xyz.qy.implatform.dto.RegionQueryDTO;
 import xyz.qy.implatform.entity.Region;
 import xyz.qy.implatform.enums.BanTypeEnum;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.RegionMapper;
 import xyz.qy.implatform.service.IRegionService;
@@ -170,8 +171,7 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
     @Override
     public void banMsg(RegionBanDTO dto) {
         UserSession session = SessionContext.getSession();
-        Long userId = session.getUserId();
-        if (!userId.equals(Constant.ADMIN_USER_ID)) {
+        if (!StringUtils.equalsAny(session.getRole(), RoleEnum.SUPER_ADMIN.getCode(), RoleEnum.ADMIN.getCode())) {
             throw new GlobalException("无权限操作");
         }
         if (!StringUtils.equalsAny(dto.getBanType(), BanTypeEnum.SYS.getCode())) {
@@ -200,8 +200,7 @@ public class RegionServiceImpl extends ServiceImpl<RegionMapper, Region> impleme
     @Override
     public void unBanMsg(RegionBanDTO dto) {
         UserSession session = SessionContext.getSession();
-        Long userId = session.getUserId();
-        if (!userId.equals(Constant.ADMIN_USER_ID)) {
+        if (!StringUtils.equalsAny(session.getRole(), RoleEnum.SUPER_ADMIN.getCode(), RoleEnum.ADMIN.getCode())) {
             throw new GlobalException("无权限操作");
         }
 

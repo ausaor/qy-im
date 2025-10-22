@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.annotation.RequireRoles;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -20,6 +22,7 @@ import xyz.qy.implatform.vo.ReviewVO;
 import xyz.qy.implatform.vo.TemplateCharacterVO;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -79,13 +82,15 @@ public class CharacterAvatarController {
     }
 
     @ApiOperation(value = "提交审核结论", notes = "提交审核结论")
+    @RequireRoles(value = {RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN})
     @PostMapping("/submitAuditConclusion")
-    public Result submitAuditConclusion(@RequestBody ReviewVO reviewVO) {
+    public Result submitAuditConclusion(@RequestBody @Valid ReviewVO reviewVO) {
         characterAvatarService.submitAuditConclusion(reviewVO);
         return ResultUtils.success();
     }
 
     @ApiOperation(value = "查询审核中的人物头像", notes = "查询审核中的人物头像")
+    @RequireRoles(value = {RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN})
     @GetMapping("/findReviewingCharacterAvatar")
     public Result<List<TemplateCharacterVO>> findReviewingCharacterAvatar() {
         return ResultUtils.success(characterAvatarService.findReviewingCharacterAvatar());

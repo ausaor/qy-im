@@ -11,6 +11,7 @@ import xyz.qy.implatform.annotation.FeatureControl;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.enums.FeatureCodeEnum;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
@@ -39,7 +40,7 @@ public class FeatureControlAspect {
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         try {
             UserSession session = SessionContext.getSession();
-            if (session != null && session.getUserId().equals(Constant.ADMIN_USER_ID)) {
+            if (session != null && session.getRole().equals(RoleEnum.SUPER_ADMIN.getCode())) {
                 return joinPoint.proceed();
             }
         } catch (Exception e) {
