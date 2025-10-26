@@ -4,11 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import xyz.qy.implatform.config.WebrtcConfig;
-import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
-import xyz.qy.implatform.exception.GlobalException;
-import xyz.qy.implatform.session.SessionContext;
-import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.RSAUtil;
 import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.vo.SystemConfigVO;
@@ -30,7 +26,7 @@ public class SystemService {
         SystemConfigVO systemConfigVO = new SystemConfigVO();
 
         systemConfigVO.setWebrtc(webrtcConfig);
-        systemConfigVO.setGaoDeMapKey(RSAUtil.encryptByPrivateKey(gaoDeMapKey));
+        systemConfigVO.setGaoDeMapKey(RSAUtil.encrypt(gaoDeMapKey));
         return systemConfigVO;
     }
 

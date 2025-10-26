@@ -17,6 +17,7 @@
     "event-source-polyfill": "^1.0.31",
     "highlight.js": "^11.8.0",
     "js-audio-recorder": "^1.0.7",
+    "jsencrypt": "^3.5.4",
     "localforage": "^1.10.0",
     "marked": "^4.3.0",
     "particles.js": "^2.0.0",
