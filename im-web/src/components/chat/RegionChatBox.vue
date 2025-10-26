@@ -735,6 +735,7 @@ export default {
         headImage: "",
         nickName: "",
         quoteShowName: '',
+        role: '',
       };
       if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
         let friend = this.friends.find((f) => f.id === msgInfo.sendId);

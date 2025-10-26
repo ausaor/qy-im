@@ -9,7 +9,7 @@
   --bg-color: #fafafa;
   --border-color: #F0FFF0;
   --online-color: SpringGreen;
-  --unline-color: gray;
+  --unline-color: rgb(128, 128, 128);
   --permanent-color: LightSeaGreen;
   --temporary-color: orange;
 }
