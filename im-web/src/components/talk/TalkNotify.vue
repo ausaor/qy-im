@@ -75,7 +75,8 @@
                 <span v-html="$emo.transform(reply.content)" class="comment-content"></span>
               </div>
             </div>
-            <input-box ref="contentInputBox" :placeholder="placeholder" :width="'100%'" @send="(...args) => sayComment(message, ...args)"></input-box>
+            <input-box ref="contentInputBox" :character-id="message.talk.commentCharacterId" :placeholder="placeholder"
+                       :width="'100%'" @send="(...args) => sayComment(message, ...args)"></input-box>
           </div>
         </div>
       </div>
@@ -159,7 +160,8 @@ export default {
         characterId: talk.commentCharacterId,
         avatarId: talk.commentCharacterAvatarId,
         userAvatar: talk.commentCharacterAvatar,
-        replyCommentId: message.commentId
+        replyCommentId: message.commentId,
+        type: this.$enums.MESSAGE_TYPE.TEXT
       }
       this.$http({
         url: "/talk/addTalkComment",

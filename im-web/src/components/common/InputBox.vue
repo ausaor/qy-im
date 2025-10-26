@@ -3,14 +3,20 @@
     <div class="content-input-box">
       <div ref="textareaRef" contenteditable="true" @input="onInput"
            @paste="optimizePasteEvent" :data-placeholder="placeholder"
-           class="comment-textarea"></div>
-      <span class="point biaoqing-point" @click="showEmoji = !showEmoji">
-        <i class="icon iconfont icon-biaoqing"></i>
-      </span>
-      <a class="sendBtn point" @click="send()">发送</a>
+           class="comment-textarea">
+      </div>
     </div>
     <div class="emoji-wrapper" v-if="showEmoji">
       <Emoji @chooseEmoji="handleChooseEmoji"/>
+    </div>
+    <div class="btn-group">
+      <div class="point ci-point" v-if="characterId">
+        <i class="icon iconfont icon-minganci"></i>
+      </div>
+      <div class="point biaoqing-point" @click="showEmoji = !showEmoji">
+        <i class="icon iconfont icon-biaoqing"></i>
+      </div>
+      <div class="sendBtn point" @click="send()">发送</div>
     </div>
   </div>
 </template>
@@ -31,6 +37,10 @@
       width: {
         type: String,
         default: '50%'
+      },
+      characterId: {
+        type: Number,
+        default: null
       }
     },
     data() {
@@ -154,44 +164,58 @@
   background-color: #fff;
   position: relative;
   min-height: 100px;
-  margin-left: 10px;
+  padding-bottom: 30px;
 
-  .comment-textarea {
-    text-align: left;
-    min-height: 100px;
-    outline: none;
-    padding-left: 10px;
-    padding-top: 5px;
+  .content-input-box {
+    .comment-textarea {
+      text-align: left;
+      min-height: 100px;
+      outline: none;
+      padding-left: 10px;
+      padding-top: 5px;
 
-    &:empty:before {
-      content: attr(data-placeholder);
-      color: #666;
+      &:empty:before {
+        content: attr(data-placeholder);
+        color: #666;
+      }
     }
   }
 
-  .biaoqing-point {
-    cursor: pointer;
-    display: inline-block;
-    color: #5fb878;
-  }
-
-  i {
-    font-size: 1.3rem;
+  .btn-group {
+    border-top: 1px solid #67C23A;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
     position: absolute;
-    right: 80px;
-    bottom: 12px;
-  }
+    bottom: 0;
+    right: 0;
+    gap: 8px;
+    height: 30px;
+    width: 100%;
+    padding: 10px;
 
-  .sendBtn {
-    cursor: pointer;
-    display: inline-block;
-    background-color: #67C23A;
-    color: #fff;
-    padding: 5px 8px 5px 8px;
-    border-radius: 5px;
-    position: absolute;
-    right: 20px;
-    bottom: 5px;
+    .biaoqing-point {
+      cursor: pointer;
+      color: #5fb878;
+    }
+
+    .ci-point {
+      cursor: pointer;
+      color: #b89f5f;
+    }
+
+    i {
+      font-size: 1.3rem;
+    }
+
+    .sendBtn {
+      cursor: pointer;
+      background-color: #67C23A;
+      color: #fff;
+      padding: 2px 3px;
+      border-radius: 5px;
+      font-size: 0.8rem;
+    }
   }
 }
 </style>

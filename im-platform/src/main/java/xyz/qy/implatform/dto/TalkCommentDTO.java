@@ -36,4 +36,8 @@ public class TalkCommentDTO {
 
     @ApiModelProperty(value = "回复的评论id")
     private Long replyCommentId;
+
+    @ApiModelProperty(value = "评论类型 0:文字 1:图片 5:语音台词")
+    @NotNull(message = "评论类型不能为空")
+    private Integer type;
 }

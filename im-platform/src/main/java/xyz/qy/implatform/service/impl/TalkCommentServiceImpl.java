@@ -105,6 +105,7 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
         talkComment.setUserId(myUserId);
         talkComment.setCreateBy(myUserId);
         talkComment.setContent(SensitiveUtil.filter(talkCommentDTO.getContent()));
+        talkComment.setType(talkCommentDTO.getType());
         talkComment.setIp(user.getIpAddress());
         talkComment.setIpAddress(user.getProvince());
         if (ObjectUtil.isNotNull(talkCommentDTO.getCharacterId())) {

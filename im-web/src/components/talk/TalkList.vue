@@ -139,7 +139,8 @@
                 <span class="collapse-text">收起评论</span>
                 <i class="el-icon-arrow-up"></i>
               </div>
-              <input-box ref="contentInputBox" :placeholder="placeholder" @send="(...args) => sayComment(item, ...args)"></input-box>
+              <input-box ref="contentInputBox" :placeholder="placeholder" @send="(...args) => sayComment(item, ...args)"
+                         :character-id="item.commentCharacterId"></input-box>
             </div>
           </div>
         </div>
@@ -325,7 +326,8 @@ export default {
         characterId: talk.commentCharacterId,
         avatarId: talk.commentCharacterAvatarId,
         userAvatar: talk.commentCharacterAvatar,
-        replyCommentId: this.comment.replyCommentId
+        replyCommentId: this.comment.replyCommentId,
+        type: this.$enums.MESSAGE_TYPE.TEXT
       }
       this.$http({
         url: "/talk/addTalkComment",

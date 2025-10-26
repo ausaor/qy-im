@@ -494,6 +494,7 @@ create table im_talk_comment
     reply_user_character_id       bigint     null comment '回复用户角色id',
     reply_user_avatar   varchar(1000)        null comment '回复用户头像',
     reply_user_nickname varchar(50)          null comment '回复用户昵称',
+    type                tinyint(1)           not null comment '评论类型 0:文字 1:图片 5:语音台词',
     ip                  varchar(200)         null comment 'IP地址',
     ip_address          varchar(200)         null comment 'IP来源',
     deleted             tinyint(1) default 0 not null comment '是否删除（0：否；1：是）',

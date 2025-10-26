@@ -103,6 +103,12 @@ public class TalkComment extends BaseEntity {
     private String replyUserNickname;
 
     /**
+     * 评论类型 0:文字 1:图片 5:语音台词
+     */
+    @TableField(value = "type")
+    private Integer type;
+
+    /**
      * IP
      */
     @TableField(value = "ip")

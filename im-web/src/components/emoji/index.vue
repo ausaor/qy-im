@@ -7,9 +7,6 @@
           </el-tooltip>
       </span>
     </div>
-    <div class="btnBox">
-      <el-tag type="" effect="dark">表情</el-tag>
-    </div>
   </div>
 </template>
    
@@ -90,14 +87,6 @@ export default {
                 }
             }
         }
-    }
-
-    .btnBox {
-        text-align: left;
-        margin-top: 20px;
-        padding-top: 5px;
-        border-top: 2px solid #e4e7ed;
-        color: #000;
     }
 }
 </style>
