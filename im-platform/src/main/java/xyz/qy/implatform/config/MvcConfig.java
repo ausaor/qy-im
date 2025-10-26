@@ -22,7 +22,7 @@ public class MvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(xssInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/error", "/message/system/save", "/message/system/modify");
+                .excludePathPatterns("/error");
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns("/website/**", "/home/**", "/captchaImage", "/social/login/*" ,

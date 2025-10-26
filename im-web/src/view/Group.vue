@@ -239,6 +239,7 @@
 		</el-container>
     <el-dialog
         title="请选择群聊模式"
+        v-dialogDrag
         :visible.sync="dialogVisible"
         width="40%">
       <el-radio-group v-model="radio">

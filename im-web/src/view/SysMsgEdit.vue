@@ -203,6 +203,7 @@ import ImageResize from 'quill-image-resize-module' // 引用，调整图片大�
 Quill.register('modules/imageResize', ImageResize)
 // import {ImageDrop} from 'quill-image-drop-module'// 引用，粘贴图片
 // Quill.register('modules/imageDrop', ImageDrop) //粘贴图片
+import { encrypt } from '@/utils/encrypt';
 
 export default {
   name: 'MessageForm',
@@ -634,11 +635,18 @@ export default {
         if (valid) {
           this.loading = true
           try {
+            // 重新生成一个this.form的对象，避免加密对原有数据造成影响
+            const form = { ...this.form }
+
+            // 如果是富文本，则对form.content进行加密
+            if (form.type === 9) {
+              form.content = encrypt(form.content)
+            }
             const url = this.isEdit ? `/message/system/modify` : '/message/system/save'
             this.$http({
               url: url,
               method: "post",
-              data: this.form
+              data: form
             }).then((data) => {
               this.$message.success(this.isEdit ? '更新成功' : '保存成功')
             })

@@ -35,6 +35,7 @@ import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.DecryptUtil;
 import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.vo.ContentDetailVO;
 import xyz.qy.implatform.vo.PageResultVO;
@@ -99,6 +100,15 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
         SystemMessage systemMessage = BeanUtils.copyProperties(dto, SystemMessage.class);
         systemMessage.setCreateBy(userId);
 
+        // 富文本内容
+        if (dto.getType().equals(9)) {
+            try {
+                systemMessage.setContent(DecryptUtil.decrypt(dto.getContent()));
+            } catch (Exception e) {
+                log.error("富文本内容解密异常:{}", e.getMessage());
+            }
+        }
+
         this.save(systemMessage);
     }
 
@@ -122,6 +132,15 @@ public class SystemMessageServiceImpl extends ServiceImpl<SystemMessageMapper, S
 
         BeanUtils.copyProperties(dto, systemMessage);
         systemMessage.setUpdateBy(userId);
+
+        // 富文本内容
+        if (dto.getType().equals(9)) {
+            try {
+                systemMessage.setContent(DecryptUtil.decrypt(dto.getContent()));
+            } catch (Exception e) {
+                log.error("富文本内容解密异常:{}", e.getMessage());
+            }
+        }
         this.updateById(systemMessage);
     }
 
