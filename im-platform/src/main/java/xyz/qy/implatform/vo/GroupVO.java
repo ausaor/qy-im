@@ -31,11 +31,11 @@ public class GroupVO {
     @ApiModelProperty(value = "头像缩略图")
     private String headImageThumb;
 
-    @Length(max = 1024, message = "群聊显示长度不能大于1024")
+    @Length(max = 500, message = "群公告长度不能大于500")
     @ApiModelProperty(value = "群公告")
     private String notice;
 
-    @Length(max = 20, message = "群聊显示长度不能大于20")
+    @Length(max = 10, message = "用户群昵称长度不能大于10")
     @ApiModelProperty(value = "用户在群显示昵称")
     private String aliasName;
 

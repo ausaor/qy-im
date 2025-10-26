@@ -11,6 +11,8 @@
             <div class="nick-name">{{ user.nickName }}</div>
             <div v-if="user.sex == 0" class="icon iconfont icon-man" style="color: darkblue;"></div>
             <div v-if="user.sex == 1" class="icon iconfont icon-woman" style="color: darkred;"></div>
+            <div v-if="user.role === 'SUPER_ADMIN'" class="blogger">博主</div>
+            <div v-if="user.role === 'ADMIN'" class="sys-admin">系统管理员</div>
           </div>
           <div class="info-item">
             用户名: {{ user.userName }}
@@ -161,6 +163,28 @@
           .icon {
             margin-left: 3px;
             font-size: 14px;
+          }
+
+          .blogger {
+            margin-left: 10px;
+            background-color: #1E90FF;
+            height: 15px;
+            color: white;
+            font-size: 12px;
+            padding: 0 5px;
+            border-radius: 10px;
+            line-height: 15px;
+          }
+
+          .sys-admin {
+            margin-left: 10px;
+            background-color: #0A6E46;
+            height: 15px;
+            color: white;
+            font-size: 12px;
+            padding: 0 5px;
+            border-radius: 10px;
+            line-height: 15px;
           }
         }
 

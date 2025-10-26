@@ -740,6 +740,7 @@ export default {
       if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
         let friend = this.friends.find((f) => f.id === msgInfo.sendId);
         if (friend) {
+          showInfoObj.role = friend.role;
           if (friend.friendRemark) {
             showInfoObj.showName = friend.friendRemark;
           }
@@ -755,6 +756,7 @@ export default {
           }
         }
         if (member) {
+          showInfoObj.role = member.role;
           showInfoObj.headImage = member.headImage;
         }
         if (!showInfoObj.showName) {

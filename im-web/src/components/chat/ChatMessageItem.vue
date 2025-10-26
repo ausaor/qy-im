@@ -16,13 +16,15 @@
           <span :style="nameColorStyle">{{showInfo.showName}}</span>
           <span v-show="myGroupMemberInfo.showNickName">{{showInfo.nickName}}</span>
           <span v-if="isOwner && (msgInfo.groupId || msgInfo.regionGroupId)" class="group-master">群主</span>
-          <span v-if="msgInfo.sendId===1" class="blogger">博主</span>
+          <span v-if="showInfo.role==='SUPER_ADMIN'" class="blogger">博主</span>
+          <span v-if="showInfo.role==='ADMIN'" class="sys-admin">系统管理员</span>
         </div>
 				<div v-show="mode==2" class="chat-msg-top">
 					<span :style="nameColorStyle">{{showInfo.showName}}</span>
 					<span v-show="myGroupMemberInfo.showNickName">{{showInfo.nickName}}</span>
           <span v-if="isOwner && (msgInfo.groupId || msgInfo.regionGroupId)" class="group-master">群主</span>
-          <span v-if="msgInfo.sendId===1" class="blogger">博主</span>
+          <span v-if="showInfo.role==='SUPER_ADMIN'" class="blogger">博主</span>
+          <span v-if="showInfo.role==='ADMIN'" class="sys-admin">系统管理员</span>
           <span>{{$date.toTimeText(msgInfo.sendTime)}}</span>
 				</div>
 				<div class="chat-msg-bottom" @contextmenu.prevent="showRightMenu($event)">
@@ -565,6 +567,16 @@ export default {
 
           .blogger {
             background-color: #1E90FF;
+            height: 15px;
+            color: white;
+            font-size: 12px;
+            padding: 0 5px;
+            border-radius: 10px;
+            line-height: 15px;
+          }
+
+          .sys-admin {
+            background-color: #0A6E46;
             height: 15px;
             color: white;
             font-size: 12px;

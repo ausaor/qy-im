@@ -143,7 +143,7 @@
                   <el-input v-model="activeGroup.nickName" placeholder="" maxlength="10" size="small"></el-input>
                 </el-form-item>
                 <el-form-item label="群公告">
-                  <el-input v-model="activeGroup.notice" :disabled="!isOwner" type="textarea" maxlength="1024" placeholder="群主未设置"></el-input>
+                  <el-input v-model="activeGroup.notice" :disabled="!isOwner" type="textarea" maxlength="500" placeholder="群主未设置"></el-input>
                 </el-form-item>
               </el-form>
               <div class="buttons-box">

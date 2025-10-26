@@ -54,13 +54,13 @@
 					<el-input :value="ownerName" size="mini" disabled></el-input>
 				</el-form-item>
 				<el-form-item label="群公告">
-					<el-input v-model="group.notice" size="mini" disabled type="textarea" maxlength="1024" placeholder="群主未设置"></el-input>
+					<el-input v-model="group.notice" size="mini" disabled type="textarea" maxlength="500" placeholder="群主未设置"></el-input>
 				</el-form-item>
 				<el-form-item label="备注">
 					<el-input v-model="group.remark" size="mini" :disabled="!editing" placeholder="群聊的备注仅自己可见" maxlength="20"></el-input>
 				</el-form-item>
 				<el-form-item label="我在本群的昵称">
-					<el-input v-model="group.aliasName" size="mini" :disabled="!editing || group.groupType!==0" placeholder="xx" maxlength="20"></el-input>
+					<el-input v-model="group.aliasName" size="mini" :disabled="!editing || group.groupType!==0" placeholder="xx" maxlength="10"></el-input>
 				</el-form-item>
         <el-form-item label="昵称前缀" v-show="group.groupType!==0">
           <el-input v-model="group.aliasNamePrefix" size="mini" :disabled="!editing" placeholder="xx" maxlength="10"></el-input>

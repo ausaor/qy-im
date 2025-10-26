@@ -329,14 +329,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         GroupVO vo = BeanUtils.copyProperties(group, GroupVO.class);
         assert vo != null;
         vo.setAliasName(member.getAliasName());
-        if (!vo.getGroupType().equals(GroupTypeEnum.COMMON.getCode())) {
-            if (StringUtils.isNotBlank(member.getAliasNamePrefix())) {
-                vo.setAliasName(member.getAliasNamePrefix() + vo.getAliasName());
-            }
-            if (StringUtils.isNotBlank(member.getAliasNameSuffix())) {
-                vo.setAliasName(vo.getAliasName() + member.getAliasNameSuffix());
-            }
-        }
 
         vo.setRemark(member.getRemark());
         vo.setIsTemplateCharacter(member.getIsTemplate());
