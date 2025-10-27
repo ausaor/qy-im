@@ -3,7 +3,6 @@
 </template>
 <script>
 import AMapLoader from "@amap/amap-jsapi-loader";
-import { decryptByPublicKey } from '@/utils/rsaUtil';
 
 export default {
   name: "GaoDeMap",
@@ -31,7 +30,7 @@ export default {
   methods: {
     initAMap(lng, lat) {
       AMapLoader.load({
-        key: decryptByPublicKey(this.$store.getters.getGaoDeMapKey()), // 申请好的Web端开发者Key，首次调用 load 时必填
+        key: process.env.VUE_APP_AMAP_KEY, // 申请好的Web端开发者Key，首次调用 load 时必填
         version: "2.0", // 指定要加载的 JSAPI 的版本，缺省时默认为 1.4.15
         plugins: [], // 需要使用的的插件列表，如比例尺'AMap.Scale'等
       }).then((AMap) => {
