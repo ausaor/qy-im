@@ -45,12 +45,6 @@ public class Region extends BaseEntity {
     private String name;
 
     /**
-     * 地区领导称呼
-     */
-    @TableField("leader_call_name")
-    private String leaderCallName;
-
-    /**
      * 纬度
      */
     @TableField("latitude")

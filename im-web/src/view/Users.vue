@@ -72,6 +72,7 @@
               size="mini"
               :type="scope.row.isBanned ? 'success' : 'warning'"
               @click="toggleBan(scope.row)"
+              v-if="isAdmin"
           >
             {{ scope.row.isBanned ?  '解禁' : '禁言' }}
           </el-button>
@@ -79,6 +80,7 @@
               size="mini"
               :type="scope.row.isDisable ? 'success' : 'danger'"
               @click="toggleDisable(scope.row)"
+              v-if="isSuperAdmin"
           >
             {{ scope.row.isDisable ? '解封' : '封禁' }}
           </el-button>
@@ -246,6 +248,19 @@ export default {
     handleCurrentChange(currentPage) {
       this.pagination.currentPage = currentPage;
       this.fetchUserData();
+    }
+  },
+  computed: {
+    mine() {
+      return this.$store.state.userStore.userInfo;
+    },
+    isAdmin() {
+      // 是否管理人员
+      return this.mine.role === 'SUPER_ADMIN' || this.mine.role === 'ADMIN';
+    },
+    isSuperAdmin() {
+      // 是否超级管理员
+      return this.mine.role === 'SUPER_ADMIN';
     }
   }
 }

@@ -6,13 +6,13 @@
                           @click.native="gotoTalkSpace(communityList[0])"></community-item-talk>
         <community-item :community="communityList[1]" :active="communityList[1].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[1])"></community-item>
-        <community-item v-if="mine.id===1" :community="communityList[2]" :active="communityList[2].sort === activeIndex"
+        <community-item v-if="isAdmin" :community="communityList[2]" :active="communityList[2].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[2])"></community-item>
-        <community-item v-if="mine.id===1" :community="communityList[3]" :active="communityList[3].sort === activeIndex"
+        <community-item v-if="isAdmin" :community="communityList[3]" :active="communityList[3].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[3])"></community-item>
-        <community-item v-if="mine.id===1" :community="communityList[4]" :active="communityList[4].sort === activeIndex"
+        <community-item v-if="isAdmin" :community="communityList[4]" :active="communityList[4].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[4])"></community-item>
-        <community-item v-if="mine.id===1" :community="communityList[5]" :active="communityList[5].sort === activeIndex"
+        <community-item v-if="isSuperAdmin" :community="communityList[5]" :active="communityList[5].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[5])"></community-item>
       </div>
     </el-aside>
@@ -83,6 +83,13 @@ export default {
     mine() {
       return this.$store.state.userStore.userInfo;
     },
+    isAdmin() {
+      // 是否管理人员
+      return this.mine.role === 'SUPER_ADMIN' || this.mine.role === 'ADMIN';
+    },
+    isSuperAdmin() {
+      return this.mine.role === 'SUPER_ADMIN';
+    }
   }
 }
 </script>

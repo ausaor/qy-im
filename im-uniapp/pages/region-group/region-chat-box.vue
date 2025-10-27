@@ -1,6 +1,6 @@
 <template>
   <view class="page region-chat-box" id="chatBox">
-    <nav-bar backHome more refresh @more="onShowMore" @refresh="refreshChat" @gotoHome="gotoHome">{{ title }}</nav-bar>
+    <nav-bar backHome more @more="onShowMore" @gotoHome="gotoHome">{{ title }}</nav-bar>
     <view class="chat-main-box" :style="{height: chatMainHeight+'px'}">
       <view class="chat-msg" @click="switchChatTabBox('none')">
         <scroll-view ref="messagesContainer" class="scroll-box" scroll-y="true" upper-threshold="200" @scroll="onScroll"

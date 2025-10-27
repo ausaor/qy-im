@@ -134,7 +134,7 @@ public class UserController {
         return ResultUtils.success();
     }
 
-    @ApiOperation(value = "解禁用户",notes="解禁用户")
+    @ApiOperation(value = "解除用户禁言",notes="解除用户禁言")
     @RequireRoles(value = {RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN})
     @PostMapping ("/unBandUser")
     public Result unBandUser(@Valid @RequestBody UserBanDTO dto){

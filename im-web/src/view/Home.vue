@@ -38,7 +38,7 @@
                       <use xlink:href="#icon-group"></use>
                     </svg>
                   </span>
-                  <div v-show="groupActivity || (groupRequestCount > 0)" class="unread-dot"></div>
+                  <div v-show="groupActivity || groupRequestCount > 0 || joinGroupRequests > 0" class="unread-dot"></div>
                 </div>
               </router-link>
               <router-link class="link" v-bind:to="'/home/regionGroup'">
@@ -772,7 +772,12 @@
       },
       groupRequestCount() {
         return this.$store.state.groupStore.groupRequests.filter((r) => r.userId === this.mine.id && r.status === 1 && r.type === 2).length
-      }
+      },
+      joinGroupRequests() {
+        // 群组申请(当前用户是群主，待审核的加群申请)
+        return this.$store.state.groupStore.groupRequests
+            .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length;
+      },
 		},
 		watch: {
 			unreadCount: {

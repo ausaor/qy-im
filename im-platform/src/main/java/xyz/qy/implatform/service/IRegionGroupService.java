@@ -59,6 +59,14 @@ public interface IRegionGroupService extends IService<RegionGroup> {
     RegionGroupVO joinRegionGroup(RegionGroupDTO regionGroupDTO);
 
     /**
+     * 加入指定地区群聊
+     *
+     * @param regionGroupDTO 入参
+     * @return 地区群聊
+     */
+    RegionGroupVO joinTargetRegionGroup(RegionGroupDTO regionGroupDTO);
+
+    /**
      * 退出地区群聊
      *
      * @param regionGroupDTO 入参

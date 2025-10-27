@@ -48,9 +48,9 @@ public interface RegionGroupConst {
     int MAX_REGION_GROUP_TEMP_MEMBER_COUNT = 100;
 
     /**
-     * 地区群聊加入间隔时长（30分钟）
+     * 地区群聊加入间隔时长（6小时）
      */
-    int REGION_GROUP_JOIN_GAP = 30;
+    int REGION_GROUP_JOIN_GAP = 6;
 
     /**
      * 临时用户加入地区群聊的有效时长（2小时）

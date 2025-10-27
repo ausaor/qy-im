@@ -342,7 +342,6 @@ create table im_region
     parent_code      varchar(100)         not null comment '上级地区编码',
     level            tinyint(1)           not null comment '地区级别(0：地球；1：国家；2：省；3：市；4：县/区；5：镇/乡；6：村)',
     name             varchar(200)         not null comment '地区名称',
-    leader_call_name varchar(50)          null comment '地区领导称呼',
     latitude         varchar(100)         null comment '纬度',
     longitude        varchar(100)         null comment '经度',
     deleted          tinyint(1) default 0 not null comment '是否删除',

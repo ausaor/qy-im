@@ -360,6 +360,136 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         }
     }
 
+    @Lock(prefix = "im:region:group:member:modify", key = "#regionGroupDTO.getCode()")
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public RegionGroupVO joinTargetRegionGroup(RegionGroupDTO regionGroupDTO) {
+        if (ObjectUtil.isNull(regionGroupDTO.getId())) {
+            throw new GlobalException("请选择要加入的群聊");
+        }
+        UserSession session = SessionContext.getSession();
+        Region region = regionService.findRegionByCode(regionGroupDTO.getCode());
+        if (ObjectUtil.isNull(region) || region.getDeleted()) {
+            throw new GlobalException("所选地区不存在");
+        }
+
+        RegionGroup regionGroup = this.getById(regionGroupDTO.getId());
+        if (ObjectUtil.isNull(regionGroup)) {
+            throw new GlobalException("群聊不存在");
+        }
+
+        // 判断用户加入类型
+        Integer joinType = regionGroupDTO.getJoinType();
+
+        // 临时加入
+        if (joinType == 0) {
+            tempJoinTargetRegionGroupHandle(regionGroupDTO, regionGroup, session);
+            RegionGroupVO regionGroupVO = BeanUtils.copyProperties(regionGroup, RegionGroupVO.class);
+            regionGroupVO.setJoinType(0);
+            return regionGroupVO;
+        } else {
+            permanentJoinTargetRegionGroupHandle(regionGroupDTO, regionGroup, session);
+            RegionGroupVO regionGroupVO = BeanUtils.copyProperties(regionGroup, RegionGroupVO.class);
+            regionGroupVO.setJoinType(1);
+            return regionGroupVO;
+        }
+    }
+
+    private void tempJoinTargetRegionGroupHandle(RegionGroupDTO regionGroupDTO, RegionGroup regionGroup, UserSession session) {
+        Long userId = session.getUserId();
+        // 判断当前用户加入的临时地区群聊redis数量
+        Collection<String> keys = redisCache.keys(IMRedisKey.IM_USER_TEMP_REGION_GROUP + userId + ":*");
+        if (keys.size() >= RegionGroupConst.MAX_REGION_GROUP_NUM) {
+            throw new GlobalException("每位用户最多只能临时加入" + RegionGroupConst.MAX_REGION_GROUP_NUM + "个地区群聊");
+        }
+
+        // 判断选择的地区群聊是否已加入
+        for (String key : keys) {
+            if (key.equals(IMRedisKey.IM_USER_TEMP_REGION_GROUP + userId + ":" + regionGroupDTO.getCode())) {
+                throw new GlobalException("您已加入当前地区群聊");
+            }
+        }
+
+        Boolean exists = redisCache.hasKey(IMRedisKey.IM_REGION_GROUP_USER_TEMP_JOIN + userId);
+
+        // 判断用户6小时内临时加入的地区群聊是否达到上限
+        int count = redisCache.incrementInt(IMRedisKey.IM_REGION_GROUP_USER_TEMP_JOIN + userId);
+        if (!exists) {
+            redisCache.expire(IMRedisKey.IM_REGION_GROUP_USER_TEMP_JOIN + userId, RegionGroupConst.MAX_REGION_GROUP_NUM * 2, TimeUnit.HOURS);
+        }
+        if (count > RegionGroupConst.MAX_REGION_GROUP_NUM * 2) {
+            long expire = redisCache.getExpire(IMRedisKey.IM_REGION_GROUP_USER_TEMP_JOIN + userId);
+            throw new GlobalException("您在"+ (RegionGroupConst.MAX_REGION_GROUP_NUM * 2) +"小时内临时加入的地区群聊数量已达上限，请在" + DateTimeUtils.getTimeValueDesc(expire) + "后再尝试");
+        }
+
+        // 判断当前群聊的临时用户是否达上限
+        Collection<String> users = redisCache.keys(IMRedisKey.IM_REGION_GROUP_NUM_TEMP_USER
+                + regionGroup.getCode() + ":" + regionGroup.getNum() + ":*");
+        if (users.size() >= RegionGroupConst.MAX_REGION_GROUP_TEMP_MEMBER_COUNT) {
+            throw new GlobalException("当前地区群聊的临时用户已达上限");
+        }
+
+        // 判断用户是否在常驻名单里
+        RegionGroupMember regionGroupMember = regionGroupMemberService
+                .findByRegionGroupIdAndUserId(regionGroup.getId(), userId);
+        if (ObjectUtil.isNotNull(regionGroupMember) && !regionGroupMember.getQuit()) {
+            throw new GlobalException("您已在当前地区的常驻用户中");
+        }
+
+        // 保存用户临时加入的地区群聊到redis
+        redisCache.setCacheObject(IMRedisKey.IM_USER_TEMP_REGION_GROUP + userId + ":" + regionGroupDTO.getCode(),
+                regionGroup, RegionGroupConst.TEMP_MEMBER_DURATION, TimeUnit.HOURS);
+
+        // 保存地区群聊对应编号的临时用户数据到redis
+        redisCache.setCacheObject(IMRedisKey.IM_REGION_GROUP_NUM_TEMP_USER
+                + regionGroup.getCode() + ":" + regionGroup.getNum() + ":" + userId, session, RegionGroupConst.TEMP_MEMBER_DURATION, TimeUnit.HOURS);
+
+        String content = "用户【" + session.getNickName() + "】加入了群聊";
+        messageSendUtil.sendRegionGroupTipMsg(regionGroup.getId(), userId, session.getNickName(), null, content, GroupChangeTypeEnum.NEW_USER_JOIN.getCode());
+    }
+
+    private void permanentJoinTargetRegionGroupHandle(RegionGroupDTO regionGroupDTO, RegionGroup regionGroup, UserSession session) {
+        Collection<String> keys = redisCache.keys(IMRedisKey.IM_USER_TEMP_REGION_GROUP + session.getUserId() + ":*");
+
+        // 判断选择的地区群聊是否已加入
+        for (String key : keys) {
+            if (key.equals(IMRedisKey.IM_USER_TEMP_REGION_GROUP + session.getUserId() + ":" + regionGroupDTO.getCode())) {
+                throw new GlobalException("您已临时加入当前地区群聊，请先退出");
+            }
+        }
+
+        // 查询用户所有加入过的常驻群聊（包含已退出的）
+        List<RegionGroupMember> regionGroupMembers = regionGroupMemberService.findByUserId(session.getUserId());
+
+        // 计算未退出数量
+        long count = regionGroupMembers.stream().filter(item -> !item.getQuit()).count();
+        if (count >= RegionGroupConst.MAX_REGION_GROUP_NUM) {
+            throw new GlobalException("每位用户最多只能常驻3个地区群聊");
+        }
+
+        // 若用户历史加入的地区群聊超过3个，判断距离最近一次加入的时间是否超过6小时
+        if (regionGroupMembers.size() >= RegionGroupConst.MAX_REGION_GROUP_NUM) {
+            checkLastPermanentJoinInterval(regionGroupMembers);
+        }
+
+        // 查询当前群聊下所有常驻人员
+        List<RegionGroupMember> regionGroupAllMembers = regionGroupMemberService
+                .findByRegionGroupId(regionGroup.getId());
+
+        // 计算所有未退出常驻人员数量
+        long noQuitCount = regionGroupAllMembers.stream().filter(item -> !item.getQuit()).count();
+        if (noQuitCount >= RegionGroupConst.MAX_REGION_GROUP_MEMBER_COUNT) {
+            throw new GlobalException("当前地区群聊的常驻人员已达上限");
+        }
+
+        Optional<RegionGroupMember> optional = regionGroupMembers.stream()
+                .filter(item -> session.getUserId().equals(item.getUserId())).findFirst();
+        RegionGroupMember regionGroupMember = optional.orElseGet(RegionGroupMember::new);
+
+        // 保存用户常驻群聊
+        saveRegionGroupMember(regionGroupMember, regionGroupDTO, regionGroup, session);
+    }
+
     private RegionGroup permanentJoinRegionGroupHandle(RegionGroupDTO regionGroupDTO, Region region, UserSession session) {
         Collection<String> keys = redisCache.keys(IMRedisKey.IM_USER_TEMP_REGION_GROUP + session.getUserId() + ":*");
 
@@ -379,7 +509,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             throw new GlobalException("每位用户最多只能常驻3个地区群聊");
         }
 
-        // 若用户历史加入的地区群聊超过3个，判断距离最近一次加入的时间是否超过30分钟
+        // 若用户历史加入的地区群聊超过3个，判断距离最近一次加入的时间是否超过6小时
         if (regionGroupMembers.size() >= RegionGroupConst.MAX_REGION_GROUP_NUM) {
             checkLastPermanentJoinInterval(regionGroupMembers);
         }
@@ -392,9 +522,9 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         Date createTime = regionGroupMembers.get(0).getCreateTime();
 
         Date now = new Date();
-        long between = DateUtil.between(createTime, now, DateUnit.MINUTE);
+        long between = DateUtil.between(createTime, now, DateUnit.HOUR);
         if (between < RegionGroupConst.REGION_GROUP_JOIN_GAP) {
-            throw new GlobalException("距离您上次加入地区群聊未超过" + RegionGroupConst.REGION_GROUP_JOIN_GAP + "分钟，请稍后再尝试");
+            throw new GlobalException("距离您上次加入地区群聊未超过" + RegionGroupConst.REGION_GROUP_JOIN_GAP + "小时，请稍后再尝试");
         }
     }
 
@@ -565,7 +695,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             RegionGroupMember regionGroupMember = regionGroupMemberService
                     .findByRegionGroupIdAndUserId(regionGroup.getId(), userId);
             if (ObjectUtil.isNotNull(regionGroupMember) && !regionGroupMember.getQuit()) {
-                throw new GlobalException("您已存在当前地区的常驻用户中");
+                throw new GlobalException("您已在当前地区的常驻用户中");
             }
 
             existsNum.add(regionGroup.getNum());
