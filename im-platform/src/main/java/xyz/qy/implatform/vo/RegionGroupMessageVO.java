@@ -21,6 +21,9 @@ public class RegionGroupMessageVO {
     @ApiModelProperty(value = "消息id")
     private Long id;
 
+    @ApiModelProperty(value = "临时消息id")
+    private String tmpId;
+
     @ApiModelProperty(value = "地区群聊id")
     private Long regionGroupId;
 

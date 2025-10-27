@@ -14,6 +14,9 @@ public class PrivateMessageVO {
     @ApiModelProperty(value = " 消息id")
     private Long id;
 
+    @ApiModelProperty(value = "临时消息id")
+    private String tmpId;
+
     @ApiModelProperty(value = " 发送者id")
     private Long sendId;
 

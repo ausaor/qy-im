@@ -30,6 +30,12 @@ public class PrivateMessage extends Model<PrivateMessage> {
     private Long id;
 
     /**
+     * 临时消息id
+     */
+    @TableField("tmp_id")
+    private String tmpId;
+
+    /**
      * 发送用户id
      */
     @TableField("send_id")

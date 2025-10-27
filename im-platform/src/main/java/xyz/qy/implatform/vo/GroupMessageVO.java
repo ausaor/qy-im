@@ -15,6 +15,9 @@ public class GroupMessageVO {
     @ApiModelProperty(value = "消息id")
     private Long id;
 
+    @ApiModelProperty(value = "临时消息id")
+    private String tmpId;
+
     @ApiModelProperty(value = "群聊id")
     private Long groupId;
 

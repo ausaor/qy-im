@@ -164,6 +164,7 @@ create table im_group_message
 (
     id             bigint auto_increment comment 'id'
         primary key,
+    tmp_id         varchar(50)                               comment '临时消息id,由前端生成',
     group_id       bigint                                    not null comment '群id',
     send_id        bigint                                    not null comment '发送用户id',
     send_nick_name varchar(200)  default ''                  null comment '发送用户昵称',
@@ -272,6 +273,7 @@ create table im_private_message
 (
     id        bigint auto_increment comment 'id'
         primary key,
+    tmp_id    varchar(50)                          comment '临时消息id,由前端生成',
     send_id   bigint                               not null comment '发送用户id',
     recv_id   bigint                               not null comment '接收用户id',
     content   text                                 null comment '发送内容',
@@ -410,6 +412,7 @@ create table im_region_group_message
 (
     id              bigint auto_increment comment 'id'
         primary key,
+    tmp_id          varchar(50)                              comment '临时消息id,由前端生成',
     region_group_id bigint                                   not null comment '地区群聊id',
     send_id         bigint                                   not null comment '发送用户id',
     send_nick_name  varchar(200) default ''                  null comment '发送用户昵称',

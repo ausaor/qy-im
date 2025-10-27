@@ -25,6 +25,13 @@ public class RegionGroupMessageDTO {
     //@NotNull(message = "地区编码不可为空")
     private String code;
 
+    /**
+     * 临时id,由前端生成
+     * 作用:如果用户正在发送消息时掉线了，可以通过此字段获取该消息的实际发送状态
+     */
+    @ApiModelProperty(value = "临时id")
+    private String tmpId;
+
     @NotNull(message = "地区群聊id不可为空")
     @ApiModelProperty(value = "地区群聊id")
     private Long regionGroupId;

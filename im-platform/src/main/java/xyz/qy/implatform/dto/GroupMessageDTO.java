@@ -13,6 +13,8 @@ import java.util.List;
 @Data
 @ApiModel("群聊消息VO")
 public class GroupMessageDTO {
+    @ApiModelProperty(value = "临时消息id")
+    private String tmpId;
 
     @NotNull(message="群聊id不可为空")
     @ApiModelProperty(value = "群聊id")

@@ -31,6 +31,12 @@ public class GroupMessage extends Model<GroupMessage> {
     private Long id;
 
     /**
+     * 临时消息id
+     */
+    @TableField("tmp_id")
+    private String tmpId;
+
+    /**
      * 群id
      */
     @TableField("group_id")

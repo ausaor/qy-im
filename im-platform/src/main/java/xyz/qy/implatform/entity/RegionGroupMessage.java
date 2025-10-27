@@ -30,6 +30,12 @@ public class RegionGroupMessage extends Model<RegionGroupMessage> {
     private Long id;
 
     /**
+     * 临时id
+     */
+    @TableField("tmp_id")
+    private String tmpId;
+
+    /**
      * 地区群聊id
      */
     @TableField("region_group_id")

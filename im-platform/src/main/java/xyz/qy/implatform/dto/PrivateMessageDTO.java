@@ -11,6 +11,9 @@ import javax.validation.constraints.NotNull;
 @Data
 @ApiModel("私聊消息VO")
 public class PrivateMessageDTO {
+    @ApiModelProperty(value = "临时消息id")
+    private String tmpId;
+
     @NotNull(message="接收用户id不可为空")
     @ApiModelProperty(value = "接收用户id")
     private Long recvId;
