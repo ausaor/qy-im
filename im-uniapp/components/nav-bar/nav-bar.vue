@@ -14,6 +14,7 @@
         <slot></slot>
       </view>
       <view class="btn">
+        <uni-badge v-show="unreadCount > 0" :text="unreadCount" />
         <uni-icons type="home" @click="$emit('gotoHome')" v-if="home" :size="iconFontSize"></uni-icons>
         <uni-icons class="btn-item" v-if="search" type="search" :size="iconFontSize"
           @click="$emit('search')"></uni-icons>
@@ -66,6 +67,10 @@ export default {
     iconFontSize: {
       type: Number,
       default: 24
+    },
+    unreadCount: {
+      type: Number,
+      default: 0
     }
   },
   data() {

@@ -8,8 +8,14 @@
         <uni-tag v-if="group.groupType===3" :circle="true" text="角色群聊" type="primary" size="mini" custom-style="background-color: rgb(144,0,33);border-color: rgb(144,0,33);" />
         <uni-tag v-if="group.groupType===4" :circle="true" text="模板角色群聊" type="primary" size="mini" custom-style="background-color: rgb(176,89,35);border-color: rgb(176,89,35);" />
       </view>
-			<view>{{ group.remark }}</view>
+			<view>
+        <text>{{ group.remark }}</text>
+        <text v-if="isOwner" class="group-owner">群主</text>
+      </view>
 		</view>
+    <view class="group-request">
+      <uni-badge v-show="joinGroupRequestCount > 0" :text="joinGroupRequestCount" />
+    </view>
 	</view>
 </template>
 
@@ -30,7 +36,20 @@ export default {
 		group: {
 			type: Object
 		}
-	}
+	},
+  computed: {
+    mine() {
+      return this.userStore.userInfo;
+    },
+    joinGroupRequestCount() {
+      // 群组申请(当前用户是群主，待审核的加群申请)
+      return this.group?.ownerId === this.mine.id ? this.groupStore.groupRequests
+          .filter((r) => r.groupId === this.group.id && r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length : 0;
+    },
+    isOwner() {
+      return this.group.ownerId === this.mine.id;
+    },
+  }
 }
 </script>
 
@@ -59,6 +78,17 @@ export default {
 		text-align: left;
 		white-space: nowrap;
 		overflow: hidden;
+    flex: 1;
+
+    .group-owner {
+      margin-left: 12rpx;
+      background-color: orange;
+      color: white;
+      font-size: 20rpx;
+      font-weight: 500;
+      padding: 3rpx 10rpx;
+      border-radius: 16rpx;
+    }
 	}
 }
 </style>

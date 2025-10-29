@@ -1,6 +1,6 @@
 <template>
 	<view class="page chat-box" id="chatBox" :chatidx="chatIdx">
-		<nav-bar backHome more @more="onShowMore" @gotoHome="gotoHome">{{ title }}</nav-bar>
+		<nav-bar backHome more @more="onShowMore" @gotoHome="gotoHome" :unread-count="groupUnreadCount">{{ title }}</nav-bar>
 		<view class="chat-main-box" :style="{height: chatMainHeight+'px'}">
 			<view class="chat-msg" @click="switchChatTabBox('none')">
 				<scroll-view ref="messagesContainer" class="scroll-box" scroll-y="true" upper-threshold="200" @scroll="onScroll"
@@ -1357,6 +1357,10 @@ export default {
     },
     quoteContent() {
       return this.$commonUtil.processAtUsers(this.quoteMsgInfo.quoteContent, this.quoteMsgInfo.msgInfo?.atUserIds || []);
+    },
+    groupUnreadCount() {
+      return this.chat.type === "GROUP" && this.group?.ownerId === this.mine.id ? this.groupStore.groupRequests
+          .filter((r) => r.groupId === this.group.id && r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length : 0;
     }
 	},
 	watch: {
@@ -1384,7 +1388,7 @@ export default {
 					this.readedMessage()
 				}
 			}
-		}
+		},
 	},
 	onLoad(options) {
     uni.$on('group-change-event', this.handleGroupChangeEvent);

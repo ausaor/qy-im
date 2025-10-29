@@ -24,6 +24,7 @@
         </view>
         <view class="item-info">
           <view class="item-name">新的群聊</view>
+          <uni-badge v-show="receivedGroupRequestsCount > 0" :text="receivedGroupRequestsCount" />
         </view>
       </view>
       <view class="socializes-item" @click.stop="toGroupPage">
@@ -32,6 +33,7 @@
         </view>
         <view class="item-info">
           <view class="item-name">我的群聊</view>
+          <uni-badge v-show="joinGroupRequestsCount > 0" :text="joinGroupRequestsCount" />
         </view>
       </view>
     </view>
@@ -160,6 +162,14 @@ export default {
 		},
     friendRequestCount() {
       return this.friendStore.friendRequests.filter((r) => r.recvId === this.mine.id && r.status === 1).length
+    },
+    receivedGroupRequestsCount() {
+      return this.groupStore.groupRequests.filter((r) => r.userId === this.mine.id && r.status === 1 && r.type === 2).length
+    },
+    joinGroupRequestsCount() {
+      // 群组申请(当前用户是群主，待审核的加群申请)
+      return this.groupStore.groupRequests
+          .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length;
     },
 	},
   watch: {
