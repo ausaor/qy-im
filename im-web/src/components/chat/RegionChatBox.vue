@@ -79,7 +79,7 @@
                     </svg>
                   </file-upload>
                 </div>
-                <div title="回执消息" v-show="regionGroup.joinType===1 && memberSize <= 50" :class="isReceipt ? 'chat-tool-active' : ''" @click="onSwitchReceipt">
+                <div title="回执消息" v-show="isGroupOwner && memberSize <= 50" :class="isReceipt ? 'chat-tool-active' : ''" @click="onSwitchReceipt">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-yihuizhi"></use>
                   </svg>
@@ -156,6 +156,7 @@ export default {
       regionGroup: {},
       friend: {},
       regionGroupMembers: [],
+      regionGroupMembersMap: {},
       myGroupMemberInfo: {}, // 我的群聊成员信息
       sendImageUrl: "",
       sendImageFile: "",
@@ -689,8 +690,12 @@ export default {
         url: `/region/group/members/${groupId}`,
         method: 'get'
       }).then((groupMembers) => {
-        this.myGroupMemberInfo = groupMembers.find((m) => m.userId === this.mine.id && !m.quit);
         this.regionGroupMembers = groupMembers;
+        this.regionGroupMembersMap = groupMembers.reduce((map, member) => {
+          map.set(member.userId, member);
+          return map;
+        }, new Map()); // 初始值为一个空Map
+        this.myGroupMemberInfo = this.regionGroupMembersMap.get(this.mine.id);
       });
     },
     showName(msgInfo) {
@@ -738,16 +743,19 @@ export default {
         role: '',
       };
       if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
-        let friend = this.friends.find((f) => f.id === msgInfo.sendId);
+        //let friend = this.friends.find((f) => f.id === msgInfo.sendId);
+        let friend = this.friendsMap.get(msgInfo.sendId);
         if (friend) {
           showInfoObj.role = friend.role;
           if (friend.friendRemark) {
             showInfoObj.showName = friend.friendRemark;
           }
         }
-        let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
+        //let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
+        let member = this.regionGroupMembersMap.get(msgInfo.sendId);
         if (msgInfo.quoteMsg) {
-          let member2 = this.regionGroupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+          //let member2 = this.regionGroupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+          let member2 = this.regionGroupMembersMap.get(msgInfo.quoteMsg.sendId);
           showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
         }
         if (!showInfoObj.showName) {
@@ -884,6 +892,15 @@ export default {
     memberSize() {
       return this.regionGroupMembers.filter(m => !m.quit).length;
     },
+    isGroupOwner() {
+      return this.regionGroup.leaderId === this.mine.id;
+    },
+    friendsMap() {
+      return this.$store.state.friendStore.friends.reduce((map, friend) => {
+        map[friend.id] = friend;
+        return map;
+      }, new Map())
+    }
   },
   watch: {
     chat: {

@@ -15,8 +15,13 @@ public class GlobalCorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         // 设置访问源地址
-        config.addAllowedOriginPattern(CorsConfiguration.ALL);
+        // config.addAllowedOriginPattern(CorsConfiguration.ALL);
         //config.setAllowedOriginPatterns(Collections.singletonList(CorsConfiguration.ALL));
+        // 设置允许的域名访问
+        config.addAllowedOriginPattern("http://localhost:*");
+        config.addAllowedOriginPattern("https://localhost:*");
+        config.addAllowedOriginPattern("https://im.timemory.xyz");
+
         // 设置访问源请求头
         config.addAllowedHeader(CorsConfiguration.ALL);
         // 设置访问源请求方法

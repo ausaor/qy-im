@@ -80,7 +80,7 @@
                     </svg>
                   </file-upload>
                 </div>
-                <div title="回执消息" v-show="isGroup && memberSize <= 50" :class="isReceipt ? 'chat-tool-active' : ''" @click="onSwitchReceipt">
+                <div title="回执消息" v-show="isGroupOwner && memberSize <= 50" :class="isReceipt ? 'chat-tool-active' : ''" @click="onSwitchReceipt">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-yihuizhi"></use>
                   </svg>
@@ -194,6 +194,7 @@
 				friend: {},
 				group: {},
 				groupMembers: [],
+        groupMembersMap: {},
         myGroupMemberInfo: {}, // 我的群聊成员信息
         sendImageUrl: "",
         sendImageFile: "",
@@ -753,7 +754,7 @@
         })
       },
       fillTargetId(msgInfo, targetId) {
-				if (this.chat.type == "GROUP") {
+				if (this.chat.type === "GROUP") {
 					msgInfo.groupId = targetId;
 				} else {
 					msgInfo.recvId = targetId;
@@ -819,7 +820,7 @@
           // 填充对方id
           this.fillTargetId(msgInfo, this.chat.targetId);
           // 被@人员列表
-          if (this.chat.type == "GROUP") {
+          if (this.chat.type === "GROUP") {
             msgInfo.atUserIds = atUserIds;
             msgInfo.receipt = this.isReceipt;
           }
@@ -891,7 +892,7 @@
           return;
         }
         this.$store.commit("resetUnreadCount", this.chat)
-        if (this.chat.type == "GROUP") {
+        if (this.chat.type === "GROUP") {
           var url = `/message/group/readed?groupId=${this.chat.targetId}`
         } else {
           url = `/message/private/readed?friendId=${this.chat.targetId}`
@@ -926,8 +927,14 @@
 					url: `/group/members/${groupId}`,
 					method: 'get'
 				}).then((groupMembers) => {
-          this.myGroupMemberInfo = groupMembers.find((m) => m.userId === this.mine.id);
 					this.groupMembers = groupMembers;
+
+          this.groupMembersMap = groupMembers.reduce((map, member) => {
+            map.set(member.userId, member);
+            return map;
+          }, new Map()); // 初始值为一个空Map
+
+          this.myGroupMemberInfo = this.groupMembersMap.get(this.mine.id);
 				});
 			},
 			loadFriend(friendId) {
@@ -942,7 +949,7 @@
 				})
 			},
 			showName(msgInfo) {
-				if (this.chat.type == 'GROUP') {
+				if (this.chat.type === 'GROUP') {
 				  // 是普通群聊
 				  if (this.group.groupType === 0) {
             let friend = this.friends.find((f) => f.id === msgInfo.sendId);
@@ -985,8 +992,9 @@
           quoteShowName: '',
           role: ''
         };
-        if (this.chat.type == 'GROUP') {
-          let friend = this.friends.find((f) => f.id === msgInfo.sendId);
+        if (this.chat.type === 'GROUP') {
+          //let friend = this.friends.find((f) => f.id === msgInfo.sendId);
+          let friend = this.friendsMap.get(msgInfo.sendId);
           if (friend) {
             showInfoObj.role = friend.role;
             if (friend.friendRemark) {
@@ -1005,9 +1013,11 @@
               }
             }
           }
-          let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+          //let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+          let member = this.groupMembersMap.get(msgInfo.sendId);
           if (msgInfo.quoteMsg) {
-            let member2 = this.groupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+            //let member2 = this.groupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+            let member2 = this.groupMembersMap.get(msgInfo.quoteMsg.sendId);
             showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
           }
           if (member) {
@@ -1135,7 +1145,7 @@
       onAudioStateChange(state, msgInfo) {
         this.playingAudioState = state;
         const playingAudio = this.$refs['message-item-' + msgInfo.id][0]
-        if (state == 'PLAYING' && playingAudio != this.playingAudio) {
+        if (state === 'PLAYING' && playingAudio != this.playingAudio) {
           // 停止之前的录音
           this.playingAudio && this.playingAudio.stopPlayAudio();
           // 记录当前正在播放的消息
@@ -1156,11 +1166,11 @@
 			},
 			title() {
         let title = "";
-				if (this.chat.type == "GROUP") {
+				if (this.chat.type === "GROUP") {
           title = this.chat.showName;
           let size = this.groupMembers.filter(m => !m.quit).length;
 					title += `(${size})`;
-				} else if (this.chat.type == "PRIVATE") {
+				} else if (this.chat.type === "PRIVATE") {
           title = this.chat.friendRemark ? this.chat.friendRemark : this.chat.showName;
         }
 				return title;
@@ -1181,10 +1191,19 @@
         return this.groupMembers.filter(m => !m.quit).length;
       },
       isGroup() {
-        return this.chat.type == 'GROUP';
+        return this.chat.type === 'GROUP';
       },
       isPrivate() {
-        return this.chat.type == 'PRIVATE';
+        return this.chat.type === 'PRIVATE';
+      },
+      isGroupOwner() {
+        return this.chat.type === 'GROUP' && this.mine.id === this.group.ownerId;
+      },
+      friendsMap() {
+        return this.$store.state.friendStore.friends.reduce((map, friend) => {
+          map[friend.id] = friend;
+          return map;
+        }, new Map())
       }
 		},
 		watch: {
@@ -1194,7 +1213,7 @@
               newChat.targetId != oldChat.targetId)) {
             // 停止之前的录音
             this.playingAudio && this.playingAudio.stopPlayAudio();
-            if (this.chat.type == "GROUP") {
+            if (this.chat.type === "GROUP") {
               this.loadGroup(this.chat.targetId);
             } else {
               this.groupMembers = [];

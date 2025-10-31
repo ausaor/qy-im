@@ -59,6 +59,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -329,7 +330,18 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             throw new GlobalException("您没有权限");
         }
 
-        return allMembers.stream().sorted((m1,m2)-> m2.getOnline().compareTo(m1.getOnline()))
+        // allMembers根据userId去重，quit=false的优先保留
+        Map<Long, RegionGroupMemberVO> distinctMembers = new LinkedHashMap<>();
+        for (RegionGroupMemberVO member : allMembers) {
+            // 如果map中还没有这个用户，或者已有的用户是quit=true而当前用户是quit=false，则替换
+            if (!distinctMembers.containsKey(member.getUserId()) 
+                || (distinctMembers.get(member.getUserId()).getQuit() && !member.getQuit())) {
+                distinctMembers.put(member.getUserId(), member);
+            }
+        }
+        List<RegionGroupMemberVO> distinctMemberList = new ArrayList<>(distinctMembers.values());
+
+        return distinctMemberList.stream().sorted((m1,m2)-> m2.getOnline().compareTo(m1.getOnline()))
                 .collect(Collectors.toList());
     }
 
