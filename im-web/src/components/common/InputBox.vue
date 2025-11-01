@@ -6,14 +6,17 @@
            class="comment-textarea">
       </div>
     </div>
-    <div class="emoji-wrapper" v-if="showEmoji">
+    <div class="emoji-wrapper" v-show="showType === 'emoji'">
       <Emoji @chooseEmoji="handleChooseEmoji"/>
     </div>
+    <div class="character-wrapper" v-show="showType === 'word'">
+      <CharacterWord :character-id="characterId" :show="showType === 'word'" @send="sendWord"/>
+    </div>
     <div class="btn-group">
-      <div class="point ci-point" v-if="characterId">
+      <div class="point ci-point" v-if="characterId" @click="changeShowType('word')">
         <i class="icon iconfont icon-minganci"></i>
       </div>
-      <div class="point biaoqing-point" @click="showEmoji = !showEmoji">
+      <div class="point biaoqing-point" @click="changeShowType('emoji')">
         <i class="icon iconfont icon-biaoqing"></i>
       </div>
       <div class="sendBtn point" @click="send()">发送</div>
@@ -23,11 +26,13 @@
 
 <script>
   import Emoji from "@components/emoji/index.vue";
+  import CharacterWord from "@components/template/CharacterWord.vue";
 
   export default {
     name: "InputBox",
     components: {
-      Emoji
+      Emoji,
+      CharacterWord
     },
     props: {
       placeholder: {
@@ -45,9 +50,9 @@
     },
     data() {
       return {
-        showEmoji: false,
         lastEditRange: null,
         show: false,
+        showType: '',
       }
     },
     methods: {
@@ -109,7 +114,6 @@
           // 合并到最后面，即实现了添加一个表情后，把光标移到最后面
           selection.collapseToEnd()
         }
-        this.showEmoji = false
       },
       createSendText() {
         let sendText = ""
@@ -153,6 +157,16 @@
       hide() {
         this.show = false;
       },
+      changeShowType(type) {
+        if (this.showType === type) {
+          this.showType = ''
+          return
+        }
+        this.showType = type
+      },
+      sendWord(word) {
+        console.log(word)
+      }
     }
   }
 </script>

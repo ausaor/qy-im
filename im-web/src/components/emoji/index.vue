@@ -51,8 +51,8 @@ export default {
     border-radius: 5px;
 
     .emojiBox {
-        min-height: 150px;
-        max-height: 150px;
+        min-height: 180px;
+        max-height: 180px;
         max-width: 400px;
         overflow-y: scroll;
         text-align: left;
