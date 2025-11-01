@@ -19,7 +19,7 @@ public class TalkCommentDTO {
 
     @ApiModelProperty(value = "评论内容")
     @NotNull(message = "评论内容不能为空")
-    @Length(min = 1, max = 100, message = "评论内容长度不能超过100")
+    @Length(min = 1, max = 1000, message = "评论内容长度不能超过1000")
     private String content;
 
     @ApiModelProperty(value = "用户昵称")

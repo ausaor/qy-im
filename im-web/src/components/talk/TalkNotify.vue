@@ -493,11 +493,13 @@ export default {
   display: flex;
   justify-content: left;
   align-items: flex-start;
+  flex-wrap: nowrap;
 }
 
 .reply-author {
   color: #333333;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .reply-to-reply {
@@ -506,11 +508,14 @@ export default {
 
 .reply-prefix {
   color: #1890ff;
+  flex-shrink: 0;
 }
 
 .comment-content {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  word-break: break-all;
 }
 
 .icon {
