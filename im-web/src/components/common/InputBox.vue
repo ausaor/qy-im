@@ -165,7 +165,7 @@
         this.showType = type
       },
       sendWord(word) {
-        console.log(word)
+        this.$emit('sendWord', word)
       }
     }
   }

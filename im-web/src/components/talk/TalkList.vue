@@ -107,8 +107,12 @@
                   <head-image v-if="comment.replyCommentId" class="comment-avatar" :url="comment.replyUserAvatar" :id="comment.replyUserId" :name="comment.replyUserNickname" :size="24"/>
                   <span class="username" v-if="comment.replyCommentId" @click="showUserInfo($event, comment.replyUserId)">{{ comment.replyUserNickname }}</span>
                   <span>：</span>
-                  <span class="content point" v-html="$emo.transform(comment.content)"
+                  <span v-if="comment.type === $enums.MESSAGE_TYPE.TEXT" class="content point" v-html="$emo.transform(comment.content)"
                         @click="handleShowCommentBox(comment, item.id, index)">
+                  </span>
+                  <span v-if="comment.type === $enums.MESSAGE_TYPE.WORD_VOICE" class="content">
+                    <span class="word" :title="JSON.parse(comment.content).word" @click="handleShowCommentBox(comment, item.id, index)">{{JSON.parse(comment.content).word}}</span>
+                    <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(comment.content))"></span>
                   </span>
                   <div class="del-btn" v-if="comment.isOwner">
                     <el-popconfirm
@@ -139,7 +143,9 @@
                 <span class="collapse-text">收起评论</span>
                 <i class="el-icon-arrow-up"></i>
               </div>
-              <input-box ref="contentInputBox" :placeholder="placeholder" @send="(...args) => sayComment(item, ...args)"
+              <input-box ref="contentInputBox" :placeholder="placeholder"
+                         @send="(...args) => sayComment(item, ...args)"
+                         @sendWord="(...args) => sendCommentWord(item, ...args)"
                          :character-id="item.commentCharacterId"></input-box>
             </div>
           </div>
@@ -291,6 +297,9 @@ export default {
       videoUrl: '',
       posterUrl: '',
       visibleCommentsCount: {},
+      audio: null,
+      audioSrc: '',
+      playCommentId: null,
     }
   },
   created() {
@@ -349,6 +358,49 @@ export default {
         this.placeholder = '请输入内容';
       })
     },
+    sendCommentWord(talk, data) {
+      if (!data) {
+         return
+      }
+      this.comment.content = JSON.stringify({
+        id: data.id,
+        templateGroupId: data.templateGroupId,
+        characterId: data.characterId,
+        characterName: data.characterName,
+        word: data.word,
+        voice: data.voice
+      })
+      let params = {
+        talkId: talk.id,
+        content: this.comment.content,
+        userNickname: talk.commentCharacterName,
+        characterId: talk.commentCharacterId,
+        avatarId: talk.commentCharacterAvatarId,
+        userAvatar: talk.commentCharacterAvatar,
+        replyCommentId: this.comment.replyCommentId,
+        type: this.$enums.MESSAGE_TYPE.WORD_VOICE
+      }
+      this.$http({
+        url: "/talk/addTalkComment",
+        method: 'post',
+        data: params
+      }).then((data) => {
+        if (data.characterId) {
+          talk.commentCharacterId = data.characterId;
+          talk.commentCharacterAvatarId = data.avatarId;
+          talk.commentCharacterName = data.userNickname;
+          talk.commentCharacterAvatar = data.userAvatar;
+        }
+        talk.talkCommentVOS.push(data);
+        this.$message.success("评论成功");
+        this.comment = {}
+        this.$refs.contentInputBox[this.commentLastIndex].hide();
+        this.showCommentBox = false
+      }).finally(() => {
+        this.placeholder = '请输入内容';
+      })
+    },
+
     showUserInfo(e, userId) {
       if (userId && userId > 0) {
         this.$http({
@@ -633,6 +685,26 @@ export default {
       this.videoUrl = '';
       this.posterUrl = '';
     },
+    playVoice(word) {
+      if (!this.audio) {
+        this.audio = new Audio();
+        this.audioSrc = word.voice;
+        this.audio.src = word.voice;
+        this.audio.play();
+      } else {
+        if (word.voice === this.audioSrc) {
+          this.audioSrc = '';
+          this.audio.pause();
+          this.audio = null;
+        } else {
+          this.audio.pause();
+          this.audio = new Audio();
+          this.audioSrc = word.voice;
+          this.audio.src = word.voice;
+          this.audio.play();
+        }
+      }
+    }
   },
   watch: {
     section: {

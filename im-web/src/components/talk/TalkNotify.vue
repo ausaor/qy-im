@@ -47,7 +47,12 @@
               <span class="like-text">赞了我</span>
             </div>
             <!-- 原始内容 -->
-            <div class="original-text" v-if="message.actionType===1" v-html="$emo.transform(message.talkComment.content)"></div>
+            <div class="original-text" v-if="message.actionType===1 && message.talkComment.type === $enums.MESSAGE_TYPE.TEXT"
+                 v-html="$emo.transform(message.talkComment.content)"></div>
+            <div class="original-text" v-if="message.actionType===1 && message.talkComment.type === $enums.MESSAGE_TYPE.WORD_VOICE">
+              <span class="word">{{JSON.parse(message.talkComment.content).word}}</span>
+              <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(message.talkComment.content))"></span>
+            </div>
 
             <div class="talk-content">
               <!-- 图片内容 -->
@@ -72,11 +77,16 @@
                 <span v-if="reply.replyCommentId" style="margin: 0 10px;" class="reply-author reply-prefix">回复</span>
                 <span v-if="reply.replyCommentId" class="reply-author">{{ reply.replyUserNickname }}</span>
                 <span>：</span>
-                <span v-html="$emo.transform(reply.content)" class="comment-content"></span>
+                <span v-if="reply.type === $enums.MESSAGE_TYPE.TEXT" v-html="$emo.transform(reply.content)" class="comment-content"></span>
+                <span v-if="reply.type === $enums.MESSAGE_TYPE.WORD_VOICE" class="comment-content">
+                  <span class="word">{{JSON.parse(reply.content).word}}</span>
+                  <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(reply.content))"></span>
+                </span>
               </div>
             </div>
             <input-box ref="contentInputBox" :character-id="message.talk.commentCharacterId" :placeholder="placeholder"
-                       :width="'100%'" @send="(...args) => sayComment(message, ...args)"></input-box>
+                       :width="'100%'" @send="(...args) => sayComment(message, ...args)"
+            @sendWord="(...args) => sendCommentWord(message, ...args)"></input-box>
           </div>
         </div>
       </div>
@@ -121,6 +131,9 @@ export default {
       messages: [],
       commentLastIndex: null,
       placeholder: "请输入内容",
+      audio: null,
+      audioSrc: '',
+      playCommentId: null,
     }
   },
   methods: {
@@ -179,6 +192,45 @@ export default {
         this.placeholder = '请输入内容';
       })
     },
+    sendCommentWord(message, data) {
+      if (!data) {
+         return
+      }
+      let talk = message.talk;
+      let content = JSON.stringify({
+        id: data.id,
+        templateGroupId: data.templateGroupId,
+        characterId: data.characterId,
+        characterName: data.characterName,
+        word: data.word,
+        voice: data.voice
+      })
+      let params = {
+        talkId: talk.id,
+        content: content,
+        userNickname: talk.commentCharacterName,
+        characterId: talk.commentCharacterId,
+        avatarId: talk.commentCharacterAvatarId,
+        userAvatar: talk.commentCharacterAvatar,
+        replyCommentId: message.commentId,
+        type: this.$enums.MESSAGE_TYPE.WORD_VOICE
+      }
+      this.$http({
+        url: "/talk/addTalkComment",
+        method: 'post',
+        data: params
+      }).then((data) => {
+        if (message.replyTalkComment && message.replyTalkComment.length) {
+          message.replyTalkComment.push(data);
+        } else {
+          message.replyTalkComment = [data];
+        }
+        this.$message.success("评论成功");
+        this.$refs.contentInputBox[this.commentLastIndex].hide();
+      }).finally(() => {
+        this.placeholder = '请输入内容';
+      })
+    },
     handleShowCommentBox(comment, index) {
       if (this.commentLastIndex != null && this.commentLastIndex != index) {
         this.$refs.contentInputBox[this.commentLastIndex].hide();
@@ -200,6 +252,26 @@ export default {
       this.page.pageNo = pageNo;
       this.queryTalkNotify();
     },
+    playVoice(word) {
+      if (!this.audio) {
+        this.audio = new Audio();
+        this.audioSrc = word.voice;
+        this.audio.src = word.voice;
+        this.audio.play();
+      } else {
+        if (word.voice === this.audioSrc) {
+          this.audioSrc = '';
+          this.audio.pause();
+          this.audio = null;
+        } else {
+          this.audio.pause();
+          this.audio = new Audio();
+          this.audioSrc = word.voice;
+          this.audio.src = word.voice;
+          this.audio.play();
+        }
+      }
+    }
   },
   watch: {
     drawerVisible(newValue) {
@@ -333,6 +405,10 @@ export default {
   line-height: 1.5;
   margin-bottom: 12px;
   text-align: left;
+
+  .icon {
+    cursor: pointer;
+  }
 }
 
 .talk-content {
@@ -416,7 +492,7 @@ export default {
   margin-bottom: 4px;
   display: flex;
   justify-content: left;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .reply-author {
@@ -435,6 +511,10 @@ export default {
 .comment-content {
   display: flex;
   align-items: center;
+}
+
+.icon {
+  cursor: pointer;
 }
 
 .reply-input-placeholder {

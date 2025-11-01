@@ -61,6 +61,7 @@ export default {
       activeIndex: -1,
       audio: null,
       audioSrc: '',
+      activeWord: null
     }
   },
   methods: {
@@ -100,6 +101,9 @@ export default {
       }
     },
     send() {
+      if (!this.activeWord) {
+        return
+      }
       this.$emit('send', this.activeWord)
     }
   },
