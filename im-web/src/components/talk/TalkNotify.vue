@@ -53,6 +53,9 @@
               <span class="word">{{JSON.parse(message.talkComment.content).word}}</span>
               <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(message.talkComment.content))"></span>
             </div>
+            <div class="original-text" v-if="message.actionType===1 && message.talkComment.type === $enums.MESSAGE_TYPE.IMAGE">
+              <img :src="message.talkComment.content"/>
+            </div>
 
             <div class="talk-content">
               <!-- 图片内容 -->
@@ -81,6 +84,9 @@
                 <span v-if="reply.type === $enums.MESSAGE_TYPE.WORD_VOICE" class="comment-content">
                   <span class="word">{{JSON.parse(reply.content).word}}</span>
                   <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(reply.content))"></span>
+                </span>
+                <span v-if="reply.type === $enums.MESSAGE_TYPE.IMAGE" class="comment-content">
+                  <img :src="reply.content"/>
                 </span>
               </div>
             </div>
@@ -161,20 +167,20 @@ export default {
 
       })
     },
-    sayComment(message, sendText) {
-      if (!sendText.trim()) {
+    sayComment(message, sendObj) {
+      if (!sendObj) {
         return
       }
       let talk = message.talk;
       let params = {
         talkId: talk.id,
-        content: sendText,
+        content: sendObj.content,
         userNickname: talk.commentCharacterName,
         characterId: talk.commentCharacterId,
         avatarId: talk.commentCharacterAvatarId,
         userAvatar: talk.commentCharacterAvatar,
         replyCommentId: message.commentId,
-        type: this.$enums.MESSAGE_TYPE.TEXT
+        type: sendObj.type
       }
       this.$http({
         url: "/talk/addTalkComment",
@@ -409,6 +415,12 @@ export default {
   .icon {
     cursor: pointer;
   }
+
+  img {
+    max-width: 150px;
+    max-height: 150px;
+    object-fit: cover;
+  }
 }
 
 .talk-content {
@@ -516,6 +528,12 @@ export default {
   align-items: center;
   flex-wrap: wrap;
   word-break: break-all;
+
+  img {
+    max-width: 150px;
+    max-height: 150px;
+    object-fit: cover;
+  }
 }
 
 .icon {

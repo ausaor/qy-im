@@ -19,6 +19,12 @@
       <div class="point biaoqing-point" @click="changeShowType('emoji')">
         <i class="icon iconfont icon-biaoqing"></i>
       </div>
+      <div class="point img-point">
+        <file-upload :action="'/image/upload'" :maxSize="5*1024*1024" :fileTypes="['image/jpeg', 'image/png', 'image/jpg', 'image/webp','image/gif']"
+                     @before="onImageBefore" @success="onImageSuccess" @fail="onImageFail">
+          <i class="icon iconfont icon-tupian"></i>
+        </file-upload>
+      </div>
       <div class="sendBtn point" @click="send()">发送</div>
     </div>
   </div>
@@ -27,10 +33,12 @@
 <script>
   import Emoji from "@components/emoji/index.vue";
   import CharacterWord from "@components/template/CharacterWord.vue";
+  import FileUpload from "@components/common/FileUpload.vue";
 
   export default {
     name: "InputBox",
     components: {
+      FileUpload,
       Emoji,
       CharacterWord
     },
@@ -87,6 +95,7 @@
         img.style.height = "25px"
         img.style.width = "25px"
         img.dataset.code = emoText;
+        img.dataset.imgType = 'emoji';
 
         let edit = this.$refs.textareaRef;
         edit.focus()
@@ -122,7 +131,7 @@
             sendText += this.html2Escape(node.textContent);
           } else if (node.nodeName == "SPAN") {
             sendText += node.innerText;
-          } else if (node.nodeName == "IMG") {
+          } else if (node.nodeName == "IMG" && node.dataset.imgType==="emoji") {
             sendText += node.dataset.code;
           }
         })
@@ -144,11 +153,34 @@
           this.$message.warning("请输入评论内容");
           return
         }
-        let sendText = this.createSendText();
-        if (!sendText.trim()) {
+        
+        // 检查是否包含图片
+        let hasImage = false;
+        let imageUrls = [];
+        let textContent = "";
+        
+        this.$refs.textareaRef.childNodes.forEach((node) => {
+          if (node.nodeName == "IMG" && node.dataset.imgType === "common") {
+            hasImage = true;
+            imageUrls.push(node.dataset.url);
+          } else if (node.nodeName == "#text") {
+            textContent += node.textContent;
+          } else if (node.nodeName == "SPAN") {
+            textContent += node.innerText;
+          }
+        });
+        
+        let sendObj = {
+          content: hasImage ? imageUrls[0] : this.createSendText(),
+          type: hasImage ? 1 : 0, // 0 文本，1图片
+        }
+        console.log('sendObj:', sendObj);
+        
+        if (!hasImage && !textContent.trim()) {
           return
         }
-         this.$emit('send', sendText)
+        
+        this.$emit('send', sendObj)
         el.innerHTML = '';
       },
       view() {
@@ -166,6 +198,53 @@
       },
       sendWord(word) {
         this.$emit('sendWord', word)
+      },
+      onImageBefore() {
+        this.$message.warning("请等待图片上传完成")
+      },
+      onImageSuccess(data, file) {
+        console.log({originName: data.originName, url: data.originUrl})
+        this.$message.success("图片上传成功")
+        
+        // 创建图片元素并插入到输入框
+        let img = document.createElement('img');
+        img.src = data.originUrl;
+        img.class = "common-img";
+        img.style.maxWidth = "200px";
+        img.style.maxHeight = "200px";
+        img.dataset.url = data.originUrl;
+        img.dataset.imgType = "common";
+        
+        let edit = this.$refs.textareaRef;
+        edit.focus();
+        let selection = window.getSelection();
+        
+        // 如果存在最后的光标对象
+        if (this.lastEditRange) {
+          // 选区对象清除所有光标
+          selection.removeAllRanges();
+          // 并添加最后记录的光标，以还原之前的状态
+          selection.addRange(this.lastEditRange);
+          // 获取到最后选择的位置
+          let range = selection.getRangeAt(0);
+          // 在此位置插入图片
+          range.insertNode(img);
+          // false，表示将Range对象所代表的区域的起点移动到终点处
+          range.collapse(false);
+          
+          // 记录最后的位置
+          this.lastEditRange = selection.getRangeAt(0);
+        } else {
+          // 将图片添加到可编辑的div中，作为可编辑div的子节点
+          edit.appendChild(img);
+          // 使用选取对象，选取可编辑div中的所有子节点
+          selection.selectAllChildren(edit);
+          // 合并到最后面，即实现了添加一个图片后，把光标移到最后面
+          selection.collapseToEnd();
+        }
+      },
+      onImageFail() {
+        this.$message.error("图片上传失败")
       }
     }
   }
@@ -216,6 +295,11 @@
     .ci-point {
       cursor: pointer;
       color: #b89f5f;
+    }
+
+    .img-point {
+      cursor: pointer;
+      color: #48a5b9;
     }
 
     i {

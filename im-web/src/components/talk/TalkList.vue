@@ -114,6 +114,9 @@
                     <span class="word" :title="JSON.parse(comment.content).word" @click="handleShowCommentBox(comment, item.id, index)">{{JSON.parse(comment.content).word}}</span>
                     <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(comment.content))"></span>
                   </span>
+                  <span v-if="comment.type === $enums.MESSAGE_TYPE.IMAGE" class="content">
+                    <img :src="comment.content" loading="lazy" @click="handleShowCommentBox(comment, item.id, index)"/>
+                  </span>
                   <div class="del-btn" v-if="comment.isOwner">
                     <el-popconfirm
                         confirm-button-text='确认'
@@ -323,11 +326,11 @@ export default {
     collapseComments(talkId) {
       this.$set(this.visibleCommentsCount, talkId, 5)
     },
-    sayComment(talk, sendText) {
-      if (!sendText.trim()) {
+    sayComment(talk, sendObj) {
+      if (!sendObj) {
         return
       }
-      this.comment.content = sendText
+      this.comment.content = sendObj.content
       let params = {
         talkId: talk.id,
         content: this.comment.content,
@@ -336,7 +339,7 @@ export default {
         avatarId: talk.commentCharacterAvatarId,
         userAvatar: talk.commentCharacterAvatar,
         replyCommentId: this.comment.replyCommentId,
-        type: this.$enums.MESSAGE_TYPE.TEXT
+        type: sendObj.type
       }
       this.$http({
         url: "/talk/addTalkComment",
@@ -1059,6 +1062,12 @@ export default {
 
               .content {
                 cursor: pointer;
+
+                img {
+                  max-width: 180px;
+                  max-height: 180px;
+                  object-fit: cover;
+                }
               }
 
               .del-btn {
