@@ -125,6 +125,9 @@
         }
       },
       createSendText() {
+        // 检查是否包含图片
+        let hasImage = false;
+        let imageUrls = [];
         let sendText = ""
         this.$refs.textareaRef.childNodes.forEach((node) => {
           if (node.nodeName == "#text") {
@@ -133,9 +136,16 @@
             sendText += node.innerText;
           } else if (node.nodeName == "IMG" && node.dataset.imgType==="emoji") {
             sendText += node.dataset.code;
+          } else if (node.nodeName == "IMG" && node.dataset.imgType === "common") {
+            hasImage = true;
+            imageUrls.push(node.dataset.url);
           }
         })
-        return sendText;
+        let sendObj = {
+          content: hasImage ? imageUrls[0] : sendText,
+          type: hasImage ? 1 : 0, // 0 文本，1图片
+        }
+        return sendObj;
       },
       html2Escape(strHtml) {
         return strHtml.replace(/[<>&"]/g, function (c) {
@@ -154,29 +164,9 @@
           return
         }
         
-        // 检查是否包含图片
-        let hasImage = false;
-        let imageUrls = [];
-        let textContent = "";
-        
-        this.$refs.textareaRef.childNodes.forEach((node) => {
-          if (node.nodeName == "IMG" && node.dataset.imgType === "common") {
-            hasImage = true;
-            imageUrls.push(node.dataset.url);
-          } else if (node.nodeName == "#text") {
-            textContent += node.textContent;
-          } else if (node.nodeName == "SPAN") {
-            textContent += node.innerText;
-          }
-        });
-        
-        let sendObj = {
-          content: hasImage ? imageUrls[0] : this.createSendText(),
-          type: hasImage ? 1 : 0, // 0 文本，1图片
-        }
-        console.log('sendObj:', sendObj);
-        
-        if (!hasImage && !textContent.trim()) {
+        let sendObj = this.createSendText();
+
+        if (!sendObj.content) {
           return
         }
         
