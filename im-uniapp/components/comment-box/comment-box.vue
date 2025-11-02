@@ -4,22 +4,50 @@
       <editor id="editor" class="comment-input" ref="myEditor" :placeholder="commentPlaceholder"
               :read-only="isReadOnly" @focus="onEditorFocus" @blur="onEditorBlur" @ready="onEditorReady" @input="onTextInput">
       </editor>
-      <uni-icons @click="chooseEmoji" custom-prefix="iconfont" type="icon-icon_emoji" size="32" :color="showEmo ? '#07C160' : '#cccccc'"/>
       <view class="send-btn cursor-pointer" size="mini" @click="submitComment">发送</view>
+      <uni-icons v-if="chatTabBox === 'none'" type="plus" size="40" @click="toggleToTools" />
+      <uni-icons v-else type="close" size="40" @click="toggleToNone" />
     </view>
-    <scroll-view class="emo-box" scroll-y="true" v-show="showEmo">
-      <view class="emotion-item-list">
-        <image class="emotion-item emoji-large" :title="emoText" :src="$emo.textToPathOriginal(emoText)"
-               v-for="(emoText, i) in $emo.originalEmoTextList" :key="i" @click="selectEmoji(emoText)" mode="aspectFit"
-               lazy-load="true"></image>
+    <view class="comment-tools-box">
+      <view v-if="chatTabBox == 'tools'" class="chat-tools">
+        <view class="chat-tools-item">
+          <image-upload :maxCount="9" sourceType="album" :onBefore="onUploadImageBefore"
+                        :onSuccess="onUploadImageSuccess" :onError="onUploadImageFail">
+            <svg-icon class="tool-icon" icon-class="tupian"></svg-icon>
+          </image-upload>
+          <view class="tool-name">图片</view>
+        </view>
+        <view class="chat-tools-item" @click="toggleToEmo">
+          <svg-icon class="tool-icon" icon-class="fabiaoqing"></svg-icon>
+          <view class="tool-name">表情</view>
+        </view>
+        <view class="chat-tools-item">
+          <svg-icon class="tool-icon" icon-class="minganci"></svg-icon>
+          <view class="tool-name">角色台词</view>
+        </view>
+        <view class="chat-tools-item">
+          <svg-icon class="tool-icon" icon-class="biaoqing"></svg-icon>
+          <view class="tool-name">角色表情</view>
+        </view>
       </view>
-    </scroll-view>
+      <scroll-view class="emo-box" scroll-y="true" v-if="chatTabBox === 'emo'">
+        <view class="emotion-item-list">
+          <image class="emotion-item emoji-large" :title="emoText" :src="$emo.textToPathOriginal(emoText)"
+                 v-for="(emoText, i) in $emo.originalEmoTextList" :key="i" @click="selectEmoji(emoText)" mode="aspectFit"
+                 lazy-load="true"></image>
+        </view>
+      </scroll-view>
+    </view>
+
   </uni-popup>
 </template>
 
 <script>
+import SvgIcon from "../svg-icon/svg-icon.vue";
+
 export default {
   name: "comment-box",
+  components: {SvgIcon},
   props: {
     commentPlaceholder: {
       type: String,
@@ -30,7 +58,8 @@ export default {
     return {
       showEmo: false,
       commentText: "",
-      isReadOnly: false
+      isReadOnly: false,
+      chatTabBox: 'none',
     }
   },
   methods: {
@@ -106,14 +135,45 @@ export default {
           }
 
           this.$emit("submit", sendText);
+          this.chatTabBox = 'none';
         }
       })
+    },
+    onUploadImageBefore(file) {
+
+    },
+    onUploadImageSuccess(file, res) {
+
+    },
+    onUploadImageFail(file, err) {
+
+    },
+    toggleToTools() {
+      if (this.chatTabBox === 'tools') {
+        this.switchChatTabBox('none')
+      } else {
+        this.switchChatTabBox('tools')
+      }
+    },
+    toggleToNone() {
+      this.switchChatTabBox('none')
+    },
+    toggleToEmo() {
+      if (this.chatTabBox === 'emo') {
+        this.switchChatTabBox('none')
+      } else {
+        this.switchChatTabBox('emo')
+      }
+    },
+    switchChatTabBox(chatTabBox) {
+      this.chatTabBox = chatTabBox;
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
+$icon-color: rgba(0, 0, 0, 0.88);
 .comment-input-box {
   display: flex;
   align-items: center;
@@ -143,6 +203,46 @@ export default {
   background-color: #07c160;
   color: #ffffff;
   border-radius: 36rpx;
+}
+
+.comment-tools-box {
+  background-color: $im-bg;
+
+  .chat-tools {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 20rpx;
+    align-items: center;
+    height: 120px;
+    padding: 40rpx;
+    box-sizing: border-box;
+  }
+
+  .chat-tools-item {
+    padding: 16rpx;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .tool-icon {
+      padding: 26rpx;
+      font-size: 54rpx;
+      border-radius: 20%;
+      background-color: white;
+      color: $icon-color;
+
+      &:active {
+        background-color: $im-bg-active;
+      }
+    }
+
+    .tool-name {
+      height: 60rpx;
+      line-height: 60rpx;
+      font-size: 28rpx;
+    }
+  }
 }
 
 .emo-box {

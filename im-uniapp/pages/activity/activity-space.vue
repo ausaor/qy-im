@@ -488,7 +488,8 @@ export default {
         characterId: talk.commentCharacterId,
         avatarId: talk.commentCharacterAvatarId,
         userAvatar: talk.commentCharacterAvatar,
-        replyCommentId: this.comment.replyCommentId
+        replyCommentId: this.comment.replyCommentId,
+        type: this.$enums.MESSAGE_TYPE.TEXT
       }
       this.$http({
         url: "/talk/addTalkComment",
