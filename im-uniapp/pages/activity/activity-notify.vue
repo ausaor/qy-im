@@ -15,7 +15,6 @@
     <scroll-view
         class="message-list"
         scroll-y="true"
-        @scrolltolower="loadMore"
         refresher-enabled="true"
         :refresher-triggered="isRefreshing"
     >
@@ -132,8 +131,17 @@ export default {
       uni.navigateBack();
     },
     loadMore() {
-      if (this.isLoading) return;
-      if (this.page.pageNo >= this.page.totalPage) return;
+      if (this.isLoading) {
+         return
+      }
+      if (this.page.pageNo >= this.page.totalPage) {
+        // 没有更多数据
+        uni.showToast({
+          title: '已经到底了',
+          icon: 'none'
+        })
+        return
+      }
 
       this.isLoading = true;
       this.page.pageNo += 1;
@@ -419,7 +427,7 @@ export default {
 .reply-item {
   margin-bottom: 12rpx;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .reply-item:last-child {
@@ -429,11 +437,17 @@ export default {
 .reply-username {
   font-size: 28rpx;
   margin-right: 8rpx;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .reply-content {
   font-size: 28rpx;
   color: #333333;
+  word-wrap: break-word;
+  word-break: break-all;
+  flex: 1;
+  min-width: 0;
 }
 
 .reply-image {
