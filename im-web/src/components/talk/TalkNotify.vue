@@ -173,7 +173,7 @@ export default {
       }
       let content = '';
       if (sendObj.type === this.$enums.MESSAGE_TYPE.IMAGE) {
-        content = JSON.stringify({originUrl: sendObj.content})
+        content = JSON.stringify(sendObj.content)
       } else {
         content = sendObj.content
       }

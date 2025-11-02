@@ -12,7 +12,13 @@
     <div class="character-wrapper" v-show="showType === 'word'">
       <CharacterWord :character-id="characterId" :show="showType === 'word'" @send="sendWord"/>
     </div>
+    <div class="character-wrapper" v-show="showType === 'c-emo'">
+      <CharacterEmo :character-id="characterId" :show="showType === 'c-emo'" @choose="chooseCharacterEmoji"/>
+    </div>
     <div class="btn-group">
+      <div class="point c-emo-point" v-if="characterId" @click="changeShowType('c-emo')">
+        <i class="icon iconfont icon-biaoqing"></i>
+      </div>
       <div class="point ci-point" v-if="characterId" @click="changeShowType('word')">
         <i class="icon iconfont icon-minganci"></i>
       </div>
@@ -34,13 +40,15 @@
   import Emoji from "@components/emoji/index.vue";
   import CharacterWord from "@components/template/CharacterWord.vue";
   import FileUpload from "@components/common/FileUpload.vue";
+  import CharacterEmo from "@components/template/CharacterEmo.vue";
 
   export default {
     name: "InputBox",
     components: {
       FileUpload,
       Emoji,
-      CharacterWord
+      CharacterWord,
+      CharacterEmo
     },
     props: {
       placeholder: {
@@ -61,6 +69,7 @@
         lastEditRange: null,
         show: false,
         showType: '',
+        characterEmo: null,
       }
     },
     methods: {
@@ -138,7 +147,17 @@
             sendText += node.dataset.code;
           } else if (node.nodeName == "IMG" && node.dataset.imgType === "common") {
             hasImage = true;
-            imageUrls.push(node.dataset.url);
+            imageUrls.unshift({originUrl: node.dataset.url});
+          } else if (node.nodeName == "IMG" && node.dataset.imgType === "c-emo") {
+            hasImage = true;
+            imageUrls.unshift({
+              originUrl: node.dataset.url,
+              id: this.characterEmo.id,
+              templateGroupId: this.characterEmo.templateGroupId,
+              characterId: this.characterEmo.characterId,
+              characterName: this.characterEmo.characterName,
+              name: this.characterEmo.name,
+            });
           }
         })
         let sendObj = {
@@ -190,22 +209,20 @@
         this.$emit('sendWord', word)
       },
       onImageBefore() {
-        this.$message.warning("请等待图片上传完成")
       },
       onImageSuccess(data, file) {
-        console.log({originName: data.originName, url: data.originUrl})
-        this.$message.success("图片上传成功")
-        
+        // 先清空输入框
+        let edit = this.$refs.textareaRef;
+        edit.innerHTML = '';
         // 创建图片元素并插入到输入框
         let img = document.createElement('img');
         img.src = data.originUrl;
-        img.class = "common-img";
         img.style.maxWidth = "200px";
         img.style.maxHeight = "200px";
         img.dataset.url = data.originUrl;
         img.dataset.imgType = "common";
         
-        let edit = this.$refs.textareaRef;
+
         edit.focus();
         let selection = window.getSelection();
         
@@ -235,6 +252,45 @@
       },
       onImageFail() {
         this.$message.error("图片上传失败")
+      },
+      chooseCharacterEmoji(emo) {
+        this.characterEmo = emo;
+        let edit = this.$refs.textareaRef;
+        edit.innerHTML = '';
+        // 创建图片元素并插入到输入框
+        let img = document.createElement('img');
+        img.src = emo.url;
+        img.style.maxWidth = "150px";
+        img.style.maxHeight = "150px";
+        img.dataset.url = emo.url;
+        img.dataset.imgType = "c-emo";
+
+        edit.focus();
+        let selection = window.getSelection();
+
+        // 如果存在最后的光标对象
+        if (this.lastEditRange) {
+          // 选区对象清除所有光标
+          selection.removeAllRanges();
+          // 并添加最后记录的光标，以还原之前的状态
+          selection.addRange(this.lastEditRange);
+          // 获取到最后选择的位置
+          let range = selection.getRangeAt(0);
+          // 在此位置插入图片
+          range.insertNode(img);
+          // false，表示将Range对象所代表的区域的起点移动到终点处
+          range.collapse(false);
+
+          // 记录最后的位置
+          this.lastEditRange = selection.getRangeAt(0);
+        } else {
+          // 将图片添加到可编辑的div中，作为可编辑div的子节点
+          edit.appendChild(img);
+          // 使用选取对象，选取可编辑div中的所有子节点
+          selection.selectAllChildren(edit);
+          // 合并到最后面，即实现了添加一个图片后，把光标移到最后面
+          selection.collapseToEnd();
+        }
       }
     }
   }
@@ -279,7 +335,7 @@
 
     .biaoqing-point {
       cursor: pointer;
-      color: #5fb878;
+      color: #f9c73d;
     }
 
     .ci-point {
@@ -290,6 +346,11 @@
     .img-point {
       cursor: pointer;
       color: #48a5b9;
+    }
+
+    .c-emo-point {
+      cursor: pointer;
+      color: #1aa5ff;
     }
 
     i {

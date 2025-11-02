@@ -331,7 +331,7 @@ export default {
         return
       }
       if (sendObj.type === this.$enums.MESSAGE_TYPE.IMAGE) {
-        this.comment.content = JSON.stringify({originUrl: sendObj.content})
+        this.comment.content = JSON.stringify(sendObj.content)
       } else {
         this.comment.content = sendObj.content
       }
