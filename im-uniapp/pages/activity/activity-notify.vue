@@ -16,7 +16,6 @@
         class="message-list"
         scroll-y="true"
         refresher-enabled="true"
-        :refresher-triggered="isRefreshing"
     >
       <view class="message-item" v-for="(item, index) in messageList" :key="index">
         <!-- 用户信息 -->
@@ -90,10 +89,12 @@
         </view>
       </view>
 
-      <!-- 加载更多 -->
-      <view class="loading-more" v-if="isLoading">
-        <text>加载中...</text>
-      </view>
+      <!-- 分页组件 -->
+      <pagination 
+        :total-page="page.totalPage" 
+        :page-no="page.pageNo"
+        @loadMore="onLoadMore">
+      </pagination>
     </scroll-view>
     <comment-box  ref="commentBox" @submit="submitComment" :comment-placeholder="commentPlaceholder"></comment-box>
   </view>
@@ -103,16 +104,15 @@
 import CommentBox from "../../components/comment-box/comment-box.vue";
 import HeadImage from "../../components/head-image/head-image.vue";
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+import Pagination from "../../components/pagination/pagination.vue";
 
 export default {
-  components: {SvgIcon, HeadImage, CommentBox},
+  components: {SvgIcon, HeadImage, CommentBox, Pagination},
   data() {
     return {
       category: null,
       groupId: null,
       regionCode: null,
-      isRefreshing: false,
-      isLoading: false,
       page: {
         pageNo: 1,
         pageSize: 10,
@@ -130,30 +130,21 @@ export default {
     goBack() {
       uni.navigateBack();
     },
-    loadMore() {
-      if (this.isLoading) {
-         return
-      }
+    onLoadMore(callback) {
       if (this.page.pageNo >= this.page.totalPage) {
         // 没有更多数据
         uni.showToast({
           title: '已经到底了',
           icon: 'none'
         })
+        callback && callback();
         return
       }
 
-      this.isLoading = true;
       this.page.pageNo += 1;
-      this.queryTalkNotify();
-      this.isLoading = false;
-    },
-    onRefresh() {
-      this.isRefreshing = true;
-      this.messageList = [];
-      this.page.pageNo  = 1;
-      this.queryTalkNotify();
-      this.isRefreshing = false;
+      this.queryTalkNotify().finally(() => {
+        callback && callback();
+      });
     },
     replyMessage(item) {
       this.curMessage = item;
@@ -167,13 +158,17 @@ export default {
         regionCode: this.regionCode
       };
 
-      this.$http({
+      return this.$http({
         url: `/talk-notify/pageQueryTalkNotify?pageNo=${this.page.pageNo}&pageSize=${this.page.pageSize}`,
         method: 'post',
         data: params
       }).then((data) => {
-        this.messageList.push(...data.data);
-        this.page.totalPage = (data.total - 1) / this.page.pageSize + 1;
+        if (this.page.pageNo === 1) {
+          this.messageList = data.data;
+        } else {
+          this.messageList.push(...data.data);
+        }
+        this.page.totalPage = Math.ceil(data.total / this.page.pageSize);
       }).finally(() => {
 
       })
