@@ -115,7 +115,7 @@
                     <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(comment.content))"></span>
                   </span>
                   <span v-if="comment.type === $enums.MESSAGE_TYPE.IMAGE" class="content">
-                    <img :src="comment.content" loading="lazy" @click="handleShowCommentBox(comment, item.id, index)"/>
+                    <img :src="JSON.parse(comment.content).originUrl" loading="lazy" @click="handleShowCommentBox(comment, item.id, index)"/>
                   </span>
                   <div class="del-btn" v-if="comment.isOwner">
                     <el-popconfirm
@@ -330,7 +330,11 @@ export default {
       if (!sendObj) {
         return
       }
-      this.comment.content = sendObj.content
+      if (sendObj.type === this.$enums.MESSAGE_TYPE.IMAGE) {
+        this.comment.content = JSON.stringify({originUrl: sendObj.content})
+      } else {
+        this.comment.content = sendObj.content
+      }
       let params = {
         talkId: talk.id,
         content: this.comment.content,

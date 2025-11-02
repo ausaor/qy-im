@@ -54,7 +54,7 @@
               <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(message.talkComment.content))"></span>
             </div>
             <div class="original-text" v-if="message.actionType===1 && message.talkComment.type === $enums.MESSAGE_TYPE.IMAGE">
-              <img :src="message.talkComment.content"/>
+              <img :src="JSON.parse(message.talkComment.content).originUrl"/>
             </div>
 
             <div class="talk-content">
@@ -86,7 +86,7 @@
                   <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(reply.content))"></span>
                 </span>
                 <span v-if="reply.type === $enums.MESSAGE_TYPE.IMAGE" class="comment-content">
-                  <img :src="reply.content"/>
+                  <img :src="JSON.parse(reply.content).originUrl"/>
                 </span>
               </div>
             </div>
@@ -171,10 +171,16 @@ export default {
       if (!sendObj) {
         return
       }
+      let content = '';
+      if (sendObj.type === this.$enums.MESSAGE_TYPE.IMAGE) {
+        content = JSON.stringify({originUrl: sendObj.content})
+      } else {
+        content = sendObj.content
+      }
       let talk = message.talk;
       let params = {
         talkId: talk.id,
-        content: sendObj.content,
+        content: content,
         userNickname: talk.commentCharacterName,
         characterId: talk.commentCharacterId,
         avatarId: talk.commentCharacterAvatarId,
@@ -411,6 +417,7 @@ export default {
   line-height: 1.5;
   margin-bottom: 12px;
   text-align: left;
+  word-break: break-all;
 
   .icon {
     cursor: pointer;
