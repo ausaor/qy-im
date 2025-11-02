@@ -34,7 +34,15 @@
 
         <!-- 消息内容 -->
         <view class="message-content">
-          <up-parse class="content-text" v-if="item.actionType===1" :showImgMenu="false" :content="nodesText(item.talkComment.content)"></up-parse>
+          <up-parse class="content-text" v-if="item.actionType===1 && item.talkComment.type === $enums.MESSAGE_TYPE.TEXT"
+                    :showImgMenu="false" :content="nodesText(item.talkComment.content)"></up-parse>
+          <view class="content-text" v-if="item.actionType===1 && item.talkComment.type === $enums.MESSAGE_TYPE.IMAGE">
+            <image class="comment-image" :src="JSON.parse(item.talkComment.content).originUrl" mode="aspectFill"></image>
+          </view>
+          <view class="content-text" v-if="item.actionType===1 && item.talkComment.type === $enums.MESSAGE_TYPE.WORD_VOICE">
+            <text>{{JSON.parse(item.talkComment.content).word}}</text>
+            <svg-icon :icon-class="'xitongxiaoxi'" @click.stop="playVoice(JSON.parse(item.talkComment.content))" />
+          </view>
           <!-- 互动信息 -->
           <view class="interaction-info" v-if="item.actionType===2">
             <view class="like-info">
@@ -64,7 +72,15 @@
               <text v-if="reply.replyCommentId" style="margin: 0 5rpx;color: #1890ff;font-size: 28rpx;">回复</text>
               <text class="reply-username" v-if="reply.replyCommentId">{{ reply.replyUserNickname }}</text>
               <text>：</text>
-              <up-parse class="reply-content" :showImgMenu="false" :content="nodesText(reply.content)"></up-parse>
+              <up-parse v-if="reply.type === $enums.MESSAGE_TYPE.TEXT"
+                        class="reply-content" :showImgMenu="false" :content="nodesText(reply.content)"></up-parse>
+
+              <image v-if="reply.type === $enums.MESSAGE_TYPE.IMAGE"
+                     class="reply-image" :src="JSON.parse(reply.content).originUrl" mode="aspectFill"></image>
+              <view v-if="reply.type === $enums.MESSAGE_TYPE.WORD_VOICE" class="reply-content">
+                <text>{{JSON.parse(reply.content).word}}</text>
+                <svg-icon :icon-class="'xitongxiaoxi'" @click.stop="playVoice(JSON.parse(reply.content))" />
+              </view>
             </view>
           </view>
 
@@ -87,9 +103,10 @@
 <script>
 import CommentBox from "../../components/comment-box/comment-box.vue";
 import HeadImage from "../../components/head-image/head-image.vue";
+import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 
 export default {
-  components: {HeadImage, CommentBox},
+  components: {SvgIcon, HeadImage, CommentBox},
   data() {
     return {
       category: null,
@@ -104,7 +121,10 @@ export default {
       },
       commentPlaceholder:  '说点什么...',
       curMessage: {},
-      messageList: []
+      messageList: [],
+      wordAudioContext: null,
+      playingVoice: null,
+      voicePlayState: 'STOP', // 'PLAYING', 'PAUSE', 'STOP'
     }
   },
   methods: {
@@ -180,6 +200,49 @@ export default {
         this.$refs.commentBox.cancel();
         this.commentPlaceholder = '说点什么...';
       })
+    },
+    playVoice(word) {
+      // 如果点击的是同一个音频，则切换播放/暂停状态
+      if (this.playingVoice && this.playingVoice.voice === word.voice) {
+        if (this.voicePlayState === 'PLAYING') {
+          this.wordAudioContext.pause();
+          this.voicePlayState = 'PAUSE';
+          return;
+        } else if (this.voicePlayState === 'PAUSE') {
+          this.wordAudioContext.play();
+          this.voicePlayState = 'PLAYING';
+          return;
+        }
+      }
+
+      // 停止当前播放的音频
+      if (this.wordAudioContext) {
+        this.wordAudioContext.stop();
+      }
+
+      // 创建音频上下文
+      this.wordAudioContext = uni.createInnerAudioContext();
+      // 设置音频源
+      this.wordAudioContext.src = word.voice;
+
+      // 监听音频播放结束事件
+      this.wordAudioContext.onEnded(() => {
+        console.log('音频播放结束');
+        this.voicePlayState = 'STOP';
+        this.playingVoice = null;
+      });
+
+      // 监听音频播放错误事件
+      this.wordAudioContext.onError((res) => {
+        console.log('音频播放出错:', res.errMsg);
+        this.voicePlayState = 'STOP';
+        this.playingVoice = null;
+      });
+
+      // 开始播放新音频
+      this.wordAudioContext.play();
+      this.voicePlayState = 'PLAYING';
+      this.playingVoice = word;
     }
   },
   onLoad(options) {
@@ -292,6 +355,11 @@ export default {
   margin-bottom: 16rpx;
 }
 
+.comment-image {
+  max-width: 150rpx;
+  max-height: 150rpx;
+}
+
 .media-wrapper {
   display: flex;
   position: relative;
@@ -366,6 +434,11 @@ export default {
 .reply-content {
   font-size: 28rpx;
   color: #333333;
+}
+
+.reply-image {
+  max-width: 150rpx;
+  max-height: 150rpx;
 }
 
 .reply-input-box {
