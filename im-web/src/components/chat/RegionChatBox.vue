@@ -156,7 +156,7 @@ export default {
       regionGroup: {},
       friend: {},
       regionGroupMembers: [],
-      regionGroupMembersMap: {},
+      regionGroupMembersMap: new Map(),
       myGroupMemberInfo: {}, // 我的群聊成员信息
       sendImageUrl: "",
       sendImageFile: "",
@@ -427,7 +427,7 @@ export default {
         this.isInBottom = false;
       }
       // 判断滚动方向（向上滚动）
-      if (scrollTop < this.lastScrollTop - 100) {
+      if (scrollTop < this.lastScrollTop - 300) {
         console.log("向上滚动 ↑");
         // 这里可以添加自定义逻辑
         this.isInBottom = false;

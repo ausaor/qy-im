@@ -806,16 +806,31 @@ export default {
       // 设置防抖（100ms内只执行一次）
       this.timer = setTimeout(() => {
         const currentScrollTop = e.detail.scrollTop
+        // 计算滚动距离
+        const scrollDistance = Math.abs(currentScrollTop - this.lastScrollTop);
+        // 设置滚动距离阈值
+        const scrollThreshold = 200;
 
         // 判断滚动方向
         if (currentScrollTop < this.lastScrollTop) {
           this.scrollDirection = 'up'
-          this.isInBottom = false;
-          console.log('向上滚动')
-          // 这里可以添加向上滚动的自定义逻辑
+          // 判断滚动距离是否超过阈值
+          if (scrollDistance > scrollThreshold) {
+            this.isInBottom = false;
+            console.log('向上快速滚动，滚动距离:', scrollDistance)
+            // 这里可以添加向上快速滚动的自定义逻辑
+          } else {
+            console.log('向上缓慢滚动，滚动距离:', scrollDistance)
+          }
         } else if (currentScrollTop > this.lastScrollTop) {
           this.scrollDirection = 'down'
-          console.log('向下滚动')
+          // 判断滚动距离是否超过阈值
+          if (scrollDistance > scrollThreshold) {
+            console.log('向下快速滚动，滚动距离:', scrollDistance)
+            // 这里可以添加向下快速滚动的自定义逻辑
+          } else {
+            console.log('向下缓慢滚动，滚动距离:', scrollDistance)
+          }
         }
         // 更新滚动位置记录
         this.lastScrollTop = currentScrollTop
