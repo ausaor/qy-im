@@ -117,9 +117,13 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
                 talkStarMap = talkStars.stream().collect(Collectors.toMap(TalkStar::getId, Function.identity()));
             }
             List<TalkNotifyVO> talkNotifyVOS = BeanUtils.copyPropertiesList(records, TalkNotifyVO.class);
+            List<TalkNotifyVO> result = new ArrayList<>();
             for (TalkNotifyVO talkNotifyVO : talkNotifyVOS) {
                 if (ObjectUtil.isNotNull(talkNotifyVO.getTalkId())) {
                     Talk talk = talkMap.get(talkNotifyVO.getTalkId());
+                    if (talk.getDeleted()) {
+                        continue;
+                    }
                     TalkVO talkVO = BeanUtils.copyProperties(talk, TalkVO.class);
                     if (StringUtils.isNotBlank(talk.getFiles())) {
                         talkVO.setFileList(JSONArray.parseArray(talk.getFiles()));
@@ -136,6 +140,10 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
                 }
                 if (ObjectUtil.isNotNull(talkNotifyVO.getCommentId())) {
                     TalkComment talkComment = talkCommentMap.get(talkNotifyVO.getCommentId());
+                    if (talkComment.getDeleted()) {
+                        continue;
+                    }
+
                     talkNotifyVO.setCommentUserId(talkComment.getUserId());
                     talkNotifyVO.setAvatar(talkComment.getUserAvatar());
                     talkNotifyVO.setNickname(talkComment.getUserNickname());
@@ -144,15 +152,17 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
                     // 查询当前评论的回复
                     if (ObjectUtil.isNotNull(talkComment.getReplyCommentId())) {
                         TalkComment replytalkComment = talkCommentService.getById(talkComment.getReplyCommentId());
-                        List<TalkCommentVO> replyTalkCommentList = new ArrayList<>();
-                        TalkCommentVO talkCommentVO = BeanUtils.copyProperties(replytalkComment, TalkCommentVO.class);
-                        replyTalkCommentList.add(talkCommentVO);
-                        talkNotifyVO.setReplyTalkComment(replyTalkCommentList);
-                        if (replytalkComment.getUserId().equals(userId)) {
-                            talkNotifyVO.getTalk().setCommentCharacterId(replytalkComment.getCharacterId());
-                            talkNotifyVO.getTalk().setCommentCharacterName(replytalkComment.getUserNickname());
-                            talkNotifyVO.getTalk().setCommentCharacterAvatar(replytalkComment.getUserAvatar());
-                            talkNotifyVO.getTalk().setCommentCharacterAvatarId(replytalkComment.getAvatarId());
+                        if (replytalkComment.getDeleted()) {
+                            List<TalkCommentVO> replyTalkCommentList = new ArrayList<>();
+                            TalkCommentVO talkCommentVO = BeanUtils.copyProperties(replytalkComment, TalkCommentVO.class);
+                            replyTalkCommentList.add(talkCommentVO);
+                            talkNotifyVO.setReplyTalkComment(replyTalkCommentList);
+                            if (replytalkComment.getUserId().equals(userId)) {
+                                talkNotifyVO.getTalk().setCommentCharacterId(replytalkComment.getCharacterId());
+                                talkNotifyVO.getTalk().setCommentCharacterName(replytalkComment.getUserNickname());
+                                talkNotifyVO.getTalk().setCommentCharacterAvatar(replytalkComment.getUserAvatar());
+                                talkNotifyVO.getTalk().setCommentCharacterAvatarId(replytalkComment.getAvatarId());
+                            }
                         }
                     }
                     // 查询当前用户对当前评论的所有评论
@@ -179,14 +189,19 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
                     }
                 } else if (ObjectUtil.isNotNull(talkNotifyVO.getStarId())) {
                     TalkStar talkStar = talkStarMap.get(talkNotifyVO.getStarId());
+                    if (talkStar.getDeleted()) {
+                        continue;
+                    }
                     talkNotifyVO.setCommentUserId(talkStar.getUserId());
                     talkNotifyVO.setTalkStar(BeanUtils.copyProperties(talkStar, TalkStarVO.class));
                     talkNotifyVO.setAvatar(talkStar.getAvatar());
                     talkNotifyVO.setNickname(talkStar.getNickname());
                 }
+
+                result.add(talkNotifyVO);
             }
 
-            return PageResultVO.builder().data(talkNotifyVOS).total(selectPage.getTotal()).build();
+            return PageResultVO.builder().data(result).total(selectPage.getTotal()).build();
         }
 
         return PageResultVO.builder().data(Collections.emptyList()).total(selectPage.getTotal()).build();
