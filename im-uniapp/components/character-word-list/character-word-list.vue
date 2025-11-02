@@ -61,6 +61,8 @@ export default {
       activeItem: {},
       wordIndex: 1,
       audioContext: null,
+      playingUrl: null,
+      voicePlayState: 'STOP', // 'PLAYING', 'PAUSE', 'STOP'
     };
   },
   methods: {
@@ -92,19 +94,47 @@ export default {
       this.wordIndex = index;
     },
     onPlayWordVoice(url) {
+      // 如果点击的是同一个音频，则切换播放/暂停状态
+      if (this.playingUrl && this.playingUrl === url) {
+        if (this.voicePlayState === 'PLAYING') {
+          this.audioContext.pause();
+          this.voicePlayState = 'PAUSE';
+          return;
+        } else if (this.voicePlayState === 'PAUSE') {
+          this.audioContext.play();
+          this.voicePlayState = 'PLAYING';
+          return;
+        }
+      }
+      
+      // 停止当前播放的音频
+      if (this.audioContext) {
+        this.audioContext.stop();
+      }
+      
       // 创建音频上下文
       this.audioContext = uni.createInnerAudioContext();
       // 设置音频源
       this.audioContext.src = url;
+      
       // 监听音频播放结束事件
       this.audioContext.onEnded(() => {
         console.log('音频播放结束');
+        this.voicePlayState = 'STOP';
+        this.playingUrl = null;
       });
+      
       // 监听音频播放错误事件
       this.audioContext.onError((res) => {
         console.log('音频播放出错:', res.errMsg);
+        this.voicePlayState = 'STOP';
+        this.playingUrl = null;
       });
+      
+      // 开始播放新音频
       this.audioContext.play();
+      this.voicePlayState = 'PLAYING';
+      this.playingUrl = url;
     }
   },
 }
@@ -166,4 +196,5 @@ export default {
     }
   }
 }
+
 </style>

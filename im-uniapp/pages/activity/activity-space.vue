@@ -63,7 +63,7 @@
                 />
                 <video v-else-if="fileItem.fileType === 2" :src="fileItem.url" :poster="fileItem.coverUrl" class="content-video" :controls="true"></video>
                 <view class="content-audio" v-else-if="fileItem.fileType === 3">
-                  <music-player ref="musicPlayerRef" :audio-url="fileItem.url"></music-player>
+                  <music-player ref="musicPlayerRef" :audio-url="fileItem.url" :cover-img-url="'/static/image/music.png'"></music-player>
                 </view>
               </view>
             </view>
@@ -105,8 +105,15 @@
                   <text @click.stop="showUserInfo(comment.replyUserId)">{{comment.replyUserNickname}}</text>
                 </view>
                 <text>：</text>
-                <view class="comment-text" @click.stop="doComment(comment, item)">
-                  <up-parse class="comment-rich-text" :showImgMenu="false" :content="nodesText(comment.content)"></up-parse>
+                <view class="comment-text" @click="doComment(comment, item)">
+                  <up-parse v-if="comment.type == $enums.MESSAGE_TYPE.TEXT" class="comment-rich-text" :showImgMenu="false" :content="nodesText(comment.content)"></up-parse>
+                  <view v-if="comment.type == $enums.MESSAGE_TYPE.IMAGE">
+                    <image class="comment-img" :src="JSON.parse(comment.content).originUrl" mode="aspectFill"/>
+                  </view>
+                  <view v-if="comment.type == $enums.MESSAGE_TYPE.WORD_VOICE">
+                    <text>{{JSON.parse(comment.content).word}}</text>
+                    <svg-icon :icon-class="'xitongxiaoxi'" @click.stop="playVoice(JSON.parse(comment.content))" />
+                  </view>
                 </view>
               </view>
               <!-- 展开更多评论按钮 -->
@@ -169,6 +176,7 @@ import {throttle} from "../../common/throttle";
 import CharacterAvatarList from "../../components/character-avatar-list/character-avatar-list.vue";
 import CommentBox from "../../components/comment-box/comment-box.vue";
 import MusicPlayer  from "../../components/music-player/music-player.vue";
+import {MESSAGE_TYPE} from "../../common/enums";
 
 export default {
   components: {CommentBox, CharacterAvatarList, CharacterList, GroupTemplateList, SvgIcon, HeadImage, MusicPlayer},
@@ -227,6 +235,9 @@ export default {
       isFocus: false, // 编辑器是否焦点
       isReadOnly: false, // 编辑器是否只读
       commentDisplayCounts: {}, // 记录每个动态显示的评论数量
+      wordAudioContext: null,
+      playingVoice: null,
+      voicePlayState: 'STOP', // 'PLAYING', 'PAUSE', 'STOP'
     };
   },
   methods: {
@@ -747,9 +758,55 @@ export default {
           component.stopAudio();
         })
       }
+    },
+    playVoice(word) {
+      // 如果点击的是同一个音频，则切换播放/暂停状态
+      if (this.playingVoice && this.playingVoice.voice === word.voice) {
+        if (this.voicePlayState === 'PLAYING') {
+          this.wordAudioContext.pause();
+          this.voicePlayState = 'PAUSE';
+          return;
+        } else if (this.voicePlayState === 'PAUSE') {
+          this.wordAudioContext.play();
+          this.voicePlayState = 'PLAYING';
+          return;
+        }
+      }
+      
+      // 停止当前播放的音频
+      if (this.wordAudioContext) {
+        this.wordAudioContext.stop();
+      }
+      
+      // 创建音频上下文
+      this.wordAudioContext = uni.createInnerAudioContext();
+      // 设置音频源
+      this.wordAudioContext.src = word.voice;
+      
+      // 监听音频播放结束事件
+      this.wordAudioContext.onEnded(() => {
+        console.log('音频播放结束');
+        this.voicePlayState = 'STOP';
+        this.playingVoice = null;
+      });
+      
+      // 监听音频播放错误事件
+      this.wordAudioContext.onError((res) => {
+        console.log('音频播放出错:', res.errMsg);
+        this.voicePlayState = 'STOP';
+        this.playingVoice = null;
+      });
+      
+      // 开始播放新音频
+      this.wordAudioContext.play();
+      this.voicePlayState = 'PLAYING';
+      this.playingVoice = word;
     }
   },
   computed: {
+    MESSAGE_TYPE() {
+      return MESSAGE_TYPE
+    },
     mine() {
       return this.userStore.userInfo;
     },
@@ -831,6 +888,14 @@ export default {
       this.playingAudio.isPlaying = false;
     }
     this.clearAllAudio()
+
+    // 停止wordAudioContext的音频
+    if (this.wordAudioContext) {
+      this.wordAudioContext.stop();
+      this.wordAudioContext = null;
+      this.playingVoice = null;
+      this.voicePlayState = 'STOP';
+    }
   },
 };
 </script>
@@ -1250,6 +1315,11 @@ export default {
   align-items: flex-start;
 }
 
+.comment-img {
+  max-width: 150rpx;
+  max-height: 150rpx;
+}
+
 .comment-rich-text {
   display: flex;
   align-items: flex-end;
@@ -1330,4 +1400,3 @@ export default {
   cursor: pointer;
 }
 </style>
-
