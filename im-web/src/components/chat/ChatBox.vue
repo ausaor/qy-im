@@ -205,7 +205,6 @@
 				showHistory: false, // 是否显示历史聊天记录
 				lockMessage: false, // 是否锁定发送
         showMinIdx: 0, // 下标低于showMinIdx的消息不显示，否则页面会很卡
-        friends: [],
         reqQueue: [],
         isSending: false,
         words: {
@@ -232,8 +231,6 @@
 			}
 		},
     created() {
-      this.friends = this.$store.state.friendStore.friends;
-
       // 监听事件
       this.$eventBus.$on('group-change', (msg) => {
         if (msg.chatType === 'GROUP' && this.group.id === msg.groupId && msg.groupChangeType) {
@@ -948,41 +945,6 @@
 					this.$store.commit("updateFriend", friend);
 				})
 			},
-			showName(msgInfo) {
-				if (this.chat.type === 'GROUP') {
-				  // 是普通群聊
-				  if (this.group.groupType === 0) {
-            let friend = this.friends.find((f) => f.id === msgInfo.sendId);
-            if (friend && friend.friendRemark) {
-              return friend.friendRemark;
-            }
-          }
-					let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
-					return member ? member.aliasName : "";
-				} else {
-					return msgInfo.sendId == this.mine.id ? this.mine.nickName : this.chat.showName
-				}
-			},
-      nickName(msgInfo) {
-        if (this.chat.type === 'GROUP') {
-          let friend = this.friends.find((f) => f.id === msgInfo.sendId);
-          if (friend && friend.friendRemark) {
-            return friend.friendRemark;
-          }
-          let member = this.groupMembers.find((m) => m.userId === msgInfo.sendId);
-          return member ? member.nickName : "";
-        } else {
-          return "";
-        }
-      },
-			headImage(msgInfo) {
-				if (this.chat.type == 'GROUP') {
-					let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
-					return member ? member.headImage : "";
-				} else {
-					return msgInfo.sendId == this.mine.id ? this.mine.headImage : this.chat.headImage
-				}
-			},
       showInfo(msgInfo) {
         let showInfoObj = {
           showName: "",
@@ -1199,8 +1161,11 @@
       isGroupOwner() {
         return this.chat.type === 'GROUP' && this.mine.id === this.group.ownerId;
       },
+      friends() {
+        return this.$store.state.friendStore.friends;
+      },
       friendsMap() {
-        return this.$store.state.friendStore.friends.reduce((map, friend) => {
+        return this.friends.reduce((map, friend) => {
           map[friend.id] = friend;
           return map;
         }, new Map())

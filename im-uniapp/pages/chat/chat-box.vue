@@ -175,6 +175,7 @@ export default {
 			friend: {},
 			group: {},
 			groupMembers: [],
+      groupMembersMap: new Map(),
       myGroupMemberInfo: {}, // 我的群聊成员信息
 			isReceipt: false, // 是否回执消息
 			scrollMsgIdx: 0, // 滚动条定位为到哪条消息
@@ -349,7 +350,8 @@ export default {
         quoteShowName: '',
       };
       if (this.chat.type == 'GROUP') {
-        let friend = this.friends.find((f) => f.id === msgInfo.sendId);
+        //let friend = this.friends.find((f) => f.id === msgInfo.sendId);
+        let friend = this.friendsMap.get(msgInfo.sendId);
         if (friend) {
           if (friend.friendRemark) {
             showInfoObj.nickName = friend.friendRemark;
@@ -367,7 +369,8 @@ export default {
             }
           }
         }
-        let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+        //let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+        let member = this.groupMembersMap.get(msgInfo.sendId);
         if (member) {
           showInfoObj.characterNum = member.characterNum;
           showInfoObj.headImage = member.headImage;
@@ -379,7 +382,8 @@ export default {
           }
         }
         if (msgInfo.quoteMsg) {
-          let member2 = this.groupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+          //let member2 = this.groupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+          let member2 = this.groupMembersMap.get(msgInfo.quoteMsg.sendId);
           showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
         }
 
@@ -809,7 +813,7 @@ export default {
         // 计算滚动距离
         const scrollDistance = Math.abs(currentScrollTop - this.lastScrollTop);
         // 设置滚动距离阈值
-        const scrollThreshold = 200;
+        const scrollThreshold = 400;
 
         // 判断滚动方向
         if (currentScrollTop < this.lastScrollTop) {
@@ -964,8 +968,13 @@ export default {
 				url: `/group/members/${groupId}`,
 				method: 'GET'
 			}).then((groupMembers) => {
-        this.myGroupMemberInfo = groupMembers.find((m) => m.userId === this.mine.id);
-				this.groupMembers = groupMembers;
+        this.groupMembers = groupMembers;
+        this.groupMembersMap = groupMembers.reduce((map, member) => {
+          map.set(member.userId, member);
+          return map;
+        }, new Map()); // 初始值为一个空Map
+
+        this.myGroupMemberInfo = this.groupMembersMap.get(this.mine.id);
 			});
 		},
 		loadFriend(friendId) {
@@ -1369,6 +1378,12 @@ export default {
 		},
     friends() {
       return this.friendStore.friends;
+    },
+    friendsMap() {
+      return this.friends.reduce((map, item) => {
+        map[item.id] = item;
+        return map;
+      }, new Map());
     },
     quoteContent() {
       return this.$commonUtil.processAtUsers(this.quoteMsgInfo.quoteContent, this.quoteMsgInfo.msgInfo?.atUserIds || []);

@@ -130,6 +130,7 @@ export default {
       regionGroup: {},
       myGroupMemberInfo: {},
       regionGroupMembers: [],
+      regionGroupMembersMap: new Map(),
       chatTabBox: 'none',
       showRecord: false,
       atUserIds: [],
@@ -547,7 +548,7 @@ export default {
         // 计算滚动距离
         const scrollDistance = Math.abs(currentScrollTop - this.lastScrollTop);
         // 设置滚动距离阈值
-        const scrollThreshold = 200;
+        const scrollThreshold = 400;
 
         // 判断滚动方向
         if (currentScrollTop < this.lastScrollTop) {
@@ -663,8 +664,12 @@ export default {
         url: `/region/group/members/${groupId}`,
         method: 'get'
       }).then((groupMembers) => {
-        this.myGroupMemberInfo = groupMembers.find((m) => m.userId === this.mine.id);
         this.regionGroupMembers = groupMembers;
+        this.regionGroupMembersMap = groupMembers.reduce((map, member) => {
+          map.set(member.userId, member);
+          return map;
+        }, new Map()); // 初始值为一个空Map
+        this.myGroupMemberInfo = this.regionGroupMembersMap.get(this.mine.id);
       });
     },
     onShowMore() {
@@ -805,13 +810,15 @@ export default {
         quoteShowName: '',
       };
       if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
-        let friend = this.friends.find((f) => f.id === msgInfo.sendId);
+        //let friend = this.friends.find((f) => f.id === msgInfo.sendId);
+        let friend = this.friendsMap.get(msgInfo.sendId);
         if (friend) {
           if (friend.friendRemark) {
             showInfoObj.showName = friend.friendRemark;
           }
         }
-        let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
+        //let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
+        let member = this.regionGroupMembersMap.get(msgInfo.sendId);
         if (!showInfoObj.showName) {
           if (member) {
             showInfoObj.showName = member.aliasName;
@@ -821,7 +828,8 @@ export default {
           showInfoObj.headImage = member.headImage;
         }
         if (msgInfo.quoteMsg) {
-          let member2 = this.regionGroupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+          //let member2 = this.regionGroupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+          let member2 = this.regionGroupMembersMap.get(msgInfo.quoteMsg.sendId);
           showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
         }
         if (!showInfoObj.showName) {
@@ -1060,6 +1068,12 @@ export default {
     },
     friends() {
       return this.friendStore.friends;
+    },
+    friendsMap() {
+      return this.friends.reduce((map, friend) => {
+        map[friend.id] = friend;
+        return map;
+      }, new Map())
     },
     messageAction() {
       return `/message/regionGroup/send`;

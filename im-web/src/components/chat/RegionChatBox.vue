@@ -167,7 +167,6 @@ export default {
       showHistory: false, // 是否显示历史聊天记录
       lockMessage: false, // 是否锁定发送
       showMinIdx: 0, // 下标低于showMinIdx的消息不显示，否则页面会很卡
-      friends: [],
       reqQueue: [],
       isSending: false,
       quoteMsgInfo: {
@@ -183,8 +182,6 @@ export default {
     }
   },
   created() {
-    this.friends = this.$store.state.friendStore.friends;
-
     // 监听事件
     this.$eventBus.$on('region-group-change', (msg) => {
       if (msg.chatType === 'REGION-GROUP' && this.regionGroup.id === msg.regionGroupId && msg.groupChangeType) {
@@ -698,42 +695,6 @@ export default {
         this.myGroupMemberInfo = this.regionGroupMembersMap.get(this.mine.id);
       });
     },
-    showName(msgInfo) {
-      if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
-        let friend = this.friends.find((f) => f.id === msgInfo.sendId);
-        if (friend && friend.friendRemark) {
-          return friend.friendRemark;
-        }
-
-        let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
-        if (member) {
-          return member.aliasName;
-        }
-        if (msgInfo.sendNickName) {
-          return msgInfo.sendNickName;
-        }
-        return "";
-      }
-      return "";
-    },
-    headImage(msgInfo) {
-      if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
-        let friend = this.friends.find((f) => f.id === msgInfo.sendId);
-        if (friend && friend.friendHeadImage) {
-          return friend.friendHeadImage;
-        }
-
-        let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
-        if (member && member.headImage) {
-          return member.headImage;
-        }
-        if (msgInfo.sendUserAvatar) {
-          return msgInfo.sendUserAvatar
-        }
-        return "";
-      }
-      return "";
-    },
     showInfo(msgInfo) {
       let showInfoObj = {
         showName: "",
@@ -895,8 +856,11 @@ export default {
     isGroupOwner() {
       return this.regionGroup.leaderId === this.mine.id;
     },
+    friends() {
+      return this.$store.state.friendStore.friends;
+    },
     friendsMap() {
-      return this.$store.state.friendStore.friends.reduce((map, friend) => {
+      return this.friends.reduce((map, friend) => {
         map[friend.id] = friend;
         return map;
       }, new Map())
