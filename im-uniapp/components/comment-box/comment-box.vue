@@ -21,11 +21,11 @@
           <svg-icon class="tool-icon" icon-class="fabiaoqing"></svg-icon>
           <view class="tool-name">表情</view>
         </view>
-        <view class="chat-tools-item">
-          <svg-icon class="tool-icon" icon-class="minganci"></svg-icon>
+        <view class="chat-tools-item" v-if="characterId">
+          <svg-icon class="tool-icon" icon-class="minganci" @click="toggleToCharacterWord"></svg-icon>
           <view class="tool-name">角色台词</view>
         </view>
-        <view class="chat-tools-item">
+        <view class="chat-tools-item" v-if="characterId">
           <svg-icon class="tool-icon" icon-class="biaoqing"></svg-icon>
           <view class="tool-name">角色表情</view>
         </view>
@@ -38,20 +38,25 @@
         </view>
       </scroll-view>
     </view>
-
+    <character-word-list ref="characterWordList" :words="words" @confirm="chooseCharacterWord"></character-word-list>
   </uni-popup>
 </template>
 
 <script>
 import SvgIcon from "../svg-icon/svg-icon.vue";
+import characterWordList from "../character-word-list/character-word-list.vue";
 
 export default {
   name: "comment-box",
-  components: {SvgIcon},
+  components: {characterWordList, SvgIcon},
   props: {
     commentPlaceholder: {
       type: String,
       default: "请输入评论..."
+    },
+    characterId: {
+      type: Number,
+      default: null
     }
   },
   data() {
@@ -60,6 +65,10 @@ export default {
       commentText: "",
       isReadOnly: false,
       chatTabBox: 'none',
+      words: {
+        group: [],
+        character: []
+      },
     }
   },
   methods: {
@@ -167,7 +176,34 @@ export default {
     },
     switchChatTabBox(chatTabBox) {
       this.chatTabBox = chatTabBox;
-    }
+    },
+    chooseCharacterWord(data) {
+      this.$emit("sendWord", data);
+    },
+    toggleToCharacterWord() {
+      this.queryCharacterWord(this.characterId).then((data) => {
+        if (data.group.length === 0 && data.character.length === 0) {
+          uni.showToast({
+            title: "该角色未配置语音台词",
+            icon: "none"
+          })
+        } else {
+          this.words.group = data.group;
+          this.words.character = data.character;
+          this.$refs.characterWordList.open();
+        }
+      })
+    },
+    queryCharacterWord(characterId) {
+      return new Promise((resolve, reject) => {
+        this.$http({
+          url: `/character/word/publishedWord?characterId=${characterId}`,
+          method: "get",
+        }).then((data) => {
+          resolve(data)
+        })
+      });
+    },
   }
 }
 </script>

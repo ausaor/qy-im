@@ -152,7 +152,7 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
                     // 查询当前评论的回复
                     if (ObjectUtil.isNotNull(talkComment.getReplyCommentId())) {
                         TalkComment replytalkComment = talkCommentService.getById(talkComment.getReplyCommentId());
-                        if (replytalkComment.getDeleted()) {
+                        if (!replytalkComment.getDeleted()) {
                             List<TalkCommentVO> replyTalkCommentList = new ArrayList<>();
                             TalkCommentVO talkCommentVO = BeanUtils.copyProperties(replytalkComment, TalkCommentVO.class);
                             replyTalkCommentList.add(talkCommentVO);
