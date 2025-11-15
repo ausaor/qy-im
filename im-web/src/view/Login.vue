@@ -199,7 +199,7 @@ import BIRDS from "vanta/src/vanta.birds";
       playAudio() {
         // 谷歌浏览器提示音需要用户主动交互才能播放，登录入口主动交互一次，后面消息提示音就能正常播放了
         let audio = new Audio();
-        let url = require(`@/assets/audio/tip.wav`);
+        let url = require(`@/assets/audio/tip.mp3`);
         audio.src = url;
         audio.play();
       },
