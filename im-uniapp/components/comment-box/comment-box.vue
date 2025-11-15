@@ -63,7 +63,6 @@ export default {
   },
   data() {
     return {
-      showEmo: false,
       commentText: "",
       isReadOnly: false,
       chatTabBox: 'none',
@@ -117,13 +116,9 @@ export default {
     },
     onEditorFocus(e) {
       this.isFocus = true;
-      this.showEmo = false;
     },
     onEditorBlur(e) {
       this.isFocus = false;
-    },
-    chooseEmoji() {
-      this.showEmo = !this.showEmo;
     },
     submitComment() {
       this.editorCtx.getContents({
@@ -155,13 +150,21 @@ export default {
       })
     },
     onUploadImageBefore(file) {
-
+      return true;
     },
     onUploadImageSuccess(file, res) {
-
+      let data = {
+        name: file.name,
+        size: file.size,
+        url: res.data.originUrl
+      }
+      this.$emit("sendImg", data);
     },
     onUploadImageFail(file, err) {
-
+      uni.showToast({
+        title: "图片上传失败",
+        icon: "none"
+      });
     },
     toggleToTools() {
       if (this.chatTabBox === 'tools') {

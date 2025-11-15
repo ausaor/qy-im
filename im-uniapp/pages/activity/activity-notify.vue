@@ -96,7 +96,7 @@
         @loadMore="onLoadMore">
       </pagination>
     </scroll-view>
-    <comment-box  ref="commentBox" @submit="submitComment" @sendWord="sendCommentWord" @sendEmo="sendCommentCharacterEmo" :comment-placeholder="commentPlaceholder"
+    <comment-box  ref="commentBox" @submit="submitComment" @sendWord="sendCommentWord" @sendEmo="sendCommentCharacterEmo" @sendImg="sendCommentImg" :comment-placeholder="commentPlaceholder"
                   :character-id="curMessage?.talk?.commentCharacterId"></comment-box>
   </view>
 </template>
@@ -249,6 +249,37 @@ export default {
         templateGroupId: data.templateGroupId,
         characterId: data.characterId,
         characterName: data.characterName,
+        name: data.name,
+      })
+      let params = {
+        talkId: talk.id,
+        content: content,
+        userNickname: talk.commentCharacterName,
+        characterId: talk.commentCharacterId,
+        avatarId: talk.commentCharacterAvatarId,
+        userAvatar: talk.commentCharacterAvatar,
+        replyCommentId: this.curMessage.commentId,
+        type: this.$enums.MESSAGE_TYPE.IMAGE
+      }
+      this.$http({
+        url: "/talk/addTalkComment",
+        method: 'post',
+        data: params
+      }).then((data) => {
+        if (this.curMessage.replyTalkComment && this.curMessage.replyTalkComment.length) {
+          this.curMessage.replyTalkComment.push(data);
+        } else {
+          this.curMessage.replyTalkComment = [data];
+        }
+      }).finally(() => {
+        this.$refs.commentBox.cancel();
+        this.commentPlaceholder = '说点什么...';
+      })
+    },
+    sendCommentImg(data) {
+      let talk = this.curMessage.talk;
+      let content = JSON.stringify({
+        originUrl: data.url,
         name: data.name,
       })
       let params = {
