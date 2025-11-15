@@ -1007,6 +1007,7 @@ export default {
 				const reqData = this.reqQueue.shift();
         if (this.chat.type === "GROUP") {
           reqData.msgInfo.characterId = this.myGroupMemberInfo.templateCharacterId;
+          reqData.msgInfo.version = this.group.version;
         }
         if (this.quoteMsgInfo.msgInfo) {
           reqData.msgInfo.quoteId = this.quoteMsgInfo.msgInfo.id;
