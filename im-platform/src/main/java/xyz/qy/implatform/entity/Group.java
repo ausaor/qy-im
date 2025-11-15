@@ -126,6 +126,12 @@ public class Group extends Model<Group> {
     @TableField("enter_review")
     private Boolean enterReview;
 
+    /**
+     * 群版本
+     */
+    @TableField("version")
+    private Long version;
+
 
     @Override
     protected Serializable pkVal() {

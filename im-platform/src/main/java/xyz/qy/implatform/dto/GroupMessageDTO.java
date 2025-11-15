@@ -41,4 +41,7 @@ public class GroupMessageDTO {
 
     @ApiModelProperty(value = "引用消息id")
     private Long quoteId;
+
+    @ApiModelProperty(value = "版本号")
+    private Long version;
 }

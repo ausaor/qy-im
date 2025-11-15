@@ -14,6 +14,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
@@ -36,8 +37,8 @@ import xyz.qy.implatform.service.IPrivateMessageService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
-import xyz.qy.implatform.util.CommonUtils;
 import xyz.qy.implatform.util.DateTimeUtils;
+import xyz.qy.implatform.util.IdGeneratorUtil;
 import xyz.qy.implatform.util.MessageSendUtil;
 import xyz.qy.implatform.vo.GroupMemberVO;
 import xyz.qy.implatform.vo.SwitchCharacterAvatarVO;
@@ -63,19 +64,10 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
     private ICharacterAvatarService characterAvatarService;
 
     @Resource
-    private IGroupMessageService groupMessageService;
-
-    @Resource
-    private IPrivateMessageService privateMessageService;
-
-    @Resource
-    private IFriendService friendService;
-
-    @Resource
-    private DictDataMapper dictDataMapper;
-
-    @Resource
     private MessageSendUtil messageSendUtil;
+
+    @Resource
+    private IdGeneratorUtil idGeneratorUtil;
 
     /**
      * 添加群聊成员
@@ -255,6 +247,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         this.update(wrapper);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @CacheEvict(key = "#groupMemberVO.getGroupId()")
     @Override
     @Lock(prefix = "im:group:member:modify", key = "#groupMemberVO.getGroupId()")
@@ -343,6 +336,10 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         groupMember.setSwitchTime(new Date());
 
         this.updateById(groupMember);
+
+        group.setVersion(idGeneratorUtil.nextId());
+        groupService.updateById(group);
+
         String content = "用户【" + session.getNickName() + "】将模板角色切换成【" + groupMember.getAliasName() + "】";
         messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
                 Collections.emptyList(), content, GroupChangeTypeEnum.TEMPLATE_CHARACTER_CHANGE.getCode());
@@ -429,6 +426,9 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         groupMember.setSwitchTime(new Date());
 
         this.updateById(groupMember);
+
+        group.setVersion(idGeneratorUtil.nextId());
+        groupService.updateById(group);
 
         String content = "用户【" + session.getNickName() + "】切换了模板角色头像";
         messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),

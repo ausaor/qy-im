@@ -94,6 +94,9 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         if (group.getDeleted()) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "群聊已解散");
         }
+        if (!group.getVersion().equals(dto.getVersion())) {
+            throw new GlobalException("群聊信息有更新，请先刷新");
+        }
         // 是否在群聊里面
         GroupMember member = groupMemberService.findByGroupAndUserId(dto.getGroupId(), session.getUserId());
         if (Objects.isNull(member) || member.getQuit()) {

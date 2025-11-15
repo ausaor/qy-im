@@ -87,4 +87,7 @@ public class GroupVO {
 
     @ApiModelProperty(value = "创建时间")
     private Date createdTime;
+
+    @ApiModelProperty(value = "群版本号")
+    private Long version;
 }

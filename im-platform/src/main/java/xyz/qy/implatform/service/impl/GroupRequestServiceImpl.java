@@ -41,6 +41,7 @@ import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.IdGeneratorUtil;
 import xyz.qy.implatform.util.MessageSendUtil;
 import xyz.qy.implatform.vo.GroupJoinVO;
 import xyz.qy.implatform.vo.GroupMessageVO;
@@ -89,6 +90,9 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
 
     @Resource
     private RedissonClient redissonClient;
+
+    @Resource
+    private IdGeneratorUtil idGeneratorUtil;
 
     @Override
     public List<GroupRequestVO> groupRequestList() {
@@ -538,6 +542,9 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 member.setAvatarAlias(null);
                 groupMemberService.saveOrUpdateBatch(group.getId(), Collections.singletonList(member));
             }
+
+            group.setVersion(idGeneratorUtil.nextId());
+            groupService.updateById(group);
 
             groupRequest.setUpdateTime(new Date());
             groupRequest.setUpdateBy(userId);
