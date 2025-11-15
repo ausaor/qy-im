@@ -200,7 +200,7 @@
                     <i v-else class="el-icon-upload"></i>
                   </file-upload>
                 </div>
-                <div class="tool-text">上传</div>
+                <div class="tool-text">头像</div>
               </div>
 							<div class="member-tools">
 								<div class="tool-btn" title="邀请好友进群聊" @click="onInviteMember()">

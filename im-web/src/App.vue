@@ -66,17 +66,26 @@ export default {
  }
 
  .el-dialog__header {
-   background-color: var(--header-color) !important;
-
- }
-
- .el-dialog__title {
-   color: #f8f8f8 !important;
+   padding: 12px 18px !important;
+   position: relative;
+   text-align: center;
  }
 
  .el-dialog__close {
-   color: white !important;
    font-size: 20px;
+ }
+
+ .el-dialog__title {
+   font-size: 18px;
+   font-weight: 600;
+   color: #000000;
+   letter-spacing: .5px;
+ }
+
+ .el-dialog__headerbtn {
+   top: 15px;
+   right: 20px;
+   font-size: 18px;
  }
 
  .el-checkbox__inner {
