@@ -324,12 +324,14 @@ import BIRDS from "vanta/src/vanta.birds";
 
 <style scoped lang="scss">
 	.login-view {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
 		.web-ruleForm {
       width: 350px;
 			height: 446px;
 			padding: 20px;
-			margin-top: 150px ;
 			background: rgba(255,255,255,.75);
 			box-shadow: 0px 0px  1px #ccc;
 			border-radius: 5px;

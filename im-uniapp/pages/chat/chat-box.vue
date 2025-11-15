@@ -1388,9 +1388,25 @@ export default {
     quoteContent() {
       return this.$commonUtil.processAtUsers(this.quoteMsgInfo.quoteContent, this.quoteMsgInfo.msgInfo?.atUserIds || []);
     },
-    groupUnreadCount() {
+    groupRequestUnreadCount() {
+      // 当前用户是群主，待审核的加群申请
       return this.chat.type === "GROUP" && this.group?.ownerId === this.mine.id ? this.groupStore.groupRequests
           .filter((r) => r.groupId === this.group.id && r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length : 0;
+    },
+    unreadTalkCount() {
+      if (this.chat.type === "GROUP") {
+        return this.talkStore.groupsTalks.get(this.group.id)?.length || 0;
+      }
+      return 0;
+    },
+    unreadNotifyCount() {
+      if (this.chat.type === "GROUP") {
+        return this.talkStore.groupNotify.get(this.group.id) || 0;
+      }
+      return 0;
+    },
+    groupUnreadCount() {
+      return this.unreadTalkCount + this.unreadNotifyCount + this.groupRequestUnreadCount;
     }
 	},
 	watch: {

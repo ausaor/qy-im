@@ -1,6 +1,6 @@
 <template>
   <view class="page region-chat-box" id="chatBox">
-    <nav-bar backHome more @more="onShowMore" @gotoHome="gotoHome">{{ title }}</nav-bar>
+    <nav-bar backHome more @more="onShowMore" @gotoHome="gotoHome" :unread-count="unreadMsgCount">{{ title }}</nav-bar>
     <view class="chat-main-box" :style="{height: chatMainHeight+'px'}">
       <view class="chat-msg" @click="switchChatTabBox('none')">
         <scroll-view ref="messagesContainer" class="scroll-box" scroll-y="true" upper-threshold="200" @scroll="onScroll"
@@ -1080,6 +1080,17 @@ export default {
     },
     quoteContent() {
       return this.$commonUtil.processAtUsers(this.quoteMsgInfo.quoteContent, this.quoteMsgInfo.msgInfo?.atUserIds || []);
+    },
+    unreadTalkCount() {
+      // 使用可选链和空值合并操作符简化逻辑
+      return this.talkStore.regionTalks.get(this.regionGroup.code)?.length ?? 0;
+    },
+    unreadNotifyCount() {
+      // 使用可选链和空值合并操作符简化逻辑
+      return this.talkStore.regionNotify.get(this.regionGroup.code) ?? 0;
+    },
+    unreadMsgCount() {
+      return this.unreadTalkCount + this.unreadNotifyCount;
     }
   },
   watch: {

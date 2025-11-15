@@ -362,28 +362,17 @@ export default {
       return this.userStore.userInfo;
     },
     talkList() {
-      let talkMap =this.talkStore.regionTalks;
-      let talks = talkMap.get(this.regionGroup.code)
-      if (talks && talks.length > 2) {
-        return talks.slice(0, 2);
-      }
-      return talks ? talks : [];
+      const talks = this.talkStore.regionTalks.get(this.regionGroup.code);
+      // 使用可选链和空值合并操作符简化逻辑
+      return talks?.slice(0, 2) ?? [];
     },
     unreadTalkCount() {
-      let talkMap =this.talkStore.regionTalks;
-      let talks = talkMap.get(this.regionGroup.code);
-      if (talks) {
-        return talks.length;
-      }
-      return 0;
+      // 使用可选链和空值合并操作符简化逻辑
+      return this.talkStore.regionTalks.get(this.regionGroup.code)?.length ?? 0;
     },
     unreadNotifyCount() {
-      let notifyMap =this.talkStore.regionNotify;
-      let count = notifyMap.get(this.regionGroup.code);
-      if (count) {
-        return count;
-      }
-      return 0;
+      // 使用可选链和空值合并操作符简化逻辑
+      return this.talkStore.regionNotify.get(this.regionGroup.code) ?? 0;
     }
   },
   onLoad(options) {
