@@ -10,8 +10,11 @@
         <el-tag size="mini" effect="dark" color="rgb(105,149,114)" v-if="group.groupType===2">多元角色群聊</el-tag>
         <el-tag size="mini" effect="dark" color="rgb(144,0,33)" v-if="group.groupType===3">角色群聊</el-tag>
         <el-tag size="mini" effect="dark" color="rgb(176,89,35)" v-if="group.groupType===4">模板角色群聊</el-tag>
+        <span v-if="isOwner" class="group-owner">群主</span>
       </div>
-			<div class="group-name">{{group.remark}}</div>
+			<div class="group-name">
+        <span class="name">{{group.remark}}</span>
+      </div>
 		</div>
 	</div>
 </template>
@@ -60,6 +63,9 @@
         return this.group?.ownerId === this.mine.id ? this.$store.state.groupStore.groupRequests
             .filter((r) => r.groupId === this.group.id && r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length : 0;
       },
+      isOwner() {
+        return this.group.ownerId === this.mine.id;
+      }
     }
 	}
 </script>
@@ -124,13 +130,31 @@
           margin-left: 2px;
           opacity: .8;
         }
+
+        .group-owner {
+          margin-left: 3px;
+          display: inline-block;
+          height: 15px;
+          background-color: orange;
+          color: white;
+          font-size: 10px;
+          padding: 0 5px;
+          border-radius: 10px;
+          line-height: 15px;
+        }
       }
 
       .group-name {
         display: flex;
+        align-items: center;
         line-height: 25px;
         height: 25px;
         font-weight: 600;
+
+        .name {
+          flex: 1;
+          overflow: hidden;
+        }
       }
     }
   }
