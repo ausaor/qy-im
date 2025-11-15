@@ -43,5 +43,5 @@ public class GroupMessageDTO {
     private Long quoteId;
 
     @ApiModelProperty(value = "版本号")
-    private Long version;
+    private String version;
 }

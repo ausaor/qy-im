@@ -151,7 +151,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setOwnerId(user.getId());
         group.setGroupType(GroupTypeEnum.COMMON.getCode());
         group.setIsTemplate(false);
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
         this.save(group);
         // 把群主加入群
         GroupMember groupMember = new GroupMember();
@@ -195,7 +195,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             group.setName(group.getName());
             group.setRemark(group.getRemark());
             group.setNotice(group.getNotice());
-            group.setVersion(idGeneratorUtil.nextId());
             this.updateById(group);
 
             vo.setVersion(group.getVersion());
@@ -657,7 +656,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
 
         if (CollectionUtils.isNotEmpty(groupMembers)) {
-            group.setVersion(idGeneratorUtil.nextId());
+            group.setVersion(idGeneratorUtil.nextIdStr());
             this.updateById(group);
             groupMemberService.saveOrUpdateBatch(group.getId(), groupMembers);
 
@@ -828,7 +827,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setGroupType(templateGroupCreateVO.getGroupType());
         group.setOwnerId(user.getId());
         group.setRemark(group.getName());
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
 
         groupMember.setUserId(user.getId());
         groupMember.setRemark(group.getName());
@@ -911,7 +910,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setIsTemplate(true);
         group.setSwitchTime(new Date());
         group.setRemark(templateGroup.getGroupName());
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
 
         Map<Long, GroupMemberVO> groupMemberMap = groupMembers.stream().collect(Collectors.toMap(GroupMemberVO::getUserId, Function.identity()));
 
@@ -1010,7 +1009,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             group.setHeadImageThumb("");
         }
         group.setSwitchTime(new Date());
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
         // 更新群信息
         baseMapper.updateById(group);
         // 更新群用户信息
@@ -1073,7 +1072,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setIsTemplate(false);
         group.setSwitchTime(new Date());
         group.setRemark(vo.getName());
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
         if (StringUtils.isNotBlank(vo.getAvatar())) {
             group.setHeadImage(vo.getAvatar());
             group.setHeadImageThumb(vo.getAvatar());
@@ -1183,7 +1182,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setIsTemplate(false);
         group.setSwitchTime(new Date());
         group.setRemark(vo.getName());
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
         if (StringUtils.isNotBlank(vo.getAvatar())) {
             group.setHeadImage(vo.getAvatar());
             group.setHeadImageThumb(vo.getAvatar());
@@ -1263,7 +1262,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setIsTemplate(true);
         group.setSwitchTime(new Date());
         group.setRemark(templateGroup.getGroupName());
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
 
         Map<Long, GroupMemberVO> groupMemberMap = groupMembers.stream().collect(Collectors.toMap(GroupMemberVO::getUserId, Function.identity()));
 
@@ -1342,7 +1341,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             groupMember.setIsTemplate(false);
             groupMember.setRemark(group.getName());
         }
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
         this.updateById(group);
         groupMemberService.saveOrUpdateBatch(group.getId(), Collections.singletonList(groupMember));
         return groupMember;
@@ -1407,7 +1406,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             groupRequestService.saveUserJoinGroupRequestInfo(vo);
             return;
         }
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
 
         GroupMember member = optional.orElseGet(GroupMember::new);
         // 不是模板群聊
@@ -1786,7 +1785,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
 
         groupMemberService.updateById(member);
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
         this.updateById(group);
 
         log.info("设置群聊管理员成功：groupId：{}，userId：{}", member.getGroupId(), member.getUserId());
@@ -1824,7 +1823,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         member.setGroupRole(GroupRoleEnum.MEMBER.getCode());
         groupMemberService.updateById(member);
 
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
         this.updateById(group);
         log.info("取消群聊管理员成功：groupId：{}，userId：{}", member.getGroupId(), member.getUserId());
         String content = String.format("群主已取消群成员%s的管理员权限", member.getAliasName());

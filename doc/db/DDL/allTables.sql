@@ -119,7 +119,8 @@ create table im_group
     enter_review      tinyint(1)    default 1                   not null comment '加群审核'
     deleted           tinyint(1)    default 0                   not null comment '是否已删除',
     created_time      datetime      default current_timestamp() null comment '创建时间',
-    switch_time       datetime                                  null comment '切换模板群聊时间'
+    switch_time       datetime                                  null comment '切换模板群聊时间',
+    version           varchar(30)   default ''                  not null comment '群版本号',
 )
     comment '群';
 

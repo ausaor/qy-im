@@ -481,6 +481,7 @@
 					loadStatus: "loading",
           status: this.$enums.MESSAGE_STATUS.UNSEND,
           chatType: this.chat.type,
+          version: this.chat.type === 'group' ? this.group.version : null
 				}
 				// 填充对方id
 				this.fillTargetId(msgInfo, this.chat.targetId);
@@ -1055,6 +1056,7 @@
           const reqData = this.reqQueue.shift();
           if (this.chat.type === "GROUP") {
             reqData.msgInfo.characterId = this.myGroupMemberInfo.templateCharacterId;
+            reqData.msgInfo.version = this.group.version;
           }
           if (this.quoteMsgInfo.msgInfo) {
             reqData.msgInfo.quoteId = this.quoteMsgInfo.msgInfo.id;

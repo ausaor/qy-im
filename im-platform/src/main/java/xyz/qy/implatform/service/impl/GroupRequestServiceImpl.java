@@ -543,7 +543,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 groupMemberService.saveOrUpdateBatch(group.getId(), Collections.singletonList(member));
             }
 
-            group.setVersion(idGeneratorUtil.nextId());
+            group.setVersion(idGeneratorUtil.nextIdStr());
             groupService.updateById(group);
 
             groupRequest.setUpdateTime(new Date());

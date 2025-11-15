@@ -89,5 +89,5 @@ public class GroupVO {
     private Date createdTime;
 
     @ApiModelProperty(value = "群版本号")
-    private Long version;
+    private String version;
 }

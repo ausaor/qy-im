@@ -130,7 +130,7 @@ public class Group extends Model<Group> {
      * 群版本
      */
     @TableField("version")
-    private Long version;
+    private String version;
 
 
     @Override

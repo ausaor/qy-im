@@ -337,7 +337,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
 
         this.updateById(groupMember);
 
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
         groupService.updateById(group);
 
         String content = "用户【" + session.getNickName() + "】将模板角色切换成【" + groupMember.getAliasName() + "】";
@@ -427,7 +427,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
 
         this.updateById(groupMember);
 
-        group.setVersion(idGeneratorUtil.nextId());
+        group.setVersion(idGeneratorUtil.nextIdStr());
         groupService.updateById(group);
 
         String content = "用户【" + session.getNickName() + "】切换了模板角色头像";
