@@ -156,9 +156,10 @@ export default {
     margin-bottom: 20rpx;
 
     .cate-item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 30%;
-      height: 40rpx;
-      text-align: center;
       padding: 10rpx;
 
       color: #323233;

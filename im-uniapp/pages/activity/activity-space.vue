@@ -139,7 +139,7 @@
     </scroll-view>
 
     <!-- 评论输入框 -->
-    <comment-box  ref="commentBox" @submit="submitComment" @sendWord="sendCommentWord" :comment-placeholder="commentPlaceholder" :character-id="curTalk.commentCharacterId"></comment-box>
+    <comment-box  ref="commentBox" @submit="submitComment" @sendWord="sendCommentWord" @sendEmo="sendCommentCharacterEmo" :comment-placeholder="commentPlaceholder" :character-id="curTalk.commentCharacterId"></comment-box>
     <uni-popup ref="talkSetPopup" type="bottom" background-color="#fff" @change="talkSetPopupChange">
       <view style="font-size: 28rpx;">
         <view style="background-color: white;padding: 20rpx 0;display: flex;justify-content: center;align-items: center;gap: 20rpx;">
@@ -538,6 +538,54 @@ export default {
         userAvatar: talk.commentCharacterAvatar,
         replyCommentId: this.comment.replyCommentId,
         type: this.$enums.MESSAGE_TYPE.WORD_VOICE
+      }
+      this.$http({
+        url: "/talk/addTalkComment",
+        method: 'post',
+        data: params
+      }).then((data) => {
+        if (data.characterId) {
+          talk.commentCharacterId = data.characterId;
+          talk.commentCharacterAvatarId = data.avatarId;
+          talk.commentCharacterName = data.userNickname;
+          talk.commentCharacterAvatar = data.userAvatar;
+        }
+        talk.talkCommentVOS.push(data);
+        uni.showToast({
+          title: "评论成功",
+          icon: 'none'
+        });
+      }).finally(() => {
+        this.$refs.commentBox.cancel();
+        this.comment = {}
+        this.commentPlaceholder = '说点什么...';
+        this.curTalk = {};
+        this.commentText = '';
+        this.showEmo = false;
+      })
+    },
+    sendCommentCharacterEmo(data) {
+      if (!data) {
+        return
+      }
+      this.comment.content = JSON.stringify({
+        originUrl: data.url,
+        id: data.id,
+        templateGroupId: data.templateGroupId,
+        characterId: data.characterId,
+        characterName: data.characterName,
+        name: data.name,
+      })
+      let talk = this.curTalk;
+      let params = {
+        talkId: talk.id,
+        content: this.comment.content,
+        userNickname: talk.commentCharacterName,
+        characterId: talk.commentCharacterId,
+        avatarId: talk.commentCharacterAvatarId,
+        userAvatar: talk.commentCharacterAvatar,
+        replyCommentId: this.comment.replyCommentId,
+        type: this.$enums.MESSAGE_TYPE.IMAGE
       }
       this.$http({
         url: "/talk/addTalkComment",

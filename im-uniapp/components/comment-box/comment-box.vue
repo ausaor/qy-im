@@ -26,7 +26,7 @@
           <view class="tool-name">角色台词</view>
         </view>
         <view class="chat-tools-item" v-if="characterId">
-          <svg-icon class="tool-icon" icon-class="biaoqing"></svg-icon>
+          <svg-icon class="tool-icon" icon-class="biaoqing" @click="toggleToCharacterEmo"></svg-icon>
           <view class="tool-name">角色表情</view>
         </view>
       </view>
@@ -39,16 +39,18 @@
       </scroll-view>
     </view>
     <character-word-list ref="characterWordList" :words="words" @confirm="chooseCharacterWord"></character-word-list>
+    <character-emo-list ref="characterEmoList" :emos="emos" @confirm="chooseCharacterEmo"></character-emo-list>
   </uni-popup>
 </template>
 
 <script>
 import SvgIcon from "../svg-icon/svg-icon.vue";
 import characterWordList from "../character-word-list/character-word-list.vue";
+import characterEmoList from "../character-emo-list/character-emo-list.vue";
 
 export default {
   name: "comment-box",
-  components: {characterWordList, SvgIcon},
+  components: {characterEmoList, characterWordList, SvgIcon},
   props: {
     commentPlaceholder: {
       type: String,
@@ -69,6 +71,10 @@ export default {
         group: [],
         character: []
       },
+      emos: {
+        group: [],
+        character: []
+      }
     }
   },
   methods: {
@@ -180,6 +186,9 @@ export default {
     chooseCharacterWord(data) {
       this.$emit("sendWord", data);
     },
+    chooseCharacterEmo(data) {
+      this.$emit("sendEmo", data);
+    },
     toggleToCharacterWord() {
       this.queryCharacterWord(this.characterId).then((data) => {
         if (data.group.length === 0 && data.character.length === 0) {
@@ -194,10 +203,34 @@ export default {
         }
       })
     },
+    toggleToCharacterEmo() {
+      this.queryCharacterEmo(this.characterId).then((data) => {
+        if (data.group.length === 0 && data.character.length === 0) {
+          uni.showToast({
+            title: "该角色未配置表情",
+            icon: "none"
+          })
+        } else {
+          this.emos.group = data.group;
+          this.emos.character = data.character;
+          this.$refs.characterEmoList.open();
+        }
+      })
+    },
     queryCharacterWord(characterId) {
       return new Promise((resolve, reject) => {
         this.$http({
           url: `/character/word/publishedWord?characterId=${characterId}`,
+          method: "get",
+        }).then((data) => {
+          resolve(data)
+        })
+      });
+    },
+    queryCharacterEmo(characterId) {
+      return new Promise((resolve, reject) => {
+        this.$http({
+          url: `/character/emo/publishedEmo?characterId=${characterId}`,
           method: "get",
         }).then((data) => {
           resolve(data)
@@ -249,7 +282,6 @@ $icon-color: rgba(0, 0, 0, 0.88);
     grid-template-columns: repeat(4, 1fr);
     grid-gap: 20rpx;
     align-items: center;
-    height: 120px;
     padding: 40rpx;
     box-sizing: border-box;
   }
