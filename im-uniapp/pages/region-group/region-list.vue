@@ -69,6 +69,7 @@
 <script>
 
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+import UNI_APP from '@/.env.js'
 
 export default {
   components: {
@@ -237,8 +238,7 @@ export default {
     loadAMapScript() {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script')
-        const gaodeMapKey = this.configStore.getGaoDeMapKey();
-        console.log('gaodeMapKey', gaodeMapKey);
+        const gaodeMapKey = UNI_APP.AMAP_KEY;
         script.src = `https://webapi.amap.com/maps?v=2.0&key=${gaodeMapKey}&plugin=AMap.Geolocation`
         script.onload = resolve
         script.onerror = reject

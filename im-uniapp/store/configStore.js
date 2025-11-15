@@ -5,13 +5,11 @@ export default defineStore('configStore', {
 	state: () => {
 		return {
 			webrtc: {},
-			gaoDeMapKey: ''
 		}
 	},
 	actions: {
 		setConfig(config) {
 			this.webrtc = config.webrtc;
-			this.gaoDeMapKey = config.gaoDeMapKey;
 		},
 		clear() {
 			this.webrtc = {};
@@ -32,8 +30,6 @@ export default defineStore('configStore', {
 		}
 	},
 	getters: {
-		getGaoDeMapKey: (state) => () => {
-			return state.gaoDeMapKey
-		},
+
 	}
 })
