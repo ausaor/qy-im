@@ -149,12 +149,15 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 item.setGroupType(group.getGroupType());
                 item.setGroupOwnerId(group.getOwnerId());
             }
-            TemplateCharacter templateCharacter = finalCharacterMap.get(item.getTemplateCharacterId());
-            if (ObjectUtil.isNotNull(templateCharacter)) {
-                // 模板角色信息
-                item.setTemplateCharacterAvatar(templateCharacter.getAvatar());
-                item.setTemplateCharacterName(templateCharacter.getName());
+            if (ObjectUtil.isNotNull(item.getTemplateCharacterId())) {
+                TemplateCharacter templateCharacter = finalCharacterMap.get(item.getTemplateCharacterId());
+                if (ObjectUtil.isNotNull(templateCharacter)) {
+                    // 模板角色信息
+                    item.setTemplateCharacterAvatar(templateCharacter.getAvatar());
+                    item.setTemplateCharacterName(templateCharacter.getName());
+                }
             }
+
             User launchUser = userMap.get(item.getLaunchUserId());
             if (ObjectUtil.isNotNull(launchUser)) {
                 // 邀请人信息
