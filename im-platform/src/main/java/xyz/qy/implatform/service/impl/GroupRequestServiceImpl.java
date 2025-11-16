@@ -100,6 +100,9 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
 
         // 查询用户作为群主的群聊
         List<Long> groupIds = groupService.findByOwnerId(userId);
+        if (CollectionUtils.isEmpty(groupIds)) {
+            return Collections.emptyList();
+        }
 
         LambdaQueryWrapper<GroupRequest> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(GroupRequest::getDeleted, false);
@@ -125,11 +128,18 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
         // 查询群聊信息
         List<Group> groups = groupService.listByIds(groupIdList);
 
+        List<TemplateCharacter> characterList = null;
+        Map<Long, TemplateCharacter> characterMap = new HashMap<>();
         // 查询模板角色信息
-        List<TemplateCharacter> characterList = templateCharacterService.findPublishedByCharacterIds(characterIds);
+        if (CollectionUtils.isNotEmpty(characterIds)) {
+            characterList = templateCharacterService.findPublishedByCharacterIds(characterIds);
+        }
 
         Map<Long, Group> groupMap = groups.stream().collect(Collectors.toMap(Group::getId, Function.identity()));
-        Map<Long, TemplateCharacter> characterMap = characterList.stream().collect(Collectors.toMap(TemplateCharacter::getId, Function.identity()));
+        if (CollectionUtils.isNotEmpty(characterList)) {
+            characterMap = characterList.stream().collect(Collectors.toMap(TemplateCharacter::getId, Function.identity()));
+        }
+        Map<Long, TemplateCharacter> finalCharacterMap = characterMap;
         groupRequestVOS.forEach(item -> {
             Group group = groupMap.get(item.getGroupId());
             if (ObjectUtil.isNotNull(group)) {
@@ -139,7 +149,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 item.setGroupType(group.getGroupType());
                 item.setGroupOwnerId(group.getOwnerId());
             }
-            TemplateCharacter templateCharacter = characterMap.get(item.getTemplateCharacterId());
+            TemplateCharacter templateCharacter = finalCharacterMap.get(item.getTemplateCharacterId());
             if (ObjectUtil.isNotNull(templateCharacter)) {
                 // 模板角色信息
                 item.setTemplateCharacterAvatar(templateCharacter.getAvatar());
