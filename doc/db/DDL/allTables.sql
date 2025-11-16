@@ -701,6 +701,32 @@ create table im_group_request
     comment '群组请求表';
 
 
+create table ai_chat_message
+(
+    id          bigint auto_increment comment '主键'
+        primary key,
+    session_id  bigint       not null comment '会话id',
+    user_id     bigint       not null comment '用户id',
+    role        varchar(50)  not null comment '角色（user或assistant）',
+    model       varchar(100) not null comment '模型名称',
+    content     text         not null comment '内容',
+    create_time datetime     not null comment '创建时间'
+)
+    comment 'AI会话消息表' row_format = DYNAMIC;
+
+
+create table ai_chat_session
+(
+    id          bigint               not null comment '主键'
+        primary key,
+    user_id     bigint               not null comment '用户id',
+    title       varchar(500)         not null comment '会话标题',
+    deleted     tinyint(1) default 0 not null comment '是否删除（0：否；1：是）',
+    create_time datetime             not null comment '创建时间'
+)
+    comment 'AI会话表' row_format = DYNAMIC;
+
+
 create table t_hero_info
 (
     id               int auto_increment comment 'id'

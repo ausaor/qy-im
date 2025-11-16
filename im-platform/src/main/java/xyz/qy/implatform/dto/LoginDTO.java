@@ -35,9 +35,6 @@ public class LoginDTO {
     @ApiModelProperty(value = "验证码缓存记录字符串")
     private String uuid;
 
-    @ApiModelProperty(value = "用户客户端id")
-    private String cid;
-
     @ApiModelProperty(value = "用户邮箱")
     private String email;
 
