@@ -61,7 +61,17 @@
                        mode="aspectFill"
                        @click="previewImage([fileItem.url], 0)"
                 />
-                <video v-else-if="fileItem.fileType === 2" :src="fileItem.url" :poster="fileItem.coverUrl" class="content-video" :controls="true"></video>
+                <view v-else-if="fileItem.fileType === 2" class="video-container">
+                  <image 
+                    :src="fileItem.coverUrl" 
+                    class="content-video" 
+                    mode="aspectFill" 
+                    @click="playVideo(fileItem)"
+                  />
+                  <view class="video-play-button" @click="playVideo(fileItem)">
+                    <uni-icons custom-prefix="iconfont" type="icon-play" size="48" :color="'#FFFFFF'"></uni-icons>
+                  </view>
+                </view>
                 <view class="content-audio" v-else-if="fileItem.fileType === 3">
                   <music-player ref="musicPlayerRef" :audio-url="fileItem.url" :cover-img-url="'/static/image/music.png'"></music-player>
                 </view>
@@ -164,6 +174,15 @@
     <group-template-list ref="groupTemplateListRef" :group-templates="groupTemplates" @confirm="chooseGroupTemplate"></group-template-list>
     <character-list ref="characterListRef" :characters="characters" @confirm="chooseCharacter" @more="moreCharacterAvatars"></character-list>
     <character-avatar-list  ref="characterAvatarListRef" :character-avatars="characterAvatars" @confirm="chooseCharacterAvatar"></character-avatar-list>
+    <!-- 视频弹窗组件 -->
+    <video-play
+        v-if="showVideoPlayer"
+        :video-url="currentVideo.url"
+        :cover-url="currentVideo.coverUrl"
+        :visible.sync="showVideoPlayer"
+        @close="handleVideoClose"
+        @error="handleVideoError"
+    ></video-play>
   </view>
 </template>
 
@@ -176,10 +195,11 @@ import {throttle} from "../../common/throttle";
 import CharacterAvatarList from "../../components/character-avatar-list/character-avatar-list.vue";
 import CommentBox from "../../components/comment-box/comment-box.vue";
 import MusicPlayer  from "../../components/music-player/music-player.vue";
+import VideoPlay from "../../components/video-play/video-play.vue";
 import {MESSAGE_TYPE} from "../../common/enums";
 
 export default {
-  components: {CommentBox, CharacterAvatarList, CharacterList, GroupTemplateList, SvgIcon, HeadImage, MusicPlayer},
+  components: {CommentBox, CharacterAvatarList, CharacterList, GroupTemplateList, SvgIcon, HeadImage, MusicPlayer, VideoPlay},
   data() {
     return {
       showNotify: true,
@@ -238,6 +258,11 @@ export default {
       wordAudioContext: null,
       playingVoice: null,
       voicePlayState: 'STOP', // 'PLAYING', 'PAUSE', 'STOP'
+      showVideoPlayer: false,
+      currentVideo: {
+        url: '',
+        coverUrl: ''
+      }
     };
   },
   methods: {
@@ -900,6 +925,11 @@ export default {
         })
       }
     },
+    playVideo(videoItem) {
+      this.currentVideo.url = videoItem.url;
+      this.currentVideo.coverUrl = videoItem.coverUrl;
+      this.showVideoPlayer = true;
+    },
     playVoice(word) {
       // 如果点击的是同一个音频，则切换播放/暂停状态
       if (this.playingVoice && this.playingVoice.voice === word.voice) {
@@ -942,6 +972,20 @@ export default {
       this.wordAudioContext.play();
       this.voicePlayState = 'PLAYING';
       this.playingVoice = word;
+    },
+    // 视频弹窗关闭回调
+    handleVideoClose() {
+      console.log('Video popup closed');
+      this.currentVideo.url = "";
+      this.currentVideo.coverUrl = "";
+      this.showVideoPlayer = false;
+    },
+    // 视频错误回调
+    handleVideoError(e) {
+      console.error('Video error in parent component:', e)
+      this.currentVideo.url = "";
+      this.currentVideo.coverUrl = "";
+      this.showVideoPlayer = false;
     }
   },
   computed: {
@@ -1540,4 +1584,26 @@ export default {
 .cursor-pointer {
   cursor: pointer;
 }
+
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.video-play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
 </style>

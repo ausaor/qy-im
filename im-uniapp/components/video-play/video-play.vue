@@ -17,6 +17,7 @@
               :show-progress="true"
               :object-fit="objectFit"
               @error="handleVideoError"
+              @loadeddata="handleLoadedData"
           ></video>
         </view>
         <view class="video-popup__close" @tap="handleClose">
@@ -62,7 +63,8 @@ export default {
     visible(newVal) {
       if (newVal) {
         this.$nextTick(() => {
-          // 弹窗显示时，可以执行一些初始化操作
+          // 弹窗显示时，自动播放视频
+          this.playVideo()
         })
       } else {
         // 弹窗关闭时，暂停视频播放
@@ -77,6 +79,17 @@ export default {
       this.$emit('update:visible', false)
       this.$emit('close')
     },
+    // 播放视频
+    playVideo() {
+      try {
+        const videoContext = uni.createVideoContext(this.videoId, this)
+        if (videoContext) {
+          videoContext.play()
+        }
+      } catch (e) {
+        console.warn('playVideo error', e)
+      }
+    },
     // 暂停视频
     pauseVideo() {
       try {
@@ -86,6 +99,13 @@ export default {
         }
       } catch (e) {
         console.warn('pauseVideo error', e)
+      }
+    },
+    // 视频加载完成处理
+    handleLoadedData() {
+      // 视频加载完成后自动播放
+      if (this.visible) {
+        this.playVideo()
       }
     },
     // 视频错误处理
@@ -133,22 +153,23 @@ export default {
   &__container {
     position: relative;
     z-index: 1000;
-    width: 90%;
-    max-width: 750rpx;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
   }
 
   &__content {
     position: relative;
     width: 100%;
-    border-radius: 12rpx;
+    height: 100%;
+    border-radius: 0;
     overflow: hidden;
     background-color: #000;
   }
 
   &__video-wrapper {
     width: 100%;
-    /* 16:9 aspect ratio */
-    padding-top: 56.25%;
+    height: 100%;
     position: relative;
   }
 

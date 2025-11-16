@@ -385,7 +385,6 @@ export default {
   width: 80rpx;
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
 .header-title {
