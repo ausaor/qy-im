@@ -44,7 +44,8 @@
 						:read-only="isReadOnly" @focus="onEditorFocus" @blur="onEditorBlur" @ready="onEditorReady" @input="onTextInput">
 					</editor>
           <view class="quote-message" v-if="quoteMsgInfo.show">
-            <view class="quote-text">{{quoteContent}}</view>
+            <rich-text class="quote-text" :nodes="quoteContent"></rich-text>
+<!--            <view class="quote-text">{{quoteContent}}</view>-->
             <uni-icons type="clear" size="20" color="#888888" @click="cancelQuote"></uni-icons>
           </view>
 				</view>
@@ -1387,7 +1388,8 @@ export default {
       }, new Map());
     },
     quoteContent() {
-      return this.$commonUtil.processAtUsers(this.quoteMsgInfo.quoteContent, this.quoteMsgInfo.msgInfo?.atUserIds || []);
+      let text = this.$emo.transform(this.quoteMsgInfo.quoteContent, 'emoji-normal')
+      return this.$commonUtil.processAtUsers(text, this.quoteMsgInfo.msgInfo?.atUserIds || []);
     },
     groupRequestUnreadCount() {
       // 当前用户是群主，待审核的加群申请

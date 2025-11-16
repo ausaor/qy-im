@@ -17,7 +17,7 @@
             <image v-if="myGroupMemberInfo.headImage" :src="myGroupMemberInfo.headImage" class="head-image"></image>
             <uni-icons v-else type="cloud-upload" size="40" color="#888888"></uni-icons>
           </image-upload>
-          <text style="font-size: 26rpx;">上传</text>
+          <text style="font-size: 26rpx;">头像</text>
         </view>
 				<view class="invite-btn" @click="onInviteMember()">
 					<uni-icons type="plusempty" size="20" color="#888888"></uni-icons>

@@ -43,7 +43,8 @@
                   :read-only="isReadOnly" @focus="onEditorFocus" @blur="onEditorBlur" @ready="onEditorReady" @input="onTextInput">
           </editor>
           <view class="quote-message" v-if="quoteMsgInfo.show">
-            <view class="quote-text">{{quoteContent}}</view>
+<!--            <view class="quote-text">{{quoteContent}}</view>-->
+            <rich-text class="quote-text" :nodes="quoteContent"></rich-text>
             <uni-icons type="clear" size="20" color="#888888" @click="cancelQuote"></uni-icons>
           </view>
         </view>
@@ -1079,7 +1080,8 @@ export default {
       return `/message/regionGroup/send`;
     },
     quoteContent() {
-      return this.$commonUtil.processAtUsers(this.quoteMsgInfo.quoteContent, this.quoteMsgInfo.msgInfo?.atUserIds || []);
+      let text = this.$emo.transform(this.quoteMsgInfo.quoteContent, 'emoji-normal')
+      return this.$commonUtil.processAtUsers(text, this.quoteMsgInfo.msgInfo?.atUserIds || []);
     },
     unreadTalkCount() {
       // 使用可选链和空值合并操作符简化逻辑
