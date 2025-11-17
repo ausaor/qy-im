@@ -61,6 +61,9 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
      */
     @Override
     public PrivateMessageVO sendMessage(PrivateMessageDTO dto) {
+        if (!MessageType.checkMsgType(dto.getType())) {
+            throw new GlobalException("消息类型错误");
+        }
         UserSession session = SessionContext.getSession();
         Boolean isFriends = friendService.isFriend(session.getUserId(), dto.getRecvId());
         if (!isFriends) {

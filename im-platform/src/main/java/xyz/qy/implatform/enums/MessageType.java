@@ -71,4 +71,25 @@ public enum MessageType {
     public Integer code(){
         return this.code;
     }
+    
+    /**
+     * 检查消息类型是否为群聊消息
+     * 群聊消息类型包括: 0(文字消息), 1(图片消息), 2(文件消息), 3(语音消息), 4(视频消息), 5(台词语音消息)
+     * @param code 消息类型code
+     * @return true-是群聊消息类型, false-不是群聊消息类型
+     */
+    public static boolean checkGroupMsgType(Integer code) {
+        return code != null && code >= 0 && code <= 5;
+    }
+
+    /**
+     * 检查消息类型是否为通用类型消息
+     * 通用类型消息包括: 0(文字消息), 1(图片消息), 2(文件消息), 3(语音消息), 4(视频消息)
+     * @param code 消息类型code
+     * @return true-是通用类型消息, false-不是通用类型消息
+     */
+    public static boolean checkMsgType(Integer code) {
+        return code != null && code >= 0 && code <= 4;
+    }
+    
 }

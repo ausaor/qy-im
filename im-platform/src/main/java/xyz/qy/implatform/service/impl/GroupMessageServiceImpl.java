@@ -86,6 +86,9 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
      */
     @Override
     public GroupMessageVO sendMessage(GroupMessageDTO dto) {
+        if (!MessageType.checkGroupMsgType(dto.getType())) {
+            throw new GlobalException("消息类型错误");
+        }
         UserSession session = SessionContext.getSession();
         Group group = groupService.getById(dto.getGroupId());
         if (Objects.isNull(group)) {
@@ -100,7 +103,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         // 是否在群聊里面
         GroupMember member = groupMemberService.findByGroupAndUserId(dto.getGroupId(), session.getUserId());
         if (Objects.isNull(member) || member.getQuit()) {
-            throw new GlobalException(ResultCode.PROGRAM_ERROR, "您已不在群聊里面，无法发送消息");
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "您不在群聊中，无法发送消息");
         }
         if (ObjectUtil.isNotNull(member.getTemplateCharacterId())
                 && !member.getTemplateCharacterId().equals(dto.getCharacterId())) {

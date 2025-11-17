@@ -94,6 +94,9 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
 
     @Override
     public RegionGroupMessageVO sendMessage(RegionGroupMessageDTO dto) {
+        if (!MessageType.checkMsgType(dto.getType())) {
+            throw new GlobalException("消息类型错误");
+        }
         UserSession session = SessionContext.getSession();
         RegionGroup regionGroup = regionGroupService.getById(dto.getRegionGroupId());
         if (Objects.isNull(regionGroup)) {
