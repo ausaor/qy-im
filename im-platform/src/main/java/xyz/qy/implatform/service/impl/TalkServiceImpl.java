@@ -332,6 +332,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         } else if ("friends".equals(queryDTO.getSection())) {// 查询所有好友的
             // 查询获取好友用户id
             List<Long> friendIds = friendService.getFriendIdsByUserId(myUserId);
+            if (CollectionUtils.isEmpty(friendIds)) {
+                return PageResultVO.builder().data(Collections.emptyList()).total(0).build();
+            }
             dto.setFriendIds(friendIds);
             talkPage = this.baseMapper.pageQueryFriendsTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), dto);
             if (ObjectUtil.isNotNull(talkPage)) {
