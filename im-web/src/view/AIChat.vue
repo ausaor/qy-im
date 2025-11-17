@@ -327,6 +327,16 @@ export default {
 
     // 处理流式数据
     handleStreamData(data, aiMessage) {
+      // python后端返回格式处理
+      // if (data) {
+      //   const response = JSON.parse(data)
+      //   const text = response.content
+      //   if (text) {
+      //     aiMessage.content += text
+      //     this.scrollToBottom();
+      //   }
+      // }
+
       // 后端SseEmitter|Flux<String>返回格式处理
       if (data) {
         aiMessage.content += data

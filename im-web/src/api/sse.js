@@ -16,7 +16,8 @@ let createSSEConnection = (url, params, onMessage, onError) =>  {
     // 创建SSE连接（添加认证头示例）
     const eventSource = new EventSourcePolyfill(fullUrl, {
         headers: {
-            'accessToken': sessionStorage.getItem("accessToken")
+            'accessToken': sessionStorage.getItem("accessToken"),
+            //'Authorization': 'Bearer ' + sessionStorage.getItem("accessToken") // python后端请求头
         },
         heartbeatTimeout: 60 * 1000 // 心跳超时设置
     })
