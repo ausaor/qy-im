@@ -73,59 +73,98 @@
       </div>
       <div v-show="showType === 2">
         <div class="friend-detail">
-          <head-image  :size="200"
-                       :name="userInfo.nickName"
-                       :url="userInfo.headImage"
-                       @click.native="showFullImage()"></head-image>
-          <div>
-            <div class="info-item">
-              <el-row>
-                <el-col :span="10">
-                  <el-descriptions title="好友信息" class="description" :column="1">
-                    <el-descriptions-item label="用户名">{{ userInfo.userName }}
-                    </el-descriptions-item>
-                    <el-descriptions-item label="昵称">{{ userInfo.nickName }}
-                    </el-descriptions-item>
-                    <el-descriptions-item label="性别">{{ userInfo.sex==0?"男":"女" }}</el-descriptions-item>
-                    <el-descriptions-item label="签名">{{ userInfo.signature }}</el-descriptions-item>
-                  </el-descriptions>
-                </el-col>
-                <el-col :span="6">
-                  <el-descriptions title="" class="description" :column="1">
-                    <el-descriptions-item label="备注名">
-                      <el-input v-model="userInfo.friendRemark" size="small" maxlength="15" placeholder="好友备注"></el-input>
-                    </el-descriptions-item>
-                    <el-descriptions-item label="聊天头像">
-                      <file-upload class="avatar-uploader" :action="imageAction"
-                                   :showLoading="true" :maxSize="maxSize" @success="onUploadAvatarSuccess"
-                                   :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
-                        <img v-if="userInfo.myHeadImageToFriend" :src="userInfo.myHeadImageToFriend" class="my-avatar">
-                        <i v-else class="el-icon-upload"></i>
-                      </file-upload>
-                    </el-descriptions-item>
-                    <el-descriptions-item label="动态">
-                      <div class="friend-space" @click="openFriendSpace">
-                        <svg class="icon svg-icon" aria-hidden="true">
-                          <use xlink:href="#icon-shejiaotubiao-40"></use>
-                        </svg>
-                      </div>
-                    </el-descriptions-item>
-                    <el-descriptions-item label="歌单">
-                      <div class="friend-music" @click="openFriendMusic">
-                        <svg class="icon svg-icon" aria-hidden="true">
-                          <use xlink:href="#icon-Music"></use>
-                        </svg>
-                      </div>
-                    </el-descriptions-item>
-                  </el-descriptions>
-                </el-col>
-              </el-row>
+          <div class="profile-card">
+            <div class="profile-header">
+              <head-image  
+                :size="120"
+                class="profile-avatar"
+                :name="userInfo.nickName"
+                :url="userInfo.headImage"
+                @click.native="showFullImage()">
+              </head-image>
+              <div class="profile-basic-info">
+                <h1 class="profile-nickname">{{ userInfo.nickName }}</h1>
+                <p class="profile-username">@{{ userInfo.userName }}</p>
+                <p class="profile-signature" v-if="userInfo.signature">{{ userInfo.signature }}</p>
+                <p class="profile-signature empty-signature" v-else>这个人很懒，没有留下签名</p>
+              </div>
             </div>
-            <div class="friend-btn-group">
-              <el-button v-show="isFriend" icon="el-icon-chat-dot-round" type="primary"  @click="onSendMessage(userInfo)">发送消息</el-button>
-              <el-button v-show="!isFriend" icon="el-icon-plus" type="primary"  @click="onAddFriend(userInfo)">加为好友</el-button>
-              <el-button v-show="isFriend" icon="el-icon-delete"  type="danger" @click="onDelFriend(userInfo)">删除好友</el-button>
-              <el-button v-show="isFriend" type="success" @click="modifyFriendInfo(userInfo)">提交</el-button>
+            
+            <div class="profile-content">
+              <div class="profile-info-section">
+                <h2>基本信息</h2>
+                <div class="profile-info-grid">
+                  <div class="profile-info-item">
+                    <span class="profile-info-label">性别</span>
+                    <span class="profile-info-value">{{ userInfo.sex==0?"男":"女" }}</span>
+                  </div>
+                  <div class="profile-info-item">
+                    <span class="profile-info-label">用户名</span>
+                    <span class="profile-info-value">{{ userInfo.userName }}</span>
+                  </div>
+                  <div class="profile-info-item">
+                    <span class="profile-info-label">昵称</span>
+                    <span class="profile-info-value">{{ userInfo.nickName }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="profile-actions-section">
+                <h2>操作</h2>
+                <div class="profile-action-items">
+                  <div class="profile-action-item">
+                    <span class="profile-info-label">备注名</span>
+                    <el-input 
+                      v-model="userInfo.friendRemark" 
+                      size="small" 
+                      maxlength="15" 
+                      placeholder="好友备注"
+                      class="remark-input">
+                    </el-input>
+                  </div>
+                  
+                  <div class="profile-action-item">
+                    <span class="profile-info-label">聊天头像</span>
+                    <file-upload 
+                      class="avatar-uploader" 
+                      :action="imageAction"
+                      :showLoading="true" 
+                      :maxSize="maxSize" 
+                      @success="onUploadAvatarSuccess"
+                      :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
+                      <img v-if="userInfo.myHeadImageToFriend" :src="userInfo.myHeadImageToFriend" class="my-avatar">
+                      <i v-else class="el-icon-s-custom"></i>
+                    </file-upload>
+                  </div>
+                  
+                  <div class="profile-action-item">
+                    <span class="profile-info-label">动态</span>
+                    <div class="friend-space" @click="openFriendSpace">
+                      <svg class="icon svg-icon" aria-hidden="true">
+                        <use xlink:href="#icon-shejiaotubiao-40"></use>
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  <div class="profile-action-item">
+                    <span class="profile-info-label">歌单</span>
+                    <div class="friend-music" @click="openFriendMusic">
+                      <svg class="icon svg-icon" aria-hidden="true">
+                        <use xlink:href="#icon-Music"></use>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="profile-footer">
+              <div class="friend-btn-group">
+                <el-button v-show="isFriend" icon="el-icon-chat-dot-round" type="primary"  @click="onSendMessage(userInfo)">发送消息</el-button>
+                <el-button v-show="!isFriend" icon="el-icon-plus" type="primary"  @click="onAddFriend(userInfo)">加为好友</el-button>
+                <el-button v-show="isFriend" icon="el-icon-delete"  type="danger" @click="onDelFriend(userInfo)">删除好友</el-button>
+                <el-button v-show="isFriend" type="success" @click="modifyFriendInfo(userInfo)">提交</el-button>
+              </div>
             </div>
           </div>
         </div>
@@ -598,73 +637,243 @@ export default {
 
     .friend-detail {
       display: flex;
-      padding: 50px 80px 20px 80px;
-      text-align: center;
+      justify-content: center;
+      padding: 30px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+      min-height: calc(100vh - 100px);
 
-      .info-item {
-        margin-left: 20px;
-        background-color: #ffffff;
-
-        .avatar-uploader {
-          width: 32px;
-          height: 32px;
-          line-height: 32px;
-
-          .my-avatar {
-            width: 32px;
-            height: 32px;
-            object-fit: cover;
+      .profile-card {
+        width: 100%;
+        max-width: 800px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        
+        .profile-header {
+          background: linear-gradient(120deg, #4A90E2, #6B5CAF);
+          padding: 40px 30px;
+          text-align: center;
+          color: white;
+          position: relative;
+          
+          &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover;
+            opacity: 0.1;
+          }
+          
+          .profile-avatar {
+            margin: 0 auto 20px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+          }
+          
+          .profile-basic-info {
+            position: relative;
+            
+            .profile-nickname {
+              font-size: 28px;
+              margin: 0 0 10px;
+              font-weight: 600;
+              text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            
+            .profile-username {
+              font-size: 16px;
+              opacity: 0.9;
+              margin: 0 0 15px;
+            }
+            
+            .profile-signature {
+              font-size: 15px;
+              font-style: italic;
+              max-width: 80%;
+              margin: 0 auto;
+              opacity: 0.85;
+            }
+            
+            .empty-signature {
+              font-style: italic;
+              opacity: 0.6;
+            }
           }
         }
-
-        .friend-space {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          cursor: pointer;
-          margin-left: .5rem;
-
-          .icon {
-            display: block;
-            height: 30px;
-            line-height: 30px;
-            font-size: 28px;
+        
+        .profile-content {
+          padding: 30px;
+          
+          h2 {
             color: #333;
-            -webkit-transition: font-size 0.25s linear, width 0.25s linear;
-            -moz-transition: font-size 0.25s linear, width 0.25s linear;
-            transition: font-size 0.25s linear, width 0.25s linear;
+            font-size: 20px;
+            margin: 0 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            font-weight: 600;
+          }
+          
+          .profile-info-section {
+            margin-bottom: 30px;
+            
+            .profile-info-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 15px;
+              
+              .profile-info-item {
+                display: flex;
+                flex-direction: column;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 10px;
+                transition: all 0.3s ease;
+                
+                &:hover {
+                  transform: translateY(-3px);
+                  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+                  background: #fff;
+                }
+                
+                .profile-info-label {
+                  font-size: 14px;
+                  color: #666;
+                  margin-bottom: 5px;
+                }
+                
+                .profile-info-value {
+                  font-size: 16px;
+                  font-weight: 500;
+                  color: #333;
+                }
+              }
+            }
+          }
+          
+          .profile-actions-section {
+            margin-bottom: 30px;
+            
+            .profile-action-items {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 15px;
+              
+              .profile-action-item {
+                display: flex;
+                flex-direction: column;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 10px;
+                transition: all 0.3s ease;
+                
+                &:hover {
+                  transform: translateY(-3px);
+                  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+                  background: #fff;
+                }
+                
+                .profile-info-label {
+                  font-size: 14px;
+                  color: #666;
+                  margin-bottom: 10px;
+                }
+                
+                .remark-input {
+                  width: 100%;
+                }
+                
+                .avatar-uploader {
+                  width: 40px;
+                  height: 40px;
+                  line-height: 40px;
+                  cursor: pointer;
+                  border: 1px dashed #d9d9d9;
+                  border-radius: 8px;
+                  text-align: center;
+                  
+                  .my-avatar {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    border-radius: 8px;
+                  }
+                  
+                  &:hover {
+                    border-color: #409eff;
+                  }
+                }
+                
+                .friend-space, .friend-music {
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  cursor: pointer;
+                  width: 40px;
+                  height: 40px;
+                  background: #f0f0f0;
+                  border-radius: 8px;
+                  transition: all 0.3s ease;
+                  
+                  &:hover {
+                    background: #4A90E2;
+                    .icon {
+                      color: white;
+                    }
+                  }
+                  
+                  .icon {
+                    font-size: 24px;
+                    color: #333;
+                  }
+                }
+              }
+            }
           }
         }
-
-        .friend-music {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          cursor: pointer;
-          margin-left: .5rem;
-
-          .icon {
-            display: block;
-            height: 26px;
-            line-height: 26px;
-            font-size: 26px;
-            color: #333;
-            -webkit-transition: font-size 0.25s linear, width 0.25s linear;
-            -moz-transition: font-size 0.25s linear, width 0.25s linear;
-            transition: font-size 0.25s linear, width 0.25s linear;
+        
+        .profile-footer {
+          padding: 0 30px 30px;
+          
+          .friend-btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            
+            .el-button {
+              border-radius: 50px;
+              padding: 12px 24px;
+              font-size: 15px;
+              transition: all 0.3s ease;
+              border: none;
+              box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+              
+              &:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+              }
+              
+              &.el-button--primary {
+                background: linear-gradient(120deg, #4A90E2, #5FA8F3);
+              }
+              
+              &.el-button--danger {
+                background: linear-gradient(120deg, #f56565, #ff7c7c);
+              }
+              
+              &.el-button--success {
+                background: linear-gradient(120deg, #48bb78, #68d391);
+              }
+            }
           }
         }
       }
-
-      .description {
-        padding: 20px 20px 0px 20px;
-      }
-    }
-
-    .friend-btn-group {
-      text-align: left !important;
-      padding: 20px;
-      display: flex;
     }
   }
 }
