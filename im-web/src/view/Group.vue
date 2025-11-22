@@ -228,6 +228,41 @@
 									</div>
 								</div>
 							</div>
+							
+							<!-- 群功能区域 -->
+							<div class="group-functions">
+								<div class="group-function-item" @click="openGroupSpace">
+									<div class="function-icon bg-orange">
+										<svg class="icon svg-icon" aria-hidden="true">
+											<use xlink:href="#icon-shejiaotubiao-40"></use>
+										</svg>
+									</div>
+									<div class="function-text">群空间</div>
+									<div class="new-talk-info">
+										<div v-show="unreadTalkCount" class="new-talk-text">{{unreadTalkCount}}条新动态</div>
+										<div v-show="talkList.length" class="new-talk-list">
+											<head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="24"></head-image>
+										</div>
+									</div>
+									<div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
+								</div>
+								<div class="group-function-item" @click="openGroupMusic">
+									<div class="function-icon bg-green">
+										<svg class="icon svg-icon" aria-hidden="true">
+											<use xlink:href="#icon-Music"></use>
+										</svg>
+									</div>
+									<div class="function-text">群歌单</div>
+								</div>
+								<div class="group-function-item" @click="openGroupRequestPanel">
+									<div class="function-icon bg-blue">
+										<head-image :size="28" :name="'群通知'" :url="require('@/assets/image/join_group.png')"></head-image>
+									</div>
+									<div class="function-text">群通知</div>
+									<div v-show="joinGroupRequestCount>0" class="unread-text">{{joinGroupRequestCount}}</div>
+								</div>
+							</div>
+							
 							<div class="card-footer">
 								<div class="buttons-box">
 									<div class="buttons">
@@ -246,46 +281,7 @@
 							</div>
 						</div>
 
-						<!-- 群功能卡片 -->
-						<div class="group-card group-functions-card">
-							<div class="card-header">
-								<h3>群功能</h3>
-							</div>
-							<div class="card-body">
-								<div class="group-space">
-									<div class="group-function-item" @click="openGroupSpace">
-										<div class="function-icon bg-orange">
-											<svg class="icon svg-icon" aria-hidden="true">
-												<use xlink:href="#icon-shejiaotubiao-40"></use>
-											</svg>
-										</div>
-										<div class="function-text">群空间</div>
-										<div class="new-talk-info">
-											<div v-show="unreadTalkCount" class="new-talk-text">{{unreadTalkCount}}条新动态</div>
-											<div v-show="talkList.length" class="new-talk-list">
-												<head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="24"></head-image>
-											</div>
-										</div>
-										<div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
-									</div>
-									<div class="group-function-item" @click="openGroupMusic">
-										<div class="function-icon bg-green">
-											<svg class="icon svg-icon" aria-hidden="true">
-												<use xlink:href="#icon-Music"></use>
-											</svg>
-										</div>
-										<div class="function-text">群歌单</div>
-									</div>
-									<div class="group-function-item" @click="openGroupRequestPanel">
-										<div class="function-icon bg-blue">
-											<head-image :size="28" :name="'群通知'" :url="require('@/assets/image/join_group.png')"></head-image>
-										</div>
-										<div class="function-text">群通知</div>
-										<div v-show="joinGroupRequestCount>0" class="unread-text">{{joinGroupRequestCount}}</div>
-									</div>
-								</div>
-							</div>
-						</div>
+
 					</div>
 					<el-divider content-position="center"></el-divider>
 					<el-scrollbar style="height:200px;">
@@ -1367,6 +1363,8 @@
       .group-container {
         padding: 20px;
         background: transparent;
+        width: 70%;
+        margin: 0 auto;
 
         .group-content-wrapper {
           display: flex;
@@ -1546,6 +1544,108 @@
                     }
                   }
                 }
+              }
+            }
+          }
+          
+          // 新增的群功能区域样式
+          .group-functions {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(224, 224, 224, 0.5);
+            border-bottom: 1px solid rgba(224, 224, 224, 0.5);
+            
+            .group-function-item {
+              text-align: center;
+              padding: 15px;
+              border-radius: 12px;
+              background: rgba(255, 255, 255, 0.9);
+              cursor: pointer;
+              transition: all 0.3s ease;
+              position: relative;
+              border: 1px solid rgba(224, 224, 224, 0.8);
+              flex: 1;
+              margin: 0 10px;
+
+              &:hover {
+                background: rgba(255, 255, 255, 1);
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(16, 36, 72, 0.15);
+              }
+
+              .function-icon {
+                width: 50px;
+                height: 50px;
+                margin: 0 auto 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                font-size: 20px;
+
+                &.bg-orange {
+                  background: linear-gradient(135deg, #ffb74d, #ff9800);
+                  box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+                }
+
+                &.bg-green {
+                  background: linear-gradient(135deg, #81c784, #4caf50);
+                  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+                }
+
+                &.bg-blue {
+                  background: linear-gradient(135deg, #4fc3f7, #03a9f4);
+                  box-shadow: 0 4px 10px rgba(3, 169, 244, 0.3);
+                }
+
+                .svg-icon {
+                  width: 25px;
+                  height: 25px;
+                }
+
+                .head-image {
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                }
+              }
+
+              .function-text {
+                color: #212529;
+                font-size: 14px;
+                font-weight: 500;
+                letter-spacing: 1px;
+              }
+
+              .new-talk-info {
+                margin-top: 8px;
+
+                .new-talk-text {
+                  font-size: 10px;
+                  color: #e53935;
+                  margin-bottom: 3px;
+                }
+
+                .new-talk-list {
+                  display: flex;
+                  justify-content: center;
+                  gap: 3px;
+                }
+              }
+
+              .unread-text {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                background: #e53935;
+                color: white;
+                border-radius: 10px;
+                padding: 2px 6px;
+                font-size: 10px;
+                font-weight: bold;
+                box-shadow: 0 2px 5px rgba(229, 57, 53, 0.3);
               }
             }
           }
