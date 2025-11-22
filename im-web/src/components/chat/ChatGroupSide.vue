@@ -8,15 +8,15 @@
 					</div>
 					<div class="tool-text">邀请</div>
 				</div>
-        <div v-if="group.groupType!==0" class="member-tools">
+        <div class="member-tools">
           <div class="tool-btn" title="群聊成员信息" @click="openGroupMemberInfoDialog">
             <i class="el-icon-search"></i>
           </div>
           <div class="tool-text">查看</div>
         </div>
-				<div v-for="(member) in groupMembers" :key="member.id">
+				<div v-for="(member) in displayedGroupMembers" :key="member.id">
 					<group-member class="group-side-member" v-show="!member.quit && member.aliasName.startsWith(searchText)" :member="member"
-					 :showDel="false" :right-menu-items="member.isBanned ? [rightMenuItems[1]] : [rightMenuItems[0]]" :right-menu-visible="myGroupMemberInfo.isAdmin" @ban="banMemberMsg" @unban="unBanMemberMsg"></group-member>
+					 :showDel="false" :right-menu-visible="myGroupMemberInfo.isAdmin" @ban="banMemberMsg" @unban="unBanMemberMsg"></group-member>
 				</div>
 			</div>
       <div class="group-space" v-if="!group.quit" @click="openGroupSpace">
@@ -303,6 +303,43 @@
         type: Object
       }
 		},
+		computed: {
+			displayedGroupMembers() {
+				// 限制最多显示18个群成员
+				return this.groupMembers.slice(0, 18);
+			},
+			ownerName() {
+				let member = this.groupMembers.find((m) => m.userId == this.group.ownerId);
+				return member && member.aliasName;
+			},
+			isOwner() {
+				return this.group.ownerId == this.$store.state.userStore.userInfo.id;
+			},
+      talkList() {
+        let talkMap =this.$store.state.talkStore.groupsTalks;
+        let talks = talkMap.get(this.group.id)
+        if (talks && talks.length > 2) {
+          return talks.slice(0, 2);
+        }
+        return talks ? talks : [];
+      },
+      unreadTalkCount() {
+        let talkMap =this.$store.state.talkStore.groupsTalks;
+        let talks = talkMap.get(this.group.id);
+        if (talks) {
+          return talks.length;
+        }
+        return 0;
+      },
+      unreadNotifyCount() {
+        let notifyMap =this.$store.state.talkStore.groupNotify;
+        let count = notifyMap.get(this.group.id);
+        if (count) {
+          return count;
+        }
+        return 0;
+      },
+		},
 		methods: {
       onClose() {
 				this.$emit('close');
@@ -532,39 +569,6 @@
         this.onSaveGroup();
       }
 		},
-		computed: {
-			ownerName() {
-				let member = this.groupMembers.find((m) => m.userId == this.group.ownerId);
-				return member && member.aliasName;
-			},
-			isOwner() {
-				return this.group.ownerId == this.$store.state.userStore.userInfo.id;
-			},
-      talkList() {
-        let talkMap =this.$store.state.talkStore.groupsTalks;
-        let talks = talkMap.get(this.group.id)
-        if (talks && talks.length > 2) {
-          return talks.slice(0, 2);
-        }
-        return talks ? talks : [];
-      },
-      unreadTalkCount() {
-        let talkMap =this.$store.state.talkStore.groupsTalks;
-        let talks = talkMap.get(this.group.id);
-        if (talks) {
-          return talks.length;
-        }
-        return 0;
-      },
-      unreadNotifyCount() {
-        let notifyMap =this.$store.state.talkStore.groupNotify;
-        let count = notifyMap.get(this.group.id);
-        if (count) {
-          return count;
-        }
-        return 0;
-      },
-		},
     watch: {
 		  group: {
         handler(newGroup, oldGroup) {
@@ -591,6 +595,7 @@
 
 <style scoped lang="scss">
 	.chat-group-side {
+    border-left: 1px solid #EBEEF5;
 
     .member-list {
       padding: 15px;

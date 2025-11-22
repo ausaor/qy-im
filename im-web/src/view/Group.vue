@@ -322,7 +322,7 @@
 							</div>
 							<div v-for="(member) in groupMembers" :key="member.id">
 								<group-member v-show="!member.quit" class="member-item" :member="member" :showDel="isOwner&&member.userId!==activeGroup.ownerId"
-											@del="onKick" :right-menu-items="member.isBanned ? [rightMenuItems[1]] : [rightMenuItems[0]]" :right-menu-visible="myGroupMemberInfo.isAdmin"
+											@del="onKick" :right-menu-visible="myGroupMemberInfo.isAdmin"
 											@ban="banMemberMsg" @unban="unBanMemberMsg">
 								</group-member>
 							</div>
