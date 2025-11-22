@@ -123,36 +123,108 @@
 							<div class="card-body">
 								<div class="group-info">
 									<div class="avatar-box">
-										<file-upload v-show="isOwner" class="avatar-uploader" :action="imageAction" :disabled="!isOwner || activeGroup.isTemplate"
+										<file-upload v-if="isOwner" class="avatar-uploader" :action="imageAction" :disabled="!isOwner || activeGroup.isTemplate"
 											:showLoading="true" :maxSize="maxSize" @success="onUploadSuccess"
 											:fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
 											<img v-if="activeGroup.headImage" :src="activeGroup.headImage" class="avatar">
 											<i v-else class="el-icon-plus avatar-uploader-icon"></i>
 										</file-upload>
-										<head-image  v-show="!isOwner" class="avatar" :size="160"
+										<head-image  v-if="!isOwner" class="avatar" :size="160"
 													:url="activeGroup.headImage"
 													:name="activeGroup.remark">
 										</head-image>
 										<el-button class="send-btn" icon="el-icon-position" type="primary" @click="onSendMessage()" size="mini">发消息</el-button>
 									</div>
 									<div class="group-form-box">
-										<el-form class="group-form" label-width="130px" :model="activeGroup" :rules="rules" ref="groupForm">
-											<el-form-item label="群主">
-												<div class="value">{{ownerName}}</div>
-											</el-form-item>
-											<el-form-item label="群备注">
-												<el-input v-model="activeGroup.remark" placeholder="群聊的备注仅自己可见" maxlength="20" size="small"></el-input>
-											</el-form-item>
-											<el-form-item label="我在本群的昵称">
-												<el-input v-model="activeGroup.aliasName" :disabled="activeGroup.groupType!==0" placeholder="" maxlength="20" size="small"></el-input>
-											</el-form-item>
-											<el-form-item label="备注名" v-show="activeGroup.groupType!==0">
-												<el-input v-model="activeGroup.nickName" placeholder="" maxlength="10" size="small"></el-input>
-											</el-form-item>
-											<el-form-item label="群公告">
-												<el-input v-model="activeGroup.notice" :disabled="!isOwner" type="textarea" maxlength="500" placeholder="群主未设置"></el-input>
-											</el-form-item>
-										</el-form>
+										<!-- 群主信息 -->
+										<div class="form-item">
+											<label class="form-label">群主</label>
+											<div class="form-value">{{ownerName}}</div>
+										</div>
+										
+										<!-- 群备注 -->
+										<div class="form-item">
+											<label class="form-label">群备注</label>
+											<div class="editable-field" v-if="!editingFields.remark">
+												<span class="field-value">{{activeGroup.remark || '无'}}</span>
+												<i class="el-icon-edit edit-icon" @click="startEdit('remark')"></i>
+											</div>
+											<div class="edit-field" v-else>
+												<input 
+													v-model="activeGroup.remark" 
+													class="edit-input"
+													placeholder="群聊的备注仅自己可见"
+													maxlength="20"
+													@blur="saveEdit('remark')"
+													ref="remarkInput"
+												>
+											</div>
+										</div>
+										
+										<!-- 我在本群的昵称 -->
+										<div class="form-item">
+											<label class="form-label">我在本群的昵称</label>
+											<div class="editable-field" v-if="!editingFields.aliasName || activeGroup.groupType!==0">
+												<span class="field-value">{{activeGroup.aliasName || '无'}}</span>
+												<i 
+													class="el-icon-edit edit-icon" 
+													v-if="activeGroup.groupType===0"
+													@click="startEdit('aliasName')"
+												></i>
+											</div>
+											<div class="edit-field" v-else>
+												<input 
+													v-model="activeGroup.aliasName" 
+													class="edit-input"
+													placeholder=""
+													maxlength="20"
+													@blur="saveEdit('aliasName')"
+													ref="aliasNameInput"
+												>
+											</div>
+										</div>
+										
+										<!-- 备注名 -->
+										<div class="form-item" v-show="activeGroup.groupType!==0">
+											<label class="form-label">备注名</label>
+											<div class="editable-field" v-if="!editingFields.nickName">
+												<span class="field-value">{{activeGroup.nickName || '无'}}</span>
+												<i class="el-icon-edit edit-icon" @click="startEdit('nickName')"></i>
+											</div>
+											<div class="edit-field" v-else>
+												<input 
+													v-model="activeGroup.nickName" 
+													class="edit-input"
+													placeholder=""
+													maxlength="10"
+													@blur="saveEdit('nickName')"
+													ref="nickNameInput"
+												>
+											</div>
+										</div>
+										
+										<!-- 群公告 -->
+										<div class="form-item">
+											<label class="form-label">群公告</label>
+											<div class="editable-field" v-if="!editingFields.notice || !isOwner">
+												<span class="field-value">{{activeGroup.notice || '群主未设置'}}</span>
+												<i 
+													class="el-icon-edit edit-icon" 
+													v-if="isOwner"
+													@click="startEdit('notice')"
+												></i>
+											</div>
+											<div class="edit-field" v-else>
+												<textarea 
+													v-model="activeGroup.notice" 
+													class="edit-textarea"
+													placeholder="群主未设置"
+													maxlength="500"
+													@blur="saveEdit('notice')"
+													ref="noticeInput"
+												></textarea>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -483,6 +555,13 @@
         groupSpaceVisible: false,
         showType: 0, // 0:不展示；1:新的群聊 2:群组信息
         curGroupRequest: null,
+        // 添加编辑状态管理
+        editingFields: {
+          remark: false,
+          aliasName: false,
+          nickName: false,
+          notice: false
+        }
 			};
 		},
     mounted() {
@@ -577,21 +656,41 @@
         this.myGroupMemberInfo.headImage = data.originUrl;
       },
       onSaveGroup() {
-				this.$refs['groupForm'].validate((valid) => {
-					if (valid) {
-						let vo = this.activeGroup;
-						vo.memberHeadImage = this.myGroupMemberInfo.headImage;
-						this.$http({
-							url: "/group/modify",
-							method: "put",
-							data: vo
-						}).then((group) => {
-							this.$store.commit("updateGroup", group);
-							this.$message.success("修改成功");
-						})
-					}
-				});
+				// 保存群组信息
+				let vo = this.activeGroup;
+				vo.memberHeadImage = this.myGroupMemberInfo.headImage;
+				this.$http({
+					url: "/group/modify",
+					method: "put",
+					data: vo
+				}).then((group) => {
+					this.$store.commit("updateGroup", group);
+					this.$message.success("修改成功");
+				})
 			},
+      // 开始编辑字段
+      startEdit(field) {
+        // 设置对应字段为编辑状态
+        this.$set(this.editingFields, field, true);
+        
+        // 在下次DOM更新后聚焦到输入框
+        this.$nextTick(() => {
+          if (this.$refs[`${field}Input`]) {
+            // 如果是数组，取第一个元素
+            const inputRef = Array.isArray(this.$refs[`${field}Input`]) 
+              ? this.$refs[`${field}Input`][0] 
+              : this.$refs[`${field}Input`];
+            inputRef.focus();
+          }
+        });
+      },
+      // 保存编辑
+      saveEdit(field) {
+        // 设置对应字段为非编辑状态
+        this.$set(this.editingFields, field, false);
+        // 保存群组信息
+        this.onSaveGroup();
+      },
       onDissolve() {
 				this.$confirm(`确认要解散'${this.activeGroup.name}'吗?`, {
 					confirmButtonText: '确定',
@@ -1363,43 +1462,87 @@
                 flex: 1;
                 min-width: 300px;
 
-                .group-form {
-                  .el-form-item {
-                    margin-bottom: 20px;
+                // 自定义表单样式
+                .form-item {
+                  display: flex;
+                  margin-bottom: 20px;
+                  align-items: center;
 
-                    label {
+                  .form-label {
+                    width: 130px;
+                    color: #212529;
+                    font-weight: 500;
+                    text-align: right;
+                    padding-right: 12px;
+                    line-height: 32px;
+                  }
+
+                  .editable-field {
+                    flex: 1;
+                    display: flex;
+                    align-items: center;
+                    min-height: 32px;
+                    padding: 4px 12px;
+                    background: rgba(255, 255, 255, 0.9);
+                    border: 1px solid rgba(224, 224, 224, 0.8);
+                    border-radius: 8px;
+                    position: relative;
+
+                    .field-value {
+                      flex: 1;
                       color: #212529;
-                      font-weight: 500;
+                      word-break: break-all;
                     }
 
-                    .el-input__inner {
-                      background: rgba(255, 255, 255, 0.9);
-                      border: 1px solid rgba(224, 224, 224, 0.8);
-                      color: #212529;
-                      border-radius: 8px;
+                    .edit-icon {
+                      color: #909399;
+                      cursor: pointer;
+                      padding: 4px;
+                      border-radius: 4px;
+                      margin-left: 8px;
 
-                      &:focus {
-                        border-color: #409EFF;
+                      &:hover {
+                        color: #409EFF;
+                        background: rgba(64, 158, 255, 0.1);
                       }
                     }
+                  }
 
-                    .el-textarea__inner {
-                      background: rgba(255, 255, 255, 0.9);
-                      border: 1px solid rgba(224, 224, 224, 0.8);
-                      color: #212529;
-                      border-radius: 8px;
+                  .edit-field {
+                    flex: 1;
 
-                      &:focus {
-                        border-color: #409EFF;
-                      }
-                    }
-
-                    .value {
-                      text-align: left;
-                      color: #212529;
+                    .edit-input {
+                      width: 100%;
                       padding: 8px 12px;
                       background: rgba(255, 255, 255, 0.9);
+                      border: 1px solid rgba(224, 224, 224, 0.8);
+                      color: #212529;
                       border-radius: 8px;
+                      font-size: 14px;
+                      box-sizing: border-box;
+
+                      &:focus {
+                        outline: none;
+                        border-color: #409EFF;
+                      }
+                    }
+
+                    .edit-textarea {
+                      width: 100%;
+                      padding: 8px 12px;
+                      background: rgba(255, 255, 255, 0.9);
+                      border: 1px solid rgba(224, 224, 224, 0.8);
+                      color: #212529;
+                      border-radius: 8px;
+                      font-size: 14px;
+                      box-sizing: border-box;
+                      min-height: 80px;
+                      resize: vertical;
+
+                      &:focus {
+                        outline: none;
+                        border-color: #409EFF;
+                      }
                     }
                   }
                 }
