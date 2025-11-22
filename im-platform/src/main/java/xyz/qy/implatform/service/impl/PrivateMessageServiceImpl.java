@@ -20,7 +20,6 @@ import xyz.qy.imcommon.model.IMPrivateMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.dto.PrivateMessageDTO;
 import xyz.qy.implatform.entity.Friend;
-import xyz.qy.implatform.entity.GroupMessage;
 import xyz.qy.implatform.entity.PrivateMessage;
 import xyz.qy.implatform.enums.MessageStatus;
 import xyz.qy.implatform.enums.MessageType;
@@ -32,12 +31,12 @@ import xyz.qy.implatform.service.IPrivateMessageService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.MsgTypeUtil;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.PrivateMessageVO;
 import xyz.qy.implatform.vo.QuoteMsg;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -63,6 +62,11 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
     public PrivateMessageVO sendMessage(PrivateMessageDTO dto) {
         if (!MessageType.checkMsgType(dto.getType())) {
             throw new GlobalException("消息类型错误");
+        }
+        if (MessageType.checkMediaMsgType(dto.getType())) {
+            if (!MsgTypeUtil.checkMediaMsgContent(dto.getType(), dto.getContent())) {
+                throw new GlobalException("消息内容格式不正确");
+            }
         }
         UserSession session = SessionContext.getSession();
         Boolean isFriends = friendService.isFriend(session.getUserId(), dto.getRecvId());

@@ -44,13 +44,13 @@ import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.MsgTypeUtil;
 import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.QuoteMsg;
 import xyz.qy.implatform.vo.RegionGroupMessageVO;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -96,6 +96,11 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
     public RegionGroupMessageVO sendMessage(RegionGroupMessageDTO dto) {
         if (!MessageType.checkMsgType(dto.getType())) {
             throw new GlobalException("消息类型错误");
+        }
+        if (MessageType.checkMediaMsgType(dto.getType())) {
+            if (!MsgTypeUtil.checkMediaMsgContent(dto.getType(), dto.getContent())) {
+                throw new GlobalException("消息内容格式不正确");
+            }
         }
         UserSession session = SessionContext.getSession();
         RegionGroup regionGroup = regionGroupService.getById(dto.getRegionGroupId());

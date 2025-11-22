@@ -481,7 +481,8 @@
 					loadStatus: "loading",
           status: this.$enums.MESSAGE_STATUS.UNSEND,
           chatType: this.chat.type,
-          version: this.chat.type === 'group' ? this.group.version : null
+          characterId: this.chat.type === 'GROUP' ? this.myGroupMemberInfo.templateCharacterId : null,
+          version: this.chat.type === 'GROUP' ? this.group.version : null
 				}
 				// 填充对方id
 				this.fillTargetId(msgInfo, this.chat.targetId);

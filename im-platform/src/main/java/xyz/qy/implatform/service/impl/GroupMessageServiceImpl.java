@@ -13,7 +13,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import xyz.qy.imclient.IMClient;
@@ -25,16 +24,20 @@ import xyz.qy.imcommon.util.CommaTextUtils;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.GroupMessageDTO;
+import xyz.qy.implatform.entity.CharacterWord;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.GroupMessage;
 import xyz.qy.implatform.entity.GroupMsgReadPosition;
+import xyz.qy.implatform.enums.GroupTypeEnum;
 import xyz.qy.implatform.enums.MessageStatus;
 import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
+import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.GroupMessageMapper;
 import xyz.qy.implatform.mapper.GroupMsgReadPositionMapper;
+import xyz.qy.implatform.service.ICharacterWordService;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IGroupMessageService;
 import xyz.qy.implatform.service.IGroupMsgReadPositionService;
@@ -42,6 +45,7 @@ import xyz.qy.implatform.service.IGroupService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.MsgTypeUtil;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.GroupMessageVO;
 import xyz.qy.implatform.vo.QuoteMsg;
@@ -78,6 +82,9 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
     @Resource
     private IGroupMsgReadPositionService groupMsgReadPositionService;
 
+    @Resource
+    private ICharacterWordService characterWordService;
+
     /**
      * 发送群聊消息(高并发接口，查询mysql接口都要进行缓存)
      *
@@ -88,6 +95,11 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
     public GroupMessageVO sendMessage(GroupMessageDTO dto) {
         if (!MessageType.checkGroupMsgType(dto.getType())) {
             throw new GlobalException("消息类型错误");
+        }
+        if (MessageType.checkMediaMsgType(dto.getType())) {
+            if (!MsgTypeUtil.checkMediaMsgContent(dto.getType(), dto.getContent())) {
+                throw new GlobalException("消息内容格式不正确");
+            }
         }
         UserSession session = SessionContext.getSession();
         Group group = groupService.getById(dto.getGroupId());
@@ -105,13 +117,24 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         if (Objects.isNull(member) || member.getQuit()) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "您不在群聊中，无法发送消息");
         }
-        if (ObjectUtil.isNotNull(member.getTemplateCharacterId())
+        if (!group.getGroupType().equals(GroupTypeEnum.COMMON.getCode()) && ObjectUtil.isNotNull(member.getTemplateCharacterId())
                 && !member.getTemplateCharacterId().equals(dto.getCharacterId())) {
             throw new GlobalException("角色参数异常");
         }
-        if (ObjectUtil.isNull(member.getTemplateCharacterId())
-                && MessageType.WORD_VOICE.code().equals(dto.getType())) {
-            throw new GlobalException("当前群聊类型不支持语音台词类型消息");
+        if (MessageType.WORD_VOICE.code().equals(dto.getType())) {
+            if (group.getGroupType().equals(GroupTypeEnum.COMMON.getCode())) {
+                throw new GlobalException("当前群聊类型不支持语音台词类型消息");
+            }
+
+            Long wordId = MsgTypeUtil.getWordIdFromContent(dto.getContent());
+            CharacterWord characterWord = characterWordService.getById(wordId);
+            if (Objects.isNull(characterWord) || characterWord.getDeleted() || !characterWord.getStatus().equals(ReviewEnum.REVIEWED.getCode())) {
+                throw new GlobalException("角色台词不存在");
+            }
+            if (!member.getTemplateCharacterId().equals(characterWord.getCharacterId())) {
+                throw new GlobalException("角色台词不匹配");
+            }
+            dto.setContent(MsgTypeUtil.formatContent(characterWord));
         }
 
         // 判断是否在群里

@@ -91,5 +91,15 @@ public enum MessageType {
     public static boolean checkMsgType(Integer code) {
         return code != null && code >= 0 && code <= 4;
     }
-    
+
+
+    /**
+     * 判断是否是图片、文件、语音、视频消息
+     *
+     * @param code 消息类型code
+     * @return true-是图片、文件、语音、视频消息, false-不是图片、文件、语音、视频消息
+     */
+    public static boolean checkMediaMsgType(Integer code) {
+        return code != null && code >= 1 && code <= 4;
+    }
 }

@@ -18,7 +18,7 @@ public class PrivateMessageDTO {
     @ApiModelProperty(value = "接收用户id")
     private Long recvId;
 
-    @Length(max=1024,message = "内容长度不得大于1024")
+    @Length(max=1000,message = "内容长度不得大于1000")
     @NotEmpty(message="发送内容不可为空")
     @ApiModelProperty(value = "发送内容")
     private String content;
