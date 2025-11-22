@@ -1,10 +1,5 @@
 <template>
 	<div class="chat-group-side">
-		<div v-show="!group.quit" class="group-side-search">
-			<el-input placeholder="搜索群成员" v-model="searchText" size="small">
-        <i class="el-icon-search el-input__icon" slot="prefix"> </i>
-			</el-input>
-		</div>
 		<el-scrollbar class="group-side-scrollbar">
 			<div v-show="!group.quit" class="member-list">
 				<div class="member-tools">
@@ -24,7 +19,6 @@
 					 :showDel="false" :right-menu-items="member.isBanned ? [rightMenuItems[1]] : [rightMenuItems[0]]" :right-menu-visible="myGroupMemberInfo.isAdmin" @ban="banMemberMsg" @unban="unBanMemberMsg"></group-member>
 				</div>
 			</div>
-			<el-divider v-if="!group.quit" content-position="center"></el-divider>
       <div class="group-space" v-if="!group.quit" @click="openGroupSpace">
         <svg class="icon svg-icon" aria-hidden="true">
           <use xlink:href="#icon-shejiaotubiao-40"></use>
@@ -38,14 +32,12 @@
         </div>
         <div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
       </div>
-      <el-divider v-if="!group.quit" content-position="center"></el-divider>
       <div class="group-music" @click="openGroupMusic">
         <svg class="icon svg-icon" aria-hidden="true">
           <use xlink:href="#icon-Music"></use>
         </svg>
         <span style="color: #b7eb81;margin-left: 10px;font-size: 16px;">群歌单</span>
       </div>
-      <el-divider content-position="center"></el-divider>
 			<!-- 修改表单部分 -->
 			<div class="group-side-form">
 				<div class="form-item">
@@ -547,12 +539,22 @@
 	.chat-group-side {
 
     .member-list {
-      padding: 10px;
+      padding: 15px;
       display: flex;
       align-items: center;
       flex-wrap: wrap;
       font-size: 14px;
       text-align: center;
+      background: linear-gradient(120deg, #f5f7fa, #e4edf9);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin: 15px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      }
 
       .group-side-member {
         margin-left: 5px;
@@ -573,9 +575,15 @@
           font-size: 14px;
           cursor: pointer;
           box-sizing: border-box;
+          border-radius: 10px;
+          background: white;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          transition: all 0.3s ease;
 
           &:hover {
-            border: #aaaaaa solid 1px;
+            border: #409eff solid 1px;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(64, 158, 255, 0.2);
           }
         }
 
@@ -587,7 +595,8 @@
           line-height: 30px;
           white-space: nowrap;
           text-overflow: ellipsis;
-          overflow: hidden
+          overflow: hidden;
+          color: #606266;
         }
       }
     }
@@ -602,13 +611,24 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
+      background: linear-gradient(120deg, #f5f7fa, #e4edf9);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin: 15px;
+      padding: 15px 0;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      }
 
       .icon {
         display: block;
         height: 45px;
         line-height: 45px;
         font-size: 28px;
-        color: #333;
+        color: #409eff;
         -webkit-transition: font-size 0.25s linear, width 0.25s linear;
         -moz-transition: font-size 0.25s linear, width 0.25s linear;
         transition: font-size 0.25s linear, width 0.25s linear;
@@ -617,14 +637,15 @@
       .new-talk-info {
         position: absolute;
         top: 50%;
-        right: 0;
+        right: 20px;
         transform: translateY(-50%);
         display: flex;
         align-items: center;
 
         .new-talk-text {
           font-size: 12px;
-          color: red;
+          color: #f56c6c;
+          margin-right: 10px;
         }
 
         .new-talk-list {
@@ -637,8 +658,8 @@
         position: absolute;
         line-height: 16px;
         background-color: #f56c6c;
-        left: 44%;
-        top: 0;
+        right: 20px;
+        top: 10px;
         color: white;
         border-radius: 16px;
         padding: 0 5px;
@@ -646,6 +667,7 @@
         text-align: center;
         white-space: nowrap;
         border: 1px solid #f1e5e5;
+        box-shadow: 0 2px 4px rgba(245, 108, 108, 0.3);
       }
     }
 
@@ -655,13 +677,24 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
+      background: linear-gradient(120deg, #f5f7fa, #e4edf9);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin: 15px;
+      padding: 15px 0;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      }
 
       .icon {
         display: block;
         height: 45px;
         line-height: 45px;
         font-size: 28px;
-        color: #333;
+        color: #67c23a;
         -webkit-transition: font-size 0.25s linear, width 0.25s linear;
         -moz-transition: font-size 0.25s linear, width 0.25s linear;
         transition: font-size 0.25s linear, width 0.25s linear;
@@ -670,8 +703,17 @@
 
 		.group-side-form {
 			text-align: left;
-			padding: 10px;
-			height: 30%;
+			padding: 15px;
+			background: linear-gradient(120deg, #f5f7fa, #e4edf9);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin: 15px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      }
 
 			.form-item {
 				display: flex;
@@ -688,13 +730,18 @@
 					width: 120px;
 					padding: 0;
 					line-height: 30px;
+          color: #606266;
+          font-weight: 500;
 				}
 				
 				.form-value {
 					flex: 1;
 					min-height: 30px;
 					line-height: 30px;
-					padding: 0 5px;
+					padding: 0 10px;
+          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.7);
+          transition: all 0.3s ease;
 					
 					&.readonly {
 						color: #999;
@@ -703,16 +750,29 @@
 					&.editing {
 						border: 1px solid #409eff;
 						border-radius: 4px;
+            background: white;
+            box-shadow: 0 2px 6px rgba(64, 158, 255, 0.2);
 					}
+          
+          &:not(.readonly):not(.editing) {
+            cursor: pointer;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.9);
+              box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            }
+          }
 				}
 				
 				.form-input {
 					flex: 1;
 					height: 30px;
 					line-height: 30px;
-					padding: 0 5px;
+					padding: 0 10px;
 					border: 1px solid #409eff;
 					border-radius: 4px;
+          background: white;
+          box-shadow: 0 2px 6px rgba(64, 158, 255, 0.2);
 				}
 				
 				.switch-container {
@@ -745,6 +805,7 @@
 				    background: white;
 				    top: 1px;
 				    transition: transform 0.3s;
+				    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 				  }
 				  
 				  &.switch-active::after {
