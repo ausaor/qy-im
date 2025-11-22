@@ -4,9 +4,9 @@
       <div class="emotion-top">
         <div class="emo-items">
           <div class="emo-items-left">
-            <div class="emo-item" :class="emoIndex === 1 ? 'active' : ''" v-html="$emo.textToImg($emo.emoTextList[0])" @click="chooseEmo(1)"></div>
+            <div class="emo-item icon iconfont icon-biaoqing emo-item-1" :class="emoIndex === 1 ? 'active' : ''"  @click="chooseEmo(1)"></div>
             <el-divider direction="vertical"></el-divider>
-            <div class="emo-item" :class="emoIndex === 2 ? 'active' : ''" v-html="$emo.textToImg($emo.originalEmoTextList[13])" @click="chooseEmo(2)"></div>
+            <div class="emo-item icon iconfont icon-biaoqing emo-item-2" :class="emoIndex === 2 ? 'active' : ''"  @click="chooseEmo(2)"></div>
           </div>
           <div class="emo-items-right">
             <div class="emo-item close-button" @click="close()">×</div>
@@ -127,9 +127,21 @@ export default {
         }
       }
 
+      .icon {
+        font-size: 22px;
+      }
+
       .active {
         background-color: #e6f7ff;
         box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.2);
+      }
+      
+      .emo-item-1 {
+        color: #409EFF; /* 蓝色 */
+      }
+      
+      .emo-item-2 {
+        color: #E6A23C; /* 橙色 */
       }
       
       .emo-items-right {
