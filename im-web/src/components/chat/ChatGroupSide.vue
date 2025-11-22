@@ -46,73 +46,136 @@
         <span style="color: #b7eb81;margin-left: 10px;font-size: 16px;">群歌单</span>
       </div>
       <el-divider content-position="center"></el-divider>
-			<el-form labelPosition="top" class="group-side-form" :model="group">
-				<el-form-item label="群聊名称">
-					<el-input v-model="group.name" disabled maxlength="20" size="mini"></el-input>
-				</el-form-item>
-				<el-form-item label="群主">
-					<el-input :value="ownerName" size="mini" disabled></el-input>
-				</el-form-item>
-				<el-form-item label="群公告">
-					<el-input v-model="group.notice" size="mini" disabled type="textarea" maxlength="500" placeholder="群主未设置"></el-input>
-				</el-form-item>
-				<el-form-item label="备注">
-					<el-input v-model="group.remark" size="mini" :disabled="!editing" placeholder="群聊的备注仅自己可见" maxlength="20"></el-input>
-				</el-form-item>
-				<el-form-item label="我在本群的昵称">
-					<el-input v-model="group.aliasName" size="mini" :disabled="!editing || group.groupType!==0" placeholder="xx" maxlength="10"></el-input>
-				</el-form-item>
-        <el-form-item label="昵称前缀" v-show="group.groupType!==0">
-          <el-input v-model="group.aliasNamePrefix" size="mini" :disabled="!editing" placeholder="xx" maxlength="10"></el-input>
-        </el-form-item>
-        <el-form-item label="昵称后缀" v-show="group.groupType!==0">
-          <el-input v-model="group.aliasNameSuffix" size="mini" :disabled="!editing" placeholder="xx" maxlength="10"></el-input>
-        </el-form-item>
-        <el-form-item label="群成员名称显示" v-if="group.groupType!==0" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
-          <el-switch
-              style="display: block"
-              v-model="myGroupMemberInfo.showNickName"
-              active-color="#13ce66"
-              inactive-color="#ff4949"
-              active-text="显示"
-              inactive-text="关闭"
-              @change="showNickNameChange"
-              :disabled="!editing">
-          </el-switch>
-        </el-form-item>
-        <el-form-item label="进群审核" v-if="isOwner" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
-          <el-switch
-              style="display: block"
-              v-model="group.enterReview"
-              active-color="#13ce66"
-              inactive-color="#ff4949"
-              active-text="开启"
-              inactive-text="关闭"
-              @change="enterGroupReviewChange"
-              :disabled="!editing">
-          </el-switch>
-        </el-form-item>
-        <el-form-item label="全局禁言" v-if="isOwner">
-          <el-switch
-              style="display: block"
-              v-model="group.isBanned"
-              active-color="#13ce66"
-              inactive-color="#ff4949"
-              active-text="开启"
-              inactive-text="关闭"
-              @change="doAllBanned"
-              :disabled="!editing">
-          </el-switch>
-          <el-input-number size="mini" v-model="bannedTime" :min="1" :max="60000" :disabled="!editing"></el-input-number>
-          <span>（分钟）</span>
-        </el-form-item>
-
-				<div v-show="!group.quit" class="btn-group">
-					<el-button v-show="editing" type="success" size="mini" @click="onSaveGroup()">提交</el-button>
-					<el-button v-show="!editing" type="primary" size="mini" @click="editing=!editing">编辑</el-button>
-					<el-button type="danger" v-show="!isOwner" size="mini" @click="onQuit()">退出群聊</el-button>
+			<!-- 修改表单部分 -->
+			<div class="group-side-form">
+				<div class="form-item">
+					<label class="form-label">群聊名称</label>
+					<div class="form-value readonly">{{group.name}}</div>
 				</div>
-			</el-form>
+				<div class="form-item">
+					<label class="form-label">群主</label>
+					<div class="form-value readonly">{{ownerName}}</div>
+				</div>
+				<div class="form-item">
+					<label class="form-label">群公告</label>
+					<div class="form-value readonly">{{group.notice || '群主未设置'}}</div>
+				</div>
+				<div class="form-item">
+					<label class="form-label">备注</label>
+					<div 
+						class="form-value" 
+						:class="{ 'editing': editingField === 'remark' }"
+						@click="editField('remark')"
+						v-if="editingField !== 'remark'">
+						{{group.remark || '点击添加备注'}}
+					</div>
+					<input 
+						v-else
+						v-model="group.remark" 
+						class="form-input"
+						placeholder="群聊的备注仅自己可见"
+						maxlength="20"
+						@keyup.enter="saveAndExitEdit">
+				</div>
+				<div class="form-item">
+					<label class="form-label">我在本群的昵称</label>
+					<div 
+						class="form-value"
+						:class="{ 'editing': editingField === 'aliasName', 'readonly': group.groupType!==0 }"
+						@click="group.groupType===0 && editField('aliasName')"
+						v-if="editingField !== 'aliasName'">
+						{{group.aliasName || '点击设置昵称'}}
+					</div>
+					<input 
+						v-else
+						v-model="group.aliasName" 
+						class="form-input"
+						placeholder="xx"
+						maxlength="10"
+						@keyup.enter="saveAndExitEdit"
+						:disabled="group.groupType!==0">
+				</div>
+        <div class="form-item" v-show="group.groupType!==0">
+					<label class="form-label">昵称前缀</label>
+					<div 
+						class="form-value"
+						:class="{ 'editing': editingField === 'aliasNamePrefix' }"
+						@click="editField('aliasNamePrefix')"
+						v-if="editingField !== 'aliasNamePrefix'">
+						{{group.aliasNamePrefix || '点击设置前缀'}}
+					</div>
+					<input 
+						v-else
+						v-model="group.aliasNamePrefix" 
+						class="form-input"
+						placeholder="xx"
+						maxlength="10"
+						@keyup.enter="saveAndExitEdit">
+				</div>
+        <div class="form-item" v-show="group.groupType!==0">
+					<label class="form-label">昵称后缀</label>
+					<div 
+						class="form-value"
+						:class="{ 'editing': editingField === 'aliasNameSuffix' }"
+						@click="editField('aliasNameSuffix')"
+						v-if="editingField !== 'aliasNameSuffix'">
+						{{group.aliasNameSuffix || '点击设置后缀'}}
+					</div>
+					<input 
+						v-else
+						v-model="group.aliasNameSuffix" 
+						class="form-input"
+						placeholder="xx"
+						maxlength="10"
+						@keyup.enter="saveAndExitEdit">
+				</div>
+        <div class="form-item" v-if="group.groupType!==0" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
+          <label class="form-label">群成员名称显示</label>
+          <div class="switch-container">
+	          <div 
+	            class="custom-switch" 
+	            :class="{ 'switch-active': myGroupMemberInfo.showNickName, 'switch-inactive': !myGroupMemberInfo.showNickName }"
+	            @click="toggleShowNickName">
+	          </div>
+	        </div>
+        </div>
+        <div class="form-item" v-if="isOwner" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
+          <label class="form-label">进群审核</label>
+          <div class="switch-container">
+	          <div 
+	            class="custom-switch" 
+	            :class="{ 'switch-active': group.enterReview, 'switch-inactive': !group.enterReview }"
+	            @click="toggleEnterReview">
+	          </div>
+	        </div>
+        </div>
+        <div class="form-item" v-if="isOwner">
+          <label class="form-label">全局禁言</label>
+          <div class="switch-container">
+	          <div 
+	            class="custom-switch" 
+	            :class="{ 'switch-active': group.isBanned, 'switch-inactive': !group.isBanned }"
+	            @click="toggleAllBanned">
+	          </div>
+	        </div>
+          <div 
+            class="form-value"
+            :class="{ 'editing': editingField === 'bannedTime' }"
+            @click="editField('bannedTime')"
+            v-if="editingField !== 'bannedTime'">
+            {{bannedTime}}
+          </div>
+          <input 
+            v-else
+            v-model.number="bannedTime"
+            type="number"
+            class="form-input"
+            min="1"
+            max="60000"
+            @keyup.enter="exitEdit">
+          <span>（分钟）</span>
+        </div>
+			</div>
 		</el-scrollbar>
     <drawer
         :visible="groupSpaceVisible"
@@ -178,13 +241,13 @@
 		data() {
 			return {
 				searchText: "",
-				editing: false,
 				showAddGroupMember: false,
         selectableCharacters: [],
         groupMemberVisible: false,
         showNickName: false,
         groupSpaceVisible: false,
         bannedTime: 1,
+        editingField: '', // 当前正在编辑的字段
         rightMenuItems: [{
           key: 'BAN',
           name: '禁言',
@@ -225,7 +288,6 @@
       onSaveGroup() {
 				let vo = this.group;
 				vo.showNickName = this.myGroupMemberInfo.showNickName;
-				this.editing = false;
 				this.$http({
 					url: "/group/modify",
 					method: "put",
@@ -396,6 +458,32 @@
           this.$message.success("操作成功");
         }).catch((e) => {
         })
+      },
+      // 新增方法：处理字段编辑
+      editField(fieldName) {
+        this.editingField = fieldName;
+      },
+      // 保存并退出编辑模式
+      saveAndExitEdit() {
+        this.editingField = '';
+        this.onSaveGroup();
+      },
+      exitEdit() {
+        this.editingField = '';
+      },
+      // 切换显示昵称
+      toggleShowNickName() {
+        this.myGroupMemberInfo.showNickName = !this.myGroupMemberInfo.showNickName;
+        this.showNickNameChange();
+      },
+      // 切换进群审核
+      toggleEnterReview() {
+        this.group.enterReview = !this.group.enterReview;
+        this.enterGroupReviewChange(this.group.enterReview);
+      },
+      // 切换全体禁言
+      toggleAllBanned() {
+        this.doAllBanned(!this.group.isBanned);
       }
 		},
 		computed: {
@@ -585,12 +673,83 @@
 			padding: 10px;
 			height: 30%;
 
-			.el-form-item {
+			.form-item {
+				display: flex;
+				align-items: center;
 				margin-bottom: 12px;
-
-				.el-form-item__label {
+				padding-bottom: 12px;
+				border-bottom: 1px solid #eee;
+				
+				&:last-child {
+					border-bottom: none;
+				}
+				
+				.form-label {
+					width: 120px;
 					padding: 0;
 					line-height: 30px;
+				}
+				
+				.form-value {
+					flex: 1;
+					min-height: 30px;
+					line-height: 30px;
+					padding: 0 5px;
+					
+					&.readonly {
+						color: #999;
+					}
+					
+					&.editing {
+						border: 1px solid #409eff;
+						border-radius: 4px;
+					}
+				}
+				
+				.form-input {
+					flex: 1;
+					height: 30px;
+					line-height: 30px;
+					padding: 0 5px;
+					border: 1px solid #409eff;
+					border-radius: 4px;
+				}
+				
+				.switch-container {
+				  flex: 1;
+				}
+				
+				.custom-switch {
+				  position: relative;
+				  display: inline-block;
+				  width: 40px;
+				  height: 20px;
+				  border-radius: 10px;
+				  cursor: pointer;
+				  transition: background-color 0.3s;
+				  
+				  &.switch-active {
+				    background-color: #13ce66;
+				  }
+				  
+				  &.switch-inactive {
+				    background-color: #ccc;
+				  }
+				  
+				  &::after {
+				    content: '';
+				    position: absolute;
+				    width: 18px;
+				    height: 18px;
+				    border-radius: 50%;
+				    background: white;
+				    top: 1px;
+				    transition: transform 0.3s;
+				  }
+				  
+				  &.switch-active::after {
+				    transform: translateX(20px);
+				  }
 				}
 
 				.el-textarea__inner {
