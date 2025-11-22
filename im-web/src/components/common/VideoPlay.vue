@@ -13,7 +13,7 @@
           :options="playerOptions"
           @ready="onPlayerReady"
       />-->
-        <video class="video-obj" controls="controls" preload="none" :src="videoUrl" :poster="posterUrl"></video>
+        <video ref="videoPlayer" class="video-obj" controls="controls" preload="none" :src="videoUrl" :poster="posterUrl"></video>
     </div>
   </el-dialog>
 </template>
@@ -71,6 +71,27 @@ export default {
           // 进度条
           progressControl: true
         }
+      }
+    }
+  },
+  watch: {
+    dialogVisible(val) {
+      if (val) {
+        // 弹窗显示时自动播放视频
+        this.$nextTick(() => {
+          const video = this.$refs.videoPlayer;
+          if (video) {
+            // 设置音量为50%
+            video.volume = 0.5;
+            // 尝试自动播放
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(error => {
+                console.log('自动播放失败:', error);
+              });
+            }
+          }
+        });
       }
     }
   },
@@ -134,7 +155,7 @@ export default {
 .video-container {
   position: relative;
   width: 100%; /* 容器宽度自适应父级 */
-  height: 0; /* 高度由 padding 撑开 */
+  height: 0; /* 高度由 padding 撇开 */
   padding-top: 56.25%;   /* 16:9 比例（9/16=56.25%） */
   border-radius: 10px;
   overflow: hidden;
