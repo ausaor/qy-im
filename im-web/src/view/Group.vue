@@ -114,124 +114,151 @@
       </div>
 			<el-scrollbar class="group-container" v-show="showType === 2">
 				<div v-show="activeGroup.id">
-					<div class="group-info">
-						<div class="avatar-box">
-							<file-upload v-show="isOwner" class="avatar-uploader" :action="imageAction" :disabled="!isOwner || activeGroup.isTemplate"
-                 :showLoading="true" :maxSize="maxSize" @success="onUploadSuccess"
-                 :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
-								<img v-if="activeGroup.headImage" :src="activeGroup.headImage" class="avatar">
-								<i v-else class="el-icon-plus avatar-uploader-icon"></i>
-							</file-upload>
-              <head-image  v-show="!isOwner" class="avatar" :size="160"
-                           :url="activeGroup.headImage"
-                           :name="activeGroup.remark">
-              </head-image>
-              <el-button class="send-btn" icon="el-icon-position" type="primary" @click="onSendMessage()" size="mini">发消息</el-button>
+					<div class="group-content-wrapper">
+						<!-- 群信息卡片 -->
+						<div class="group-card group-info-card">
+							<div class="card-header">
+								<h3>群信息</h3>
+							</div>
+							<div class="card-body">
+								<div class="group-info">
+									<div class="avatar-box">
+										<file-upload v-show="isOwner" class="avatar-uploader" :action="imageAction" :disabled="!isOwner || activeGroup.isTemplate"
+											:showLoading="true" :maxSize="maxSize" @success="onUploadSuccess"
+											:fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
+											<img v-if="activeGroup.headImage" :src="activeGroup.headImage" class="avatar">
+											<i v-else class="el-icon-plus avatar-uploader-icon"></i>
+										</file-upload>
+										<head-image  v-show="!isOwner" class="avatar" :size="160"
+													:url="activeGroup.headImage"
+													:name="activeGroup.remark">
+										</head-image>
+										<el-button class="send-btn" icon="el-icon-position" type="primary" @click="onSendMessage()" size="mini">发消息</el-button>
+									</div>
+									<div class="group-form-box">
+										<el-form class="group-form" label-width="130px" :model="activeGroup" :rules="rules" ref="groupForm">
+											<el-form-item label="群主">
+												<div class="value">{{ownerName}}</div>
+											</el-form-item>
+											<el-form-item label="群备注">
+												<el-input v-model="activeGroup.remark" placeholder="群聊的备注仅自己可见" maxlength="20" size="small"></el-input>
+											</el-form-item>
+											<el-form-item label="我在本群的昵称">
+												<el-input v-model="activeGroup.aliasName" :disabled="activeGroup.groupType!==0" placeholder="" maxlength="20" size="small"></el-input>
+											</el-form-item>
+											<el-form-item label="备注名" v-show="activeGroup.groupType!==0">
+												<el-input v-model="activeGroup.nickName" placeholder="" maxlength="10" size="small"></el-input>
+											</el-form-item>
+											<el-form-item label="群公告">
+												<el-input v-model="activeGroup.notice" :disabled="!isOwner" type="textarea" maxlength="500" placeholder="群主未设置"></el-input>
+											</el-form-item>
+										</el-form>
+									</div>
+								</div>
+							</div>
+							<div class="card-footer">
+								<div class="buttons-box">
+									<div class="buttons">
+										<el-button type="success" @click="onSaveGroup()" size="mini">提交</el-button>
+										<el-button type="danger" v-show="!isOwner" @click="onQuit()" size="mini">退出群聊</el-button>
+										<el-button type="danger" v-show="isOwner" @click="onDissolve()" size="mini">解散群聊</el-button>
+										<el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(1)" size="mini">切换模板群聊</el-button>
+									</div>
+									<div class="buttons">
+										<el-button type="primary" size="mini" v-show="isOwner" @click="popupSwitchTemplateGroup(4)" >切换模板角色群聊</el-button>
+										<el-button type="warning" size="mini" v-show="isOwner && activeGroup.groupType !== 2" @click="popupSwitchTemplateGroup(2)">切换多元角色群聊</el-button>
+										<el-button type="info" size="mini" v-show="isOwner && activeGroup.groupType !== 3" @click="popupSwitchTemplateGroup(3)">切换角色群聊</el-button>
+										<el-button size="mini" v-show="isOwner && activeGroup.groupType !== 0" @click="popupSwitchCommonGroup()">切换普通群聊</el-button>
+									</div>
+								</div>
+							</div>
 						</div>
-            <div class="group-form-box">
-              <el-form class="group-form" label-width="130px" :model="activeGroup" :rules="rules" ref="groupForm">
-                <el-form-item label="群主">
-                  <div class="value">{{ownerName}}</div>
-                </el-form-item>
-                <el-form-item label="群备注">
-                  <el-input v-model="activeGroup.remark" placeholder="群聊的备注仅自己可见" maxlength="20" size="small"></el-input>
-                </el-form-item>
-                <el-form-item label="我在本群的昵称">
-                  <el-input v-model="activeGroup.aliasName" :disabled="activeGroup.groupType!==0" placeholder="" maxlength="20" size="small"></el-input>
-                </el-form-item>
-                <el-form-item label="备注名" v-show="activeGroup.groupType!==0">
-                  <el-input v-model="activeGroup.nickName" placeholder="" maxlength="10" size="small"></el-input>
-                </el-form-item>
-                <el-form-item label="群公告">
-                  <el-input v-model="activeGroup.notice" :disabled="!isOwner" type="textarea" maxlength="500" placeholder="群主未设置"></el-input>
-                </el-form-item>
-              </el-form>
-              <div class="buttons-box">
-                <div class="buttons">
-                  <el-button type="success" @click="onSaveGroup()" size="mini">提交</el-button>
-                  <el-button type="danger" v-show="!isOwner" @click="onQuit()" size="mini">退出群聊</el-button>
-                  <el-button type="danger" v-show="isOwner" @click="onDissolve()" size="mini">解散群聊</el-button>
-                  <el-button type="primary" v-show="isOwner" @click="popupSwitchTemplateGroup(1)" size="mini">切换模板群聊</el-button>
-                </div>
-                <div class="buttons">
-                  <el-button type="primary" size="mini" v-show="isOwner" @click="popupSwitchTemplateGroup(4)" >切换模板角色群聊</el-button>
-                  <el-button type="warning" size="mini" v-show="isOwner && activeGroup.groupType !== 2" @click="popupSwitchTemplateGroup(2)">切换多元角色群聊</el-button>
-                  <el-button type="info" size="mini" v-show="isOwner && activeGroup.groupType !== 3" @click="popupSwitchTemplateGroup(3)">切换角色群聊</el-button>
-                  <el-button size="mini" v-show="isOwner && activeGroup.groupType !== 0" @click="popupSwitchCommonGroup()">切换普通群聊</el-button>
-                </div>
-              </div>
-            </div>
-            <div class="group-space">
-              <div class="group-activity" @click="openGroupSpace">
-                <svg class="icon svg-icon" aria-hidden="true">
-                  <use xlink:href="#icon-shejiaotubiao-40"></use>
-                </svg>
-                <span style="color: orange;margin-left: 10px;font-size: 16px;">群空间</span>
-                <div class="new-talk-info">
-                  <div v-show="unreadTalkCount" class="new-talk-text">{{unreadTalkCount}}条新动态</div>
-                  <div v-show="talkList.length" class="new-talk-list">
-                    <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="24"></head-image>
-                  </div>
-                </div>
-                <div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
-              </div>
-              <div class="group-music" @click="openGroupMusic">
-                <svg class="icon svg-icon" aria-hidden="true">
-                  <use xlink:href="#icon-Music"></use>
-                </svg>
-                <span style="color: #b7eb81;margin-left: 10px;font-size: 16px;">群歌单</span>
-              </div>
-              <div class="group-request-info" @click="openGroupRequestPanel">
-                <head-image :size="28" :name="'群通知'" :url="require('@/assets/image/join_group.png')"></head-image>
-                <span style="color: rgb(119 158 242);margin-left: 10px;font-size: 16px;">群通知</span>
-                <div v-show="joinGroupRequestCount>0" class="unread-text">{{joinGroupRequestCount}}</div>
-              </div>
-            </div>
+
+						<!-- 群功能卡片 -->
+						<div class="group-card group-functions-card">
+							<div class="card-header">
+								<h3>群功能</h3>
+							</div>
+							<div class="card-body">
+								<div class="group-space">
+									<div class="group-function-item" @click="openGroupSpace">
+										<div class="function-icon bg-orange">
+											<svg class="icon svg-icon" aria-hidden="true">
+												<use xlink:href="#icon-shejiaotubiao-40"></use>
+											</svg>
+										</div>
+										<div class="function-text">群空间</div>
+										<div class="new-talk-info">
+											<div v-show="unreadTalkCount" class="new-talk-text">{{unreadTalkCount}}条新动态</div>
+											<div v-show="talkList.length" class="new-talk-list">
+												<head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="24"></head-image>
+											</div>
+										</div>
+										<div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
+									</div>
+									<div class="group-function-item" @click="openGroupMusic">
+										<div class="function-icon bg-green">
+											<svg class="icon svg-icon" aria-hidden="true">
+												<use xlink:href="#icon-Music"></use>
+											</svg>
+										</div>
+										<div class="function-text">群歌单</div>
+									</div>
+									<div class="group-function-item" @click="openGroupRequestPanel">
+										<div class="function-icon bg-blue">
+											<head-image :size="28" :name="'群通知'" :url="require('@/assets/image/join_group.png')"></head-image>
+										</div>
+										<div class="function-text">群通知</div>
+										<div v-show="joinGroupRequestCount>0" class="unread-text">{{joinGroupRequestCount}}</div>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 					<el-divider content-position="center"></el-divider>
 					<el-scrollbar style="height:200px;">
 						<div class="member-items">
-              <div class="member-tools" title="上传我的群聊头像" v-show="!myGroupMemberInfo.isTemplate">
-                <div class="tool-btn">
-                  <file-upload class="avatar-uploader" :action="imageAction"
-                               :showLoading="true" :maxSize="maxSize" @success="onUploadMemberAvatarSuccess"
-                               :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
-                    <img v-if="myGroupMemberInfo.headImage" :src="myGroupMemberInfo.headImage" class="member-avatar">
-                    <i v-else class="el-icon-upload"></i>
-                  </file-upload>
-                </div>
-                <div class="tool-text">头像</div>
-              </div>
+							<div class="member-tools" title="上传我的群聊头像" v-show="!myGroupMemberInfo.isTemplate">
+								<div class="tool-btn">
+									<file-upload class="avatar-uploader" :action="imageAction"
+												:showLoading="true" :maxSize="maxSize" @success="onUploadMemberAvatarSuccess"
+												:fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
+										<img v-if="myGroupMemberInfo.headImage" :src="myGroupMemberInfo.headImage" class="member-avatar">
+										<i v-else class="el-icon-upload"></i>
+									</file-upload>
+								</div>
+								<div class="tool-text">头像</div>
+							</div>
 							<div class="member-tools">
 								<div class="tool-btn" title="邀请好友进群聊" @click="onInviteMember()">
 									<i class="el-icon-plus"></i>
 								</div>
 								<div class="tool-text">邀请</div>
 							</div>
-              <div class="member-tools" v-show="activeGroup.groupType !== 0">
-                <div class="tool-btn" title="切换角色" @click="switchCharacter()">
-                  <i class="el-icon-refresh"></i>
-                </div>
-                <div class="tool-text">切换</div>
-              </div>
-              <div class="member-tools" v-show="activeGroup.groupType !== 0">
-                <div class="tool-btn" title="切换角色头像" @click="switchCharacterAvatar()">
-                  <i class="el-icon-user-solid"></i>
-                </div>
-                <div class="tool-text">选择</div>
-              </div>
-              <div class="member-tools" v-show="activeGroup.groupType !== 0">
-                <div class="tool-btn" title="群聊成员信息" @click="openGroupMemberInfoDialog">
-                  <i class="el-icon-search"></i>
-                </div>
-                <div class="tool-text">查看</div>
-              </div>
-              <div v-for="(member) in groupMembers" :key="member.id">
-                <group-member v-show="!member.quit" class="member-item" :member="member" :showDel="isOwner&&member.userId!==activeGroup.ownerId"
-                              @del="onKick" :right-menu-items="member.isBanned ? [rightMenuItems[1]] : [rightMenuItems[0]]" :right-menu-visible="myGroupMemberInfo.isAdmin"
-                              @ban="banMemberMsg" @unban="unBanMemberMsg">
-                </group-member>
-              </div>
+							<div class="member-tools" v-show="activeGroup.groupType !== 0">
+								<div class="tool-btn" title="切换角色" @click="switchCharacter()">
+									<i class="el-icon-refresh"></i>
+								</div>
+								<div class="tool-text">切换</div>
+							</div>
+							<div class="member-tools" v-show="activeGroup.groupType !== 0">
+								<div class="tool-btn" title="切换角色头像" @click="switchCharacterAvatar()">
+									<i class="el-icon-user-solid"></i>
+								</div>
+								<div class="tool-text">选择</div>
+							</div>
+							<div class="member-tools" v-show="activeGroup.groupType !== 0">
+								<div class="tool-btn" title="群聊成员信息" @click="openGroupMemberInfoDialog">
+									<i class="el-icon-search"></i>
+								</div>
+								<div class="tool-text">查看</div>
+							</div>
+							<div v-for="(member) in groupMembers" :key="member.id">
+								<group-member v-show="!member.quit" class="member-item" :member="member" :showDel="isOwner&&member.userId!==activeGroup.ownerId"
+											@del="onKick" :right-menu-items="member.isBanned ? [rightMenuItems[1]] : [rightMenuItems[0]]" :right-menu-visible="myGroupMemberInfo.isAdmin"
+											@ban="banMemberMsg" @unban="unBanMemberMsg">
+								</group-member>
+							</div>
 						</div>
 					</el-scrollbar>
 				</div>
@@ -1047,13 +1074,13 @@
 
 <style lang="scss">
 	.group-page {
-		.aside {
+    .aside {
       display: flex;
       flex-direction: column;
-			background: white;
+      background: white;
       border-right: 1px solid #cccccc;
 
-			.header {
+      .header {
         height: 50px;
         display: flex;
         align-items: center;
@@ -1065,10 +1092,10 @@
           font-size: 16px;
           border-radius: 50%;
         }
-			}
-			
-			.group-list-items {
-				flex: 1;
+      }
+
+      .group-list-items {
+        flex: 1;
 
         .top-item {
           height: 50px;
@@ -1118,13 +1145,14 @@
             background-color: var(--active-color);
           }
         }
-			}
-		}
+      }
+    }
 
-		.group-box {
-			display: flex;
-			flex-direction: column;
-			border: var(--border-color) solid 1px;
+    .group-box {
+      display: flex;
+      flex-direction: column;
+      border: var(--border-color) solid 1px;
+      background: linear-gradient(120deg, #f5f7fa, #e4e7f4);
 
       .header {
         width: 100%;
@@ -1139,18 +1167,18 @@
         border: var(--border-color) solid 1px;
       }
 
-			.group-header {
-				width: 100%;
-				height: 50px;
-				padding: 5px;
-				line-height: 50px;
-				font-size: 20px;
-				font-weight: 600;
-				text-align: left;
-				text-indent: 10px;
-				background-color: white;
-				border: var(--border-color) solid 1px;
-			}
+      .group-header {
+        width: 100%;
+        height: 50px;
+        padding: 5px;
+        line-height: 50px;
+        font-size: 20px;
+        font-weight: 600;
+        text-align: left;
+        text-indent: 10px;
+        background-color: white;
+        border: var(--border-color) solid 1px;
+      }
 
       .request-box {
         flex: 1;
@@ -1238,158 +1266,289 @@
         flex-direction: column;
       }
 
-			.group-container {
-				padding: 20px;
+      .group-container {
+        padding: 20px;
+        background: transparent;
 
-				.group-info {
-					display: flex;
-					padding: 5px 20px;
+        .group-content-wrapper {
+          display: flex;
+          gap: 20px;
+          flex-wrap: wrap;
+        }
 
-          .avatar-box {
-            text-align: center;
+        /* 科技感卡片样式 */
+        .group-card {
+          background: linear-gradient(145deg, #ffffff, #f0f2f5);
+          border-radius: 15px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+          margin-bottom: 25px;
+          overflow: hidden;
+          border: 1px solid rgba(224, 224, 224, 0.5);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
 
-            .avatar-uploader {
-              text-align: left;
+          &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(16, 36, 72, 0.15);
+          }
 
-              .el-upload {
-                border: 1px dashed #d9d9d9 !important;
-                border-radius: 6px;
-                cursor: pointer;
-                position: relative;
-                overflow: hidden;
-              }
+          .card-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(224, 224, 224, 0.5);
 
-              .el-upload:hover {
-                border-color: #409EFF;
-              }
-
-              .avatar-uploader-icon {
-                font-size: 28px;
-                color: #8c939d;
-                width: 160px;
-                height: 160px;
-                line-height: 160px;
-                text-align: center;
-              }
-
-              .avatar {
-                width: 160px;
-                height: 160px;
-                display: block;
-              }
-            }
-
-            .send-btn {
-              margin-top: 20px;
+            h3 {
+              margin: 0;
+              color: #212529;
+              font-size: 20px;
+              font-weight: 600;
+              letter-spacing: 1px;
+              text-shadow: 0 0 10px rgba(33, 37, 41, 0.1);
             }
           }
 
-          .group-form-box{
+          .card-body {
+            padding: 20px;
 
-            .group-form {
-              flex: 1;
-              padding-left: 40px;
-              min-width: 700px;
+            .group-info {
+              display: flex;
+              flex-wrap: wrap;
 
-              .value {
-                text-align: left;
-                color: #888;
+              .avatar-box {
+                flex: 0 0 160px;
+                text-align: center;
+                margin-right: 40px;
+
+                .avatar-uploader {
+                  text-align: left;
+
+                  .el-upload {
+                    border: 1px dashed rgba(16, 36, 72, 0.2) !important;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    position: relative;
+                    overflow: hidden;
+                    background: rgba(255, 255, 255, 0.9);
+                  }
+
+                  .el-upload:hover {
+                    border-color: #409EFF;
+                  }
+
+                  .avatar-uploader-icon {
+                    font-size: 28px;
+                    color: rgba(16, 36, 72, 0.5);
+                    width: 160px;
+                    height: 160px;
+                    line-height: 160px;
+                    text-align: center;
+                  }
+
+                  .avatar {
+                    width: 160px;
+                    height: 160px;
+                    display: block;
+                  }
+                }
+
+                .send-btn {
+                  margin-top: 20px;
+                  background: linear-gradient(45deg, #42a5f5, #1e88e5);
+                  border: none;
+                  color: white;
+                  font-weight: bold;
+                  letter-spacing: 1px;
+                  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+                }
+              }
+
+              .group-form-box {
+                flex: 1;
+                min-width: 300px;
+
+                .group-form {
+                  .el-form-item {
+                    margin-bottom: 20px;
+
+                    label {
+                      color: #212529;
+                      font-weight: 500;
+                    }
+
+                    .el-input__inner {
+                      background: rgba(255, 255, 255, 0.9);
+                      border: 1px solid rgba(224, 224, 224, 0.8);
+                      color: #212529;
+                      border-radius: 8px;
+
+                      &:focus {
+                        border-color: #409EFF;
+                      }
+                    }
+
+                    .el-textarea__inner {
+                      background: rgba(255, 255, 255, 0.9);
+                      border: 1px solid rgba(224, 224, 224, 0.8);
+                      color: #212529;
+                      border-radius: 8px;
+
+                      &:focus {
+                        border-color: #409EFF;
+                      }
+                    }
+
+                    .value {
+                      text-align: left;
+                      color: #212529;
+                      padding: 8px 12px;
+                      background: rgba(255, 255, 255, 0.9);
+                      border-radius: 8px;
+                    }
+                  }
+                }
               }
             }
+          }
+
+          .card-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(224, 224, 224, 0.5);
+            background: rgba(255, 255, 255, 0.7);
 
             .buttons-box {
-
               .buttons {
                 display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
                 justify-content: right;
                 margin-bottom: 10px;
+
+                .el-button {
+                  border-radius: 8px;
+                  border: none;
+                  box-shadow: 0 4px 6px rgba(16, 36, 72, 0.1);
+                  font-weight: 500;
+                  transition: all 0.3s ease;
+
+                  &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 8px rgba(16, 36, 72, 0.15);
+                  }
+                }
               }
             }
+          }
+        }
+
+        /* 群信息卡片特殊样式 */
+        .group-info-card {
+          flex: 1;
+          min-width: 300px;
+        }
+
+        /* 群功能卡片特殊样式 */
+        .group-functions-card {
+          flex: 0 0 30%;
+          min-width: 250px;
+
+          .card-body {
+            padding: 30px;
           }
 
           .group-space {
-            padding-left: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
 
-            .icon {
-              display: block;
-              height: 30px;
-              line-height: 30px;
-              font-size: 30px;
-              color: #333;
-              -webkit-transition: font-size 0.25s linear, width 0.25s linear;
-              -moz-transition: font-size 0.25s linear, width 0.25s linear;
-              transition: font-size 0.25s linear, width 0.25s linear;
-            }
-
-            .group-activity {
-              position: relative;
-              display: flex;
-              align-items: center;
+            .group-function-item {
+              text-align: center;
+              padding: 20px;
+              border-radius: 12px;
+              background: rgba(255, 255, 255, 0.9);
               cursor: pointer;
+              transition: all 0.3s ease;
+              position: relative;
+              border: 1px solid rgba(224, 224, 224, 0.8);
 
-              .new-talk-info {
-                padding-left: 10px;
+              &:hover {
+                background: rgba(255, 255, 255, 1);
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(16, 36, 72, 0.15);
+              }
+
+              .function-icon {
+                width: 60px;
+                height: 60px;
+                margin: 0 auto 15px;
                 display: flex;
                 align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                font-size: 24px;
+
+                &.bg-orange {
+                  background: linear-gradient(135deg, #ffb74d, #ff9800);
+                  box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+                }
+
+                &.bg-green {
+                  background: linear-gradient(135deg, #81c784, #4caf50);
+                  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+                }
+
+                &.bg-blue {
+                  background: linear-gradient(135deg, #4fc3f7, #03a9f4);
+                  box-shadow: 0 4px 10px rgba(3, 169, 244, 0.3);
+                }
+
+                .svg-icon {
+                  width: 30px;
+                  height: 30px;
+                }
+
+                .head-image {
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                }
+              }
+
+              .function-text {
+                color: #212529;
+                font-size: 16px;
+                font-weight: 500;
+                letter-spacing: 1px;
+              }
+
+              .new-talk-info {
+                margin-top: 10px;
 
                 .new-talk-text {
                   font-size: 12px;
-                  color: red;
+                  color: #e53935;
+                  margin-bottom: 5px;
                 }
 
                 .new-talk-list {
                   display: flex;
-                  align-items: center;
+                  justify-content: center;
+                  gap: 5px;
                 }
               }
 
               .unread-text {
                 position: absolute;
-                line-height: 16px;
-                background-color: #f56c6c;
-                left: 20%;
-                top: -5px;
+                top: 10px;
+                right: 10px;
+                background: #e53935;
                 color: white;
-                border-radius: 16px;
-                padding: 0 5px;
-                font-size: 10px;
-                text-align: center;
-                white-space: nowrap;
-                border: 1px solid #f1e5e5;
-              }
-            }
-
-            .group-music {
-              display: flex;
-              align-items: center;
-              cursor: pointer;
-              margin-top: 20px;
-            }
-
-            .group-request-info {
-              position: relative;
-              display: flex;
-              align-items: center;
-              cursor: pointer;
-              margin-top: 20px;
-
-              .unread-text {
-                position: absolute;
-                line-height: 16px;
-                background-color: #f56c6c;
-                left: 20%;
-                top: -5px;
-                color: white;
-                border-radius: 16px;
-                padding: 0 5px;
-                font-size: 10px;
-                text-align: center;
-                white-space: nowrap;
-                border: 1px solid #f1e5e5;
+                border-radius: 10px;
+                padding: 2px 8px;
+                font-size: 12px;
+                font-weight: bold;
+                box-shadow: 0 2px 5px rgba(229, 57, 53, 0.3);
               }
             }
           }
-				}
+        }
 
         .member-items {
           padding: 0 12px;
@@ -1412,13 +1571,19 @@
               width: 38px;
               height: 38px;
               line-height: 38px;
-              border: 1px solid #ebeef5;
+              border: 1px solid #f0f2f5;
               font-size: 14px;
               cursor: pointer;
               box-sizing: border-box;
+              border-radius: 8px;
+              background: rgba(255, 255, 255, 0.9);
+              color: #212529;
+              transition: all 0.3s ease;
 
               &:hover {
-                border: #aaaaaa solid 1px;
+                border: #409EFF solid 1px;
+                background: rgba(64, 158, 255, 0.2);
+                transform: translateY(-2px);
               }
             }
 
@@ -1430,7 +1595,8 @@
               line-height: 30px;
               white-space: nowrap;
               text-overflow: ellipsis;
-              overflow: hidden
+              overflow: hidden;
+              color: #212529;
             }
           }
 
@@ -1441,55 +1607,57 @@
             .member-avatar {
               width: 38px;
               height: 38px;
+              border-radius: 8px;
             }
           }
         }
-			}
-		}
-
-    .avatar-uploader-group {
-      width: 160px;
-      height: 160px;
-      line-height: 160px;
-      margin-bottom: 20px;
-      margin-left: 130px;
-
-      .el-upload {
-        border: 1px dashed #d9d9d9 !important;
-        border-radius: 6px;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
       }
 
-      .el-upload:hover {
-        border-color: #409EFF;
-      }
-
-      .avatar-uploader-icon {
-        font-size: 28px;
-        color: #8c939d;
+      .avatar-uploader-group {
         width: 160px;
         height: 160px;
         line-height: 160px;
-        text-align: center;
+        margin-bottom: 20px;
+        margin-left: 130px;
+
+        .el-upload {
+          border: 1px dashed #d9d9d9 !important;
+          border-radius: 6px;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .el-upload:hover {
+          border-color: #409EFF;
+        }
+
+        .avatar-uploader-icon {
+          font-size: 28px;
+          color: #8c939d;
+          width: 160px;
+          height: 160px;
+          line-height: 160px;
+          text-align: center;
+        }
+
+        .avatar {
+          width: 160px;
+          height: 160px;
+          display: block;
+        }
       }
 
-      .avatar {
-        width: 160px;
-        height: 160px;
-        display: block;
+      .character-avatar-item-left {
+        float: left;
+      }
+
+      .character-avatar-item-right {
+        float: right;
+        margin-right: 10px;
+        height: 65px;
+        line-height: 65px;
       }
     }
-
-    .character-avatar-item-left {
-      float: left;
-    }
-    .character-avatar-item-right {
-      float: right;
-      margin-right: 10px;
-      height: 65px;
-      line-height: 65px;
-    }
-	}
+  }
 </style>
