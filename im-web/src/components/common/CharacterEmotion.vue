@@ -67,7 +67,7 @@ export default {
   },
   computed: {
     x() {
-      return this.pos.x - 200;
+      return this.pos.x - 10;
     },
     y() {
       return this.pos.y - 260;
