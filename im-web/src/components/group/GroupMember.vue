@@ -6,8 +6,6 @@
     </head-image>
     <div  v-if="showDel" @click.stop="onDelete()" class="btn-kick el-icon-error"></div>
     <div class="member-name" :title="member.aliasName">{{member.aliasName}}</div>
-    <right-menu v-show="rightMenu.show" :pos="rightMenu.pos" :items="rightMenuItems" @close="rightMenu.show=false"
-                @select="onSelectMenu"></right-menu>
 	</div>
 </template>
 
@@ -44,10 +42,6 @@
 			  type: Boolean,
         default: false,
       },
-      rightMenuItems: {
-			  type: Array,
-        default: []
-      }
 		},
 		methods:{
       onDelete(){

@@ -547,7 +547,6 @@
           x: left + width / 2,
           y: top
         })
-
       },
       showWordBox() {
         this.getCharacterWord().then((data) => {
