@@ -288,7 +288,7 @@
         :visible.sync="selectCharacterAvatarVisible"
         :before-close="closeSelectCharacterAvatar">
       <el-scrollbar style="height:400px;">
-        <div v-for="(characterAvatar, index) in characterAvatars" :key="index">
+        <div v-for="(characterAvatar, index) in characterAvatars" :key="index" style="display: flex;justify-content: space-between;align-items: center;">
           <character-avatar-item class="character-avatar-item-left" :characterAvatar="characterAvatar"></character-avatar-item>
           <div class="character-avatar-item-right">
             <el-button :type="avatarActiveIndex === index ? 'success' : ''"
@@ -296,7 +296,6 @@
                        circle
                        @click="chooseCharacterAvatar(characterAvatar, index)"></el-button>
           </div>
-          <p style="clear:both;"></p>
         </div>
       </el-scrollbar>
       <span slot="footer" class="dialog-footer">
@@ -1649,11 +1648,10 @@
       }
 
       .character-avatar-item-left {
-        float: left;
+        flex: 1;
       }
 
       .character-avatar-item-right {
-        float: right;
         margin-right: 10px;
         height: 65px;
         line-height: 65px;
