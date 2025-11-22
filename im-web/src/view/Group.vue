@@ -283,8 +283,7 @@
 
 
 					</div>
-					<el-divider content-position="center"></el-divider>
-					<el-scrollbar style="height:200px;">
+					<el-scrollbar style="height:200px;width:100%;">
 						<div class="member-items">
 							<div class="member-tools" title="上传我的群聊头像" v-show="!myGroupMemberInfo.isTemplate">
 								<div class="tool-btn">
@@ -1276,6 +1275,7 @@
 
       .request-box {
         flex: 1;
+        background: white;
 
         .group-info {
           display: flex;
@@ -1793,44 +1793,59 @@
         }
 
         .member-items {
-          padding: 0 12px;
+          padding: 20px;
           display: flex;
           align-items: center;
           flex-wrap: wrap;
           text-align: center;
+          background: linear-gradient(145deg, #ffffff, #f8f9fa);
+          border-radius: 15px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+          border: 1px solid rgba(224, 224, 224, 0.5);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+          }
 
           .member-item {
-            margin-right: 5px;
+            margin-right: 10px;
+            margin-bottom: 10px;
           }
 
           .member-tools {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 60px;
+            width: 70px;
+            margin-right: 10px;
+            margin-bottom: 10px;
 
             .tool-btn {
-              width: 38px;
-              height: 38px;
-              line-height: 38px;
-              border: 1px solid #f0f2f5;
-              font-size: 14px;
+              width: 48px;
+              height: 48px;
+              line-height: 48px;
+              border: 1px solid rgba(224, 224, 224, 0.8);
+              font-size: 16px;
               cursor: pointer;
               box-sizing: border-box;
-              border-radius: 8px;
-              background: rgba(255, 255, 255, 0.9);
+              border-radius: 12px;
+              background: linear-gradient(145deg, #ffffff, #f8f9fa);
               color: #212529;
               transition: all 0.3s ease;
+              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 
               &:hover {
-                border: #409EFF solid 1px;
-                background: rgba(64, 158, 255, 0.2);
-                transform: translateY(-2px);
+                border: 1px solid #409EFF;
+                background: linear-gradient(145deg, #f0f7ff, #e3f2fd);
+                transform: translateY(-3px);
+                box-shadow: 0 4px 10px rgba(64, 158, 255, 0.2);
               }
             }
 
             .tool-text {
-              font-size: 12px;
+              font-size: 13px;
               text-align: center;
               width: 100%;
               height: 30px;
@@ -1839,17 +1854,19 @@
               text-overflow: ellipsis;
               overflow: hidden;
               color: #212529;
+              font-weight: 500;
+              margin-top: 5px;
             }
           }
 
           .avatar-uploader {
-            width: 38px;
-            height: 38px;
+            width: 48px;
+            height: 48px;
 
             .member-avatar {
-              width: 38px;
-              height: 38px;
-              border-radius: 8px;
+              width: 48px;
+              height: 48px;
+              border-radius: 12px;
             }
           }
         }
