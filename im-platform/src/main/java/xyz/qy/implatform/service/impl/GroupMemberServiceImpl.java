@@ -271,7 +271,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         if (switchTime != null) {
             long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
             if (interval < Constant.SWITCH_INTERVAL) {
-                throw new GlobalException("距离上次切换操作未超过30分钟");
+                throw new GlobalException("距离上次切换操作未超过12小时");
             }
         }
 
@@ -368,7 +368,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         if (switchTime != null) {
             long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
             if (interval < Constant.SWITCH_INTERVAL) {
-                throw new GlobalException("距离上次切换操作未超过30分钟");
+                throw new GlobalException("距离上次切换操作未超过12小时");
             }
         }
 

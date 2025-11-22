@@ -131,7 +131,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
             if (Objects.isNull(characterWord) || characterWord.getDeleted() || !characterWord.getStatus().equals(ReviewEnum.REVIEWED.getCode())) {
                 throw new GlobalException("角色台词不存在");
             }
-            if (!member.getTemplateCharacterId().equals(characterWord.getCharacterId())) {
+            if (characterWord.getCharacterId() != -1L && !member.getTemplateCharacterId().equals(characterWord.getCharacterId())) {
                 throw new GlobalException("角色台词不匹配");
             }
             dto.setContent(MsgTypeUtil.formatContent(characterWord));
