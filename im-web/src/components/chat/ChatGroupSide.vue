@@ -49,10 +49,6 @@
 					<div class="form-value readonly">{{ownerName}}</div>
 				</div>
 				<div class="form-item">
-					<label class="form-label">群公告</label>
-					<div class="form-value readonly">{{group.notice || '群主未设置'}}</div>
-				</div>
-				<div class="form-item">
 					<label class="form-label">备注</label>
 					<div 
 						class="form-value" 
@@ -121,57 +117,95 @@
 						maxlength="10"
             @blur="saveAndExitEdit">
 				</div>
-        <div class="form-item" v-if="group.groupType!==0" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
-          <label class="form-label">群成员名称显示</label>
-          <div class="switch-container">
-	          <div 
-	            class="custom-switch" 
-	            :class="{ 'switch-active': myGroupMemberInfo.showNickName, 'switch-inactive': !myGroupMemberInfo.showNickName }"
-	            @click="toggleShowNickName">
-	          </div>
-	        </div>
-        </div>
-        <div class="form-item" v-if="isOwner" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
-          <label class="form-label">进群审核</label>
-          <div class="switch-container">
-	          <div 
-	            class="custom-switch" 
-	            :class="{ 'switch-active': group.enterReview, 'switch-inactive': !group.enterReview }"
-	            @click="toggleEnterReview">
-	          </div>
-	        </div>
-        </div>
-        <div class="form-item" v-if="isOwner">
-          <label class="form-label">全局禁言</label>
-          <div class="switch-container">
-	          <div 
-	            class="custom-switch" 
-	            :class="{ 'switch-active': group.isBanned, 'switch-inactive': !group.isBanned }"
-	            @click="toggleAllBanned">
-	          </div>
-	        </div>
-        </div>
-        <div class="form-item" v-if="isOwner">
-          <label class="form-label" style="width: 80px">禁言时长</label>
-          <div
-            class="form-value"
-            :class="{ 'editing': editingField === 'bannedTime' }"
-            @click="editField('bannedTime')"
-            v-if="editingField !== 'bannedTime'">
-            {{bannedTime}}
-          </div>
-          <input
-              v-else
-              v-model.number="bannedTime"
-              style="width: 50px;"
-              type="number"
-              class="form-input"
-              min="1"
-              max="60000"
-              @keyup.enter="exitEdit">
-            <span>（分钟）</span>
-        </div>
 			</div>
+			
+			<!-- 群公告卡片 -->
+      <div class="notice-card">
+        <div class="card-header">
+          <h3>群公告</h3>
+          <div v-if="isOwner" class="edit-icon" @click="editNotice">
+            <i class="el-icon-edit"></i>
+          </div>
+        </div>
+        <div class="card-content">
+          <div class="notice-content" v-if="editingField !== 'notice'">
+            {{group.notice || '群主未设置'}}
+          </div>
+          <div v-else class="notice-editor">
+            <el-input
+              type="textarea"
+              :rows="5"
+              placeholder="请输入群公告内容"
+              v-model="group.notice"
+              maxlength="500"
+              show-word-limit>
+            </el-input>
+            <div class="editor-actions">
+              <el-button size="mini" @click="cancelEditNotice">取消</el-button>
+              <el-button size="mini" type="primary" @click="saveNotice">保存</el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+			
+			<!-- 开关项合集卡片 -->
+      <div class="switch-card">
+        <div class="card-header">
+          <h3>群组设置</h3>
+        </div>
+        <div class="card-content">
+          <div class="form-item" v-if="group.groupType!==0" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
+            <label class="form-label">群成员名称显示</label>
+            <div class="switch-container">
+              <div 
+                class="custom-switch" 
+                :class="{ 'switch-active': myGroupMemberInfo.showNickName, 'switch-inactive': !myGroupMemberInfo.showNickName }"
+                @click="toggleShowNickName">
+              </div>
+            </div>
+          </div>
+          <div class="form-item" v-if="isOwner" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
+            <label class="form-label">进群审核</label>
+            <div class="switch-container">
+              <div 
+                class="custom-switch" 
+                :class="{ 'switch-active': group.enterReview, 'switch-inactive': !group.enterReview }"
+                @click="toggleEnterReview">
+              </div>
+            </div>
+          </div>
+          <div class="form-item" v-if="isOwner">
+            <label class="form-label">全局禁言</label>
+            <div class="switch-container">
+              <div 
+                class="custom-switch" 
+                :class="{ 'switch-active': group.isBanned, 'switch-inactive': !group.isBanned }"
+                @click="toggleAllBanned">
+              </div>
+            </div>
+          </div>
+          <div class="form-item" v-if="isOwner">
+            <label class="form-label" style="width: 80px">禁言时长</label>
+            <div
+              class="form-value"
+              :class="{ 'editing': editingField === 'bannedTime' }"
+              @click="editField('bannedTime')"
+              v-if="editingField !== 'bannedTime'">
+              {{bannedTime}}
+            </div>
+            <input
+                v-else
+                v-model.number="bannedTime"
+                style="width: 50px;"
+                type="number"
+                class="form-input"
+                min="1"
+                max="60000"
+                @keyup.enter="exitEdit">
+              <span>（分钟）</span>
+          </div>
+        </div>
+      </div>
 		</el-scrollbar>
     <drawer
         :visible="groupSpaceVisible"
@@ -480,6 +514,22 @@
       // 切换全体禁言
       toggleAllBanned() {
         this.doAllBanned(!this.group.isBanned);
+      },
+      // 编辑群公告
+      editNotice() {
+        // 保存原始公告内容，用于取消时恢复
+        this.originalNotice = this.group.notice;
+        this.editingField = 'notice';
+      },
+      // 取消编辑群公告
+      cancelEditNotice() {
+        this.editingField = '';
+        this.group.notice = this.originalNotice;
+      },
+      // 保存群公告
+      saveNotice() {
+        this.editingField = '';
+        this.onSaveGroup();
       }
 		},
 		computed: {
@@ -779,58 +829,236 @@
           background: white;
           box-shadow: 0 2px 6px rgba(64, 158, 255, 0.2);
 				}
-				
-				.switch-container {
-				  flex: 1;
-				}
-				
-				.custom-switch {
-				  position: relative;
-				  display: inline-block;
-				  width: 40px;
-				  height: 20px;
-				  border-radius: 10px;
-				  cursor: pointer;
-				  transition: background-color 0.3s;
-				  
-				  &.switch-active {
-				    background-color: #13ce66;
-				  }
-				  
-				  &.switch-inactive {
-				    background-color: #ccc;
-				  }
-				  
-				  &::after {
-				    content: '';
-				    position: absolute;
-				    width: 18px;
-				    height: 18px;
-				    border-radius: 50%;
-				    background: white;
-				    top: 1px;
-				    transition: transform 0.3s;
-				    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-				  }
-				  
-				  &.switch-active::after {
-				    transform: translateX(20px);
-				  }
-				}
+			}
+		}
+		
+		.notice-card {
+      background: linear-gradient(120deg, #f5f7fa, #e4edf9);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin: 15px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      }
+      
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        
+        h3 {
+          margin: 0;
+          color: #606266;
+          font-weight: 500;
+        }
+        
+        .edit-icon {
+          cursor: pointer;
+          color: #409eff;
+          font-size: 16px;
+          
+          &:hover {
+            opacity: 0.8;
+          }
+        }
+      }
+      
+      .card-content {
+        padding: 15px;
+        
+        .notice-content {
+          white-space: pre-wrap;
+          line-height: 1.6;
+          color: #606266;
+          min-height: 60px;
+        }
+        
+        .notice-editor {
+          .el-textarea {
+            margin-bottom: 15px;
+            
+            ::v-deep .el-textarea__inner {
+              border: 1px solid #409eff;
+              border-radius: 4px;
+              background: white;
+              box-shadow: 0 2px 6px rgba(64, 158, 255, 0.2);
+              resize: vertical;
+              
+              &:focus {
+                border-color: #409eff;
+              }
+            }
+          }
+          
+          .editor-actions {
+            text-align: right;
+            
+            ::v-deep .el-button {
+              border-radius: 4px;
+              transition: all 0.3s ease;
+              
+              &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+              }
+              
+              &.el-button--primary {
+                background: linear-gradient(120deg, #409eff, #1a73e8);
+                border: none;
+                box-shadow: 0 2px 6px rgba(64, 158, 255, 0.3);
+                
+                &:hover {
+                  box-shadow: 0 4px 10px rgba(64, 158, 255, 0.4);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+		
+		.switch-card {
+      background: linear-gradient(120deg, #f5f7fa, #e4edf9);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin: 15px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      }
+      
+      .card-header {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        
+        h3 {
+          margin: 0;
+          color: #606266;
+          font-weight: 500;
+        }
+      }
+      
+      .card-content {
+        padding: 15px;
+      }
+      
+      .form-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eee;
+        
+        &:last-child {
+          border-bottom: none;
+          margin-bottom: 0;
+          padding-bottom: 0;
+        }
+        
+        .form-label {
+          width: 120px;
+          padding: 0;
+          line-height: 30px;
+          color: #606266;
+          font-weight: 500;
+        }
+        
+        .switch-container {
+          flex: 1;
+        }
+        
+        .custom-switch {
+          position: relative;
+          display: inline-block;
+          width: 40px;
+          height: 20px;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+          
+          &.switch-active {
+            background-color: #13ce66;
+          }
+          
+          &.switch-inactive {
+            background-color: #ccc;
+          }
+          
+          &::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            top: 1px;
+            transition: transform 0.3s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+          }
+          
+          &.switch-active::after {
+            transform: translateX(20px);
+          }
+        }
+        
+        .form-value {
+          flex: 1;
+          min-height: 30px;
+          line-height: 30px;
+          padding: 0 10px;
+          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.7);
+          transition: all 0.3s ease;
+          
+          &.editing {
+            border: 1px solid #409eff;
+            border-radius: 4px;
+            background: white;
+            box-shadow: 0 2px 6px rgba(64, 158, 255, 0.2);
+          }
+          
+          &:not(.readonly):not(.editing) {
+            cursor: pointer;
+            
+            &:hover {
+              background: rgba(255, 255, 255, 0.9);
+              box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            }
+          }
+        }
+        
+        .form-input {
+          flex: 1;
+          height: 30px;
+          max-width: 120px;
+          line-height: 30px;
+          padding: 0 10px;
+          border: 1px solid #409eff;
+          border-radius: 4px;
+          background: white;
+          box-shadow: 0 2px 6px rgba(64, 158, 255, 0.2);
+        }
 
-				.el-textarea__inner {
-					min-height: 100px !important;
-				}
+        .el-textarea__inner {
+          min-height: 100px !important;
+        }
 
         .el-input-number--mini {
           width: 100px;
           margin-right: 10px;
         }
-			}
+      }
+    }
 
 			.btn-group {
 				text-align: center;
 			}
-		}
 	}
 </style>
