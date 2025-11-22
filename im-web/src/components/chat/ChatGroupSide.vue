@@ -67,7 +67,7 @@
 						class="form-input"
 						placeholder="群聊的备注仅自己可见"
 						maxlength="20"
-						@keyup.enter="saveAndExitEdit">
+            @blur="saveAndExitEdit">
 				</div>
 				<div class="form-item">
 					<label class="form-label">我在本群的昵称</label>
@@ -84,7 +84,7 @@
 						class="form-input"
 						placeholder="xx"
 						maxlength="10"
-						@keyup.enter="saveAndExitEdit"
+            @blur="saveAndExitEdit"
 						:disabled="group.groupType!==0">
 				</div>
         <div class="form-item" v-show="group.groupType!==0">
@@ -102,7 +102,7 @@
 						class="form-input"
 						placeholder="xx"
 						maxlength="10"
-						@keyup.enter="saveAndExitEdit">
+            @blur="saveAndExitEdit">
 				</div>
         <div class="form-item" v-show="group.groupType!==0">
 					<label class="form-label">昵称后缀</label>
@@ -119,7 +119,7 @@
 						class="form-input"
 						placeholder="xx"
 						maxlength="10"
-						@keyup.enter="saveAndExitEdit">
+            @blur="saveAndExitEdit">
 				</div>
         <div class="form-item" v-if="group.groupType!==0" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
           <label class="form-label">群成员名称显示</label>
@@ -150,22 +150,26 @@
 	            @click="toggleAllBanned">
 	          </div>
 	        </div>
-          <div 
+        </div>
+        <div class="form-item" v-if="isOwner">
+          <label class="form-label" style="width: 80px">禁言时长</label>
+          <div
             class="form-value"
             :class="{ 'editing': editingField === 'bannedTime' }"
             @click="editField('bannedTime')"
             v-if="editingField !== 'bannedTime'">
             {{bannedTime}}
           </div>
-          <input 
-            v-else
-            v-model.number="bannedTime"
-            type="number"
-            class="form-input"
-            min="1"
-            max="60000"
-            @keyup.enter="exitEdit">
-          <span>（分钟）</span>
+          <input
+              v-else
+              v-model.number="bannedTime"
+              style="width: 50px;"
+              type="number"
+              class="form-input"
+              min="1"
+              max="60000"
+              @keyup.enter="exitEdit">
+            <span>（分钟）</span>
         </div>
 			</div>
 		</el-scrollbar>
@@ -767,6 +771,7 @@
 				.form-input {
 					flex: 1;
 					height: 30px;
+          max-width: 120px;
 					line-height: 30px;
 					padding: 0 10px;
 					border: 1px solid #409eff;
