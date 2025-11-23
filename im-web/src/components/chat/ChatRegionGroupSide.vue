@@ -104,7 +104,14 @@
       </div>
       <div class="operation-item banned-time" v-if="myGroupMemberInfo.isLeader">
         <div class="label-text">禁言时长(小时)：</div>
-        <el-input-number size="mini" v-model="bannedTime" :min="1" :max="720"></el-input-number>
+        <input 
+          type="number" 
+          size="mini" 
+          v-model="bannedTime" 
+          min="1" 
+          max="720" 
+          class="banned-time-input"
+        />
       </div>
       <div class="operation-item" v-if="myGroupMemberInfo.isLeader">
         <div class="user-banned">
@@ -572,6 +579,10 @@ export default {
       &:last-child {
         margin-bottom: 0;
       }
+
+      .label-text {
+        font-size: 14px;
+      }
     }
 
     .group-space {
@@ -703,6 +714,41 @@ export default {
       justify-content: left;
       align-items: center;
 
+      .label-text {
+        white-space: nowrap;
+        flex-shrink: 0;
+        margin-right: 10px;
+        font-weight: 500;
+        color: #606266;
+      }
+      
+      .banned-time-input {
+        width: 100px;
+        padding: 5px 10px;
+        border: 1px solid #DCDFE6;
+        border-radius: 4px;
+        font-size: 12px;
+        text-align: center;
+        color: #606266;
+        background-color: #fff;
+        outline: none;
+        transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+        
+        &:focus {
+          border-color: #409EFF;
+        }
+        
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        
+        &[type=number] {
+          -moz-appearance: textfield;
+        }
+      }
+      
       .el-input-number--mini {
         width: 100px;
         margin-right: 10px;
