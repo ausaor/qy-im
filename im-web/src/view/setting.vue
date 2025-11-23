@@ -137,10 +137,37 @@
 
       <!-- 4. 绑定邮箱页面 -->
       <div v-if="activeTab === '4'">
-        <el-card v-if="!emailBindSuccess">
+        <el-card>
           <div slot="header">
             <h3>绑定邮箱</h3>
           </div>
+          
+          <el-form :model="mailForm" ref="mailForm" :rules="mailRules" label-width="100px" class="email-bind-form">
+            <el-form-item label="邮箱地址" prop="email">
+              <el-input type="text" v-model="mailForm.email" autocomplete="off" placeholder="请输入邮箱地址"></el-input>
+            </el-form-item>
+            
+            <el-form-item label="验证码" prop="emailCode">
+              <div class="verify-wrapper">
+                <el-input 
+                  type="text" 
+                  maxlength="6" 
+                  suffix-icon="el-icon-lock" 
+                  placeholder="验证码" 
+                  v-model="mailForm.emailCode"/>
+                <el-button 
+                  class="verification-btn" 
+                  :disabled="disabled" 
+                  @click="sendVerificationCode">
+                  {{validateBtn}}
+                </el-button>
+              </div>
+            </el-form-item>
+            
+            <el-form-item>
+              <el-button type="primary" @click="bindMail('mailForm')">确认绑定</el-button>
+            </el-form-item>
+          </el-form>
         </el-card>
       </div>
 
@@ -166,10 +193,48 @@ export default {
     FileUpload
   },
   data() {
+    let checkMail = (rule, value, callback) => {
+      if (value === '') {
+        return callback(new Error('请输入邮箱'));
+      }
+      const regEmail = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+      if (!regEmail.test(value)) {
+        return callback(new Error('邮箱格式错误'));
+      }
+      callback();
+    };
+
+    let checkCode = (rule, value, callback) => {
+      if (value === '') {
+        return callback(new Error('请输入验证码'));
+      }
+      callback();
+    };
+
     return {
       maxSize: 5*1024*1024,
       // 当前激活的标签页
       activeTab: '1',
+      
+      // 邮箱绑定相关数据
+      mailForm: {
+        email: '',
+        emailCode: ''
+      },
+      validateBtn: '获取验证码',
+      disabled: false,
+      mailRules: {
+        email: [{
+          required: true,
+          validator: checkMail,
+          trigger: 'blur'
+        }],
+        emailCode: [{
+          required: true,
+          validator: checkCode,
+          trigger: 'blur'
+        }]
+      },
     };
   },
   computed: {
@@ -213,6 +278,68 @@ export default {
           return false;
         }
       });
+    },
+    
+    // 邮箱绑定相关方法
+    bindMail(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$http({
+            url: "/user/bindEmail",
+            method: 'post',
+            data: this.mailForm
+          }).then((data) => {
+            this.$message.success("绑定成功!");
+            // 更新用户信息
+            this.$store.state.userStore.userInfo.email = this.mailForm.email;
+          }).catch(() => {
+            this.$message.error("绑定失败，请重试");
+          })
+        }
+      });
+    },
+    
+    sendVerificationCode() {
+      if (!this.mailForm.email) {
+        this.$message.warning('请输入邮箱');
+        return;
+      }
+      const regEmail = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+      if (!regEmail.test(this.mailForm.email)) {
+        this.$message.warning('邮箱格式错误');
+        return;
+      }
+      
+      let time = 60;
+      let timer = setInterval(() => {
+        if(time === 0){
+          clearInterval(timer);
+          this.validateBtn = '获取验证码';
+          this.disabled = false;
+        }else{
+          this.disabled = true;
+          this.validateBtn = time + '秒后重试';
+          time--;
+        }
+      }, 1000);
+
+      this.getCode();
+    },
+    
+    getCode() {
+      let params = {
+        toEmail: this.mailForm.email,
+        category: 'BIND_EMAIL'
+      }
+      this.$http({
+        url: "/email/getCode",
+        method: "post",
+        data: params
+      }).then(()=>{
+        this.$message.success("验证码已发送");
+      }).catch(() => {
+        this.$message.error("验证码发送失败");
+      })
     }
   }
 };
@@ -260,5 +387,28 @@ export default {
 
 .el-form {
   margin-top: 20px;
+}
+
+// 邮箱绑定样式
+.email-bind-form {
+  max-width: 500px;
+  margin: 20px auto;
+  
+  .verify-wrapper {
+    display: flex;
+    gap: 10px;
+    
+    .el-input {
+      flex: 1;
+    }
+    
+    .verification-btn {
+      width: 120px;
+    }
+  }
+  
+  .el-form-item {
+    margin-bottom: 25px;
+  }
 }
 </style>
