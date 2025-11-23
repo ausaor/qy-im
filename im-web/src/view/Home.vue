@@ -61,6 +61,15 @@
                   </span>
                 </div>
               </router-link>
+              <router-link class="link" v-bind:to="'/home/setting'">
+                <div class="menu-item">
+                  <span>
+                    <svg class="icon svg-icon" aria-hidden="true">
+                      <use xlink:href="#icon-shezhi"></use>
+                    </svg>
+                  </span>
+                </div>
+              </router-link>
               <router-link class="link" v-bind:to="'/home/square'">
                 <div class="menu-item">
                   <span>
@@ -74,20 +83,6 @@
             </div>
           </div>
           <div class="botoom">
-<!--            <div class="bottom-item" @click="showSetting">
-              <span>
-                <svg class="icon svg-icon" aria-hidden="true">
-                  <use xlink:href="#icon-shezhi"></use>
-                </svg>
-              </span>
-            </div>-->
-            <div class="bottom-item" @click="showOperation">
-              <span>
-                <svg class="icon svg-icon" aria-hidden="true">
-                  <use xlink:href="#icon-shezhi"></use>
-                </svg>
-              </span>
-            </div>
             <div class="bottom-item theme-selector-trigger" title="更换主题" @click="toggleThemeSelector">
               <span>
                 <svg class="icon svg-icon" aria-hidden="true">

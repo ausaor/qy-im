@@ -100,7 +100,12 @@ export default new VueRouter({
                   component: () => import("../view/SysMsgEdit.vue"),
               }
           ]
-        }
+        },
+      {
+          name: "setting",
+          path: "/home/setting",
+          component: () => import("../view/setting.vue"),
+      },
 	  ]
     },
     {

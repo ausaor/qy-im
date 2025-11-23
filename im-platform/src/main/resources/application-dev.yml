@@ -127,7 +127,7 @@ upload:
   mode: local
   local:
     # nginx映射本地文件路径
-    url: http://192.168.1.6/files/
+    url: http://qy.timemory.xyz/files/
     # 本地文件存储路径
     path: F:/upload/qy-im/
   oss:

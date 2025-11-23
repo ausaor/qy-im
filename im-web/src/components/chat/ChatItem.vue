@@ -7,8 +7,10 @@
     </div>
     <div class="chat-right">
       <div class="chat-name">
-        <div class="chat-name-text" :style="{'color': chat.groupType === 1 ? 'red' : 'black'}">
-          <div>{{chat.type=='GROUP' ? chat.showName : (chat.friendRemark ? chat.friendRemark : chat.showName)}}</div>
+        <div class="chat-name-text" :title="chat.type=='GROUP' ? chat.showName : (chat.friendRemark ? chat.friendRemark : chat.showName)">
+          {{chat.type=='GROUP' ? chat.showName : (chat.friendRemark ? chat.friendRemark : chat.showName)}}
+        </div>
+        <div class="chat-tag">
           <el-tag size="mini" effect="dark" v-if="chat.type=='GROUP'">群</el-tag>
           <el-tag size="mini" effect="dark" v-if="chat.type=='SYSTEM'" color="rgb(222, 28, 28)">官方</el-tag>
         </div>
@@ -112,7 +114,7 @@ export default {
 
 <style scoped lang="scss">
 .chat-item {
-  height: 50px;
+  height: 54px;
   display: flex;
   margin-bottom: 1px;
   position: relative;
@@ -167,19 +169,18 @@ export default {
       line-height: 25px;
       height: 25px;
 
-      .chat-tag {
+      .chat-name-text {
+        font-size: 14px;
+        font-weight: 600;
         display: flex;
         align-items: center;
-        justify-content: center;
-        margin-right: 1px;
-      }
-
-      .chat-name-text {
-        flex: 1;
-        font-size: 15px;
-        font-weight: 600;
         white-space: nowrap;
         overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .chat-tag {
+        flex: 1;
         display: flex;
         align-items: center;
 
@@ -197,14 +198,14 @@ export default {
         }
       }
 
-
       .chat-time-text{
-        font-size: 13px;
+        font-size: 12px;
         text-align: right;
         color: #888888;
         white-space: nowrap;
         overflow: hidden;
-        padding-left: 10px;
+        padding-left: 2px;
+        min-width: 60px;
       }
     }
 
