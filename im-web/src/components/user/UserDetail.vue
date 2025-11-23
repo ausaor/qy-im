@@ -1,6 +1,7 @@
 <template>
   <el-dialog
       title="个人资料"
+      v-dialogDrag
       :visible.sync="visible"
       :close-on-click-modal="false"
       width="420px"
@@ -38,8 +39,10 @@
         </div>
 
         <div class="detail-item signature">
-          <i class="el-icon-edit"></i>
-          <span class="label">个性签名</span>
+          <div class="signature-label">
+            <i class="el-icon-edit"></i>
+            <span class="label">个性签名</span>
+          </div>
           <div class="signature-value">{{userInfo.signature}}</div>
         </div>
       </div>
@@ -83,14 +86,16 @@ export default {
 <style scoped lang="scss">
 .profile-container {
   padding: 10px 0;
+  background: linear-gradient(135deg, #f8f9fa, #fff);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .profile-header {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 20px 10px;
 }
 
 .avatar {
@@ -100,7 +105,7 @@ export default {
 .username {
   margin: 0 0 5px 0;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .user-id {
@@ -130,6 +135,7 @@ export default {
 
 .profile-details {
   width: 100%;
+  padding: 0 5px;
 }
 
 .detail-item {
@@ -137,6 +143,13 @@ export default {
   align-items: center;
   padding: 10px 0;
   border-bottom: 1px solid #f0f0f0;
+  transition: all .3s ease;
+  border-radius: 6px;
+}
+
+.detail-item:hover {
+  background-color: #f4f4fc;
+  transform: translateY(2px);
 }
 
 .detail-item:last-child {
@@ -153,6 +166,7 @@ export default {
 .label {
   color: #666;
   width: 60px;
+  font-weight: 600;
 }
 
 .value {
@@ -162,12 +176,29 @@ export default {
 
 .signature {
   align-items: flex-start;
-  padding-top: 12px;
+  flex-direction: column;
+  padding: 16px 0;
+}
+
+.signature-label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 12px;
 }
 
 .signature-value {
-  flex: 1;
-  color: #333;
-  margin-top: 2px;
+  width: 100%;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  font-style: italic;
+  padding: 10px;
+  border-radius: 12px;
+  word-break: break-word;
+  position: relative;
+  box-sizing: border-box;
 }
 </style>
