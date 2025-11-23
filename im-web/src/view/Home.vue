@@ -1,7 +1,7 @@
 <template>
 	<div class="home-page">
     <div class="app-container" :class="{ fullscreen: isFullscreen }">
-      <div class="navi-bar">
+      <div class="navi-bar" :style="{ backgroundImage: currentTheme.gradient }">
         <div class="navi-bar-box">
           <div class="top">
             <div class="user-head-image">
@@ -88,12 +88,37 @@
                 </svg>
               </span>
             </div>
+            <div class="bottom-item theme-selector-trigger" title="更换主题" @click="toggleThemeSelector">
+              <span>
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-theme-color"></use>
+                </svg>
+              </span>
+            </div>
             <div class="bottom-item" @click="onExit()" title="退出">
               <span>
                 <svg class="icon svg-icon" aria-hidden="true">
                   <use xlink:href="#icon-tuichu"></use>
                 </svg>
               </span>
+            </div>
+          </div>
+          <!-- 主题选择器 -->
+          <div v-show="showThemeSelector" class="theme-selector">
+            <div class="theme-list">
+              <div 
+                v-for="(theme, index) in themes" 
+                :key="index"
+                class="theme-item"
+                :class="{ active: index === currentThemeIndex }"
+                @click="selectTheme(index)"
+                :style="{ background: theme.gradient }"
+              >
+                {{ theme.name }}
+              </div>
+            </div>
+            <div class="custom-theme">
+              <button @click="addCustomTheme">+ 自定义主题</button>
             </div>
           </div>
         </div>
@@ -161,9 +186,118 @@
         sse: null,
         messages: [],
         isFullscreen: true,
+        showThemeSelector: false, // 控制主题选择器显示
 			}
 		},
-		methods: {
+    computed: {
+      mine() {
+        return this.$store.state.userStore.userInfo;
+      },
+			uiStore() {
+				return this.$store.state.uiStore;
+			},
+      // 获取所有主题
+      themes() {
+        return this.$store.state.uiStore.theme.colors;
+      },
+      // 获取当前主题索引
+      currentThemeIndex() {
+        return this.$store.state.uiStore.theme.currentThemeIndex;
+      },
+      // 获取当前主题
+      currentTheme() {
+        const themes = this.themes;
+        const index = this.currentThemeIndex;
+        return themes[index] || themes[0];
+      },
+      unreadCount() {
+        let unreadCount = 0;
+        let chats = this.$store.state.chatStore.chats;
+        chats.forEach((chat) => {
+          if(!chat.delete){
+            unreadCount += chat.unreadCount
+          }
+        });
+        return unreadCount;
+      },
+      unreadRegionCount() {
+        let unreadCount = 0;
+        let chats = this.$store.state.regionGroupStore.regionChats;
+        if (chats) {
+          chats.forEach((chat) => {
+            if(!chat.delete){
+              unreadCount += chat.unreadCount
+            }
+          });
+        }
+        return unreadCount;
+      },
+      unreadUserCount() {
+        return this.$store.state.talkStore.unreadUserList.length;
+      },
+      notifyCount() {
+        return this.$store.state.talkStore.notifyCount;
+      },
+      showFloatMusic() {
+        return this.$store.state.musicStore.showFloatMusic;
+      },
+      musics() {
+        return this.$store.state.musicStore.musics;
+      },
+      groupActivity() {
+        let talkMap =this.$store.state.talkStore.groupsTalks;
+        let notifyMap =this.$store.state.talkStore.groupNotify;
+        for (const [key, value] of talkMap) {
+          if (value.length > 0) {
+            return true
+          }
+        }
+
+        for (const [key, value] of notifyMap) {
+          if (value > 0) {
+            return true;
+          }
+        }
+        return false;
+      },
+      regionGroupActivity() {
+        let talkMap =this.$store.state.talkStore.regionTalks;
+        let notifyMap =this.$store.state.talkStore.regionNotify;
+        for (const [key, value] of talkMap) {
+          if (value.length > 0) {
+            return true
+          }
+        }
+
+        for (const [key, value] of notifyMap) {
+          if (value > 0) {
+            return true;
+          }
+        }
+        return false;
+      },
+      friendRequestCount() {
+        return this.$store.state.friendStore.friendRequest.filter((r) => r.status === 1 && r.recvId === this.mine.id).length
+      },
+      groupRequestCount() {
+        return this.$store.state.groupStore.groupRequests.filter((r) => r.userId === this.mine.id && r.status === 1 && r.type === 2).length
+      },
+      joinGroupRequests() {
+        // 群组申请(当前用户是群主，待审核的加群申请)
+        return this.$store.state.groupStore.groupRequests
+            .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length;
+      },
+		},
+		watch: {
+			unreadCount: {
+				handler(newCount, oldCount) {
+					let tip = newCount > 0 ? `${newCount}条未读` : "";
+					this.$elm.setTitleTip(tip);
+				},
+				immediate: true
+			}
+		},
+    methods: {
       init() {
         this.$eventBus.$on('openPrivateVideo', (rctInfo) => {
           // 进入单人视频通话
@@ -695,105 +829,35 @@
       },
       eventGroupPlayAudio(msg) {
         this.$eventBus.$emit('play-group-audio', msg);
+      },
+      // 切换主题选择器显示状态
+      toggleThemeSelector() {
+        this.showThemeSelector = !this.showThemeSelector;
+      },
+      // 选择主题
+      selectTheme(index) {
+        this.$store.commit("setCurrentThemeIndex", index);
+        this.showThemeSelector = false;
+        
+        // 保存到本地存储
+        localStorage.setItem('naviBarThemeIndex', index);
+      },
+      // 添加自定义主题
+      addCustomTheme() {
+        // 这里可以实现自定义主题功能
+        alert('自定义主题功能将在后续版本中实现');
+        this.showThemeSelector = false;
       }
-		},
-		computed: {
-      mine() {
-        return this.$store.state.userStore.userInfo;
-      },
-			uiStore() {
-				return this.$store.state.uiStore;
-			},
-      unreadCount() {
-        let unreadCount = 0;
-        let chats = this.$store.state.chatStore.chats;
-        chats.forEach((chat) => {
-          if(!chat.delete){
-            unreadCount += chat.unreadCount
-          }
-        });
-        return unreadCount;
-      },
-      unreadRegionCount() {
-        let unreadCount = 0;
-        let chats = this.$store.state.regionGroupStore.regionChats;
-        if (chats) {
-          chats.forEach((chat) => {
-            if(!chat.delete){
-              unreadCount += chat.unreadCount
-            }
-          });
-        }
-        return unreadCount;
-      },
-      unreadUserCount() {
-        return this.$store.state.talkStore.unreadUserList.length;
-      },
-      notifyCount() {
-        return this.$store.state.talkStore.notifyCount;
-      },
-      showFloatMusic() {
-        return this.$store.state.musicStore.showFloatMusic;
-      },
-      musics() {
-        return this.$store.state.musicStore.musics;
-      },
-      groupActivity() {
-        let talkMap =this.$store.state.talkStore.groupsTalks;
-        let notifyMap =this.$store.state.talkStore.groupNotify;
-        for (const [key, value] of talkMap) {
-          if (value.length > 0) {
-            return true
-          }
-        }
-
-        for (const [key, value] of notifyMap) {
-          if (value > 0) {
-            return true;
-          }
-        }
-        return false;
-      },
-      regionGroupActivity() {
-        let talkMap =this.$store.state.talkStore.regionTalks;
-        let notifyMap =this.$store.state.talkStore.regionNotify;
-        for (const [key, value] of talkMap) {
-          if (value.length > 0) {
-            return true
-          }
-        }
-
-        for (const [key, value] of notifyMap) {
-          if (value > 0) {
-            return true;
-          }
-        }
-        return false;
-      },
-      friendRequestCount() {
-        return this.$store.state.friendStore.friendRequest.filter((r) => r.status === 1 && r.recvId === this.mine.id).length
-      },
-      groupRequestCount() {
-        return this.$store.state.groupStore.groupRequests.filter((r) => r.userId === this.mine.id && r.status === 1 && r.type === 2).length
-      },
-      joinGroupRequests() {
-        // 群组申请(当前用户是群主，待审核的加群申请)
-        return this.$store.state.groupStore.groupRequests
-            .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length;
-      },
-		},
-		watch: {
-			unreadCount: {
-				handler(newCount, oldCount) {
-					let tip = newCount > 0 ? `${newCount}条未读` : "";
-					this.$elm.setTitleTip(tip);
-				},
-				immediate: true
-			}
-		},
+    },
 		mounted() {
       this.init();
       //this.initSSE();
+      
+      // 从本地存储恢复主题设置
+      const savedThemeIndex = localStorage.getItem('naviBarThemeIndex');
+      if (savedThemeIndex !== null) {
+        this.$store.commit("setCurrentThemeIndex", parseInt(savedThemeIndex));
+      }
 		},
 		unmounted() {
       this.$wsApi.close();
@@ -839,6 +903,9 @@
     background: white;
     padding-top: 20px;
     border-right: #cccccc solid 1px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
 
     .navi-bar-box {
       height: 100%;
@@ -854,6 +921,21 @@
     .user-head-image {
       display: flex;
       justify-content: center;
+      
+      /* 添加环状阴影效果 */
+      .head-image {
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8),
+                    0 0 0 5px rgba(64, 158, 255, 0.5),
+                    0 0 15px 5px rgba(64, 158, 255, 0.3);
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9),
+                      0 0 0 5px rgba(64, 158, 255, 0.7),
+                      0 0 20px 8px rgba(64, 158, 255, 0.5);
+        }
+      }
     }
 
     .menu {
@@ -970,6 +1052,67 @@
       &:hover {
         font-weight: 600;
         color: #cccccc;
+      }
+    }
+
+    // 主题选择器样式
+    .theme-selector {
+      position: absolute;
+      bottom: 120px;
+      left: 65px;
+      width: 200px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 10px;
+      z-index: 100;
+
+      .theme-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .theme-item {
+          padding: 8px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          color: white;
+          font-weight: 500;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+          transition: transform 0.2s, box-shadow 0.2s;
+          text-align: center;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          }
+
+          &.active {
+            box-shadow: 0 0 0 2px white, 0 0 0 4px rgba(0, 0, 0, 0.3);
+          }
+        }
+      }
+
+      .custom-theme {
+        margin-top: 10px;
+        text-align: center;
+
+        button {
+          background: #409eff;
+          color: white;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 12px;
+
+          &:hover {
+            background: #66b1ff;
+          }
+        }
       }
     }
   }
