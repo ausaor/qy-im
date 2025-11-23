@@ -5,18 +5,25 @@
       </el-input>
       <el-button class="refresh-btn" icon="el-icon-refresh" @click="loadRegionGroupMembers(regionGroup.id)"></el-button>
     </div>
-    <el-scrollbar class="group-side-scrollbar">
-      <div class="region-group-member-item" v-for="(m,index) in groupMembers" :key="''+m.userId+m.joinType">
-        <region-group-member-item
-            v-show="!m.quit&&m.aliasName.includes(searchText)"
-            :member="m"
-            >
-          <el-button :type="activeIndex === index ? 'success' : ''" icon="el-icon-check" circle
-                      size="mini" @click="chooseMember(m, index)"></el-button>
-        </region-group-member-item>
-      </div>
-    </el-scrollbar>
-    <div class="operation-box">
+    <!-- 群成员卡片 -->
+    <div class="card-container members-card">
+      <div class="card-header">群成员</div>
+      <el-scrollbar class="group-side-scrollbar">
+        <div class="region-group-member-item" v-for="(m,index) in groupMembers" :key="''+m.userId+m.joinType">
+          <region-group-member-item
+              v-show="!m.quit&&m.aliasName.includes(searchText)"
+              :member="m"
+              >
+            <el-button :type="activeIndex === index ? 'success' : ''" icon="el-icon-check" circle
+                        size="mini" @click="chooseMember(m, index)"></el-button>
+          </region-group-member-item>
+        </div>
+      </el-scrollbar>
+    </div>
+    <!-- 操作功能卡片 -->
+    <div class="card-container operation-card">
+      <div class="card-header">群操作</div>
+      <div class="operation-box">
       <div class="operation-item group-space" @click="openRegionSpace">
         <svg class="icon svg-icon" aria-hidden="true">
           <use xlink:href="#icon-shejiaotubiao-40"></use>
@@ -42,7 +49,7 @@
         </div>
       </div>
       <div class="operation-item member-info">
-        <label>备注：</label>
+        <div class="label-text">备注：</div>
         <el-input
             size="mini"
             placeholder="群昵称"
@@ -72,7 +79,7 @@
         </div>
       </div>
       <div class="operation-item vote-notice">
-        <label>投票通知：</label>
+        <div class="label-text">投票通知：</div>
         <el-switch
             style="display: block"
             v-model="announce"
@@ -84,7 +91,7 @@
         </el-switch>
       </div>
       <div class="operation-item all-banned" v-if="myGroupMemberInfo.isLeader">
-        <label>全员禁言：</label>
+        <div class="label-text">全员禁言：</div>
         <el-switch
             style="display: block"
             v-model="regionGroup.isBanned"
@@ -96,7 +103,7 @@
         </el-switch>
       </div>
       <div class="operation-item banned-time" v-if="myGroupMemberInfo.isLeader">
-        <label>禁言时长(小时)：</label>
+        <div class="label-text">禁言时长(小时)：</div>
         <el-input-number size="mini" v-model="bannedTime" :min="1" :max="720"></el-input-number>
       </div>
       <div class="operation-item" v-if="myGroupMemberInfo.isLeader">
@@ -108,7 +115,8 @@
         </div>
       </div>
     </div>
-    <drawer
+  </div>
+  <drawer
         :visible="regionSpaceVisible"
         @close="closeDrawer"
         :width=60>
@@ -472,13 +480,16 @@ export default {
 <style scoped lang="scss">
 .chat-group-side {
   border-left: 1px solid #cccccc;
-  background-color: white;
-  height: 100%;
-  box-sizing: content-box;
-  padding-left: 2px;
+  background-color: #f5f7fa;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
 
   .group-side-search {
     display: flex;
+    margin-bottom: 15px;
 
     .refresh-btn {
       padding: 5px !important;
@@ -491,26 +502,76 @@ export default {
     }
   }
 
-  .group-side-scrollbar {
-    .region-group-member-item {
+  // 卡片容器样式
+  .card-container {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 15px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
 
+    &:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ebeef5;
     }
   }
 
-  .agm-region-member-checkbox {
-
+  .members-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-height: 400px;
+    
+    .group-side-scrollbar {
+      flex: 1;
+      overflow-y: auto;
+      
+      .region-group-member-item {
+        margin-bottom: 8px;
+        padding: 8px;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+        
+        &:hover {
+          background-color: #f0f2f5;
+        }
+      }
+    }
   }
 
   .operation-box {
-    width: 100%;
-    height: 40px;
-    line-height: 40px;
-
     .operation-item {
       display: flex;
       width: 100%;
-      margin: 2px auto;
-      padding-left: 10px;
+      margin: 10px 0;
+      padding: 12px 15px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      min-height: 40px;
+      align-items: center;
+      
+      &:hover {
+        background-color: #f0f2f5;
+        transform: translateX(5px);
+      }
+      
+      &:first-child {
+        margin-top: 0;
+      }
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
     }
 
     .group-space {
@@ -585,13 +646,19 @@ export default {
 
     .member-info {
       overflow: hidden;
-      height: 28px;
-      line-height: 28px;
+      min-height: 36px;
+      align-items: center;
+
+      .label-text {
+        margin-right: 10px;
+        font-weight: 500;
+        color: #606266;
+        white-space: nowrap; // 防止文字换行
+      }
 
       .avatar-uploader {
         width: 28px;
         height: 28px;
-        line-height: 28px;
         margin-left: 10px;
         margin-right: 20px;
 
