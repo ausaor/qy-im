@@ -20,6 +20,34 @@
         </div>
       </el-scrollbar>
     </div>
+    
+    <!-- 地区空间卡片 -->
+    <div class="card-container feature-card" @click="openRegionSpace">
+      <div class="feature-card-content group-space">
+        <svg class="icon svg-icon" aria-hidden="true">
+          <use xlink:href="#icon-shejiaotubiao-40"></use>
+        </svg>
+        <span class="feature-title">地区空间</span>
+        <div class="new-talk-info">
+          <div v-show="unreadTalkCount" class="new-talk-text">{{unreadTalkCount}}条新动态</div>
+          <div v-show="talkList.length" class="new-talk-list">
+            <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="24"></head-image>
+          </div>
+        </div>
+        <div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
+      </div>
+    </div>
+    
+    <!-- 地区歌单卡片 -->
+    <div class="card-container feature-card" @click="openRegionMusic">
+      <div class="feature-card-content group-music">
+        <svg class="icon svg-icon" aria-hidden="true">
+          <use xlink:href="#icon-Music"></use>
+        </svg>
+        <span class="feature-title">地区歌单</span>
+      </div>
+    </div>
+    
     <!-- 操作功能卡片 -->
     <div class="card-container operation-card">
       <div class="card-header">群操作</div>
@@ -532,16 +560,85 @@ export default {
       border-bottom: 1px solid #ebeef5;
     }
   }
+  
+  // 新增的功能卡片样式
+  .feature-card {
+    cursor: pointer;
+    padding: 0;
+    
+    .feature-card-content {
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      position: relative;
+      
+      .icon {
+        display: block;
+        height: 45px;
+        line-height: 45px;
+        font-size: 28px;
+        color: #333;
+        -webkit-transition: font-size 0.25s linear, width 0.25s linear;
+        -moz-transition: font-size 0.25s linear, width 0.25s linear;
+        transition: font-size 0.25s linear, width 0.25s linear;
+      }
+      
+      .feature-title {
+        color: orange;
+        margin-left: 10px;
+        font-size: 16px;
+        font-weight: 500;
+      }
+      
+      .new-talk-info {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+
+        .new-talk-text {
+          font-size: 12px;
+          color: red;
+        }
+
+        .new-talk-list {
+          display: flex;
+          align-items: center;
+        }
+      }
+
+      .unread-text {
+        position: absolute;
+        line-height: 16px;
+        background-color: #f56c6c;
+        left: 30px;
+        top: 0;
+        color: white;
+        border-radius: 16px;
+        padding: 0 5px;
+        font-size: 10px;
+        text-align: center;
+        white-space: nowrap;
+        border: 1px solid #f1e5e5;
+      }
+    }
+    
+    &:hover {
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    }
+  }
 
   .members-card {
-    flex: 1;
     display: flex;
+    flex: 1;
     flex-direction: column;
     max-height: 400px;
     
     .group-side-scrollbar {
-      flex: 1;
       overflow-y: auto;
+      flex: 1;
       
       .region-group-member-item {
         margin-bottom: 8px;
