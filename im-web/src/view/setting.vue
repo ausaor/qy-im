@@ -30,6 +30,10 @@
           <i class="el-icon-lock"></i>
           <span slot="title">修改密码</span>
         </el-menu-item>
+        <el-menu-item index="6">
+          <i class="el-icon-key"></i>
+          <span slot="title">重置密码</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -194,6 +198,53 @@
           </el-form>
         </el-card>
       </div>
+      <!-- 6. 重置密码页面 -->
+      <div v-if="activeTab === '6'">
+        <el-card>
+          <div slot="header">
+            <h3>重置密码</h3>
+          </div>
+          
+          <el-alert
+            title="注意"
+            description="重置密码将通过邮箱验证方式进行，请确保您的邮箱可以正常接收邮件"
+            type="warning"
+            show-icon
+            style="margin-bottom: 20px;"
+          ></el-alert>
+          
+          <el-form :model="resetPwdForm" ref="resetPwdForm" :rules="resetPwdRules" label-width="100px" class="reset-pwd-form">
+            <el-form-item label="邮箱地址" prop="email">
+              <el-input type="text" :disabled="true" v-model="userInfo.email" autocomplete="off"></el-input>
+            </el-form-item>
+            
+            <el-form-item label="验证码" prop="emailCode">
+              <div class="verify-wrapper">
+                <el-input 
+                  type="text" 
+                  maxlength="6" 
+                  suffix-icon="el-icon-lock" 
+                  placeholder="验证码" 
+                  v-model="resetPwdForm.emailCode"/>
+                <el-button 
+                  class="verification-btn" 
+                  :disabled="resetDisabled" 
+                  @click="getUserEmailCode">
+                  {{resetValidateBtn}}
+                </el-button>
+              </div>
+            </el-form-item>
+            
+            <el-form-item label="新密码" prop="newPassword">
+              <el-input type="password" v-model="resetPwdForm.newPassword" autocomplete="off" show-password placeholder="请输入新密码"></el-input>
+            </el-form-item>
+            
+            <el-form-item>
+              <el-button type="primary" @click="resetPwd('resetPwdForm')">重置密码</el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
+      </div>
     </el-main>
   </el-container>
 </template>
@@ -288,6 +339,26 @@ export default {
         confirmPwd: [{
           required: true,
           validator: checkConfirmPassword,
+          trigger: 'blur'
+        }]
+      },
+      
+      // 重置密码相关数据
+      resetPwdForm: {
+        emailCode: '',
+        newPassword: ''
+      },
+      resetValidateBtn: '获取验证码',
+      resetDisabled: false,
+      resetPwdRules: {
+        emailCode: [{
+          required: true,
+          validator: checkCode,
+          trigger: 'blur'
+        }],
+        newPassword: [{
+          required: true,
+          validator: checkPassword,
           trigger: 'blur'
         }]
       }
@@ -415,6 +486,55 @@ export default {
           })
         }
       });
+    },
+    
+    // 重置密码相关方法
+    getUserEmailCode() {
+      let time = 60;
+      let timer = setInterval(() => {
+        if(time === 0){
+          clearInterval(timer);
+          this.resetValidateBtn = '获取验证码';
+          this.resetDisabled = false;
+        }else{
+          this.resetDisabled = true;
+          this.resetValidateBtn = time + '秒后重试';
+          time--;
+        }
+      }, 1000);
+
+      this.$http({
+        url: "/user/getEmailCode?emailCategory=RESET_PASSWORD",
+        method: "get",
+      }).then(()=>{
+        this.$message.success("验证码已发送");
+      }).catch(() => {
+        this.$message.error("验证码发送失败");
+      })
+    },
+    
+    resetPwd(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$http({
+            url: "/user/resetPwd",
+            method: 'post',
+            data: this.resetPwdForm
+          }).then((data) => {
+            this.$message.success("重置成功!");
+            this.onExit();
+          }).catch(() => {
+            this.$message.error("重置失败");
+          })
+        }
+      });
+    },
+    
+    onExit() {
+      this.$wsApi.close(3000);
+      sessionStorage.removeItem("accessToken");
+      sessionStorage.removeItem("refreshToken");
+      location.href = "/";
     }
   }
 };
@@ -491,6 +611,29 @@ export default {
 .password-form {
   max-width: 500px;
   margin: 20px auto;
+    
+  .el-form-item {
+    margin-bottom: 25px;
+  }
+}
+
+// 重置密码样式
+.reset-pwd-form {
+  max-width: 500px;
+  margin: 20px auto;
+    
+  .verify-wrapper {
+    display: flex;
+    gap: 10px;
+    
+    .el-input {
+      flex: 1;
+    }
+    
+    .verification-btn {
+      width: 120px;
+    }
+  }
     
   .el-form-item {
     margin-bottom: 25px;
