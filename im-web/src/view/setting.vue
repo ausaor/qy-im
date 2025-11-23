@@ -102,21 +102,78 @@
 
       <!-- 2. 用户设置页面 -->
       <div v-if="activeTab === '2'">
-        <el-card>
+        <el-card class="setting-card">
           <div slot="header">
             <h3>用户设置</h3>
           </div>
 
-          <el-card style="margin-bottom: 20px;">
+          <el-card class="sub-card">
             <div slot="header">
               <h4>隐私设置</h4>
             </div>
-
+            
+            <div class="setting-item">
+              <label>加我为好友需要验证：</label>
+              <el-switch
+                v-model="userInfo.friendReview"
+                @change="changeFriendReview"
+                active-text="开启"
+                inactive-text="关闭">
+              </el-switch>
+            </div>
+            
+            <div class="setting-item">
+              <label>邀我进群需要验证：</label>
+              <el-switch
+                v-model="userInfo.groupReview"
+                @change="changeGroupReview"
+                active-text="开启"
+                inactive-text="关闭">
+              </el-switch>
+            </div>
           </el-card>
 
-          <el-card>
+          <el-card class="sub-card">
             <div slot="header">
               <h4>通知设置</h4>
+            </div>
+            
+            <div class="setting-item">
+              <label>好友上线通知：</label>
+              <el-switch
+                v-model="friendOnlineNotice"
+                active-text="开"
+                inactive-text="关">
+              </el-switch>
+            </div>
+            
+            <div class="setting-item">
+              <label>上线通知好友：</label>
+              <el-switch
+                v-model="onlineNoticeFriend"
+                active-text="开"
+                inactive-text="关">
+              </el-switch>
+            </div>
+            
+            <div class="setting-item">
+              <label>消息提示音：</label>
+              <el-switch
+                v-model="userInfo.soundPlay"
+                @change="changeSoundPlay"
+                active-text="开启"
+                inactive-text="关闭">
+              </el-switch>
+            </div>
+            
+            <div class="setting-item">
+              <label>语音自动播放：</label>
+              <el-switch
+                v-model="userInfo.autoPlay"
+                @change="changeAutoPlay"
+                active-text="开启"
+                inactive-text="关闭">
+              </el-switch>
             </div>
           </el-card>
         </el-card>
@@ -299,6 +356,9 @@ export default {
       // 当前激活的标签页
       activeTab: '1',
       
+      friendOnlineNotice: false,
+      onlineNoticeFriend: false,
+      
       // 邮箱绑定相关数据
       mailForm: {
         email: '',
@@ -363,6 +423,18 @@ export default {
         }]
       }
     };
+  },
+  watch: {
+    userInfo: {
+      handler(newVal) {
+        // 初始化开关状态
+        if (newVal) {
+          this.friendOnlineNotice = newVal.friendOnlineNotice || false;
+          this.onlineNoticeFriend = newVal.onlineNoticeFriend || false;
+        }
+      },
+      immediate: true
+    }
   },
   computed: {
     userInfo() {
@@ -535,6 +607,34 @@ export default {
       sessionStorage.removeItem("accessToken");
       sessionStorage.removeItem("refreshToken");
       location.href = "/";
+    },
+    
+    // 开关项相关方法 (从Operation.vue迁移过来)
+    changeFriendReview(value) {
+      this.userInfo.friendReview = value;
+      this.updateUserInfo();
+    },
+    changeGroupReview(value) {
+      this.userInfo.groupReview = value;
+      this.updateUserInfo();
+    },
+    changeSoundPlay(value) {
+      this.userInfo.soundPlay = value;
+      this.updateUserInfo();
+    },
+    changeAutoPlay(value) {
+      this.userInfo.autoPlay = value;
+      this.updateUserInfo();
+    },
+    updateUserInfo() {
+      this.$http({
+        url: "/user/update",
+        method: "put",
+        data: this.userInfo
+      }).then(()=>{
+        this.$store.commit("setUserInfo", this.userInfo);
+        this.$message.success("操作成功");
+      })
     }
   }
 };
@@ -578,10 +678,276 @@ export default {
 
 .el-card {
   margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15);
+  }
+  
+  ::v-deep .el-card__header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ebeef5;
+    padding: 15px 20px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    
+    h3, h4 {
+      margin: 0;
+      color: #303133;
+      font-weight: 600;
+    }
+    
+    h3 {
+      font-size: 18px;
+    }
+    
+    h4 {
+      font-size: 16px;
+    }
+  }
+  
+  ::v-deep .el-card__body {
+    padding: 20px;
+  }
 }
 
-.el-form {
-  margin-top: 20px;
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #ebeef5;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  label {
+    font-size: 14px;
+    color: #606266;
+    font-weight: 500;
+  }
+  
+  ::v-deep .el-switch {
+    .el-switch__core {
+      width: 40px !important;
+    }
+    
+    &.is-checked .el-switch__core {
+      border-color: #409eff;
+      background-color: #409eff;
+    }
+  }
+}
+
+// 用户设置样式增强
+.setting-card {
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: none;
+  
+  &:hover {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  }
+  
+  ::v-deep .el-card__header {
+    background: linear-gradient(120deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #e1e5eb;
+    padding: 20px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    
+    h3, h4 {
+      margin: 0;
+      color: #212529;
+      font-weight: 600;
+    }
+    
+    h3 {
+      font-size: 20px;
+      letter-spacing: 0.5px;
+    }
+    
+    h4 {
+      font-size: 17px;
+    }
+  }
+  
+  ::v-deep .el-card__body {
+    padding: 25px;
+  }
+}
+
+.sub-card {
+  margin-bottom: 25px;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #ebeef5;
+  transition: all 0.3s ease;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border-color: #dcdfe6;
+  }
+  
+  ::v-deep .el-card__header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ebeef5;
+    padding: 16px 20px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+  
+  ::v-deep .el-card__body {
+    padding: 20px;
+  }
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 15px;
+  border-bottom: 1px solid #f2f4f7;
+  transition: all 0.2s ease;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:hover {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin: 0 -5px;
+  }
+  
+  label {
+    font-size: 15px;
+    color: #495057;
+    font-weight: 500;
+    margin-right: 15px;
+  }
+  
+  ::v-deep .el-switch {
+    .el-switch__core {
+      width: 46px !important;
+      height: 24px;
+      border-radius: 12px;
+    }
+    
+    .el-switch__core::after {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+    
+    &.is-checked .el-switch__core {
+      border-color: #409eff;
+      background-color: #409eff;
+    }
+    
+    &.is-checked .el-switch__core::after {
+      margin-left: -21px;
+    }
+    
+    .el-switch__label {
+      font-size: 13px;
+      font-weight: 500;
+      
+      &.is-active {
+        color: #409eff;
+      }
+    }
+  }
+}
+
+// 左侧导航栏样式增强
+.el-aside {
+  box-shadow: 4px 0 12px rgba(29, 35, 41, 0.07);
+  border-right: none !important;
+  height: 100%;
+  border-radius: 12px 0 0 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+::v-deep .el-menu {
+  border-right: none !important;
+  height: 100%;
+  border-radius: 12px 0 0 12px;
+}
+
+::v-deep .el-menu-item {
+  height: 56px;
+  line-height: 56px;
+  transition: all 0.3s;
+  margin: 5px 10px;
+  border-radius: 8px;
+  padding-left: 25px !important;
+  
+  i {
+    color: #6c757d;
+    margin-right: 12px;
+    font-size: 17px;
+    width: 20px;
+    text-align: center;
+  }
+  
+  span {
+    font-size: 15px;
+    color: #495057;
+  }
+  
+  &:hover {
+    background: linear-gradient(120deg, #e3f2fd 0%, #bbdefb 100%);
+    
+    i, span {
+      color: #1890ff;
+    }
+  }
+  
+  &.is-active {
+    background: linear-gradient(120deg, #e3f2fd 0%, #bbdefb 100%);
+    box-shadow: 0 2px 6px rgba(32, 119, 205, 0.15);
+    
+    i, span {
+      color: #1890ff;
+      font-weight: 500;
+    }
+  }
+}
+
+// 主内容区样式增强
+.el-main {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
+  min-height: 100vh;
+  padding: 25px !important;
+}
+
+// 页面标题样式
+::v-deep .el-card__header h3, 
+::v-deep .el-card__header h4 {
+  position: relative;
+  padding-left: 15px;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 3px;
+    height: 22px;
+    width: 5px;
+    background: linear-gradient(to bottom, #409eff, #1890ff);
+    border-radius: 3px;
+  }
 }
 
 // 邮箱绑定样式
