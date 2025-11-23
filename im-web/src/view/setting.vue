@@ -359,6 +359,14 @@ export default {
       friendOnlineNotice: false,
       onlineNoticeFriend: false,
       
+      // 本地userInfo副本，避免直接修改Vuex状态
+      localUserInfo: {
+        friendReview: false,
+        groupReview: false,
+        soundPlay: false,
+        autoPlay: false
+      },
+      
       // 邮箱绑定相关数据
       mailForm: {
         email: '',
@@ -431,6 +439,8 @@ export default {
         if (newVal) {
           this.friendOnlineNotice = newVal.friendOnlineNotice || false;
           this.onlineNoticeFriend = newVal.onlineNoticeFriend || false;
+          // 复制userInfo对象，避免直接修改Vuex状态
+          this.localUserInfo = { ...newVal };
         }
       },
       immediate: true
