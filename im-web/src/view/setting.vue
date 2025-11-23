@@ -177,6 +177,21 @@
           <div slot="header">
             <h3>修改密码</h3>
           </div>
+          
+          <el-form :model="pwdForm" status-icon :rules="pwdRules" ref="pwdForm" label-width="100px" class="password-form">
+            <el-form-item label="旧密码" prop="oldPassword">
+              <el-input type="password" v-model="pwdForm.oldPassword" autocomplete="off" show-password></el-input>
+            </el-form-item>
+            <el-form-item label="新密码" prop="newPassword">
+              <el-input type="password" v-model="pwdForm.newPassword" autocomplete="off" show-password></el-input>
+            </el-form-item>
+            <el-form-item label="确认密码" prop="confirmPwd">
+              <el-input type="password" v-model="pwdForm.confirmPwd" autocomplete="off" show-password></el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="modifyPassword('pwdForm')">确认修改</el-button>
+            </el-form-item>
+          </el-form>
         </el-card>
       </div>
     </el-main>
@@ -193,6 +208,23 @@ export default {
     FileUpload
   },
   data() {
+    let checkPassword = (rule, value, callback) => {
+      if (value === '') {
+        return callback(new Error('请输入密码'));
+      }
+      callback();
+    };
+
+    let checkConfirmPassword = (rule, value, callback) => {
+      if (value === '') {
+        return callback(new Error('请输入密码'));
+      }
+      if (value !== this.pwdForm.newPassword) {
+        return callback(new Error('两次密码输入不一致'));
+      }
+      callback();
+    };
+
     let checkMail = (rule, value, callback) => {
       if (value === '') {
         return callback(new Error('请输入邮箱'));
@@ -235,6 +267,30 @@ export default {
           trigger: 'blur'
         }]
       },
+      
+      // 修改密码相关数据
+      pwdForm: {
+        oldPassword: '',
+        newPassword: '',
+        confirmPwd: ''
+      },
+      pwdRules: {
+        oldPassword: [{
+          required: true,
+          validator: checkPassword,
+          trigger: 'blur'
+        }],
+        newPassword: [{
+          required: true,
+          validator: checkPassword,
+          trigger: 'blur'
+        }],
+        confirmPwd: [{
+          required: true,
+          validator: checkConfirmPassword,
+          trigger: 'blur'
+        }]
+      }
     };
   },
   computed: {
@@ -340,6 +396,25 @@ export default {
       }).catch(() => {
         this.$message.error("验证码发送失败");
       })
+    },
+    
+    // 修改密码相关方法
+    modifyPassword(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$http({
+            url: "/user/modifyPassword",
+            method: 'post',
+            data: this.pwdForm
+          }).then((data) => {
+            this.$message.success("修改成功!");
+            this.$wsApi.closeWebSocket();
+            sessionStorage.removeItem("token");
+            location.href = "/";
+          }).catch(() => {
+          })
+        }
+      });
     }
   }
 };
@@ -407,6 +482,16 @@ export default {
     }
   }
   
+  .el-form-item {
+    margin-bottom: 25px;
+  }
+}
+
+// 修改密码样式
+.password-form {
+  max-width: 500px;
+  margin: 20px auto;
+    
   .el-form-item {
     margin-bottom: 25px;
   }
