@@ -17,6 +17,38 @@ export default {
 				{
 					name: '默认-淡青色',
 					gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+				},
+				{
+					name: '晨曦粉',
+					gradient: 'linear-gradient(135deg, #ffdee0 0%, #f8b5c2 100%)'
+				},
+				{
+					name: '天空蓝',
+					gradient: 'linear-gradient(135deg, #d2f3ff 0%, #9fd8ff 100%)'
+				},
+				{
+					name: '薰衣草紫',
+					gradient: 'linear-gradient(135deg, #e6e6fa 0%, #d8bfd8 100%)'
+				},
+				{
+					name: '薄荷绿',
+					gradient: 'linear-gradient(135deg, #d0f0fd 0%, #98ded9 100%)'
+				},
+				{
+					name: '柠檬黄',
+					gradient: 'linear-gradient(135deg, #fff9c4 0%, #fff59d 100%)'
+				},
+				{
+					name: '浅珊瑚',
+					gradient: 'linear-gradient(135deg, #ffcab9 0%, #f8a5a5 100%)'
+				},
+				{
+					name: '海洋蓝',
+					gradient: 'linear-gradient(135deg, #b3e5fc 0%, #81d4fa 100%)'
+				},
+				{
+					name: '樱花粉',
+					gradient: 'linear-gradient(135deg, #f8bbd0 0%, #f48fb1 100%)'
 				}
 			],
 			currentThemeIndex: 0
