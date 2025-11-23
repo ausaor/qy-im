@@ -102,7 +102,8 @@
         <router-view></router-view>
       </div>
     </div>
-		<setting :visible="showSettingDialog" @close="closeSetting()"></setting>
+    <user-detail :visible="showSettingDialog" @close="closeSetting()"></user-detail>
+<!--		<setting :visible="showSettingDialog" @close="closeSetting()"></setting>-->
     <operation :visible="showOperationDialog" @close="closeOperation()"></operation>
     <user-info v-show="uiStore.userInfo.show" :pos="uiStore.userInfo.pos" :user="uiStore.userInfo.user"
                @close="$store.commit('closeUserInfoBox')"></user-info>
@@ -131,6 +132,7 @@
 	import HeadImage from '../components/common/HeadImage.vue';
 	import Setting from '../components/setting/Setting.vue';
 	import UserInfo from '../components/common/UserInfo.vue';
+  import UserDetail from "@components/user/UserDetail.vue";
 	import FullImage from '../components/common/FullImage.vue';
 	import RtcPrivateVideo from '../components/rtc/RtcPrivateVideo.vue';
 	import RtcPrivateAcceptor from '../components/rtc/RtcPrivateAcceptor.vue';
@@ -141,8 +143,9 @@
 	export default {
 		components: {
 			HeadImage,
+      UserInfo,
 			Setting,
-			UserInfo,
+      UserDetail,
 			FullImage,
       RtcPrivateVideo,
       RtcPrivateAcceptor,
@@ -855,6 +858,7 @@
 
     .menu {
       margin-top: 10px;
+      padding-left: 5px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -865,22 +869,49 @@
 
       .router-link-active .menu-item {
         color: #fff;
-        background: #E1FFFF;
+        /* 添加液态透明玻璃效果 */
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 10px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        /* 添加明显的左边竖条纹 */
+        position: relative;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          left: -2px;
+          top: 5%;
+          width: 4px;
+          height: 90%;
+          background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+          border-radius: 0 4px 4px 0;
+        }
       }
 
       .link:not(.router-link-active) .menu-item:hover {
         color: #cccccc;
+        /* 添加液态透明玻璃效果（仅鼠标悬停时） */
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 10px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
       }
 
       .menu-item {
         position: relative;
-        width: var(--width);
-        height: 46px;
+        width: 50px;
+        height: 50px;
         display: flex;
         justify-content: center;
         align-items: center;
         margin-bottom: 10px;
         margin-top: 10px;
+        transition: all 0.3s ease;
+        z-index: 1;
 
         .icon {
           font-size: var(--icon-font-size);
@@ -888,6 +919,7 @@
           height: 25px;
           width: 25px;
           line-height: 25px;
+          z-index: 2;
         }
 
         .unread-text {
@@ -902,6 +934,7 @@
           text-align: center;
           white-space: nowrap;
           border: 1px solid #f1e5e5;
+          z-index: 2;
         }
 
         .unread-dot {
@@ -912,6 +945,7 @@
           height: 12px;
           border-radius: 50%;
           background-color: #f56c6c;
+          z-index: 2;
         }
       }
     }
