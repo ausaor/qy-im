@@ -142,6 +142,7 @@
     background-color: white;
     white-space: nowrap;
     cursor: pointer;
+    border-radius: 10px;
 
     &:hover {
       background-color: var(--active-color);

@@ -512,6 +512,7 @@ export default {
         align-items: center;
         white-space: nowrap;
         cursor: pointer;
+        border-radius: 10px;
 
         .top-item-avatar {
           display: flex;
@@ -546,6 +547,10 @@ export default {
             white-space: nowrap;
             overflow: hidden;
           }
+        }
+
+        &:hover {
+          background-color: var(--active-color);
         }
 
         &.active {

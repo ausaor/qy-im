@@ -256,7 +256,7 @@
 								</div>
 								<div class="group-function-item" @click="openGroupRequestPanel">
 									<div class="function-icon bg-blue">
-										<head-image :size="28" :name="'群通知'" :url="require('@/assets/image/join_group.png')"></head-image>
+										<head-image :size="38" :name="'群通知'" :url="require('@/assets/image/join_group.png')"></head-image>
 									</div>
 									<div class="function-text">群通知</div>
 									<div v-show="joinGroupRequestCount>0" class="unread-text">{{joinGroupRequestCount}}</div>
@@ -1198,6 +1198,7 @@
           align-items: center;
           white-space: nowrap;
           cursor: pointer;
+          border-radius: 10px;
 
           .top-item-avatar {
             display: flex;
@@ -1232,6 +1233,10 @@
               white-space: nowrap;
               overflow: hidden;
             }
+          }
+
+          &:hover {
+            background-color: var(--active-color);
           }
 
           &.active {
@@ -1586,23 +1591,23 @@
                 font-size: 20px;
 
                 &.bg-orange {
-                  background: linear-gradient(135deg, #ffb74d, #ff9800);
+                  //background: linear-gradient(135deg, #ffb74d, #ff9800);
                   box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
                 }
 
                 &.bg-green {
-                  background: linear-gradient(135deg, #81c784, #4caf50);
+                  //background: linear-gradient(135deg, #81c784, #4caf50);
                   box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
                 }
 
                 &.bg-blue {
-                  background: linear-gradient(135deg, #4fc3f7, #03a9f4);
+                  //background: linear-gradient(135deg, #4fc3f7, #03a9f4);
                   box-shadow: 0 4px 10px rgba(3, 169, 244, 0.3);
                 }
 
                 .svg-icon {
-                  width: 25px;
-                  height: 25px;
+                  width: 40px;
+                  height: 40px;
                 }
 
                 .head-image {
@@ -1684,112 +1689,6 @@
         .group-info-card {
           flex: 1;
           min-width: 300px;
-        }
-
-        /* 群功能卡片特殊样式 */
-        .group-functions-card {
-          flex: 0 0 30%;
-          min-width: 250px;
-
-          .card-body {
-            padding: 30px;
-          }
-
-          .group-space {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-
-            .group-function-item {
-              text-align: center;
-              padding: 20px;
-              border-radius: 12px;
-              background: rgba(255, 255, 255, 0.9);
-              cursor: pointer;
-              transition: all 0.3s ease;
-              position: relative;
-              border: 1px solid rgba(224, 224, 224, 0.8);
-
-              &:hover {
-                background: rgba(255, 255, 255, 1);
-                transform: translateY(-5px);
-                box-shadow: 0 10px 20px rgba(16, 36, 72, 0.15);
-              }
-
-              .function-icon {
-                width: 60px;
-                height: 60px;
-                margin: 0 auto 15px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 50%;
-                font-size: 24px;
-
-                &.bg-orange {
-                  background: linear-gradient(135deg, #ffb74d, #ff9800);
-                  box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
-                }
-
-                &.bg-green {
-                  background: linear-gradient(135deg, #81c784, #4caf50);
-                  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
-                }
-
-                &.bg-blue {
-                  background: linear-gradient(135deg, #4fc3f7, #03a9f4);
-                  box-shadow: 0 4px 10px rgba(3, 169, 244, 0.3);
-                }
-
-                .svg-icon {
-                  width: 30px;
-                  height: 30px;
-                }
-
-                .head-image {
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                }
-              }
-
-              .function-text {
-                color: #212529;
-                font-size: 16px;
-                font-weight: 500;
-                letter-spacing: 1px;
-              }
-
-              .new-talk-info {
-                margin-top: 10px;
-
-                .new-talk-text {
-                  font-size: 12px;
-                  color: #e53935;
-                  margin-bottom: 5px;
-                }
-
-                .new-talk-list {
-                  display: flex;
-                  justify-content: center;
-                  gap: 5px;
-                }
-              }
-
-              .unread-text {
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                background: #e53935;
-                color: white;
-                border-radius: 10px;
-                padding: 2px 8px;
-                font-size: 12px;
-                font-weight: bold;
-                box-shadow: 0 2px 5px rgba(229, 57, 53, 0.3);
-              }
-            }
-          }
         }
 
         .member-items {
