@@ -38,7 +38,7 @@
         element-loading-text="加载中..."
     >
       <el-table-column type="index" label="序号" width="60"></el-table-column>
-      <el-table-column prop="code" align="left" label="地区编码" width="210">
+      <el-table-column prop="code" align="left" label="地区编码" min-width="210">
         <template slot-scope="scope">
           <span class="code-link">
             {{ scope.row.code }}
@@ -51,23 +51,23 @@
           ></i>-->
         </template>
       </el-table-column>
-      <el-table-column prop="name" label="地区名称" width="150"></el-table-column>
-      <el-table-column prop="parentCode" label="上级地区编码" width="120"></el-table-column>
-      <el-table-column prop="level" align="center" label="地区级别" width="100">
+      <el-table-column prop="name" label="地区名称" min-width="150"></el-table-column>
+      <el-table-column prop="parentCode" label="上级地区编码" min-width="120"></el-table-column>
+      <el-table-column prop="level" align="center" label="地区级别" min-width="100">
         <template slot-scope="scope">
           {{ formatLevel(scope.row.level) }}
         </template>
       </el-table-column>
-      <el-table-column prop="longitude" label="经度" width="100"></el-table-column>
-      <el-table-column prop="latitude" label="纬度" width="100"></el-table-column>
-      <el-table-column prop="isBanned" align="center" label="是否禁言" width="90">
+      <el-table-column prop="longitude" label="经度" min-width="100"></el-table-column>
+      <el-table-column prop="latitude" label="纬度" min-width="100"></el-table-column>
+      <el-table-column prop="isBanned" align="center" label="是否禁言" min-width="90">
         <template slot-scope="scope">
           <el-tag size="mini" :type="scope.row.isBanned ? 'danger' : 'success'">
             {{ scope.row.isBanned ? '是' : '否' }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" min-width="120" fixed="right">
         <template slot-scope="scope">
           <el-button
               size="mini"
