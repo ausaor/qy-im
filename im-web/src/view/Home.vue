@@ -91,7 +91,7 @@
             <div class="bottom-item theme-selector-trigger" title="更换主题" @click="toggleThemeSelector">
               <span>
                 <svg class="icon svg-icon" aria-hidden="true">
-                  <use xlink:href="#icon-theme-color"></use>
+                  <use xlink:href="#icon-theme"></use>
                 </svg>
               </span>
             </div>
@@ -116,9 +116,6 @@
               >
                 {{ theme.name }}
               </div>
-            </div>
-            <div class="custom-theme">
-              <button @click="addCustomTheme">+ 自定义主题</button>
             </div>
           </div>
         </div>
