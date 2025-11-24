@@ -865,13 +865,20 @@ export default {
     }
 
     .sayItem {
-      padding: 10px;
+      padding: 15px;
       display: flex;
-      margin-bottom: 10px;
-      border-radius: 5px;
+      margin-bottom: 15px;
+      border-radius: 10px;
       position: relative;
-      background-color: #ffffff;
       overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 0, 0, 0.03);
+
+      &:hover {
+        //transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      }
 
       .avatar {
         img {
