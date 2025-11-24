@@ -1,6 +1,5 @@
 <template>
   <div class="cover">
-    <img :src="require('@/assets/image/friendActivityBg.jpg')" alt="">
     <div class="info">{{name}}</div>
     <a class="operateBtn" @click="add" v-if="showAdd">
       <i class="el-icon-camera-solid"></i>
@@ -55,13 +54,23 @@ export default {
 <style scoped lang="scss">
 .cover {
   width: 72%;
+  min-height: 520px;
   position: relative;
   margin: 0 auto;
-  img {
-    border-radius: 5px;
-    width: 100%;
-    height: 100%;
-  }
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-image: url('~@/assets/image/friendActivityBg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  //&:hover {
+  //  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15), 0 12px 40px rgba(0, 0, 0, 0.15);
+  //  transform: translateY(-5px);
+  //}
+
 
   .info {
     position: absolute;

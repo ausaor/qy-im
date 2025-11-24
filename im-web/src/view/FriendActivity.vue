@@ -2,7 +2,6 @@
   <div class="say-main container">
     <div class="say-container">
       <div class="cover">
-        <img :src="require('@/assets/image/friendActivityBg.jpg')" alt="">
         <div class="info">心语</div>
         <a class="operateBtn" @click="handleShowAddTalk">
           <i class="el-icon-camera-solid"></i>
@@ -107,13 +106,16 @@ export default {
 
     .cover {
       width: 72%;
+      min-height: 520px;
       position: relative;
       margin: 0 auto;
-      img {
-        border-radius: 5px;
-        width: 100%;
-        height: 100%;
-      }
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      background-image: url('~@/assets/image/friendActivityBg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
 
       .info {
         position: absolute;
