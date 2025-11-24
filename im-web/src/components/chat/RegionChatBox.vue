@@ -962,8 +962,11 @@ export default {
 
   .content-box {
     .im-chat-main {
-      padding: 0;
-      border: var(--border-color) solid 1px;
+      background: linear-gradient(to bottom, #ffffff, #f5f7fa);
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+      padding: 10px;
+      border-radius: 8px;
+
       .im-chat-box {
         >ul {
           padding: 0px 20px 20px 20px;
@@ -1005,7 +1008,6 @@ export default {
     display: flex;
     flex-direction: column;
     padding: 0;
-    border: var(--border-color) solid 1px;
 
     .chat-tool-bar {
 
@@ -1015,7 +1017,6 @@ export default {
       height: 40px;
       text-align: left;
       box-sizing: border-box;
-      border: var(--border-color) solid 1px;
       padding: 2px;
 
       >div {

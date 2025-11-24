@@ -1273,8 +1273,10 @@
       position: relative;
 
       .im-chat-main {
-        padding: 0;
-        background-color: #fff;
+        background: linear-gradient(to bottom, #ffffff, #f5f7fa);
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        padding: 10px;
+        border-radius: 8px;
 
         .im-chat-box {
           >ul {
@@ -1316,7 +1318,6 @@
         display: flex;
         flex-direction: column;
         padding: 0;
-        border: var(--border-color) solid 1px;
 
         .chat-tool-bar {
 
@@ -1326,7 +1327,6 @@
           height: 40px;
           text-align: left;
           box-sizing: border-box;
-          border: var(--border-color) solid 1px;
           padding: 2px;
 
           >div {
