@@ -634,7 +634,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             Map<Long, TemplateCharacter> templateCharacterMap = templateCharacterList.stream()
                     .collect(Collectors.toMap(TemplateCharacter::getId, Function.identity(), (key1, key2) -> key2));
 
-            groupMembers = enterGroupUsersDTO.getReviewUserList().stream().map(f -> {
+            groupMembers = enterGroupUsersDTO.getNoReviewUserList().stream().map(f -> {
                 Optional<GroupMember> optional = members.stream().filter(m -> m.getUserId().equals(f.getFriendId())).findFirst();
                 GroupMember groupMember = optional.orElseGet(GroupMember::new);
                 groupMember.setGroupId(vo.getGroupId());

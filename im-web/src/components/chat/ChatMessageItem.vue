@@ -233,9 +233,17 @@ export default {
             y: 0
           }
         },
-        colors:["#7dd24b","#c7515a","#db68ef","#15d29b",
-          "#85029b", "#c9b455","#fb2609","#bda818",
-          "#af0831","#326eb6"]
+        colors:[
+          "#FFB6C1",
+          "#87CEFA",
+          "#98FB98",
+          "#FFA07A",
+          "#20B2AA",
+          "#FF6347",
+          "#9370DB",
+          "#3CB371",
+          "#FFD700",
+          "#FF69B4"]
 			}
 		},
     beforeDestroy() {

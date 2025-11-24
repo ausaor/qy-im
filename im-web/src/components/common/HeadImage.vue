@@ -14,9 +14,17 @@
 		name: "headImage",
 		data() {
       return {
-        colors:["#FFB6C1", "#87CEFA", "#98FB98", "#FFA07A",
-          "#20B2AA", "#FF6347", "#9370DB", "#3CB371",
-          "#FFD700", "#FF69B4"]
+        colors:[
+          "#FFB6C1",
+          "#87CEFA",
+          "#98FB98",
+          "#FFA07A",
+          "#20B2AA",
+          "#FF6347",
+          "#9370DB",
+          "#3CB371",
+          "#FFD700",
+          "#FF69B4"]
 
       }
 		},
