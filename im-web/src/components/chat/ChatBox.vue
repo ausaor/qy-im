@@ -1276,7 +1276,6 @@
         background: linear-gradient(to bottom, #ffffff, #f5f7fa);
         box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
         padding: 10px;
-        border-radius: 8px;
 
         .im-chat-box {
           >ul {
@@ -1320,14 +1319,16 @@
         padding: 0;
 
         .chat-tool-bar {
-
           display: flex;
+          align-items: center;
           position: relative;
           width: 100%;
           height: 40px;
+          padding: 5px;
           text-align: left;
           box-sizing: border-box;
-          padding: 2px;
+          background: linear-gradient(to right, #ffffff, #f8f9fa);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 
           >div {
             font-size: 22px;
