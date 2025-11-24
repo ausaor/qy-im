@@ -136,14 +136,14 @@
 						<text class="chat-unread" v-if="msgInfo.selfSend && !msgInfo.groupId
 							&& msgInfo.status != $enums.MESSAGE_STATUS.READED">未读</text>
 					</view>-->
-					<view class="chat-receipt" v-if="msgInfo.receipt" @click.stop="onShowReadedBox">
+<!--					<view class="chat-receipt" v-if="msgInfo.receipt" @click.stop="onShowReadedBox">
 						<text v-if="msgInfo.receiptOk" class="tool-icon iconfont icon-ok"></text>
 						<text v-else>{{ msgInfo.readedCount }}人已读</text>
-					</view>
+					</view>-->
 				</view>
 			</view>
 		</view>
-		<chat-group-readed ref="chatGroupReaded" :groupMembers="groupMembers" :msgInfo="msgInfo"></chat-group-readed>
+<!--		<chat-group-readed ref="chatGroupReaded" :groupMembers="groupMembers" :msgInfo="msgInfo"></chat-group-readed>-->
 
 	</view>
 </template>
@@ -172,9 +172,9 @@ export default {
 			type: Object,
 			required: true
 		},
-		groupMembers: {
-			type: Array
-		},
+		// groupMembers: {
+		// 	type: Array
+		// },
     myGroupMemberInfo: {
       type: Object,
       required: true,

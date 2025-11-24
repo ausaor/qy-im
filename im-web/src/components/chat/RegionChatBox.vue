@@ -25,7 +25,6 @@
                         :msgInfo="msgInfo"
                         :isOwner="regionGroup.leaderId === msgInfo.sendId"
                         :myGroupMemberInfo="myGroupMemberInfo"
-                        :groupMembers="regionGroupMembers"
                         @delete="deleteMessage"
                         @recall="recallMessage"
                         @quote="quoteMessage"

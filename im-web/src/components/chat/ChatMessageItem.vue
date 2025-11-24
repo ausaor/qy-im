@@ -88,10 +88,10 @@
               <span class="chat-unread" v-show="msgInfo.selfSend && !msgInfo.groupId
 						  && msgInfo.status != $enums.MESSAGE_STATUS.READED">未读</span>
             </div>-->
-            <div class="chat-receipt" v-show="msgInfo.receipt" @click.stop="onShowReadedBox">
+<!--            <div class="chat-receipt" v-show="msgInfo.receipt" @click.stop="onShowReadedBox">
               <span v-if="msgInfo.receiptOk" class="icon iconfont icon-icon-ok" title="全体已读"></span>
               <span v-else>{{msgInfo.readedCount}}人已读</span>
-            </div>
+            </div>-->
           </div>
           <div class="quote-message" v-if="msgInfo.quoteMsg" @click.stop="scrollToMessage(msgInfo.quoteMsg.id)"
                @contextmenu.prevent.stop="showQuoteRightMenu($event)">
@@ -138,7 +138,7 @@
         @close="rightMenu.show=false" @select="onSelectMenu"></right-menu>
     <right-menu v-show="menu && rightMenuQuote.show" :pos="rightMenuQuote.pos" :items="menuItemsQuote"
                 @close="rightMenuQuote.show=false" @select="onSelectMenuQuote"></right-menu>
-    <chat-group-readed ref="chatGroupReadedBox" :msgInfo="msgInfo" :groupMembers="groupMembers"></chat-group-readed>
+<!--    <chat-group-readed ref="chatGroupReadedBox" :msgInfo="msgInfo" :groupMembers="groupMembers"></chat-group-readed>-->
 	</div>
 </template>
 
@@ -202,9 +202,9 @@ export default {
           return {}
         }
       },
-      groupMembers: {
-        type: Array
-      },
+      // groupMembers: {
+      //   type: Array
+      // },
 			menu:{
 				type: Boolean,
 				default: true

@@ -15,7 +15,7 @@
                                  @longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
                                  @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg" @playVideo="playVideo"
                                  @audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
-                                 :groupMembers="regionGroupMembers" :myGroupMemberInfo="myGroupMemberInfo" :isOwner="regionGroup.leaderId === msgInfo.sendId">
+                                 :myGroupMemberInfo="myGroupMemberInfo" :isOwner="regionGroup.leaderId === msgInfo.sendId">
               </chat-message-item>
             </view>
           </view>
