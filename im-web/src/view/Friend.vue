@@ -31,146 +31,146 @@
       </el-scrollbar>
     </el-aside>
     <el-container class="friend-container">
-      <div class="header" v-show="showType !== 0">
-        {{headerTitle}}
-      </div>
-      <div v-show="showType === 1">
-        <div class="friend-request request-box">
-          <el-tabs type="card">
-            <el-tab-pane :label="'收到的申请('+ receivedFriendRequest.length +')'">
-              <el-scrollbar class="request-list">
-                <div class="request-item" v-for="(item, idx) in receivedFriendRequest" :key="idx">
+      <el-scrollbar class="friend-container-scroll">
+        <div class="header" v-show="showType !== 0">
+          {{headerTitle}}
+        </div>
+        <div v-show="showType === 1">
+          <div class="friend-request request-box">
+            <el-tabs type="card">
+              <el-tab-pane :label="'收到的申请('+ receivedFriendRequest.length +')'">
+                <el-scrollbar class="request-list">
+                  <div class="request-item" v-for="(item, idx) in receivedFriendRequest" :key="idx">
+                    <div class="friend-request-item">
+                      <div class="friend-avatar"><head-image :size="45" :name="item.sendNickName" :url="item.sendHeadImage"></head-image></div>
+                      <div class="request-info">
+                        <div class="nick-name"><div>{{item.sendNickName}}</div></div>
+                        <div class="info-text"><div>{{item.remark}}</div></div>
+                      </div>
+                      <div class="btn-group">
+                        <el-button type="danger" size="mini" @click="rejectFriendRequest(item.id)">拒绝</el-button>
+                        <el-button type="primary" size="mini" @click="approveFriendRequest(item.id)">同意</el-button>
+                      </div>
+                    </div>
+                  </div>
+                </el-scrollbar>
+              </el-tab-pane>
+              <el-tab-pane :label="'发起的申请(' + launchFriendRequest.length + ')'">
+                <div class="request-item" v-for="(item, idx) in launchFriendRequest" :key="idx">
                   <div class="friend-request-item">
-                    <div class="friend-avatar"><head-image :size="45" :name="item.sendNickName" :url="item.sendHeadImage"></head-image></div>
+                    <div class="friend-avatar"><head-image :size="45" :name="item.recvNickName" :url="item.recvHeadImage"></head-image></div>
                     <div class="request-info">
-                      <div class="nick-name"><div>{{item.sendNickName}}</div></div>
+                      <div class="nick-name"><div>{{item.recvNickName}}</div></div>
                       <div class="info-text"><div>{{item.remark}}</div></div>
                     </div>
                     <div class="btn-group">
-                      <el-button type="danger" size="mini" @click="rejectFriendRequest(item.id)">拒绝</el-button>
-                      <el-button type="primary" size="mini" @click="approveFriendRequest(item.id)">同意</el-button>
+                      <el-button type="danger" size="mini" @click="recallFriendRequest(item.id)">撤回</el-button>
                     </div>
                   </div>
                 </div>
-              </el-scrollbar>
-            </el-tab-pane>
-            <el-tab-pane :label="'发起的申请(' + launchFriendRequest.length + ')'">
-              <div class="request-item" v-for="(item, idx) in launchFriendRequest" :key="idx">
-                <div class="friend-request-item">
-                  <div class="friend-avatar"><head-image :size="45" :name="item.recvNickName" :url="item.recvHeadImage"></head-image></div>
-                  <div class="request-info">
-                    <div class="nick-name"><div>{{item.recvNickName}}</div></div>
-                    <div class="info-text"><div>{{item.remark}}</div></div>
-                  </div>
-                  <div class="btn-group">
-                    <el-button type="danger" size="mini" @click="recallFriendRequest(item.id)">撤回</el-button>
-                  </div>
+              </el-tab-pane>
+            </el-tabs>
+          </div>
+        </div>
+        <div v-show="showType === 2">
+          <div class="friend-detail">
+            <div class="profile-card">
+              <div class="profile-header">
+                <head-image  
+                  :size="120"
+                  class="profile-avatar"
+                  :name="userInfo.nickName"
+                  :url="userInfo.headImage"
+                  @click.native="showFullImage()">
+                </head-image>
+                <div class="profile-basic-info">
+                  <h1 class="profile-nickname">{{ userInfo.nickName }}</h1>
+                  <p class="profile-username">@{{ userInfo.userName }}</p>
+                  <p class="profile-signature" v-if="userInfo.signature">{{ userInfo.signature }}</p>
+                  <p class="profile-signature empty-signature" v-else>这个人很懒，没有留下签名</p>
                 </div>
               </div>
-            </el-tab-pane>
-          </el-tabs>
-        </div>
-      </div>
-      <div v-show="showType === 2">
-        <div class="friend-detail">
-          <div class="profile-card">
-            <div class="profile-header">
-              <head-image  
-                :size="120"
-                class="profile-avatar"
-                :name="userInfo.nickName"
-                :url="userInfo.headImage"
-                @click.native="showFullImage()">
-              </head-image>
-              <div class="profile-basic-info">
-                <h1 class="profile-nickname">{{ userInfo.nickName }}</h1>
-                <p class="profile-username">@{{ userInfo.userName }}</p>
-                <p class="profile-signature" v-if="userInfo.signature">{{ userInfo.signature }}</p>
-                <p class="profile-signature empty-signature" v-else>这个人很懒，没有留下签名</p>
-              </div>
-            </div>
-            
-            <div class="profile-content">
-              <div class="profile-info-section">
-                <h2>基本信息</h2>
-                <div class="profile-info-grid">
-                  <div class="profile-info-item">
-                    <span class="profile-info-label">性别</span>
-                    <span class="profile-info-value">{{ userInfo.sex==0?"男":"女" }}</span>
+              
+              <div class="profile-content">
+                <div class="profile-info-section">
+                  <h2>基本信息</h2>
+                  <div class="profile-info-grid">
+                    <div class="profile-info-item">
+                      <span class="profile-info-label">性别</span>
+                      <span class="profile-info-value">{{ userInfo.sex==0?"男":"女" }}</span>
+                    </div>
+                    <div class="profile-info-item">
+                      <span class="profile-info-label">用户名</span>
+                      <span class="profile-info-value">{{ userInfo.userName }}</span>
+                    </div>
+                    <div class="profile-info-item">
+                      <span class="profile-info-label">昵称</span>
+                      <span class="profile-info-value">{{ userInfo.nickName }}</span>
+                    </div>
                   </div>
-                  <div class="profile-info-item">
-                    <span class="profile-info-label">用户名</span>
-                    <span class="profile-info-value">{{ userInfo.userName }}</span>
-                  </div>
-                  <div class="profile-info-item">
-                    <span class="profile-info-label">昵称</span>
-                    <span class="profile-info-value">{{ userInfo.nickName }}</span>
+                </div>
+                
+                <div class="profile-actions-section">
+                  <h2>操作</h2>
+                  <div class="profile-action-items">
+                    <div class="profile-action-item">
+                      <span class="profile-info-label">备注名</span>
+                      <el-input 
+                        v-model="userInfo.friendRemark" 
+                        size="small" 
+                        maxlength="15" 
+                        placeholder="好友备注"
+                        class="remark-input">
+                      </el-input>
+                    </div>
+                    
+                    <div class="profile-action-item">
+                      <span class="profile-info-label">聊天头像</span>
+                      <file-upload 
+                        class="avatar-uploader" 
+                        :action="imageAction"
+                        :showLoading="true" 
+                        :maxSize="maxSize" 
+                        @success="onUploadAvatarSuccess"
+                        :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
+                        <img v-if="userInfo.myHeadImageToFriend" :src="userInfo.myHeadImageToFriend" class="my-avatar">
+                        <i v-else class="el-icon-s-custom"></i>
+                      </file-upload>
+                    </div>
+                    
+                    <div class="profile-action-item">
+                      <span class="profile-info-label">动态</span>
+                      <div class="friend-space" @click="openFriendSpace">
+                        <svg class="icon svg-icon" aria-hidden="true">
+                          <use xlink:href="#icon-shejiaotubiao-40"></use>
+                        </svg>
+                      </div>
+                    </div>
+                    
+                    <div class="profile-action-item">
+                      <span class="profile-info-label">歌单</span>
+                      <div class="friend-music" @click="openFriendMusic">
+                        <svg class="icon svg-icon" aria-hidden="true">
+                          <use xlink:href="#icon-Music"></use>
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
               
-              <div class="profile-actions-section">
-                <h2>操作</h2>
-                <div class="profile-action-items">
-                  <div class="profile-action-item">
-                    <span class="profile-info-label">备注名</span>
-                    <el-input 
-                      v-model="userInfo.friendRemark" 
-                      size="small" 
-                      maxlength="15" 
-                      placeholder="好友备注"
-                      class="remark-input">
-                    </el-input>
-                  </div>
-                  
-                  <div class="profile-action-item">
-                    <span class="profile-info-label">聊天头像</span>
-                    <file-upload 
-                      class="avatar-uploader" 
-                      :action="imageAction"
-                      :showLoading="true" 
-                      :maxSize="maxSize" 
-                      @success="onUploadAvatarSuccess"
-                      :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
-                      <img v-if="userInfo.myHeadImageToFriend" :src="userInfo.myHeadImageToFriend" class="my-avatar">
-                      <i v-else class="el-icon-s-custom"></i>
-                    </file-upload>
-                  </div>
-                  
-                  <div class="profile-action-item">
-                    <span class="profile-info-label">动态</span>
-                    <div class="friend-space" @click="openFriendSpace">
-                      <svg class="icon svg-icon" aria-hidden="true">
-                        <use xlink:href="#icon-shejiaotubiao-40"></use>
-                      </svg>
-                    </div>
-                  </div>
-                  
-                  <div class="profile-action-item">
-                    <span class="profile-info-label">歌单</span>
-                    <div class="friend-music" @click="openFriendMusic">
-                      <svg class="icon svg-icon" aria-hidden="true">
-                        <use xlink:href="#icon-Music"></use>
-                      </svg>
-                    </div>
-                  </div>
+              <div class="profile-footer">
+                <div class="friend-btn-group">
+                  <el-button v-show="isFriend" icon="el-icon-chat-dot-round" type="primary"  @click="onSendMessage(userInfo)">发送消息</el-button>
+                  <el-button v-show="!isFriend" icon="el-icon-plus" type="primary"  @click="onAddFriend(userInfo)">加为好友</el-button>
+                  <el-button v-show="isFriend" icon="el-icon-delete"  type="danger" @click="onDelFriend(userInfo)">删除好友</el-button>
+                  <el-button v-show="isFriend" type="success" @click="modifyFriendInfo(userInfo)">提交</el-button>
                 </div>
-              </div>
-            </div>
-            
-            <div class="profile-footer">
-              <div class="friend-btn-group">
-                <el-button v-show="isFriend" icon="el-icon-chat-dot-round" type="primary"  @click="onSendMessage(userInfo)">发送消息</el-button>
-                <el-button v-show="!isFriend" icon="el-icon-plus" type="primary"  @click="onAddFriend(userInfo)">加为好友</el-button>
-                <el-button v-show="isFriend" icon="el-icon-delete"  type="danger" @click="onDelFriend(userInfo)">删除好友</el-button>
-                <el-button v-show="isFriend" type="success" @click="modifyFriendInfo(userInfo)">提交</el-button>
               </div>
             </div>
           </div>
         </div>
-        <el-divider content-position="center"></el-divider>
-
-      </div>
+      </el-scrollbar>
     </el-container>
     <drawer
         :visible="friendSpaceVisible"
