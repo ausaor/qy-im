@@ -53,7 +53,12 @@
                           :maxSize="maxSize"
                           @success="onUploadSuccess"
                           :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
-              <head-image :url="userInfo.headImage" :name="userInfo.nickName" :size="60"></head-image>
+              <div class="avatar-container">
+                <head-image :url="userInfo.headImage" :name="userInfo.nickName" :size="60"></head-image>
+                <div class="camera-overlay">
+                  <i class="el-icon-camera"></i>
+                </div>
+              </div>
             </file-upload>
             <div style="margin-top: 10px; font-size: 18px; font-weight: bold;">轻语</div>
             <div style="color: #666;">ID: qingyu</div>
@@ -663,6 +668,42 @@ export default {
 
   .el-upload:hover {
     border-color: #409EFF;
+  }
+  
+  .avatar-container {
+    position: relative;
+    display: inline-block;
+    
+    .camera-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      
+      .el-icon-camera {
+        font-size: 24px;
+        color: white;
+        margin-bottom: 4px;
+      }
+      
+      .upload-text {
+        font-size: 12px;
+        color: white;
+      }
+    }
+    
+    &:hover .camera-overlay {
+      opacity: 1;
+    }
   }
 
   .avatar-uploader-icon {

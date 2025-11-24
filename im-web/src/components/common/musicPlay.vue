@@ -19,7 +19,7 @@
           </div>
           <div class="upload-btn" >
             <span style="margin-right: 20px;" @click="toggleFloatMusic">
-              <i :class="showFloatMusic ? 'el-icon-bottom-left' : 'el-icon-top-right'"></i>
+              <i :class="showFloatMusic ? 'el-icon-video-pause' : 'el-icon-video-play'"></i>
             </span>
             <span v-if="showUpload" @click="showUploadDialog()">
               <i class="el-icon-upload2"></i>
