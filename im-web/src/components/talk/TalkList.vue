@@ -423,6 +423,8 @@ export default {
       this.addTalkVisible = true;
     },
     refreshTalkList() {
+      this.lastIndex = null;
+      this.commentLastIndex = null;
       this.page.pageNo = 1;
       this.page.totalPage = 0;
       this.talkList = [];
