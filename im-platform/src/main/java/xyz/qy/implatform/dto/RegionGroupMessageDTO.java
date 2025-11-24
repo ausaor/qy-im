@@ -55,8 +55,8 @@ public class RegionGroupMessageDTO {
     @Min(value = 0, message = "加入方式只能是临时或常驻")
     private Integer joinType;
 
-    @ApiModelProperty(value = "是否回执消息")
-    private Boolean receipt = false;
+//    @ApiModelProperty(value = "是否回执消息")
+//    private Boolean receipt = false;
 
     @ApiModelProperty(value = "引用消息id")
     private Long quoteId;

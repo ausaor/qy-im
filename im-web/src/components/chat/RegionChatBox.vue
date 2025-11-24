@@ -79,11 +79,11 @@
                     </svg>
                   </file-upload>
                 </div>
-                <div title="回执消息" v-show="isGroupOwner && memberSize <= 50" :class="isReceipt ? 'chat-tool-active' : ''" @click="onSwitchReceipt">
+<!--                <div title="回执消息" v-show="isGroupOwner && memberSize <= 50" :class="isReceipt ? 'chat-tool-active' : ''" @click="onSwitchReceipt">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-yihuizhi"></use>
                   </svg>
-                </div>
+                </div>-->
                 <div title="发送语音" @click="showRecordBox()">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-yuyin"></use>

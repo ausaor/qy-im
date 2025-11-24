@@ -15,7 +15,7 @@ export default {
 		theme: {
 			colors: [
 				{
-					name: '默认-淡青色',
+					name: '青春绿',
 					gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
 				},
 				{

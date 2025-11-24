@@ -13,8 +13,6 @@ public interface IGroupMessageService extends IService<GroupMessage> {
 
     GroupMessageVO sendMessage(GroupMessageDTO dto);
 
-    void sendGroupMessage(GroupMessageDTO dto, Long sendUserId);
-
     void recallMessage(Long id);
 
     /**

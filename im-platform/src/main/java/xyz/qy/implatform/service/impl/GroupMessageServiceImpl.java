@@ -139,10 +139,10 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
 
         // 判断是否在群里
         List<Long> userIds = groupMemberService.findUserIdsByGroupId(group.getId());
-        if (dto.getReceipt() && userIds.size() > Constant.RECEIPT_LIMIT_MEMBERS) {
-            throw new GlobalException(
-                    String.format("当前群聊大于%s人,不支持发送回执消息", Constant.RECEIPT_LIMIT_MEMBERS));
-        }
+//        if (dto.getReceipt() && userIds.size() > Constant.RECEIPT_LIMIT_MEMBERS) {
+//            throw new GlobalException(
+//                    String.format("当前群聊大于%s人,不支持发送回执消息", Constant.RECEIPT_LIMIT_MEMBERS));
+//        }
         // 不用发给自己
         userIds = userIds.stream().filter(id -> !session.getUserId().equals(id)).collect(Collectors.toList());
         // 保存消息
@@ -193,41 +193,6 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         return quoteMsg;
     }
 
-    @Override
-    public void sendGroupMessage(GroupMessageDTO dto, Long sendUserId) {
-        UserSession session = SessionContext.getSession();
-        Group group = groupService.getById(dto.getGroupId());
-        if (group == null) {
-            return;
-        }
-        if (group.getDeleted()) {
-            return;
-        }
-        // 判断是否在群里
-        List<Long> userIds = groupMemberService.findUserIdsByGroupId(group.getId());
-        if (!userIds.contains(sendUserId)) {
-            return;
-        }
-        // 保存消息
-        GroupMessage msg = BeanUtils.copyProperties(dto, GroupMessage.class);
-        msg.setSendId(sendUserId);
-        msg.setSendTime(new Date());
-        if (CollUtil.isNotEmpty(dto.getAtUserIds())) {
-            msg.setAtUserIds(StrUtil.join(",", dto.getAtUserIds()));
-        }
-        this.save(msg);
-        // 不用发给自己
-        //userIds = userIds.stream().filter(id-> !sendUserId.equals(id)).collect(Collectors.toList());
-        // 群发
-        GroupMessageVO msgInfo = BeanUtils.copyProperties(msg, GroupMessageVO.class);
-        IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
-        sendMessage.setSender(new IMUserInfo(sendUserId, session.getTerminal()));
-        sendMessage.setRecvIds(userIds);
-        sendMessage.setData(msgInfo);
-        imClient.sendGroupMessage(sendMessage);
-        log.info("发送群聊消息，发送id:{},群聊id:{},内容:{}", sendUserId, dto.getGroupId(), dto.getContent());
-    }
-
     /**
      * 撤回消息
      *
@@ -260,7 +225,16 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         userIds = userIds.stream().filter(uid -> !session.getUserId().equals(uid)).collect(Collectors.toList());
         GroupMessageVO msgInfo = BeanUtils.copyProperties(msg, GroupMessageVO.class);
         msgInfo.setType(MessageType.RECALL.code());
-        String content = String.format("'%s'撤回了一条消息", member.getAliasName());
+        String aliasName = member.getAliasName();
+        if (member.getIsTemplate()) {
+            if (StrUtil.isNotBlank(member.getAliasNamePrefix())) {
+                aliasName = member.getAliasNamePrefix() + aliasName;
+            }
+            if (StrUtil.isNotBlank(member.getAliasNameSuffix())) {
+                aliasName = aliasName + member.getAliasNameSuffix();
+            }
+        }
+        String content = String.format("'%s'撤回了一条消息", aliasName);
         msgInfo.setContent(content);
         msgInfo.setSendTime(new Date());
 
@@ -367,13 +341,13 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
                 // 填充状态
                 vo.setStatus(readedMaxId >= m.getId() ? MessageStatus.READED.code() : MessageStatus.UNSEND.code());
                 // 针对回执消息填充已读人数
-                if(m.getReceipt()){
-                    if(Objects.isNull(maxIdMap)) {
-                        maxIdMap = redisTemplate.opsForHash().entries(key);
-                    }
-                    int count = getReadedUserIds(maxIdMap, m.getId(),m.getSendId()).size();
-                    vo.setReadedCount(count);
-                }
+//                if(m.getReceipt()){
+//                    if(Objects.isNull(maxIdMap)) {
+//                        maxIdMap = redisTemplate.opsForHash().entries(key);
+//                    }
+//                    int count = getReadedUserIds(maxIdMap, m.getId(),m.getSendId()).size();
+//                    vo.setReadedCount(count);
+//                }
                 // 推送
                 IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
                 sendMessage.setSender(new IMUserInfo(m.getSendId(), IMTerminalType.WEB.code()));
@@ -425,42 +399,42 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         // 已读消息key
         String key = StrUtil.join(":", RedisKey.IM_GROUP_READED_POSITION, groupId);
         // 原来的已读消息位置
-        Object maxReadedId = redisTemplate.opsForHash().get(key, session.getUserId().toString());
+        //Object maxReadedId = redisTemplate.opsForHash().get(key, session.getUserId().toString());
         // 记录已读消息位置
         redisTemplate.opsForHash().put(key, session.getUserId().toString(), message.getId());
         // 推送消息回执，刷新已读人数显示
-        wrapper = Wrappers.lambdaQuery();
-        wrapper.eq(GroupMessage::getGroupId, groupId);
-        wrapper.gt(!Objects.isNull(maxReadedId), GroupMessage::getId, maxReadedId);
-        wrapper.le(!Objects.isNull(maxReadedId), GroupMessage::getId, message.getId());
-        wrapper.ne(GroupMessage::getStatus, MessageStatus.RECALL.code());
-        wrapper.eq(GroupMessage::getReceipt, true);
-        List<GroupMessage> receiptMessages = this.list(wrapper);
-        if (CollectionUtil.isNotEmpty(receiptMessages)) {
-            List<Long> userIds = groupMemberService.findUserIdsByGroupId(groupId);
-            Map<Object, Object> maxIdMap = redisTemplate.opsForHash().entries(key);
-            for (GroupMessage receiptMessage : receiptMessages) {
-                Integer readedCount = getReadedUserIds(maxIdMap, receiptMessage.getId(),receiptMessage.getSendId()).size();
-                // 如果所有人都已读，记录回执消息完成标记
-                if(readedCount >= userIds.size() - 1){
-                    receiptMessage.setReceiptOk(true);
-                    this.updateById(receiptMessage);
-                }
-                msgInfo = new GroupMessageVO();
-                msgInfo.setId(receiptMessage.getId());
-                msgInfo.setGroupId(groupId);
-                msgInfo.setReadedCount(readedCount);
-                msgInfo.setReceiptOk(receiptMessage.getReceiptOk());
-                msgInfo.setType(MessageType.RECEIPT.code());;
-                sendMessage = new IMGroupMessage<>();
-                sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
-                sendMessage.setRecvIds(userIds);
-                sendMessage.setData(msgInfo);
-                sendMessage.setSendToSelf(false);
-                sendMessage.setSendResult(false);
-                imClient.sendGroupMessage(sendMessage);
-            }
-        }
+//        wrapper = Wrappers.lambdaQuery();
+//        wrapper.eq(GroupMessage::getGroupId, groupId);
+//        wrapper.gt(!Objects.isNull(maxReadedId), GroupMessage::getId, maxReadedId);
+//        wrapper.le(!Objects.isNull(maxReadedId), GroupMessage::getId, message.getId());
+//        wrapper.ne(GroupMessage::getStatus, MessageStatus.RECALL.code());
+//        wrapper.eq(GroupMessage::getReceipt, true);
+//        List<GroupMessage> receiptMessages = this.list(wrapper);
+//        if (CollectionUtil.isNotEmpty(receiptMessages)) {
+//            List<Long> userIds = groupMemberService.findUserIdsByGroupId(groupId);
+//            Map<Object, Object> maxIdMap = redisTemplate.opsForHash().entries(key);
+//            for (GroupMessage receiptMessage : receiptMessages) {
+//                Integer readedCount = getReadedUserIds(maxIdMap, receiptMessage.getId(),receiptMessage.getSendId()).size();
+//                // 如果所有人都已读，记录回执消息完成标记
+//                if(readedCount >= userIds.size() - 1){
+//                    receiptMessage.setReceiptOk(true);
+//                    this.updateById(receiptMessage);
+//                }
+//                msgInfo = new GroupMessageVO();
+//                msgInfo.setId(receiptMessage.getId());
+//                msgInfo.setGroupId(groupId);
+//                msgInfo.setReadedCount(readedCount);
+//                msgInfo.setReceiptOk(receiptMessage.getReceiptOk());
+//                msgInfo.setType(MessageType.RECEIPT.code());;
+//                sendMessage = new IMGroupMessage<>();
+//                sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+//                sendMessage.setRecvIds(userIds);
+//                sendMessage.setData(msgInfo);
+//                sendMessage.setSendToSelf(false);
+//                sendMessage.setSendResult(false);
+//                imClient.sendGroupMessage(sendMessage);
+//            }
+//        }
     }
 
     @Override

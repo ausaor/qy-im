@@ -82,14 +82,14 @@
           <svg-icon class="tool-icon" icon-class="yuyin"></svg-icon>
           <view class="tool-name">语音消息</view>
         </view>
-        <view class="chat-tools-item" @click="switchReceipt()" v-show="regionGroup.joinType===1">
+<!--        <view class="chat-tools-item" @click="switchReceipt()" v-show="regionGroup.joinType===1">
           <svg-icon class="tool-icon" :class="isReceipt ? 'active' : ''" icon-class="yihuizhi"></svg-icon>
           <view class="tool-name">回执消息</view>
-        </view>
-        <view class="chat-tools-item" @click="onGroupVideo()" v-show="regionGroup.joinType===1">
+        </view>-->
+<!--        <view class="chat-tools-item" @click="onGroupVideo()" v-show="regionGroup.joinType===1">
           <svg-icon class="tool-icon" icon-class="yuyintonghua"></svg-icon>
           <view class="tool-name">语音通话</view>
-        </view>
+        </view>-->
       </view>
       <scroll-view v-if="chatTabBox === 'emo'" class="chat-emotion" scroll-y="true"
                    :style="{height: keyboardHeight+'px'}">

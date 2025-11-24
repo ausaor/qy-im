@@ -83,10 +83,10 @@
           <svg-icon class="tool-icon" icon-class="yuyin"></svg-icon>
 					<view class="tool-name">语音消息</view>
 				</view>
-				<view v-if="chat.type == 'GROUP'" class="chat-tools-item" @click="switchReceipt()">
+<!--				<view v-if="chat.type == 'GROUP'" class="chat-tools-item" @click="switchReceipt()">
           <svg-icon class="tool-icon" :class="isReceipt ? 'active' : ''" icon-class="yihuizhi"></svg-icon>
 					<view class="tool-name">回执消息</view>
-				</view>
+				</view>-->
 				<!-- #ifndef MP-WEIXIN -->
 				<!-- 音视频不支持小程序 -->
 				<view v-if="chat.type == 'PRIVATE'" class="chat-tools-item" @click="onPriviteVideo()">

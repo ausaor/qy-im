@@ -141,10 +141,10 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
             }
         }
 
-        if (dto.getReceipt() && userIds.size() > Constant.RECEIPT_LIMIT_MEMBERS) {
-            throw new GlobalException(
-                    String.format("当前群聊大于%s人,不支持发送回执消息", Constant.RECEIPT_LIMIT_MEMBERS));
-        }
+//        if (dto.getReceipt() && userIds.size() > Constant.RECEIPT_LIMIT_MEMBERS) {
+//            throw new GlobalException(
+//                    String.format("当前群聊大于%s人,不支持发送回执消息", Constant.RECEIPT_LIMIT_MEMBERS));
+//        }
 
         // 不用发给自己
         userIds = userIds.stream().filter(id -> !session.getUserId().equals(id)).collect(Collectors.toList());
@@ -291,13 +291,13 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
                 // 填充状态
                 vo.setStatus(readedMaxId >= m.getId() ? MessageStatus.READED.code() : MessageStatus.UNSEND.code());
                 // 针对回执消息填充已读人数
-                if(m.getReceipt()){
-                    if(Objects.isNull(maxIdMap)) {
-                        maxIdMap = redisTemplate.opsForHash().entries(key);
-                    }
-                    int count = getReadedUserIds(maxIdMap, m.getId(),m.getSendId()).size();
-                    vo.setReadedCount(count);
-                }
+//                if(m.getReceipt()){
+//                    if(Objects.isNull(maxIdMap)) {
+//                        maxIdMap = redisTemplate.opsForHash().entries(key);
+//                    }
+//                    int count = getReadedUserIds(maxIdMap, m.getId(),m.getSendId()).size();
+//                    vo.setReadedCount(count);
+//                }
                 // 推送
                 IMRegionGroupMessage<RegionGroupMessageVO> sendMessage = new IMRegionGroupMessage<>();
                 sendMessage.setSender(new IMUserInfo(m.getSendId(), IMTerminalType.WEB.code()));
@@ -344,42 +344,42 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         // 已读消息key
         String key = StrUtil.join(":", RedisKey.IM_REGION_GROUP_READED_POSITION, regionGroupId);
         // 原来的已读消息位置
-        Object maxReadedId = redisTemplate.opsForHash().get(key, session.getUserId().toString());
+        //Object maxReadedId = redisTemplate.opsForHash().get(key, session.getUserId().toString());
         // 记录已读消息位置
         redisTemplate.opsForHash().put(key, session.getUserId().toString(), message.getId());
         // 推送消息回执，刷新已读人数显示
-        wrapper = Wrappers.lambdaQuery();
-        wrapper.eq(RegionGroupMessage::getRegionGroupId, regionGroupId);
-        wrapper.gt(!Objects.isNull(maxReadedId), RegionGroupMessage::getId, maxReadedId);
-        wrapper.le(!Objects.isNull(maxReadedId), RegionGroupMessage::getId, message.getId());
-        wrapper.ne(RegionGroupMessage::getStatus, MessageStatus.RECALL.code());
-        wrapper.eq(RegionGroupMessage::getReceipt, true);
-        List<RegionGroupMessage> receiptMessages = this.list(wrapper);
-        if (CollectionUtil.isNotEmpty(receiptMessages)) {
-            List<Long> userIds = regionGroupMemberService.findUserIdsByRegionGroupId(regionGroupId);
-            Map<Object, Object> maxIdMap = redisTemplate.opsForHash().entries(key);
-            for (RegionGroupMessage receiptMessage : receiptMessages) {
-                Integer readedCount = getReadedUserIds(maxIdMap, receiptMessage.getId(),receiptMessage.getSendId()).size();
-                // 如果所有人都已读，记录回执消息完成标记
-                if(readedCount >= userIds.size() - 1){
-                    receiptMessage.setReceiptOk(true);
-                    this.updateById(receiptMessage);
-                }
-                msgInfo = new RegionGroupMessageVO();
-                msgInfo.setId(receiptMessage.getId());
-                msgInfo.setRegionGroupId(regionGroupId);
-                msgInfo.setReadedCount(readedCount);
-                msgInfo.setReceiptOk(receiptMessage.getReceiptOk());
-                msgInfo.setType(MessageType.RECEIPT.code());;
-                sendMessage = new IMRegionGroupMessage<>();
-                sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
-                sendMessage.setRecvIds(userIds);
-                sendMessage.setData(msgInfo);
-                sendMessage.setSendToSelf(false);
-                sendMessage.setSendResult(false);
-                imClient.sendRegionGroupMessage(sendMessage);
-            }
-        }
+//        wrapper = Wrappers.lambdaQuery();
+//        wrapper.eq(RegionGroupMessage::getRegionGroupId, regionGroupId);
+//        wrapper.gt(!Objects.isNull(maxReadedId), RegionGroupMessage::getId, maxReadedId);
+//        wrapper.le(!Objects.isNull(maxReadedId), RegionGroupMessage::getId, message.getId());
+//        wrapper.ne(RegionGroupMessage::getStatus, MessageStatus.RECALL.code());
+//        wrapper.eq(RegionGroupMessage::getReceipt, true);
+//        List<RegionGroupMessage> receiptMessages = this.list(wrapper);
+//        if (CollectionUtil.isNotEmpty(receiptMessages)) {
+//            List<Long> userIds = regionGroupMemberService.findUserIdsByRegionGroupId(regionGroupId);
+//            Map<Object, Object> maxIdMap = redisTemplate.opsForHash().entries(key);
+//            for (RegionGroupMessage receiptMessage : receiptMessages) {
+//                Integer readedCount = getReadedUserIds(maxIdMap, receiptMessage.getId(),receiptMessage.getSendId()).size();
+//                // 如果所有人都已读，记录回执消息完成标记
+//                if(readedCount >= userIds.size() - 1){
+//                    receiptMessage.setReceiptOk(true);
+//                    this.updateById(receiptMessage);
+//                }
+//                msgInfo = new RegionGroupMessageVO();
+//                msgInfo.setId(receiptMessage.getId());
+//                msgInfo.setRegionGroupId(regionGroupId);
+//                msgInfo.setReadedCount(readedCount);
+//                msgInfo.setReceiptOk(receiptMessage.getReceiptOk());
+//                msgInfo.setType(MessageType.RECEIPT.code());;
+//                sendMessage = new IMRegionGroupMessage<>();
+//                sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+//                sendMessage.setRecvIds(userIds);
+//                sendMessage.setData(msgInfo);
+//                sendMessage.setSendToSelf(false);
+//                sendMessage.setSendResult(false);
+//                imClient.sendRegionGroupMessage(sendMessage);
+//            }
+//        }
     }
 
     @Override
@@ -443,11 +443,11 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         imClient.sendRegionGroupMessage(sendMessage);
 
         // 推给自己其他终端
-//        msgInfo.setContent("你撤回了一条消息");
-//        sendMessage.setSendToSelf(true);
-//        sendMessage.setRecvIds(Collections.emptyList());
-//        sendMessage.setRecvTerminals(Collections.emptyList());
-//        imClient.sendRegionGroupMessage(sendMessage);
+        msgInfo.setContent("你撤回了一条消息");
+        sendMessage.setSendToSelf(true);
+        sendMessage.setRecvIds(Collections.emptyList());
+        sendMessage.setRecvTerminals(Collections.emptyList());
+        imClient.sendRegionGroupMessage(sendMessage);
         log.info("撤回地区群聊消息，发送id:{},群聊id:{},内容:{}", session.getUserId(), msg.getRegionGroupId(), msg.getContent());
     }
 
