@@ -129,7 +129,7 @@
     <rtc-private-video ref="rtcPrivateVideo"></rtc-private-video>
     <rtc-private-acceptor ref="rtcPrivateAcceptor"></rtc-private-acceptor>
     <rtc-group-video ref="rtcGroupVideo" ></rtc-group-video>
-    <music-player></music-player>
+    <music-player v-show="showFloatMusic"></music-player>
 <!--    <aplayer v-if="showFloatMusic"
             :music="musics[0]"
              :list="musics"

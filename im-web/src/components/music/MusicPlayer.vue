@@ -2,7 +2,7 @@
   <div
       id="music-player"
       class="floating"
-      :style="{ left: playerLeft + 'px', top: playerTop + 'px', position: isDragging ? 'fixed' : 'relative' }"
+      :style="{ left: playerLeft + 'px', top: playerTop + 'px', position: 'fixed' }"
   >
     <!-- 拖拽区域 -->
     <div
@@ -148,8 +148,7 @@
             <div class="song-actions">
               <span class="song-duration">{{ song.duration }}</span>
               <el-button
-                  icon="fa-heart"
-                  class="favorite-btn"
+                  class="favorite-btn el-icon-star-off"
                   :class="{ 'is-favorite': song.favorite }"
                   @click.stop="toggleFavorite(index)"
               ></el-button>
@@ -224,8 +223,8 @@ export default {
       isDragging: false,
       offsetX: 0,
       offsetY: 0,
-      playerLeft: 50,
-      playerTop: 50
+      playerLeft: '50%',
+      playerTop: '50%'
     };
   },
 
@@ -332,38 +331,6 @@ export default {
       const mins = Math.floor(seconds / 60);
       const secs = Math.floor(seconds % 60);
       return `${mins}:${secs < 10 ? '0' + secs : secs}`;
-    },
-
-    // 拖拽功能
-    startDrag(e) {
-      this.isDragging = true;
-      const rect = document.getElementById('music-player').getBoundingClientRect();
-      this.offsetX = e.clientX - rect.left;
-      this.offsetY = e.clientY - rect.top;
-
-      // 添加鼠标移动和释放事件监听
-      document.addEventListener('mousemove', this.handleDrag);
-      document.addEventListener('mouseup', this.stopDrag);
-    },
-
-    handleDrag(e) {
-      if (!this.isDragging) return;
-
-      const x = e.clientX - this.offsetX;
-      const y = e.clientY - this.offsetY;
-
-      // 限制在视窗内
-      const maxX = window.innerWidth - document.getElementById('music-player').offsetWidth;
-      const maxY = window.innerHeight - document.getElementById('music-player').offsetHeight;
-
-      this.playerLeft = Math.max(0, Math.min(x, maxX));
-      this.playerTop = Math.max(0, Math.min(y, maxY));
-    },
-
-    stopDrag() {
-      this.isDragging = false;
-      document.removeEventListener('mousemove', this.handleDrag);
-      document.removeEventListener('mouseup', this.stopDrag);
     },
 
     // 更新播放进度
