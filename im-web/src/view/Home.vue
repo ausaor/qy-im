@@ -83,6 +83,18 @@
             </div>
           </div>
           <div class="botoom">
+            <div class="bottom-item theme-selector-trigger" title="播放音乐" @click="toggleFloatMusic">
+              <span v-if="showFloatMusic" class="audio-animation">
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-yinpinzanting"></use>
+                </svg>
+              </span>
+              <span v-else>
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-Music"></use>
+                </svg>
+              </span>
+            </div>
             <div class="bottom-item theme-selector-trigger" title="更换主题" @click="toggleThemeSelector">
               <span>
                 <svg class="icon svg-icon" aria-hidden="true">
@@ -842,6 +854,9 @@
         // 这里可以实现自定义主题功能
         alert('自定义主题功能将在后续版本中实现');
         this.showThemeSelector = false;
+      },
+      toggleFloatMusic() {
+        this.$store.commit("toggleFloatMusic", []);
       }
     },
 		mounted() {

@@ -133,8 +133,8 @@
           class="playlist-container"
           v-if="isPlaylistOpen"
       >
-        <el-list class="song-list">
-          <el-list-item
+        <div class="song-list">
+          <div
               v-for="(song, index) in songs"
               :key="song.id"
               class="song-item"
@@ -153,8 +153,8 @@
                   @click.stop="toggleFavorite(index)"
               ></el-button>
             </div>
-          </el-list-item>
-        </el-list>
+          </div>
+        </div>
       </div>
     </div>
   </div>
