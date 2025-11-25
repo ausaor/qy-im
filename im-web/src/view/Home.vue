@@ -129,7 +129,8 @@
     <rtc-private-video ref="rtcPrivateVideo"></rtc-private-video>
     <rtc-private-acceptor ref="rtcPrivateAcceptor"></rtc-private-acceptor>
     <rtc-group-video ref="rtcGroupVideo" ></rtc-group-video>
-    <aplayer v-if="showFloatMusic"
+    <music-player></music-player>
+<!--    <aplayer v-if="showFloatMusic"
             :music="musics[0]"
              :list="musics"
              :show-lrc="true"
@@ -141,7 +142,7 @@
              :preload="'auto'"
              :list-max-height="'300px'"
              :list-folded="true"
-             :featured="true"/>
+             :featured="true"/>-->
 	</div>
 </template>
 
@@ -156,9 +157,11 @@
 	import Operation from "@/components/operation/Operation";
   import RtcGroupVideo from '../components/rtc/RtcGroupVideo.vue';
   import Aplayer from 'vue-aplayer'
+  import MusicPlayer from "@components/music/MusicPlayer.vue";
 
 	export default {
 		components: {
+      MusicPlayer,
 			HeadImage,
       UserInfo,
 			Setting,
