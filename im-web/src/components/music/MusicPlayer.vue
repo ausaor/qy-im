@@ -8,11 +8,10 @@
     <div
         id="drag-handle"
         class="drag-handle"
-        @mousedown="startDrag"
     >
       <div class="player-title">音乐播放器</div>
       <div class="drag-icon">
-        <i class="fa fa-arrows"></i>
+        <i class="fa el-icon-rank"></i>
       </div>
     </div>
 
@@ -52,35 +51,32 @@
 
       <!-- 控制按钮 -->
       <div class="control-buttons">
-        <el-button
-            icon="fa-volume-up"
-            class="control-btn volume-btn"
+        <div
+            class="control-btn volume-btn el-icon-d-caret"
             @click="toggleMute"
-        ></el-button>
+        ></div>
 
-        <el-button
-            icon="fa-step-backward"
-            class="control-btn prev-btn"
+        <div
+            class="control-btn prev-btn el-icon-d-arrow-left"
             @click="prevSong"
-        ></el-button>
+        ></div>
 
-        <el-button
-            :icon="isPlaying ? 'fa-pause' : 'fa-play'"
+        <div
+            :class="isPlaying ? 'el-icon-video-pause' : 'el-icon-video-play'"
             class="control-btn play-btn"
             @click="togglePlay"
-        ></el-button>
+        >
+        </div>
 
-        <el-button
-            icon="fa-step-forward"
-            class="control-btn next-btn"
+        <div
+            class="control-btn next-btn el-icon-d-arrow-right"
             @click="nextSong"
-        ></el-button>
+        ></div>
 
-        <el-button
-            icon="fa-repeat"
-            class="control-btn repeat-btn"
+        <div
+            class="control-btn repeat-btn el-icon-refresh-right"
             @click="toggleRepeat"
-        ></el-button>
+        ></div>
       </div>
 
       <!-- 音量控制 -->
@@ -128,7 +124,7 @@
       >
         <div class="playlist-title">歌曲列表</div>
         <div class="toggle-icon">
-          <i :class="isPlaylistOpen ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+          <i :class="isPlaylistOpen ? 'fa el-icon-arrow-up' : 'fa el-icon-arrow-down'"></i>
         </div>
       </div>
 
@@ -527,6 +523,7 @@ export default {
   border: none;
   color: #2a3b4c;
   transition: all 0.2s ease;
+  font-size: 36px;
 }
 
 .control-btn:hover {
