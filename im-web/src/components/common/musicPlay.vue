@@ -406,7 +406,8 @@ export default {
           src: item.url,
         }
       })
-      this.$store.commit("toggleFloatMusic", musics)
+      this.$store.commit("setMusicList", musics)
+      this.$store.commit("toggleFloatMusic")
     },
     addMusic(data) {
       this.playlist.push(data);
