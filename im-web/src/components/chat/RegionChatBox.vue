@@ -701,6 +701,7 @@ export default {
         nickName: "",
         quoteShowName: '',
         role: '',
+        chatBubbleIndex: 0,
       };
       if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
         //let friend = this.friends.find((f) => f.id === msgInfo.sendId);
@@ -726,6 +727,7 @@ export default {
         if (member) {
           showInfoObj.role = member.role;
           showInfoObj.headImage = member.headImage;
+          showInfoObj.chatBubbleIndex = member.chatBubble;
         }
         if (!showInfoObj.showName) {
           if (msgInfo.sendNickName) {

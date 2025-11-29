@@ -1008,13 +1008,14 @@
           }
         } else {
           showInfoObj.role = this.friend.role;
-          showInfoObj.chatBubbleIndex = this.friend.chatBubble;
           if (msgInfo.sendId == this.mine.id) {
             showInfoObj.showName = this.mine.nickName;
             showInfoObj.headImage = this.friend.myHeadImageToFriend ? this.friend.myHeadImageToFriend : this.mine.headImage;
+            showInfoObj.chatBubbleIndex = this.mine.chatBubble;
           } else {
             showInfoObj.showName = this.chat.showName;
-            showInfoObj.headImage = this.chat.headImage
+            showInfoObj.headImage = this.chat.headImage;
+            showInfoObj.chatBubbleIndex = this.friend.chatBubble;
           }
           if (msgInfo.quoteMsg) {
             msgInfo.quoteMsg.sendId == this.mine.id ? showInfoObj.quoteShowName = this.mine.nickName : showInfoObj.quoteShowName = this.chat.showName;

@@ -509,6 +509,19 @@ export default {
         text = this.$emo.transform(text)
         return this.formatMessage(text, this.msgInfo.quoteMsg?.atUserIds ? this.msgInfo.quoteMsg.atUserIds : [])
       },
+      bubbleStyle() {
+        // 从store中获取气泡样式
+        const bubbles = this.$store.state.uiStore.chatBubble.bubbles;
+        const index = this.showInfo.chatBubbleIndex || 0;
+        if (bubbles && bubbles[index]) {
+          return bubbles[index];
+        }
+        // 默认样式
+        return {
+          background: 'linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%)',
+          color: '#00695c'
+        };
+      },
       nameColorStyle() {
         let index = 0;
         if (this.showInfo.characterNum != null && this.showInfo.characterNum <= 10) {
@@ -609,27 +622,14 @@ export default {
             position: relative;
             line-height: 26px;
             padding: 6px 10px;
-            background-color: #daf3fd;
             border-radius: 10px;
-            color: black;
             font-size: 14px;
             text-align: left;
             white-space: pre-wrap;
             word-break: break-all;
             box-shadow: 1px 1px 1px #c0c0f0;
-
-            &:after {
-              content: "";
-              position: absolute;
-              left: -10px;
-              top: 13px;
-              width: 0;
-              height: 0;
-              border-style: solid dashed dashed;
-              border-color: #daf3fd transparent transparent;
-              overflow: hidden;
-              border-width: 10px;
-						}
+            background: v-bind("bubbleStyle.background");
+            color: v-bind("bubbleStyle.color");
 
             .at-user {
               cursor: pointer;
@@ -761,27 +761,14 @@ export default {
             line-height: 26px;
             margin-top: 3px;
             padding: 7px;
-            background-color: #daf3fd;
             border-radius: 10px;
-            color: black;
             font-size: 14px;
             text-align: left;
             white-space: pre-wrap;
             word-break: break-all;
             box-shadow: 1px 1px 1px #c0c0f0;
-
-            &:after {
-              content: "";
-              position: absolute;
-              left: -10px;
-              top: 13px;
-              width: 0;
-              height: 0;
-              border-style: solid dashed dashed;
-              border-color: #daf3fd transparent transparent;
-              overflow: hidden;
-              border-width: 10px;
-            }
+            background: v-bind("bubbleStyle.background");
+            color: v-bind("bubbleStyle.color");
 
             .word {
               overflow: hidden;
@@ -993,16 +980,10 @@ export default {
 
 						.chat-msg-text {
 							margin-left: 10px;
-              background-color: rgb(88, 127, 240);
-							color: #fff;
+              background: v-bind("bubbleStyle.background");
+							color: v-bind("bubbleStyle.color");
 							vertical-align: top;
               box-shadow: 1px 1px 1px #ccc;
-
-							&:after {
-								left: auto;
-								right: -10px;
-                border-top-color: rgb(88, 127, 240);
-							}
 
               .at-user {
                 cursor: pointer;
@@ -1011,16 +992,10 @@ export default {
 
             .chat-msg-word-voice {
               margin-left: 10px;
-              background-color: rgb(88, 127, 240);
-              color: #fff;
+              background: v-bind("bubbleStyle.background");
+              color: v-bind("bubbleStyle.color");
               vertical-align: top;
               box-shadow: 1px 1px 1px #ccc;
-
-              &:after {
-                left: auto;
-                right: -10px;
-                border-top-color: rgb(88, 127, 240);
-              }
             }
 
 						.chat-msg-image {

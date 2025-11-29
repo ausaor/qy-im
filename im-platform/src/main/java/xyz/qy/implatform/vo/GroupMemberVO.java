@@ -89,4 +89,7 @@ public class GroupMemberVO {
 
     @ApiModelProperty(value = "创建时间")
     private Date createdTime;
+
+    @ApiModelProperty(value = "聊天气泡")
+    private Integer chatBubble;
 }

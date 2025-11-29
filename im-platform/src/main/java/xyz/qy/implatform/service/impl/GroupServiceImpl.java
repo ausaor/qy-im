@@ -736,6 +736,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
             vo.setRole(user.getRole());
             vo.setUserName(user.getUserName());
+            vo.setChatBubble(user.getChatBubble());
             if (user.getId().equals(group.getOwnerId())) {
                 vo.setIsAdmin(true);
             }

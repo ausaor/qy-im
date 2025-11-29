@@ -177,6 +177,12 @@ public class User extends Model<User> {
     private LocalDateTime lastLoginTime;
 
     /**
+     * 聊天气泡
+     */
+    @TableField("chat_bubble")
+    private Integer chatBubble;
+
+    /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)

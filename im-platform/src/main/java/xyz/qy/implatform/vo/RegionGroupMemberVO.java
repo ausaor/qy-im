@@ -76,4 +76,7 @@ public class RegionGroupMemberVO {
      * 是否群主
      */
     private Boolean isLeader = false;
+
+    @ApiModelProperty(value = "聊天气泡")
+    private Integer chatBubble;
 }

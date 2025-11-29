@@ -273,6 +273,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             memberVO.setUserId(user.getId());
             memberVO.setUserName(user.getUserName());
             memberVO.setJoinType(0);
+            memberVO.setChatBubble(user.getChatBubble());
             Object banMsg = redisCache.getCacheObject(RedisKey.IM_REGION_GROUP_MEMBER_MSG_SWITCH + regionGroup.getId() + ":" + user.getId());
             if (ObjectUtil.isNotNull(banMsg)) {
                 memberVO.setIsBanned(true);
@@ -311,6 +312,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 }
                 vo.setRole(user.getRole());
                 vo.setUserName(user.getUserName());
+                vo.setChatBubble(user.getChatBubble());
                 if (userId.equals(m.getUserId()) && !m.getQuit() ) {
                     hasAuth.set(true);
                 }

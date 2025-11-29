@@ -619,6 +619,7 @@ create table im_user
     sound_play       tinyint(1)    default 0                   not null comment '消息提示音（1：开启；0：关闭）',
     friend_review    tinyint(1)    default 1                   not null comment '添加好友是否需要审核',
     group_review     tinyint(1)    default 1                   not null comment '邀请进群组是否需要审核',
+    chat_bubble      tinyint(1)    default 0                   not null comment '聊天气泡',
     last_login_time  datetime      default current_timestamp() null on update current_timestamp() comment '最后登录时间',
     create_time      datetime      default current_timestamp() null comment '创建时间',
     update_time      datetime      default current_timestamp() null on update current_timestamp() comment '更新时间',

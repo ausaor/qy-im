@@ -85,4 +85,7 @@ public class UserVO {
 
     @ApiModelProperty(value = "邀我进群需要审核")
     private Boolean groupReview;
+
+    @ApiModelProperty(value = "聊天气泡")
+    private Integer chatBubble;
 }
