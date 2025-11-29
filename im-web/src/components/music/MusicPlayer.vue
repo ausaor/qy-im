@@ -8,6 +8,7 @@
     <div
         id="drag-handle"
         class="drag-handle"
+        @mousedown="startDrag"
     >
       <div class="player-title">音乐播放器</div>
       <div class="drag-icon">
@@ -196,8 +197,8 @@ export default {
       isDragging: false,
       offsetX: 0,
       offsetY: 0,
-      playerLeft: '50%',
-      playerTop: '50%'
+      playerLeft: 0,
+      playerTop: 0
     };
   },
 
@@ -208,6 +209,77 @@ export default {
   },
 
   methods: {
+    // 开始拖拽
+    startDrag(event) {
+      // 只响应鼠标左键拖拽
+      if (event.button !== 0) return;
+      
+      this.isDragging = true;
+      
+      // 获取播放器元素
+      const player = document.getElementById('music-player');
+      const rect = player.getBoundingClientRect();
+      
+      // 计算鼠标相对于播放器左上角的偏移量
+      this.offsetX = event.clientX - rect.left;
+      this.offsetY = event.clientY - rect.top;
+      
+      // 添加全局鼠标事件监听器
+      document.addEventListener('mousemove', this.onDrag);
+      document.addEventListener('mouseup', this.stopDrag);
+      
+      // 防止文本选择
+      event.preventDefault();
+    },
+    
+    // 拖拽过程中
+    onDrag(event) {
+      if (!this.isDragging) return;
+      
+      // 获取播放器元素
+      const player = document.getElementById('music-player');
+      
+      // 计算播放器新位置（鼠标位置减去偏移量）
+      let newX = event.clientX - this.offsetX;
+      let newY = event.clientY - this.offsetY;
+      
+      // 获取播放器尺寸
+      const playerRect = player.getBoundingClientRect();
+      const playerWidth = playerRect.width;
+      const playerHeight = playerRect.height;
+      
+      // 获取窗口尺寸
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      
+      // 限制X轴移动范围
+      if (newX < 0) {
+        newX = 0;
+      } else if (newX + playerWidth > windowWidth) {
+        newX = windowWidth - playerWidth;
+      }
+      
+      // 限制Y轴移动范围
+      if (newY < 0) {
+        newY = 0;
+      } else if (newY + playerHeight > windowHeight) {
+        newY = windowHeight - playerHeight;
+      }
+      
+      // 更新播放器位置
+      this.playerLeft = newX;
+      this.playerTop = newY;
+    },
+    
+    // 停止拖拽
+    stopDrag() {
+      this.isDragging = false;
+      
+      // 移除全局鼠标事件监听器
+      document.removeEventListener('mousemove', this.onDrag);
+      document.removeEventListener('mouseup', this.stopDrag);
+    },
+    
     // 播放指定歌曲
     playSong(index) {
       this.currentSongIndex = index;
@@ -333,10 +405,21 @@ export default {
     if (this.$refs.audioPlayer) {
       this.$refs.audioPlayer.volume = this.volume / 100;
     }
+    
+    // 设置播放器初始位置到屏幕中央
+    this.$nextTick(() => {
+      const player = document.getElementById('music-player');
+      if (player) {
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const playerRect = player.getBoundingClientRect();
+        this.playerLeft = (windowWidth - playerRect.width) / 2;
+        this.playerTop = (windowHeight - playerRect.height) / 2;
+      }
+    });
   },
   watch: {
     showFloatMusic(val) {
-      console.log("showFloatMusic:", val);
       if (val) {
         this.$nextTick(() => {
           if (this.musics.length > 0) {
@@ -570,7 +653,7 @@ export default {
 }
 
 .playlist-container {
-  max-height: 400px;
+  max-height: 300px;
   overflow-y: auto;
 }
 
