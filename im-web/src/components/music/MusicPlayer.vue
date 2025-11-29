@@ -32,8 +32,8 @@
 
       <!-- 歌曲信息 -->
       <div class="song-info">
-        <h3 class="song-title">{{ currentSong?.title }}</h3>
-        <p class="song-artist">{{ currentSong?.artist }}</p>
+        <h3 class="song-title">{{ currentSong?.name }}</h3>
+        <p class="song-artist">{{ currentSong?.singer }}</p>
       </div>
 
       <!-- 进度条 -->
@@ -248,18 +248,24 @@ export default {
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
         
+        // 获取播放器实际尺寸
+        const player = document.getElementById('music-player');
+        const playerRect = player.getBoundingClientRect();
+        const actualWidth = playerRect.width;
+        const actualHeight = playerRect.height;
+        
         // 限制X轴移动范围
         if (newX < 0) {
           newX = 0;
-        } else if (newX + this.playerWidth > windowWidth) {
-          newX = windowWidth - this.playerWidth;
+        } else if (newX + actualWidth > windowWidth) {
+          newX = windowWidth - actualWidth;
         }
         
         // 限制Y轴移动范围
         if (newY < 0) {
           newY = 0;
-        } else if (newY + this.playerHeight > windowHeight) {
-          newY = windowHeight - this.playerHeight;
+        } else if (newY + actualHeight > windowHeight) {
+          newY = windowHeight - actualHeight;
         }
         
         // 更新播放器位置
