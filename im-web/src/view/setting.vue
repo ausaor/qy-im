@@ -488,7 +488,7 @@ export default {
       return this.$store.state.uiStore.chatBubble.bubbles;
     },
     currentBubbleIndex() {
-      return this.$store.state.uiStore.chatBubble.currentBubbleIndex;
+      return this.userInfo.chatBubble;
     }
   },
   methods: {
@@ -685,7 +685,8 @@ export default {
     },
     selectBubble(index) {
       this.$store.commit("setChatBubbleIndex", index);
-      this.$message.success("消息气泡设置已保存");
+      this.localUserInfo.chatBubble = index;
+      this.updateUserInfo();
     }
   }
 };

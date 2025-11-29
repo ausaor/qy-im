@@ -176,6 +176,8 @@ export default {
             nickName: "",
             quoteShowName: "",
             characterNum: null,
+            role: '',
+            chatBubbleIndex: 0,
           }
         }
       },

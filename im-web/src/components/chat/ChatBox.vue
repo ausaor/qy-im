@@ -952,7 +952,8 @@
           nickName: "",
           characterNum: null,
           quoteShowName: '',
-          role: ''
+          role: '',
+          chatBubbleIndex: 0,
         };
         if (this.chat.type === 'GROUP') {
           //let friend = this.friends.find((f) => f.id === msgInfo.sendId);
@@ -986,6 +987,7 @@
             showInfoObj.role = member.role;
             showInfoObj.characterNum = member.characterNum;
             showInfoObj.headImage = member.headImage;
+            showInfoObj.chatBubbleIndex = member.chatBubble;
             if (!showInfoObj.showName) {
               showInfoObj.showName = member.aliasName;
             }
@@ -1006,6 +1008,7 @@
           }
         } else {
           showInfoObj.role = this.friend.role;
+          showInfoObj.chatBubbleIndex = this.friend.chatBubble;
           if (msgInfo.sendId == this.mine.id) {
             showInfoObj.showName = this.mine.nickName;
             showInfoObj.headImage = this.friend.myHeadImageToFriend ? this.friend.myHeadImageToFriend : this.mine.headImage;
