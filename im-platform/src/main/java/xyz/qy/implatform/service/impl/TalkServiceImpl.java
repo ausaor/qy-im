@@ -936,6 +936,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (inRegionGroup || tempMember) {
                 return true;
             }
+        } else if (TalkCategoryEnum.PUBLIC.getCode().equals(dto.getCategory())) {
+            return true;
         }
         return false;
     }

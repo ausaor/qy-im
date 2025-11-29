@@ -147,12 +147,9 @@
               <div class="song-singer">{{ song?.singer }}</div>
             </div>
             <div class="song-actions">
-              <span class="song-duration">{{ song?.duration }}</span>
-              <el-button
-                  class="favorite-btn el-icon-star-off"
-                  :class="{ 'is-favorite': song?.favorite }"
-                  @click.stop="toggleFavorite(index)"
-              ></el-button>
+              <span class="song-duration">{{ formatTime(song?.duration) }}</span>
+              <span class="icon iconfont"
+                :class="song.liked ? 'icon-aixin' : 'icon-hongxin1'" @click.stop="toggleFavorite(index)"></span>
             </div>
           </div>
         </div>
@@ -262,7 +259,22 @@ export default {
     },
     // 切换收藏状态
     toggleFavorite(index) {
-      this.musics[index].favorite = !this.musics[index].favorite;
+      let params = {
+        musicId: this.musics[index].id
+      }
+      let url;
+      if (this.musics[index].liked) {
+        url = '/music/cancelLike'
+      } else {
+        url = '/music/like'
+      }
+      this.$http({
+        url: url,
+        method: 'POST',
+        data: params
+      }).then((res) => {
+        this.musics[index].liked = !this.musics[index].liked;
+      })
     },
     // 处理进度条变化
     handleProgressChange(val) {
@@ -629,6 +641,14 @@ export default {
 
 .favorite-btn:hover {
   background: transparent;
+  color: #ff4d4f;
+}
+
+.icon-hongxin1 {
+  color: #ff4d4f;
+}
+
+.icon-aixin {
   color: #ff4d4f;
 }
 
