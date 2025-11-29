@@ -52,7 +52,8 @@
       <!-- 控制按钮 -->
       <div class="control-buttons">
         <div
-            class="control-btn volume-btn el-icon-d-caret"
+            class="control-btn volume-btn"
+            :class="isMuted ? 'el-icon-turn-off-microphone' : 'el-icon-microphone'"
             @click="toggleMute"
         ></div>
 
@@ -269,13 +270,23 @@ export default {
     },
     // 处理音量变化
     handleVolumeChange(val) {
-      this.$refs.audioPlayer.volume = val / 100
+      this.volume = val;
+      this.$refs.audioPlayer.volume = val / 100;
+      // 如果调整音量时处于静音状态，则取消静音
+      if (this.isMuted) {
+        this.isMuted = false;
+      }
     },
     // 切换静音
     toggleMute() {
-      if (this.isMuted) {// 当前静音
+      if (this.isMuted) { // 当前静音，需要恢复音量
+        this.$refs.audioPlayer.volume = this.lastVolume / 100;
+        this.volume = this.lastVolume;
         this.isMuted = false;
-      } else {
+      } else { // 当前有音量，需要静音
+        this.lastVolume = this.volume;
+        this.$refs.audioPlayer.volume = 0;
+        this.volume = 0;
         this.isMuted = true;
       }
     },
@@ -306,7 +317,10 @@ export default {
   },
 
   mounted() {
-
+    // 设置初始音量
+    if (this.$refs.audioPlayer) {
+      this.$refs.audioPlayer.volume = this.volume / 100;
+    }
   },
   watch: {
     showFloatMusic(val) {
@@ -455,7 +469,7 @@ export default {
   border: none;
   color: #2a3b4c;
   transition: all 0.2s ease;
-  font-size: 36px;
+  font-size: 24px;
 }
 
 .control-btn:hover {
@@ -466,8 +480,8 @@ export default {
 }
 
 .play-btn {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: white;
   color: #80d4ff;
