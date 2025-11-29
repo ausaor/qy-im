@@ -83,13 +83,8 @@
             </div>
           </div>
           <div class="botoom">
-            <div class="bottom-item theme-selector-trigger" title="播放音乐" @click="toggleFloatMusic">
-              <span v-if="showFloatMusic" class="audio-animation">
-                <svg class="icon svg-icon" aria-hidden="true">
-                  <use xlink:href="#icon-yinpinzanting"></use>
-                </svg>
-              </span>
-              <span v-else>
+            <div class="bottom-item theme-selector-trigger" :class="{ 'music-active': showFloatMusic }" title="播放音乐" @click="toggleFloatMusic">
+              <span>
                 <svg class="icon svg-icon" aria-hidden="true">
                   <use xlink:href="#icon-Music"></use>
                 </svg>
@@ -1050,6 +1045,9 @@
       width: 100%;
       cursor: pointer;
       font-size: var(--icon-font-size);
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      position: relative;
 
       .icon {
         font-size: var(--icon-font-size);
@@ -1062,6 +1060,28 @@
       &:hover {
         font-weight: 600;
         color: #cccccc;
+      }
+
+      &.music-active {
+        /* 添加浮动视觉效果 */
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        transform: translateY(-3px);
+        
+        &::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          border-radius: 10px;
+          box-shadow: 0 0 20px rgba(64, 158, 255, 0.6);
+          z-index: -1;
+        }
       }
     }
 
