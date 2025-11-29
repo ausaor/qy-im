@@ -3,7 +3,7 @@
     <!-- 左侧导航栏 -->
     <el-aside width="200px" style="background-color: #f5f7fa; border-right: 1px solid #e4e7ed;">
       <el-menu
-        default-active="1"
+        :default-active="activeTab"
         class="el-menu-vertical-demo"
         @select="handleMenuSelect"
         background-color="#f5f7fa"
@@ -34,6 +34,10 @@
           <i class="el-icon-key"></i>
           <span slot="title">重置密码</span>
         </el-menu-item>
+        <el-menu-item index="7">
+          <i class="el-icon-chat-line-round"></i>
+          <span slot="title">消息气泡</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -60,8 +64,8 @@
                 </div>
               </div>
             </file-upload>
-            <div style="margin-top: 10px; font-size: 18px; font-weight: bold;">轻语</div>
-            <div style="color: #666;">ID: qingyu</div>
+            <div style="margin-top: 10px; font-size: 18px; font-weight: bold;">{{ userInfo.nickName }}</div>
+            <div style="color: #666;">ID: {{userInfo.userName}}</div>
           </div>
 
           <el-form ref="profileForm" :model="userInfo" label-width="100px" style="margin-top: 30px;">
@@ -307,6 +311,30 @@
           </el-form>
         </el-card>
       </div>
+      <div v-if="activeTab === '7'">
+        <el-card>
+          <div slot="header">
+            <h3>消息气泡</h3>
+          </div>
+          <div class="bubble-selector">
+            <div 
+              v-for="(bubble, index) in chatBubbles" 
+              :key="index" 
+              class="bubble-option"
+              :class="{ active: index === currentBubbleIndex }"
+              @click="selectBubble(index)"
+            >
+              <div 
+                class="bubble-preview" 
+                :style="{ background: bubble.background, color: bubble.color }"
+              >
+                {{ bubble.name }}
+              </div>
+              <div class="bubble-name">{{ bubble.name }}</div>
+            </div>
+          </div>
+        </el-card>
+      </div>
     </el-main>
   </el-container>
 </template>
@@ -457,6 +485,12 @@ export default {
     },
     imageAction(){
       return `/image/upload`;
+    },
+    chatBubbles() {
+      return this.$store.state.uiStore.chatBubble.bubbles;
+    },
+    currentBubbleIndex() {
+      return this.$store.state.uiStore.chatBubble.currentBubbleIndex;
     }
   },
   methods: {
@@ -650,6 +684,10 @@ export default {
         this.$store.commit("setUserInfo", this.userInfo);
         this.$message.success("操作成功");
       })
+    },
+    selectBubble(index) {
+      this.$store.commit("setChatBubbleIndex", index);
+      this.$message.success("消息气泡设置已保存");
     }
   }
 };
@@ -1055,5 +1093,46 @@ export default {
   .el-form-item {
     margin-bottom: 25px;
   }
+}
+
+// 消息气泡样式
+.bubble-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.bubble-option {
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+  border-radius: 8px;
+  padding: 10px;
+  
+  &:hover {
+    transform: translateY(-5px);
+    background-color: #f5f7fa;
+  }
+  
+  &.active {
+    background-color: #e3f2fd;
+    box-shadow: 0 2px 8px rgba(32, 119, 205, 0.2);
+  }
+}
+
+.bubble-preview {
+  padding: 12px 8px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bubble-name {
+  font-size: 12px;
+  color: #606266;
+  font-weight: 500;
 }
 </style>
