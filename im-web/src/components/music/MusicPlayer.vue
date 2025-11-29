@@ -198,7 +198,9 @@ export default {
       offsetX: 0,
       offsetY: 0,
       playerLeft: 0,
-      playerTop: 0
+      playerTop: 0,
+      playerWidth: 320,  // 预设宽度
+      playerHeight: 500  // 预设高度，稍后会更新为实际高度
     };
   },
 
@@ -236,39 +238,34 @@ export default {
     onDrag(event) {
       if (!this.isDragging) return;
       
-      // 获取播放器元素
-      const player = document.getElementById('music-player');
-      
-      // 计算播放器新位置（鼠标位置减去偏移量）
-      let newX = event.clientX - this.offsetX;
-      let newY = event.clientY - this.offsetY;
-      
-      // 获取播放器尺寸
-      const playerRect = player.getBoundingClientRect();
-      const playerWidth = playerRect.width;
-      const playerHeight = playerRect.height;
-      
-      // 获取窗口尺寸
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      
-      // 限制X轴移动范围
-      if (newX < 0) {
-        newX = 0;
-      } else if (newX + playerWidth > windowWidth) {
-        newX = windowWidth - playerWidth;
-      }
-      
-      // 限制Y轴移动范围
-      if (newY < 0) {
-        newY = 0;
-      } else if (newY + playerHeight > windowHeight) {
-        newY = windowHeight - playerHeight;
-      }
-      
-      // 更新播放器位置
-      this.playerLeft = newX;
-      this.playerTop = newY;
+      // 使用requestAnimationFrame优化性能
+      requestAnimationFrame(() => {
+        // 计算播放器新位置（鼠标位置减去偏移量）
+        let newX = event.clientX - this.offsetX;
+        let newY = event.clientY - this.offsetY;
+        
+        // 获取窗口尺寸
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        // 限制X轴移动范围
+        if (newX < 0) {
+          newX = 0;
+        } else if (newX + this.playerWidth > windowWidth) {
+          newX = windowWidth - this.playerWidth;
+        }
+        
+        // 限制Y轴移动范围
+        if (newY < 0) {
+          newY = 0;
+        } else if (newY + this.playerHeight > windowHeight) {
+          newY = windowHeight - this.playerHeight;
+        }
+        
+        // 更新播放器位置
+        this.playerLeft = newX;
+        this.playerTop = newY;
+      });
     },
     
     // 停止拖拽
@@ -413,6 +410,8 @@ export default {
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
         const playerRect = player.getBoundingClientRect();
+        this.playerWidth = playerRect.width;
+        this.playerHeight = playerRect.height;
         this.playerLeft = (windowWidth - playerRect.width) / 2;
         this.playerTop = (windowHeight - playerRect.height) / 2;
       }
