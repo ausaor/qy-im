@@ -22,7 +22,7 @@
       <div class="album-container">
         <div class="album-wrapper">
           <img
-              :src="currentSong?.cover"
+              :src="currentSong?.cover || require('@/assets/image/song_cover.jpg')"
               alt="专辑封面"
               class="album-cover"
           >
