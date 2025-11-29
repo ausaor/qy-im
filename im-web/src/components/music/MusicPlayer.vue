@@ -400,6 +400,37 @@ export default {
       } else {
         this.nextSong()
       }
+    },
+    // 将播放器居中显示
+    centerPlayer() {
+      this.$nextTick(() => {
+        const player = document.getElementById('music-player');
+        if (player) {
+          const windowWidth = window.innerWidth;
+          const windowHeight = window.innerHeight;
+          const playerRect = player.getBoundingClientRect();
+          this.playerWidth = playerRect.width;
+          this.playerHeight = playerRect.height;
+          this.playerLeft = (windowWidth - playerRect.width) / 2;
+          this.playerTop = (windowHeight - playerRect.height) / 2;
+        }
+      });
+    },
+    close() {
+      // 停止音频播放
+      if (this.$refs.audioPlayer) {
+        this.$refs.audioPlayer.pause();
+        this.$refs.audioPlayer.currentTime = 0;
+        this.$refs.audioPlayer.src = '';
+      }
+      
+      // 重置播放状态
+      this.isPlaying = false;
+      this.currentTime = 0;
+      this.duration = 0;
+      
+      // 收起播放列表
+      this.isPlaylistOpen = false;
     }
   },
 
@@ -410,18 +441,7 @@ export default {
     }
     
     // 设置播放器初始位置到屏幕中央
-    this.$nextTick(() => {
-      const player = document.getElementById('music-player');
-      if (player) {
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
-        const playerRect = player.getBoundingClientRect();
-        this.playerWidth = playerRect.width;
-        this.playerHeight = playerRect.height;
-        this.playerLeft = (windowWidth - playerRect.width) / 2;
-        this.playerTop = (windowHeight - playerRect.height) / 2;
-      }
-    });
+    this.centerPlayer();
   },
   watch: {
     showFloatMusic(val) {
@@ -430,7 +450,11 @@ export default {
           if (this.musics.length > 0) {
             this.$refs.audioPlayer.src = this.musics[this.currentSongIndex].url;
           }
+          // 确保每次显示时都居中
+          this.centerPlayer();
         })
+      } else {
+        this.close();
       }
     }
   },
