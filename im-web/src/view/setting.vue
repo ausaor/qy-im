@@ -58,30 +58,30 @@
                           @success="onUploadSuccess"
                           :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
               <div class="avatar-container">
-                <head-image :url="userInfo.headImage" :name="userInfo.nickName" :size="60"></head-image>
+                <head-image :url="localUserInfo.headImage" :name="localUserInfo.nickName" :size="60"></head-image>
                 <div class="camera-overlay">
                   <i class="el-icon-camera"></i>
                 </div>
               </div>
             </file-upload>
-            <div style="margin-top: 10px; font-size: 18px; font-weight: bold;">{{ userInfo.nickName }}</div>
-            <div style="color: #666;">ID: {{userInfo.userName}}</div>
+            <div style="margin-top: 10px; font-size: 18px; font-weight: bold;">{{ localUserInfo.nickName }}</div>
+            <div style="color: #666;">ID: {{localUserInfo.userName}}</div>
           </div>
 
-          <el-form ref="profileForm" :model="userInfo" label-width="100px" style="margin-top: 30px;">
+          <el-form ref="profileForm" :model="localUserInfo" label-width="100px" style="margin-top: 30px;">
             <el-form-item label="昵称" prop="nickname">
-              <el-input v-model="userInfo.nickName" maxlength="32"></el-input>
+              <el-input v-model="localUserInfo.nickName" maxlength="32"></el-input>
             </el-form-item>
 
             <el-form-item label="性别">
-              <el-radio-group v-model="userInfo.sex">
+              <el-radio-group v-model="localUserInfo.sex">
                 <el-radio :label="0">男</el-radio>
                 <el-radio :label="1">女</el-radio>
               </el-radio-group>
             </el-form-item>
 
             <el-form-item label="手机号">
-              <el-input v-model="userInfo.phone" disabled placeholder="未绑定手机号">
+              <el-input v-model="localUserInfo.phone" disabled placeholder="未绑定手机号">
                 <template slot="append">
                   <el-button type="text" @click="switchToTab('3')">去绑定</el-button>
                 </template>
@@ -89,12 +89,12 @@
             </el-form-item>
 
             <el-form-item label="邮箱">
-              <el-input v-model="userInfo.email" disabled></el-input>
+              <el-input v-model="localUserInfo.email" disabled></el-input>
             </el-form-item>
 
             <el-form-item label="个性签名">
               <el-input
-                v-model="userInfo.signature"
+                v-model="localUserInfo.signature"
                 type="textarea"
                 rows="4"
                 maxlength="64"
@@ -124,7 +124,7 @@
             <div class="setting-item">
               <label>加我为好友需要验证：</label>
               <el-switch
-                v-model="userInfo.friendReview"
+                v-model="localUserInfo.friendReview"
                 @change="changeFriendReview"
                 active-text="开启"
                 inactive-text="关闭">
@@ -134,7 +134,7 @@
             <div class="setting-item">
               <label>邀我进群需要验证：</label>
               <el-switch
-                v-model="userInfo.groupReview"
+                v-model="localUserInfo.groupReview"
                 @change="changeGroupReview"
                 active-text="开启"
                 inactive-text="关闭">
@@ -168,7 +168,7 @@
             <div class="setting-item">
               <label>消息提示音：</label>
               <el-switch
-                v-model="userInfo.soundPlay"
+                v-model="localUserInfo.soundPlay"
                 @change="changeSoundPlay"
                 active-text="开启"
                 inactive-text="关闭">
@@ -178,7 +178,7 @@
             <div class="setting-item">
               <label>语音自动播放：</label>
               <el-switch
-                v-model="userInfo.autoPlay"
+                v-model="localUserInfo.autoPlay"
                 @change="changeAutoPlay"
                 active-text="开启"
                 inactive-text="关闭">
@@ -281,7 +281,7 @@
           
           <el-form :model="resetPwdForm" ref="resetPwdForm" :rules="resetPwdRules" label-width="100px" class="reset-pwd-form">
             <el-form-item label="邮箱地址" prop="email">
-              <el-input type="text" :disabled="true" v-model="userInfo.email" autocomplete="off"></el-input>
+              <el-input type="text" :disabled="true" v-model="localUserInfo.email" autocomplete="off"></el-input>
             </el-form-item>
             
             <el-form-item label="验证码" prop="emailCode">
@@ -470,8 +470,6 @@ export default {
       handler(newVal) {
         // 初始化开关状态
         if (newVal) {
-          this.friendOnlineNotice = newVal.friendOnlineNotice || false;
-          this.onlineNoticeFriend = newVal.onlineNoticeFriend || false;
           // 复制userInfo对象，避免直接修改Vuex状态
           this.localUserInfo = { ...newVal };
         }
@@ -495,8 +493,8 @@ export default {
   },
   methods: {
     onUploadSuccess(data, file) {
-      this.userInfo.headImage = data.originUrl;
-      this.userInfo.headImageThumb = data.thumbUrl;
+      this.localUserInfo.headImage = data.originUrl;
+      this.localUserInfo.headImageThumb = data.thumbUrl;
     },
     // 处理菜单选择
     handleMenuSelect(key) {
@@ -515,9 +513,9 @@ export default {
           this.$http({
             url: "/user/update",
             method: "put",
-            data: this.userInfo
+            data: this.localUserInfo
           }).then(()=>{
-            this.$store.commit("setUserInfo", this.userInfo);
+            this.$store.commit("setUserInfo", this.localUserInfo);
             this.$emit("close");
             this.$message.success('个人资料修改成功');
           })
@@ -660,28 +658,28 @@ export default {
     
     // 开关项相关方法 (从Operation.vue迁移过来)
     changeFriendReview(value) {
-      this.userInfo.friendReview = value;
+      this.localUserInfo.friendReview = value;
       this.updateUserInfo();
     },
     changeGroupReview(value) {
-      this.userInfo.groupReview = value;
+      this.localUserInfo.groupReview = value;
       this.updateUserInfo();
     },
     changeSoundPlay(value) {
-      this.userInfo.soundPlay = value;
+      this.localUserInfo.soundPlay = value;
       this.updateUserInfo();
     },
     changeAutoPlay(value) {
-      this.userInfo.autoPlay = value;
+      this.localUserInfo.autoPlay = value;
       this.updateUserInfo();
     },
     updateUserInfo() {
       this.$http({
         url: "/user/update",
         method: "put",
-        data: this.userInfo
+        data: this.localUserInfo
       }).then(()=>{
-        this.$store.commit("setUserInfo", this.userInfo);
+        this.$store.commit("setUserInfo", this.localUserInfo);
         this.$message.success("操作成功");
       })
     },
