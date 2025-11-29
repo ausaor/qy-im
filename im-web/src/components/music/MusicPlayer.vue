@@ -21,7 +21,7 @@
       <div class="album-container">
         <div class="album-wrapper">
           <img
-              :src="currentSong.album"
+              :src="currentSong?.cover"
               alt="专辑封面"
               class="album-cover"
           >
@@ -31,19 +31,19 @@
 
       <!-- 歌曲信息 -->
       <div class="song-info">
-        <h3 class="song-title">{{ currentSong.title }}</h3>
-        <p class="song-artist">{{ currentSong.artist }}</p>
+        <h3 class="song-title">{{ currentSong?.title }}</h3>
+        <p class="song-artist">{{ currentSong?.artist }}</p>
       </div>
 
       <!-- 进度条 -->
       <div class="progress-container">
         <div class="time-display">
-          <span>{{ currentTime }}</span>
-          <span>{{ currentSong.duration }}</span>
+          <span>{{ formatTime(currentTime) }}</span>
+          <span>{{ formatTime(duration) }}</span>
         </div>
         <el-slider
-            v-model="progress"
-            :max="100"
+            v-model="currentTime"
+            :max="duration"
             class="progress-slider"
             @change="handleProgressChange"
         ></el-slider>
@@ -135,21 +135,21 @@
       >
         <div class="song-list">
           <div
-              v-for="(song, index) in songs"
-              :key="song.id"
+              v-for="(song, index) in musics"
+              :key="song?.id"
               class="song-item"
               :class="{ 'active-song': index === currentSongIndex }"
               @click="playSong(index)"
           >
             <div class="song-details">
-              <div class="song-name">{{ song.title }}</div>
-              <div class="song-singer">{{ song.artist }}</div>
+              <div class="song-name">{{ song?.name }}</div>
+              <div class="song-singer">{{ song?.singer }}</div>
             </div>
             <div class="song-actions">
-              <span class="song-duration">{{ song.duration }}</span>
+              <span class="song-duration">{{ song?.duration }}</span>
               <el-button
                   class="favorite-btn el-icon-star-off"
-                  :class="{ 'is-favorite': song.favorite }"
+                  :class="{ 'is-favorite': song?.favorite }"
                   @click.stop="toggleFavorite(index)"
               ></el-button>
             </div>
@@ -157,67 +157,42 @@
         </div>
       </div>
     </div>
+    <!-- 隐藏的音频元素 -->
+    <audio
+        ref="audioPlayer"
+        @timeupdate="updateTime"
+        @loadedmetadata="updateDuration"
+        @ended="onSongEnd"
+    ></audio>
   </div>
 </template>
 
 <script>
 export default {
+  name: "MusicPlayer",
+  props: {
+    musics: {
+      type: Array,
+      default: () => []
+    },
+    showFloatMusic: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
-      // 歌曲数据
-      songs: [
-        {
-          id: 1,
-          title: "星空下的约定",
-          artist: "梦乐团",
-          duration: "3:45",
-          album: "https://picsum.photos/id/65/300/300",
-          favorite: true
-        },
-        {
-          id: 2,
-          title: "深海回响",
-          artist: "海浪乐队",
-          duration: "4:12",
-          album: "https://picsum.photos/id/96/300/300",
-          favorite: false
-        },
-        {
-          id: 3,
-          title: "城市微光",
-          artist: "午夜行者",
-          duration: "3:28",
-          album: "https://picsum.photos/id/24/300/300",
-          favorite: true
-        },
-        {
-          id: 4,
-          title: "时间旅行者",
-          artist: "维度穿越者",
-          duration: "5:03",
-          album: "https://picsum.photos/id/42/300/300",
-          favorite: false
-        },
-        {
-          id: 5,
-          title: "电子梦境",
-          artist: "数字幽灵",
-          duration: "3:57",
-          album: "https://picsum.photos/id/60/300/300",
-          favorite: false
-        }
-      ],
-
       // 播放器状态
       currentSongIndex: 0,
-      isPlaying: true,
+      isPlaying: false,
       playMode: 0, // 0-顺序，1-随机，2-单曲循环
-      progress: 35,
-      volume: 70,
+      progress: 0,
+      volume: 30,
       isMuted: false,
-      lastVolume: 70,
-      currentTime: "1:23",
-      isPlaylistOpen: true,
+      lastVolume: 30,
+      currentTime: 0,
+      duration: 0,
+      isPlaylistOpen: false,
 
       // 拖拽相关
       isDragging: false,
@@ -230,7 +205,7 @@ export default {
 
   computed: {
     currentSong() {
-      return this.songs[this.currentSongIndex];
+      return this.musics[this.currentSongIndex];
     }
   },
 
@@ -238,123 +213,113 @@ export default {
     // 播放指定歌曲
     playSong(index) {
       this.currentSongIndex = index;
-      this.isPlaying = true;
-      this.progress = 0;
-      this.updateCurrentTime();
+      this.$nextTick(() => {
+        if (this.currentSong.url) {
+          this.$refs.audioPlayer.src = this.currentSong.url
+          this.$refs.audioPlayer.currentTime = 0
+          this.$refs.audioPlayer.play()
+          this.isPlaying = true
+        }
+      })
     },
-
     // 切换播放/暂停
     togglePlay() {
+      if (this.isPlaying) {
+        this.$refs.audioPlayer.pause()
+      } else {
+        this.$refs.audioPlayer.play()
+      }
       this.isPlaying = !this.isPlaying;
     },
-
     // 上一首
     prevSong() {
       if (this.playMode === 1) { // 随机模式
-        const randomIndex = Math.floor(Math.random() * this.songs.length);
+        const randomIndex = Math.floor(Math.random() * this.musics.length);
         this.currentSongIndex = randomIndex;
       } else {
-        this.currentSongIndex = (this.currentSongIndex - 1 + this.songs.length) % this.songs.length;
+        this.currentSongIndex = (this.currentSongIndex - 1 + this.musics.length) % this.musics.length;
       }
       this.playSong(this.currentSongIndex);
     },
-
     // 下一首
     nextSong() {
       if (this.playMode === 1) { // 随机模式
-        const randomIndex = Math.floor(Math.random() * this.songs.length);
+        const randomIndex = Math.floor(Math.random() * this.musics.length);
         this.currentSongIndex = randomIndex;
       } else {
-        this.currentSongIndex = (this.currentSongIndex + 1) % this.songs.length;
+        this.currentSongIndex = (this.currentSongIndex + 1) % this.musics.length;
       }
       this.playSong(this.currentSongIndex);
     },
-
     // 切换播放列表显示
     togglePlaylist() {
       this.isPlaylistOpen = !this.isPlaylistOpen;
     },
-
     // 设置播放模式
     setPlayMode(mode) {
       this.playMode = mode;
     },
-
     // 切换收藏状态
     toggleFavorite(index) {
-      this.songs[index].favorite = !this.songs[index].favorite;
+      this.musics[index].favorite = !this.musics[index].favorite;
     },
-
     // 处理进度条变化
     handleProgressChange(val) {
-      this.progress = val;
-      this.updateCurrentTime();
+      this.$refs.audioPlayer.currentTime = val
     },
-
     // 处理音量变化
     handleVolumeChange(val) {
-      this.volume = val;
-      this.isMuted = val === 0;
+      this.$refs.audioPlayer.volume = val / 100
     },
-
     // 切换静音
     toggleMute() {
-      if (this.isMuted) {
-        this.volume = this.lastVolume;
+      if (this.isMuted) {// 当前静音
         this.isMuted = false;
       } else {
-        this.lastVolume = this.volume;
-        this.volume = 0;
         this.isMuted = true;
       }
     },
-
     // 切换循环模式
     toggleRepeat() {
       this.playMode = (this.playMode + 1) % 3;
     },
-
-    // 更新当前播放时间
-    updateCurrentTime() {
-      const totalSeconds = this.parseTimeToSeconds(this.currentSong.duration);
-      const currentSeconds = Math.floor(totalSeconds * (this.progress / 100));
-      this.currentTime = this.formatTime(currentSeconds);
-    },
-
-    // 时间格式化工具
-    parseTimeToSeconds(timeStr) {
-      const [minutes, seconds] = timeStr.split(':').map(Number);
-      return minutes * 60 + seconds;
-    },
-
     formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs < 10 ? '0' + secs : secs}`;
+      if (!seconds) return '0:00'
+      const mins = Math.floor(seconds / 60)
+      const secs = Math.floor(seconds % 60)
+      return `${mins}:${secs.toString().padStart(2, '0')}`
     },
-
-    // 更新播放进度
-    updateProgress() {
-      if (!this.isPlaying) return;
-
-      this.progress += 0.01;
-      if (this.progress >= 100) {
-        if (this.playMode === 2) { // 单曲循环
-          this.progress = 0;
-        } else {
-          this.nextSong();
-          this.progress = 0;
-        }
+    updateTime() {
+      this.currentTime = this.$refs.audioPlayer.currentTime
+    },
+    updateDuration() {
+      this.duration = this.$refs.audioPlayer.duration
+    },
+    onSongEnd() {
+      if (this.playMode === 2) {
+        this.$refs.audioPlayer.currentTime = 0
+        this.$refs.audioPlayer.play()
+      } else {
+        this.nextSong()
       }
-
-      this.updateCurrentTime();
     }
   },
 
   mounted() {
-    // 启动进度更新定时器
-    setInterval(this.updateProgress, 100);
-  }
+
+  },
+  watch: {
+    showFloatMusic(val) {
+      console.log("showFloatMusic:", val);
+      if (val) {
+        this.$nextTick(() => {
+          if (this.musics.length > 0) {
+            this.$refs.audioPlayer.src = this.musics[this.currentSongIndex].url;
+          }
+        })
+      }
+    }
+  },
 };
 </script>
 

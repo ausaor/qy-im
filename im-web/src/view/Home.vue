@@ -141,7 +141,7 @@
     <rtc-private-video ref="rtcPrivateVideo"></rtc-private-video>
     <rtc-private-acceptor ref="rtcPrivateAcceptor"></rtc-private-acceptor>
     <rtc-group-video ref="rtcGroupVideo" ></rtc-group-video>
-    <music-player v-show="showFloatMusic"></music-player>
+    <music-player v-show="showFloatMusic" :show-float-music="showFloatMusic" :musics="musics"></music-player>
 <!--    <aplayer v-if="showFloatMusic"
             :music="musics[0]"
              :list="musics"
@@ -856,7 +856,7 @@
         this.showThemeSelector = false;
       },
       toggleFloatMusic() {
-        this.$store.commit("toggleFloatMusic", []);
+        this.$store.commit("toggleFloatMusic");
       }
     },
 		mounted() {

@@ -36,6 +36,7 @@ export default new Vuex.Store({
 				promises.push(this.dispatch("loadRegionChat"));
 				promises.push(this.dispatch("loadTalkInfo"));
 				promises.push(this.dispatch("loadConfig"));
+				promises.push(this.dispatch("loadPublicMusics"));
 				return Promise.all(promises);
 			})
 		},

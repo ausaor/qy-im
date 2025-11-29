@@ -10,7 +10,9 @@ public enum TalkCategoryEnum {
 
     REGION("region"),
 
-    GROUP("group");
+    GROUP("group"),
+
+    PUBLIC("public");
 
     private final String code;
 

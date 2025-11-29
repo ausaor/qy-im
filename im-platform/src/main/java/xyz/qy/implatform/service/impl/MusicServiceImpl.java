@@ -65,7 +65,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         long userId = SessionContext.getSession().getUserId();
 
         List<Music> musics = null;
-        if (StringUtils.equalsAny(dto.getCategory(), TalkCategoryEnum.GROUP.getCode(), TalkCategoryEnum.REGION.getCode())) {
+        if (StringUtils.equalsAny(dto.getCategory(), TalkCategoryEnum.GROUP.getCode(), TalkCategoryEnum.REGION.getCode(), TalkCategoryEnum.PUBLIC.getCode())) {
             LambdaQueryWrapper<Music> wrapper = Wrappers.lambdaQuery();
             wrapper.eq(Music::getDeleted, false)
                     .eq(Music::getCategory, dto.getCategory())
