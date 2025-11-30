@@ -165,6 +165,8 @@ export default {
           nickName: "",
           characterNum: null,
           quoteShowName: "",
+          role: '',
+          chatBubbleIndex: 0,
         }
       }
     },
@@ -594,19 +596,6 @@ export default {
           display: inline-flex;
           overflow: visible;
 
-
-					&:after {
-						position: absolute;
-						left: -20rpx;
-						top: 26rpx;
-						width: 6rpx;
-						height: 6rpx;
-						border-style: solid dashed dashed;
-						border-color: $im-bg transparent transparent;
-						overflow: hidden;
-						border-width: 18rpx;
-					}
-
           .at-user {
             text-decoration: none; /* 去掉下划线 */
             color: #3498db; /* 自定义颜色（示例：蓝色） */
@@ -626,20 +615,6 @@ export default {
           text-align: left;
           word-break: break-all;
           white-space: pre-line;
-
-
-          &:after {
-            content: "";
-            position: absolute;
-            left: -20rpx;
-            top: 26rpx;
-            width: 6rpx;
-            height: 6rpx;
-            border-style: solid dashed dashed;
-            border-color: $im-bg transparent transparent;
-            overflow: hidden;
-            border-width: 18rpx;
-          }
 
           .word-voice-box {
             display: flex;
@@ -971,12 +946,6 @@ export default {
 						background-color: $im-color-primary-light-2;
 						color: #fff;
 
-						&:after {
-							left: auto;
-							right: -9px;
-							border-top-color: $im-color-primary-light-2;
-						}
-
             .at-user {
               text-decoration: none; /* 去掉下划线 */
               color: white; /* 自定义颜色（示例：蓝色） */
@@ -987,12 +956,6 @@ export default {
             margin-left: 10px;
             background-color: $im-color-primary-light-2;
             color: #fff;
-
-            &:after {
-              left: auto;
-              right: -9px;
-              border-top-color: $im-color-primary-light-2;
-            }
           }
 
 					.chat-msg-image {

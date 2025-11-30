@@ -349,11 +349,14 @@ export default {
         nickName: "",
         characterNum: null,
         quoteShowName: '',
+        role: '',
+        chatBubbleIndex: 0,
       };
       if (this.chat.type == 'GROUP') {
         //let friend = this.friends.find((f) => f.id === msgInfo.sendId);
         let friend = this.friendsMap.get(msgInfo.sendId);
         if (friend) {
+          showInfoObj.role = friend.role;
           if (friend.friendRemark) {
             showInfoObj.nickName = friend.friendRemark;
           } else if (friend.friendNickName) {
@@ -375,6 +378,8 @@ export default {
         if (member) {
           showInfoObj.characterNum = member.characterNum;
           showInfoObj.headImage = member.headImage;
+          showInfoObj.role = member.role;
+          showInfoObj.chatBubbleIndex = member.chatBubble;
           if (!showInfoObj.showName) {
             showInfoObj.showName = member.aliasName;
           }
@@ -399,8 +404,16 @@ export default {
           }
         }
       } else {
-        msgInfo.sendId == this.mine.id ? showInfoObj.showName = this.mine.nickName : showInfoObj.showName = this.chat.showName;
-        msgInfo.sendId == this.mine.id ? showInfoObj.headImage = this.mine.headImage : showInfoObj.headImage = this.chat.headImage;
+        showInfoObj.role = this.friend.role;
+        if (msgInfo.sendId == this.mine.id) {
+          showInfoObj.showName = this.mine.nickName
+          showInfoObj.headImage = this.mine.headImage
+          showInfoObj.chatBubbleIndex = this.mine.chatBubble;
+        } else {
+          showInfoObj.showName = this.chat.showName;
+          showInfoObj.headImage = this.chat.headImage;
+          showInfoObj.chatBubbleIndex = this.friend.chatBubble;
+        }
         if (msgInfo.quoteMsg) {
           msgInfo.quoteMsg.sendId == this.mine.id ? showInfoObj.quoteShowName = this.mine.nickName : showInfoObj.quoteShowName = this.chat.showName;
         }

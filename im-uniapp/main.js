@@ -18,6 +18,7 @@ import useConfigStore from '@/store/configStore.js'
 import useUserStore from '@/store/userStore.js'
 import useRegionStore from '@/store/regionStore.js'
 import useTalkStore from '@/store/talkStore.js'
+import uiStore from '@/store/uiStore.js'
 import barGroup from '@/components/bar/bar-group'
 import arrowBar from '@/components/bar/arrow-bar'
 import btnBar from '@/components/bar/btn-bar'
@@ -61,6 +62,7 @@ export function createApp() {
     app.config.globalProperties.userStore = useUserStore();
     app.config.globalProperties.regionStore = useRegionStore();
     app.config.globalProperties.talkStore = useTalkStore();
+    app.config.globalProperties.uiStore = uiStore();
   }
   return {
     app,
