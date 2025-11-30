@@ -1,6 +1,6 @@
 <template>
   <view class="page chat-system" id="chatBox" :chatidx="chatIdx">
-    <nav-bar back>{{ title }}</nav-bar>
+    <nav-bar back :theme-index="15">{{ title }}</nav-bar>
     <view class="chat-msg" :style="{height: chatMainHeight+'px'}">
       <scroll-view ref="messagesContainer" class="scroll-box" scroll-y="true" upper-threshold="200" @scroll="onScroll"
                    @scrolltoupper="onScrollToTop" @scrolltolower="onScrollToBottom"

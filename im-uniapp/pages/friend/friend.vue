@@ -1,7 +1,7 @@
 <template>
 
 	<view class="tab-page friend">
-		<nav-bar add search @add="onAddNewFriends" @search="showSearch = !showSearch">通讯录</nav-bar>
+		<nav-bar add search @add="onAddNewFriends" @search="showSearch = !showSearch" :theme-index="9">通讯录</nav-bar>
 		<view class="nav-bar" v-if="showSearch">
 			<view class="nav-search">
 				<uni-search-bar v-model="searchText" radius="100" cancelButton="none"

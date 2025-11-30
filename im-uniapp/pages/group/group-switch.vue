@@ -246,9 +246,9 @@ export default {
   display: flex;
   flex-direction: column;
   background-color: #fff;
-  padding: 10rpx;
 
   .btns-box {
+    margin-top: 10rpx;
     display: flex;
     flex-direction: column;
     gap: 10rpx;

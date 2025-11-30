@@ -1,6 +1,6 @@
 <template>
 	<view class="page user-info">
-		<nav-bar back>用户信息</nav-bar>
+		<nav-bar back :theme-index="6">用户信息</nav-bar>
 		<uni-card :is-shadow="false" is-full :border="false">
 			<view class="content">
 				<head-image :name="userInfo.nickName" :url="userInfo.headImage" :size="160"

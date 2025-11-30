@@ -1,7 +1,7 @@
 <template>
   <view class="page region-list">
     <!-- 顶部导航栏 -->
-    <nav-bar back>选择地区</nav-bar>
+    <nav-bar back :theme-index="5">选择地区</nav-bar>
     <view class="container">
       <!-- 当前选中地区 -->
       <view class="current-location">

@@ -1,6 +1,6 @@
 <template>
 	<view class="page mine">
-		<nav-bar>我的</nav-bar>
+		<nav-bar :theme-index="13">我的</nav-bar>
 		<uni-card :is-shadow="false" is-full :border="false">
 			<view class="content" @click="onModifyInfo()">
 				<head-image :name="userInfo.nickName" :url="userInfo.headImage" :size="160"></head-image>

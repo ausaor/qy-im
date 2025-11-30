@@ -1,6 +1,6 @@
 <template>
 	<view class="page group-member">
-		<nav-bar back>群成员</nav-bar>
+		<nav-bar back :theme-index="16">群成员</nav-bar>
 		<view class="nav-bar">
 			<view class="nav-search">
 				<uni-search-bar v-model="searchText" radius="100" cancelButton="none"

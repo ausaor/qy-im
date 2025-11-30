@@ -1,6 +1,6 @@
 <template>
 	<view class="page group">
-		<nav-bar back add search @add="onCreateNewGroup" @search="showSearch = !showSearch">群聊</nav-bar>
+		<nav-bar back add search @add="onCreateNewGroup" @search="showSearch = !showSearch" :theme-index="8">群聊</nav-bar>
 		<view class="nav-bar" v-if="showSearch">
 			<view class="nav-search">
 				<uni-search-bar v-model="searchText" cancelButton="none" radius="100"

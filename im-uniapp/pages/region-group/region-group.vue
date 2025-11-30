@@ -1,6 +1,6 @@
 <template>
   <view class="tab-page region-group">
-    <nav-bar search add @add="toSelectRegion" @search="onSearch()">地区群聊</nav-bar>
+    <nav-bar search add @add="toSelectRegion" @search="onSearch()" :theme-index="1">地区群聊</nav-bar>
     <view v-if="loading" class="chat-loading">
       <loading :size="50" :mask="false">
         <view>消息接收中...</view>

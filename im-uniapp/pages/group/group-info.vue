@@ -1,6 +1,6 @@
 <template>
 	<view class="page group-info">
-		<nav-bar back home @gotoHome="gotoHome">群聊信息</nav-bar>
+		<nav-bar back home @gotoHome="gotoHome" :theme-index="9">群聊信息</nav-bar>
 		<view v-if="!group.quit" class="group-members">
 			<view class="member-items">
 				<view v-for="(member, idx) in groupMembers" :key="idx">
