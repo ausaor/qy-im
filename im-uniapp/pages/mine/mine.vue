@@ -38,18 +38,7 @@
       <arrow-bar title="重置密码" icon="icon-zhongzhimima"  @tap="onResetPassword()"></arrow-bar>
       <arrow-bar title="消息通知" icon="icon-notice"  @tap="onMsgNotice()"></arrow-bar>
       <arrow-bar title="绑定邮箱" icon="icon-email1"  @tap="onBindEmail()"></arrow-bar>
-      <view class="activity-space" @tap="onActivitySpace()">
-        <text class="icon iconfont icon-shejiaotubiao-40" style="color: #f5be3f"></text>
-        <text class="title">
-          我的空间
-          <uni-badge v-show="notifyCount" class="uni-badge-left-margin" :text="notifyCount" type="primary"
-                     :customStyle="{background: '#f56c6c'}" /></text>
-        <text class="count" v-show="unreadUserCount">{{ unreadUserCount }}人新发表</text>
-        <view class="new-talk-user">
-          <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="45"></head-image>
-        </view>
-        <uni-icons class="arrow" type="right" size="16"></uni-icons>
-      </view>
+      <arrow-bar title="我的空间" icon="icon-shejiaotubiao-40" :in-color="'orange'"  @tap="onActivitySpace()"></arrow-bar>
 		</bar-group>
 		<bar-group>
 			<btn-bar title="退出登录" type="danger" @tap="onQuit()"></btn-bar>
@@ -89,26 +78,8 @@ export default {
       })
     },
     onActivitySpace() {
-      if (this.unreadUserCount > 0 || this.notifyCount > 0) {
-        if (this.notifyCount > 0) {
-          this.readedTalkNotify();
-        }
-        this.talkStore.resetTalkList();
-      }
       uni.navigateTo({
         url: "/pages/activity/activity-space?category=private&section=my"
-      })
-    },
-    readedTalkNotify() {
-      let params = {
-        category: 'private'
-      }
-      this.$http({
-        url: `/talk-notify/readed`,
-        method: 'post',
-        data: params
-      }).then(() => {
-
       })
     },
 		onQuit() {
@@ -122,44 +93,13 @@ export default {
 				}
 			});
 		},
-    refreshUnreadBadge() {
-      if (this.unreadUserCount > 0 || this.notifyCount > 0) {
-        uni.setTabBarBadge({
-          index: 3,
-          text: (this.unreadUserCount + this.notifyCount) + ""
-        })
-      } else {
-        uni.removeTabBarBadge({
-          index: 3,
-          complete: () => {}
-        })
-      }
-    }
 	},
 	computed: {
 		userInfo() {
 			return this.userStore.userInfo;
 		},
-    unreadUserCount() {
-      return this.talkStore.unreadUserList.length;
-    },
-    notifyCount() {
-      return this.talkStore.notifyCount;
-    },
-    talkList() {
-      return this.talkStore.lastTalks;
-    }
 	},
-  watch: {
-    unreadUserCount(newCount, oldCount) {
-      this.refreshUnreadBadge();
-    },
-    notifyCount(newCount, oldCount) {
-      this.refreshUnreadBadge();
-    }
-  },
   onShow() {
-    this.refreshUnreadBadge();
   }
 }
 </script>

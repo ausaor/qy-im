@@ -17,6 +17,10 @@
           <view class="item-name">空间动态</view>
           <uni-badge v-show="notifyCount > 0" :text="notifyCount" />
         </view>
+        <text class="count" v-show="unreadUserCount">{{ unreadUserCount }}人新发表</text>
+        <view class="new-talk-user">
+          <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="45"></head-image>
+        </view>
         <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
       </view>
       <view class="socializes-item" @click.stop="toFriendRequestPage">
@@ -99,6 +103,12 @@ export default {
 			return /^[A-Za-z]+$/.test(character);
 		},
     toActivityPage() {
+      if (this.unreadUserCount > 0 || this.notifyCount > 0) {
+        if (this.notifyCount > 0) {
+          this.readedTalkNotify();
+        }
+        this.talkStore.resetTalkList();
+      }
       uni.navigateTo({
         url: "/pages/activity/activity-space?category=private&section=my-friends"
       })
@@ -119,10 +129,10 @@ export default {
       })
     },
     refreshUnreadBadge() {
-      if (this.friendRequestCount > 0) {
+      if (this.friendRequestCount > 0 || this.notifyCount > 0 || this.unreadUserCount > 0 || this.receivedGroupRequestsCount > 0 || this.joinGroupRequestsCount > 0) {
         uni.setTabBarBadge({
           index: 2,
-          text: this.friendRequestCount + ""
+          text: this.friendRequestCount + this.notifyCount + this.unreadUserCount + this.receivedGroupRequestsCount + this.joinGroupRequestsCount + ""
         })
       } else {
         uni.removeTabBarBadge({
@@ -130,7 +140,19 @@ export default {
           complete: () => {}
         })
       }
-    }
+    },
+    readedTalkNotify() {
+      let params = {
+        category: 'private'
+      }
+      this.$http({
+        url: `/talk-notify/readed`,
+        method: 'post',
+        data: params
+      }).then(() => {
+
+      })
+    },
 	},
 	computed: {
     mine() {
@@ -202,6 +224,18 @@ export default {
   watch: {
     friendRequestCount(newCount, oldCount) {
       this.refreshUnreadBadge();
+    },
+    receivedGroupRequestsCount(newCount, oldCount) {
+      this.refreshUnreadBadge();
+    },
+    joinGroupRequestsCount(newCount, oldCount) {
+      this.refreshUnreadBadge();
+    },
+    unreadUserCount(newCount, oldCount) {
+      this.refreshUnreadBadge();
+    },
+    notifyCount(newCount, oldCount) {
+      this.refreshUnreadBadge();
     }
   },
   onShow() {
@@ -267,6 +301,15 @@ export default {
           overflow: hidden;
           color: $im-text-color;
         }
+      }
+
+      .count {
+        color: red;
+      }
+
+      .new-talk-user {
+        display: flex;
+        align-items: center;
       }
       
       .arrow-right {

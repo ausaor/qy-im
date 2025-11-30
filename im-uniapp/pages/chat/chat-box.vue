@@ -1155,10 +1155,10 @@ export default {
 			}
 			if (this.chat.type == "PRIVATE") {
 				msgInfo.recvId = this.mine.id
-				msgInfo.content = "该用户已被管理员封禁,原因:" + this.friend.reason
+				msgInfo.content = "该用户已被禁言"
 			} else {
 				msgInfo.groupId = this.group.id;
-				msgInfo.content = "本群聊已被管理员封禁,原因:" + this.group.reason
+				msgInfo.content = "本群聊已被禁言"
 			}
 			this.chatStore.insertMessage(msgInfo, this.chat);
 		},

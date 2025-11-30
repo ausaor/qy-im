@@ -957,7 +957,7 @@ export default {
 
             .at-user {
               text-decoration: none; /* 去掉下划线 */
-              color: white; /* 自定义颜色（示例：蓝色） */
+              color: #3498db; /* 自定义颜色（示例：蓝色） */
             }
 					}
 
