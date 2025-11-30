@@ -1377,6 +1377,7 @@ export default {
     position: fixed;
     bottom: 0;
     background-color: $im-bg;
+    width: 100%;
 
     .chat-tools {
       display: flex;
@@ -1409,7 +1410,10 @@ export default {
         .tool-name {
           height: 60rpx;
           line-height: 60rpx;
-          font-size: 28rpx;
+          font-size: 24rpx;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
       }
     }
