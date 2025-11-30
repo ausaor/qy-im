@@ -809,11 +809,14 @@ export default {
         headImage: "",
         nickName: "",
         quoteShowName: '',
+        role: '',
+        chatBubbleIndex: 0,
       };
       if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
         //let friend = this.friends.find((f) => f.id === msgInfo.sendId);
         let friend = this.friendsMap.get(msgInfo.sendId);
         if (friend) {
+          showInfoObj.role = friend.role;
           if (friend.friendRemark) {
             showInfoObj.showName = friend.friendRemark;
           }
@@ -827,6 +830,8 @@ export default {
         }
         if (member) {
           showInfoObj.headImage = member.headImage;
+          showInfoObj.role = member.role;
+          showInfoObj.chatBubbleIndex = member.chatBubble;
         }
         if (msgInfo.quoteMsg) {
           //let member2 = this.regionGroupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);

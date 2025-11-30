@@ -21,12 +21,12 @@
 					<view v-if="msgInfo.type == $enums.MESSAGE_TYPE.TEXT">
 						<long-press-menu :items="menuItems" @select="onSelectMenu">
 <!--							<up-parse class="chat-msg-text" :showImgMenu="false" :content="nodesText"></up-parse>-->
-							 <rich-text class="chat-msg-text" :nodes="nodesText" @itemclick="onLinkClick"></rich-text>
+							 <rich-text class="chat-msg-text" :style="currentBubbleStyle" :nodes="nodesText" @itemclick="onLinkClick"></rich-text>
 						</long-press-menu>
 					</view>
           <view v-if="msgInfo.type == $enums.MESSAGE_TYPE.WORD_VOICE" class="chat-msg-word-voice">
             <long-press-menu :items="menuItems" @select="onSelectMenu">
-              <view class="word-voice-box">
+              <view class="word-voice-box" :style="currentBubbleStyle">
                 <view class="chat-msg-word-voice-text">{{JSON.parse(msgInfo.content).word}}</view>
                 <view class="voice" @click.stop="onPlayAudio(JSON.parse(msgInfo.content).voice)">
                   <svg-icon v-if="!isPlaying" :icon-class="'xitongxiaoxi'" />
@@ -207,6 +207,131 @@ export default {
         "#af0831","#326eb6"]
 		}
 	},
+  computed: {
+    // 获取当前气泡样式
+    currentBubbleStyle() {
+      const index = this.showInfo.chatBubbleIndex || 0;
+      const bubble = this.uiStore.chatBubble.bubbles[index];
+      if (bubble) {
+        return {
+          background: bubble.background,
+          color: bubble.color
+        }
+      }
+
+      return {
+        background: 'linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%)',
+        color: '#00695c'
+      };
+    },
+		loading() {
+			return this.msgInfo.loadStatus && this.msgInfo.loadStatus === "loading";
+		},
+		loadFail() {
+			return this.msgInfo.loadStatus && this.msgInfo.loadStatus === "fail";
+		},
+		data() {
+			return JSON.parse(this.msgInfo.content)
+		},
+		fileSize() {
+			let size = this.data.size;
+			if (size > 1024 * 1024) {
+				return Math.round(size / 1024 / 1024) + "M";
+			}
+			if (size > 1024) {
+				return Math.round(size / 1024) + "KB";
+			}
+			return size + "B";
+		},
+    quoteMsgData() {
+      return JSON.parse(this.msgInfo.quoteMsg.content)
+    },
+    quoteMsgFileSize() {
+      let size = this.quoteMsgData.size;
+      if (size > 1024 * 1024) {
+        return Math.round(size / 1024 / 1024) + "M";
+      }
+      if (size > 1024) {
+        return Math.round(size / 1024) + "KB";
+      }
+      return size + "B";
+    },
+    quoteMsgMenuItems() {
+      let items = [];
+      items.push({
+        key: 'origin',
+        name: '定位到原消息',
+        icon: 'flag'
+      });
+
+      return items;
+    },
+		menuItems() {
+			let items = [];
+			if (this.msgInfo.type == this.$enums.MESSAGE_TYPE.TEXT) {
+				items.push({
+					key: 'COPY',
+					name: '复制',
+					icon: 'bars'
+				});
+			}
+			if (this.msgInfo.selfSend && this.msgInfo.id > 0) {
+				items.push({
+					key: 'RECALL',
+					name: '撤回',
+					icon: 'refreshempty'
+				});
+			}
+      if (this.$msgType.isNormal(this.msgInfo.type)) {
+        items.push({
+          key: 'QUOTE',
+          name: '引用',
+          icon: 'flag'
+        })
+      }
+			items.push({
+				key: 'DELETE',
+				name: '删除',
+				icon: 'trash',
+				color: '#e64e4e'
+			});
+			if (this.msgInfo.type == this.$enums.MESSAGE_TYPE.FILE) {
+				items.push({
+					key: 'DOWNLOAD',
+					name: '下载并打开',
+					icon: 'download'
+				});
+			}
+			return items;
+		},
+		isAction() {
+			return this.$msgType.isAction(this.msgInfo.type);
+		},
+		isNormal() {
+			const type = this.msgInfo.type;
+			return this.$msgType.isNormal(type) || this.$msgType.isAction(type)
+		},
+		nodesText() {
+			let color = this.msgInfo.selfSend ? 'white' : '';
+			let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.content, color)
+			text = this.$emo.transform(text, 'emoji-normal')
+      return this.formatMessage(text, this.msgInfo.atUserIds)
+		},
+    nodesTextQuote() {
+      let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.quoteMsg.content, '')
+      text = this.$emo.transform(text, 'emoji-normal')
+      return this.$commonUtil.processAtUsers(text, this.msgInfo.quoteMsg.atUserIds)
+    },
+    nameColorStyle() {
+      let index = 0;
+      if (this.showInfo.characterNum != null && this.showInfo.characterNum <= 10) {
+        index = this.showInfo.characterNum - 1;
+      } else {
+        return '';
+      }
+      return `color:${this.colors[index]};`
+    }
+	},
 	methods: {
 		onSendFail() {
 			uni.showToast({
@@ -385,115 +510,6 @@ export default {
         }
       }
     }
-	},
-	computed: {
-		loading() {
-			return this.msgInfo.loadStatus && this.msgInfo.loadStatus === "loading";
-		},
-		loadFail() {
-			return this.msgInfo.loadStatus && this.msgInfo.loadStatus === "fail";
-		},
-		data() {
-			return JSON.parse(this.msgInfo.content)
-		},
-		fileSize() {
-			let size = this.data.size;
-			if (size > 1024 * 1024) {
-				return Math.round(size / 1024 / 1024) + "M";
-			}
-			if (size > 1024) {
-				return Math.round(size / 1024) + "KB";
-			}
-			return size + "B";
-		},
-    quoteMsgData() {
-      return JSON.parse(this.msgInfo.quoteMsg.content)
-    },
-    quoteMsgFileSize() {
-      let size = this.quoteMsgData.size;
-      if (size > 1024 * 1024) {
-        return Math.round(size / 1024 / 1024) + "M";
-      }
-      if (size > 1024) {
-        return Math.round(size / 1024) + "KB";
-      }
-      return size + "B";
-    },
-    quoteMsgMenuItems() {
-      let items = [];
-      items.push({
-        key: 'origin',
-        name: '定位到原消息',
-        icon: 'flag'
-      });
-
-      return items;
-    },
-		menuItems() {
-			let items = [];
-			if (this.msgInfo.type == this.$enums.MESSAGE_TYPE.TEXT) {
-				items.push({
-					key: 'COPY',
-					name: '复制',
-					icon: 'bars'
-				});
-			}
-			if (this.msgInfo.selfSend && this.msgInfo.id > 0) {
-				items.push({
-					key: 'RECALL',
-					name: '撤回',
-					icon: 'refreshempty'
-				});
-			}
-      if (this.$msgType.isNormal(this.msgInfo.type)) {
-        items.push({
-          key: 'QUOTE',
-          name: '引用',
-          icon: 'flag'
-        })
-      }
-			items.push({
-				key: 'DELETE',
-				name: '删除',
-				icon: 'trash',
-				color: '#e64e4e'
-			});
-			if (this.msgInfo.type == this.$enums.MESSAGE_TYPE.FILE) {
-				items.push({
-					key: 'DOWNLOAD',
-					name: '下载并打开',
-					icon: 'download'
-				});
-			}
-			return items;
-		},
-		isAction() {
-			return this.$msgType.isAction(this.msgInfo.type);
-		},
-		isNormal() {
-			const type = this.msgInfo.type;
-			return this.$msgType.isNormal(type) || this.$msgType.isAction(type)
-		},
-		nodesText() {
-			let color = this.msgInfo.selfSend ? 'white' : '';
-			let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.content, color)
-			text = this.$emo.transform(text, 'emoji-normal')
-      return this.formatMessage(text, this.msgInfo.atUserIds)
-		},
-    nodesTextQuote() {
-      let text = this.$url.replaceURLWithHTMLLinks(this.msgInfo.quoteMsg.content, '')
-      text = this.$emo.transform(text, 'emoji-normal')
-      return this.$commonUtil.processAtUsers(text, this.msgInfo.quoteMsg.atUserIds)
-    },
-    nameColorStyle() {
-      let index = 0;
-      if (this.showInfo.characterNum != null && this.showInfo.characterNum <= 10) {
-        index = this.showInfo.characterNum - 1;
-      } else {
-        return '';
-      }
-      return `color:${this.colors[index]};`
-    }
 	}
 
 }
@@ -586,9 +602,7 @@ export default {
 					line-height: 1.6;
 					margin-top: 10rpx;
 					padding: 16rpx 24rpx;
-					background-color: $im-bg;
 					border-radius: 20rpx;
-					color: $im-text-color;
 					font-size: $im-font-size;
 					text-align: left;
 					word-break: break-all;
@@ -603,22 +617,19 @@ export default {
 				}
 
         .chat-msg-word-voice {
-          display: flex;
-          position: relative;
-          line-height: 1.6;
-          margin-top: 10rpx;
-          padding: 16rpx 24rpx;
-          background-color: $im-bg;
-          border-radius: 20rpx;
-          color: $im-text-color;
-          font-size: $im-font-size;
-          text-align: left;
-          word-break: break-all;
-          white-space: pre-line;
 
           .word-voice-box {
+            position: relative;
+            font-size: $im-font-size;
+            text-align: left;
+            word-break: break-all;
+            white-space: pre-line;
+            margin-top: 10rpx;
             display: flex;
             align-items: center;
+            padding: 16rpx 24rpx;
+            border-radius: 20rpx;
+            line-height: 1.6;
           }
         }
 
@@ -943,8 +954,6 @@ export default {
 
 					.chat-msg-text {
 						margin-left: 10px;
-						background-color: $im-color-primary-light-2;
-						color: #fff;
 
             .at-user {
               text-decoration: none; /* 去掉下划线 */
@@ -953,9 +962,7 @@ export default {
 					}
 
           .chat-msg-word-voice {
-            margin-left: 10px;
-            background-color: $im-color-primary-light-2;
-            color: #fff;
+            flex-direction: row-reverse;
           }
 
 					.chat-msg-image {
