@@ -83,7 +83,6 @@
 			},
       onUploadSuccess(data, file) {
 				this.userInfo.headImage = data.originUrl;
-				this.userInfo.headImageThumb = data.thumbUrl;
 			}
 		},
 		props: {

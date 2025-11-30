@@ -108,7 +108,6 @@ public abstract class AbstractSocialLoginStrategyImpl implements SocialLoginStra
         user.setEmail(user.getUserName() + "@qq.com");
         user.setNickName(socialUserInfo.getNickname());
         user.setHeadImage(socialUserInfo.getAvatar());
-        user.setHeadImageThumb(socialUserInfo.getAvatar());
         user.setPassword(passwordEncoder.encode(SysStringUtils.makeRandomPassword()));
         user.setIpAddress(ipAddress);
         user.setIpSource(ipSource);

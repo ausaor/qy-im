@@ -494,7 +494,6 @@ export default {
   methods: {
     onUploadSuccess(data, file) {
       this.localUserInfo.headImage = data.originUrl;
-      this.localUserInfo.headImageThumb = data.thumbUrl;
     },
     // 处理菜单选择
     handleMenuSelect(key) {

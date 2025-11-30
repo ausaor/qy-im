@@ -28,9 +28,6 @@ public class GroupVO {
     @ApiModelProperty(value = "头像")
     private String headImage;
 
-    @ApiModelProperty(value = "头像缩略图")
-    private String headImageThumb;
-
     @Length(max = 500, message = "群公告长度不能大于500")
     @ApiModelProperty(value = "群公告")
     private String notice;

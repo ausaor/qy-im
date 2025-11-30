@@ -532,7 +532,6 @@
         commonGroup: {
 				  name: null,
           headImage: null,
-          headImageThumb: null
         },
         showJoinGroup: false,
         friends: [],
@@ -645,7 +644,6 @@
 			},
       onUploadSuccess(data) {
 				this.activeGroup.headImage = data.originUrl;
-				this.activeGroup.headImageThumb = data.thumbUrl;
 			},
       onUploadMemberAvatarSuccess(data) {
         this.myGroupMemberInfo.headImage = data.originUrl;
@@ -916,7 +914,6 @@
       },
       doneUploadSuccess(data) {
         this.commonGroup.headImage = data.originUrl;
-        this.commonGroup.headImageThumb = data.thumbUrl;
       },
       closeGroupMemberInfoDialog() {
 		    this.groupMemberVisible = false;

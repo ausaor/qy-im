@@ -804,7 +804,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             group.setName(templateGroup.getGroupName());
             group.setIsTemplate(true);
             group.setHeadImage(templateGroup.getAvatar());
-            group.setHeadImageThumb(templateGroup.getAvatar());
             group.setTemplateGroupId(templateGroup.getId());
 
             if (ObjectUtil.isNull(templateGroupCreateVO.getTemplateCharacterId())) {
@@ -818,7 +817,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         } else {
             group.setName(templateGroupCreateVO.getName());
             group.setHeadImage(templateGroupCreateVO.getHeadImage());
-            group.setHeadImageThumb(templateGroupCreateVO.getHeadImage());
 
             templateCharacter = templateCharacterService.findPublishedById(templateGroupCreateVO.getTemplateCharacterId());
             if (ObjectUtil.isNull(templateCharacter)) {
@@ -907,7 +905,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setTemplateGroupId(templateGroup.getId());
         group.setName(templateGroup.getGroupName());
         group.setHeadImage(templateGroup.getAvatar());
-        group.setHeadImageThumb(templateGroup.getAvatar());
         group.setIsTemplate(true);
         group.setSwitchTime(new Date());
         group.setRemark(templateGroup.getGroupName());
@@ -1004,10 +1001,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setRemark(vo.getName());
         if (StringUtils.isNotBlank(vo.getAvatar())) {
             group.setHeadImage(vo.getAvatar());
-            group.setHeadImageThumb(vo.getAvatar());
         } else {
             group.setHeadImage("");
-            group.setHeadImageThumb("");
         }
         group.setSwitchTime(new Date());
         group.setVersion(idGeneratorUtil.nextIdStr());
@@ -1076,10 +1071,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setVersion(idGeneratorUtil.nextIdStr());
         if (StringUtils.isNotBlank(vo.getAvatar())) {
             group.setHeadImage(vo.getAvatar());
-            group.setHeadImageThumb(vo.getAvatar());
         } else {
             group.setHeadImage("");
-            group.setHeadImageThumb("");
         }
 
         Map<Long, GroupMemberVO> groupMemberMap = groupMembers.stream().collect(Collectors.toMap(GroupMemberVO::getUserId, Function.identity()));
@@ -1186,10 +1179,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setVersion(idGeneratorUtil.nextIdStr());
         if (StringUtils.isNotBlank(vo.getAvatar())) {
             group.setHeadImage(vo.getAvatar());
-            group.setHeadImageThumb(vo.getAvatar());
         } else {
             group.setHeadImage("");
-            group.setHeadImageThumb("");
         }
         baseMapper.updateById(group);
         groupMemberService.updateBatchById(noQuitGroupMembers);
@@ -1259,7 +1250,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setTemplateGroupId(templateGroup.getId());
         group.setName(templateGroup.getGroupName());
         group.setHeadImage(templateGroup.getAvatar());
-        group.setHeadImageThumb(templateGroup.getAvatar());
         group.setIsTemplate(true);
         group.setSwitchTime(new Date());
         group.setRemark(templateGroup.getGroupName());

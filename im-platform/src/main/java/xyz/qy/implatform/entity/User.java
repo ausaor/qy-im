@@ -74,13 +74,6 @@ public class User extends Model<User> {
     private String headImage;
 
     /**
-     * 头像缩略图
-     */
-    @TableField("head_image_thumb")
-    private String headImageThumb;
-
-
-    /**
      * 个性签名
      */
     @TableField("signature")

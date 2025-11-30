@@ -30,7 +30,4 @@ public class UserDTO {
 
     @ApiModelProperty(value = "头像")
     private String headImage;
-
-    @ApiModelProperty(value = "头像缩略图")
-    private String headImageThumb;
 }

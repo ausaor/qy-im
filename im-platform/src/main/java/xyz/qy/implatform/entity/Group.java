@@ -49,12 +49,6 @@ public class Group extends Model<Group> {
     private String headImage;
 
     /**
-     * 头像缩略图
-     */
-    @TableField("head_image_thumb")
-    private String headImageThumb;
-
-    /**
      * 是否模板群聊
      */
     @TableField("is_template")

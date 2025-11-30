@@ -235,7 +235,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //            if (inputStream != null) {
 //                MultipartFile multipartFile = FileUtils.inputStreamToMultipartFile(System.currentTimeMillis() + ".png", inputStream);
 //                UploadImageVO uploadImageVO = uploadStrategyContext.executeUploadImageStrategy(multipartFile, FilePathEnum.AVATAR.getPath());
-//                user.setHeadImageThumb(uploadImageVO.getOriginUrl());
 //                user.setHeadImage(uploadImageVO.getOriginUrl());
 //            }
 //        } catch (Exception e) {
@@ -372,7 +371,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setSex(vo.getSex());
         user.setSignature(SensitiveUtil.filter(vo.getSignature()));
         user.setHeadImage(vo.getHeadImage());
-        user.setHeadImageThumb(vo.getHeadImageThumb());
         user.setAutoPlay(vo.getAutoPlay());
         user.setSoundPlay(vo.getSoundPlay());
         user.setFriendReview(vo.getFriendReview());

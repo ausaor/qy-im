@@ -44,9 +44,6 @@ public class UserVO {
     @ApiModelProperty(value = "头像")
     private String headImage;
 
-    @ApiModelProperty(value = "头像缩略图")
-    private String headImageThumb;
-
     @ApiModelProperty(value = "是否在线")
     private Boolean online;
 
