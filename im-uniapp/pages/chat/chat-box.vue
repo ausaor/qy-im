@@ -1,6 +1,6 @@
 <template>
 	<view class="page chat-box" id="chatBox" :chatidx="chatIdx">
-		<nav-bar backHome more @more="onShowMore" @gotoHome="gotoHome" :unread-count="groupUnreadCount">{{ title }}</nav-bar>
+		<nav-bar backHome more @more="onShowMore" @gotoHome="gotoHome" :unread-count="groupUnreadCount" :theme-index="9">{{ title }}</nav-bar>
 		<view class="chat-main-box" :style="{height: chatMainHeight+'px'}">
 			<view class="chat-msg" @click="switchChatTabBox('none')">
 				<scroll-view ref="messagesContainer" class="scroll-box" scroll-y="true" upper-threshold="200" @scroll="onScroll"

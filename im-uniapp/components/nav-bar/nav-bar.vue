@@ -1,27 +1,27 @@
 <template>
-  <view class="im-nav-bar">
+  <view class="im-nav-bar" :style="{background: navBarBackground}">
     <!-- #ifndef H5 -->
     <view style="height: var(--status-bar-height)"></view>
     <!-- #endif -->
     <view class="im-nav-bar-content">
       <view class="back" @click="handleBackClick" v-if="back">
-        <uni-icons type="back" :size="iconFontSize"></uni-icons>
+        <uni-icons type="back" :size="iconFontSize" :color="'#ffffff'"></uni-icons>
       </view>
       <view class="back" @click="$emit('gotoHome')" v-if="backHome">
-        <uni-icons type="back" :size="iconFontSize"></uni-icons>
+        <uni-icons type="back" :size="iconFontSize" :color="'#ffffff'"></uni-icons>
       </view>
       <view class="title" v-if="title">
         <slot></slot>
       </view>
       <view class="btn">
-        <uni-badge v-show="unreadCount > 0" :text="unreadCount" />
-        <uni-icons type="home" @click="$emit('gotoHome')" v-if="home" :size="iconFontSize"></uni-icons>
-        <uni-icons class="btn-item" v-if="search" type="search" :size="iconFontSize"
+        <uni-badge v-show="unreadCount > 0" :text="unreadCount"/>
+        <uni-icons type="home" @click="$emit('gotoHome')" v-if="home" :size="iconFontSize" :color="'#ffffff'"></uni-icons>
+        <uni-icons class="btn-item" v-if="search" type="search" :size="iconFontSize" :color="'#ffffff'"
           @click="$emit('search')"></uni-icons>
-        <uni-icons class="btn-item" v-if="refresh" type="refresh" :size="iconFontSize"
+        <uni-icons class="btn-item" v-if="refresh" type="refresh" :size="iconFontSize" :color="'#ffffff'"
                    @click="$emit('refresh')"></uni-icons>
-        <uni-icons class="btn-item" v-if="add" type="plusempty" :size="iconFontSize" @click="$emit('add')"></uni-icons>
-        <uni-icons class="btn-item" v-if="more" type="more-filled" :size="iconFontSize"
+        <uni-icons class="btn-item" v-if="add" type="plusempty" :size="iconFontSize" :color="'#ffffff'" @click="$emit('add')"></uni-icons>
+        <uni-icons class="btn-item" v-if="more" type="more-filled" :size="iconFontSize" :color="'#ffffff'"
           @click="$emit('more')"></uni-icons>
       </view>
     </view>
@@ -71,12 +71,21 @@ export default {
     unreadCount: {
       type: Number,
       default: 0
+    },
+    themeIndex: {
+      type: Number,
+      default: 0
     }
   },
   data() {
     return {}
   },
   computed: {
+    navBarBackground() {
+      const themes = this.uiStore.navBar.themes;
+      const index = this.themeIndex >= 0 && this.themeIndex < themes.length ? this.themeIndex : 0;
+      return themes[index].background;
+    },
     height() {
 
     }
@@ -93,12 +102,10 @@ export default {
 
 <style scoped lang="scss">
 .im-nav-bar {
-  background-color: #fff;
-  //background-color: $im-bg;
   position: fixed;
   top: 0;
   width: 100%;
-  color: $im-text-color;
+  color: white;
   border-bottom: 1px solid $im-border-light;
   font-size: $im-font-size-large;
   z-index: 99;
@@ -110,7 +117,9 @@ export default {
     box-sizing: border-box;
     height: $im-nav-bar-height;
 
-    .title {}
+    .title {
+      color: white;
+    }
 
     .back {
       position: absolute;

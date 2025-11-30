@@ -1,6 +1,6 @@
 <template>
 	<view class="tab-page">
-		<nav-bar search @search="onSearch()">消息</nav-bar>
+		<nav-bar search @search="onSearch()" :theme-index="0">消息</nav-bar>
 		<view v-if="loading" class="chat-loading">
 			<loading :size="50" :mask="false">
 				<view>消息接收中...</view>
