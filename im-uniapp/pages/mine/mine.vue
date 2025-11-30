@@ -41,7 +41,7 @@
       <view class="activity-space" @tap="onActivitySpace()">
         <text class="icon iconfont icon-shejiaotubiao-40" style="color: #f5be3f"></text>
         <text class="title">
-          动态空间
+          我的空间
           <uni-badge v-show="notifyCount" class="uni-badge-left-margin" :text="notifyCount" type="primary"
                      :customStyle="{background: '#f56c6c'}" /></text>
         <text class="count" v-show="unreadUserCount">{{ unreadUserCount }}人新发表</text>
@@ -96,7 +96,7 @@ export default {
         this.talkStore.resetTalkList();
       }
       uni.navigateTo({
-        url: "/pages/activity/activity-space?category=private&section=my-friends"
+        url: "/pages/activity/activity-space?category=private&section=my"
       })
     },
     readedTalkNotify() {

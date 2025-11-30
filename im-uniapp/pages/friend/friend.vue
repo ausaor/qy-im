@@ -9,6 +9,16 @@
 			</view>
 		</view>
     <view class="socializes">
+      <view class="socializes-item" @click.stop="toActivityPage">
+        <view class="item-icon">
+          <svg-icon class="svg-icon" icon-class="shejiaotubiao-40"></svg-icon>
+        </view>
+        <view class="item-info">
+          <view class="item-name">空间动态</view>
+          <uni-badge v-show="notifyCount > 0" :text="notifyCount" />
+        </view>
+        <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
+      </view>
       <view class="socializes-item" @click.stop="toFriendRequestPage">
         <view class="item-icon">
           <svg-icon class="svg-icon" icon-class="xindepengyou"></svg-icon>
@@ -17,6 +27,7 @@
           <view class="item-name">新的朋友</view>
           <uni-badge v-show="friendRequestCount > 0" :text="friendRequestCount" />
         </view>
+        <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
       </view>
       <view class="socializes-item" @click.stop="toGroupRequestPage">
         <view class="item-icon">
@@ -26,6 +37,7 @@
           <view class="item-name">新的群聊</view>
           <uni-badge v-show="receivedGroupRequestsCount > 0" :text="receivedGroupRequestsCount" />
         </view>
+        <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
       </view>
       <view class="socializes-item" @click.stop="toGroupPage">
         <view class="item-icon">
@@ -35,6 +47,7 @@
           <view class="item-name">我的群聊</view>
           <uni-badge v-show="joinGroupRequestsCount > 0" :text="joinGroupRequestsCount" />
         </view>
+        <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
       </view>
     </view>
 		<view class="friend-tip" v-if="friends.length == 0">
@@ -85,6 +98,11 @@ export default {
 		isEnglish(character) {
 			return /^[A-Za-z]+$/.test(character);
 		},
+    toActivityPage() {
+      uni.navigateTo({
+        url: "/pages/activity/activity-space?category=private&section=my-friends"
+      })
+    },
     toGroupPage() {
 			uni.navigateTo({
 				url: "/pages/group/group"
@@ -171,6 +189,15 @@ export default {
       return this.groupStore.groupRequests
           .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length;
     },
+    unreadUserCount() {
+      return this.talkStore.unreadUserList.length;
+    },
+    notifyCount() {
+      return this.talkStore.notifyCount;
+    },
+    talkList() {
+      return this.talkStore.lastTalks;
+    }
 	},
   watch: {
     friendRequestCount(newCount, oldCount) {
@@ -224,6 +251,7 @@ export default {
         .svg-icon {
           width: 2.4rem;
           height: 2.4rem;
+          border-radius: 50%;
         }
       }
 
@@ -239,6 +267,11 @@ export default {
           overflow: hidden;
           color: $im-text-color;
         }
+      }
+      
+      .arrow-right {
+        margin-left: auto;
+        padding-right: 10rpx;
       }
     }
   }
