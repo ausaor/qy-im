@@ -16,8 +16,11 @@
               :show-play-btn="true"
               :show-progress="true"
               :object-fit="objectFit"
+              :autoplay="true"
               @error="handleVideoError"
               @loadeddata="handleLoadedData"
+              @play="onPlay"
+              @pause="onPause"
           ></video>
         </view>
         <view class="video-popup__close" @tap="handleClose">
@@ -56,7 +59,9 @@ export default {
   },
   data() {
     return {
-      videoId: `video-${Date.now()}`
+      videoId: `video-${Date.now()}`,
+      isPlaying: false,
+      videoContext: null
     }
   },
   watch: {
@@ -82,9 +87,10 @@ export default {
     // 播放视频
     playVideo() {
       try {
-        const videoContext = uni.createVideoContext(this.videoId, this)
-        if (videoContext) {
-          videoContext.play()
+        this.videoContext = uni.createVideoContext(this.videoId, this)
+        if (this.videoContext) {
+          this.videoContext.volume(0.5) // 设置音量为50%
+          this.videoContext.play()
         }
       } catch (e) {
         console.warn('playVideo error', e)
@@ -93,9 +99,8 @@ export default {
     // 暂停视频
     pauseVideo() {
       try {
-        const videoContext = uni.createVideoContext(this.videoId, this)
-        if (videoContext) {
-          videoContext.pause()
+        if (this.videoContext) {
+          this.videoContext.pause()
         }
       } catch (e) {
         console.warn('pauseVideo error', e)
@@ -104,9 +109,24 @@ export default {
     // 视频加载完成处理
     handleLoadedData() {
       // 视频加载完成后自动播放
-      if (this.visible) {
-        this.playVideo()
+      if (this.visible && !this.isPlaying) {
+        // 延迟一小段时间再播放，确保视频完全加载
+        setTimeout(() => {
+          this.playVideo()
+        }, 200)
       }
+    },
+    // 视频开始播放事件
+    onPlay() {
+      this.isPlaying = true
+      // 确保在播放时设置音量
+      if (this.videoContext) {
+        this.videoContext.volume(0.5)
+      }
+    },
+    // 视频暂停播放事件
+    onPause() {
+      this.isPlaying = false
     },
     // 视频错误处理
     handleVideoError(e) {

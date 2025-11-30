@@ -116,6 +116,7 @@ export default {
     },
     onEditorFocus(e) {
       this.isFocus = true;
+      this.switchChatTabBox('none')
     },
     onEditorBlur(e) {
       this.isFocus = false;
