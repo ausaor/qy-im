@@ -521,11 +521,14 @@ export default {
 			}
 		},
 		scrollToBottom() {
-			let size = this.messageSize;
-			if (size > 0) {
-				this.scrollToMsgIdx(size - 1);
-			}
-		},
+      let size = this.messageSize;
+      if (size > 0) {
+        this.scrollToMsgIdx(size - 1);
+      }
+      // 确保设置为底部状态
+      this.isInBottom = true;
+      this.newMessageSize = 0;
+    },
     holdingScrollBar(scrollViewHeight) {
       // 内容高度
       const query = uni.createSelectorQuery().in(this);
@@ -533,6 +536,10 @@ export default {
         query.select('.chat-wrap').boundingClientRect();
         query.exec(data => {
           this.scrollTop = data[0].height - scrollViewHeight;
+          // 添加额外检查确保 scrollTop 是有效的数字
+          if (typeof this.scrollTop !== 'number' || isNaN(this.scrollTop) || this.scrollTop < 0) {
+            this.scrollTop = 0;
+          }
           if(this.scrollTop < 10){
             // 未渲染完成，重试一次
             this.holdingScrollBar();
@@ -853,6 +860,19 @@ export default {
         // 更新滚动位置记录
         this.lastScrollTop = currentScrollTop
         this.currentScrollTop = currentScrollTop
+        
+        // 检查是否滚动到底部附近
+        const scrollHeight = e.detail.scrollHeight;
+        const clientHeight = e.detail.clientHeight;
+        const scrollTop = e.detail.scrollTop;
+        const threshold = 50; // 距离底部50像素以内认为是底部
+        
+        if (scrollHeight - scrollTop - clientHeight < threshold) {
+          this.isInBottom = true;
+          this.newMessageSize = 0;
+        } else {
+          this.isInBottom = false;
+        }
       }, 100)
     },
     onClickToBottom() {
