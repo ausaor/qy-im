@@ -268,11 +268,8 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
 
         // 判断上次切换时间与当前时间间隔
         Date switchTime = groupMember.getSwitchTime();
-        if (switchTime != null) {
-            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
-            if (interval < Constant.SWITCH_INTERVAL) {
-                throw new GlobalException("距离上次切换操作未超过12小时");
-            }
+        if (DateTimeUtils.withinTimeRange(switchTime, new Date(), Constant.CHARACTER_SWITCH_GAP)) {
+            throw new GlobalException("距离上次切换操作未超过" + Constant.CHARACTER_SWITCH_GAP + "天");
         }
 
         // 查询群信息
@@ -331,6 +328,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         }
 
         groupMember.setTemplateCharacterId(groupMemberVO.getTemplateCharacterId());
+        groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
         groupMember.setAliasName(templateCharacter.getName());
         groupMember.setHeadImage(templateCharacter.getAvatar());
         groupMember.setSwitchTime(new Date());
@@ -365,11 +363,8 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
 
         // 判断上次切换时间与当前时间间隔
         Date switchTime = groupMember.getSwitchTime();
-        if (switchTime != null) {
-            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
-            if (interval < Constant.SWITCH_INTERVAL) {
-                throw new GlobalException("距离上次切换操作未超过12小时");
-            }
+        if (DateTimeUtils.withinTimeRange(switchTime, new Date(), Constant.CHARACTER_SWITCH_GAP)) {
+            throw new GlobalException("距离上次切换操作未超过" + Constant.CHARACTER_SWITCH_GAP + "天");
         }
 
         // 查询群信息

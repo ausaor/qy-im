@@ -62,6 +62,7 @@ import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.DateTimeUtils;
 import xyz.qy.implatform.util.IdGeneratorUtil;
 import xyz.qy.implatform.util.MessageSendUtil;
 import xyz.qy.implatform.util.PageUtils;
@@ -835,6 +836,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         groupMember.setAliasNameSuffix(templateGroupCreateVO.getAliasNameSuffix());
         groupMember.setGroupRole(GroupRoleEnum.OWNER.getCode());
         groupMember.setHeadImage(templateCharacter.getAvatar());
+        groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
         groupMember.setTemplateCharacterId(templateCharacter.getId());
         groupMember.setIsTemplate(true);
 
@@ -872,11 +874,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         // 判断上次切换时间与当前时间间隔
         Date switchTime = group.getSwitchTime();
-        if (switchTime != null) {
-            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
-            if (interval < Constant.SWITCH_INTERVAL) {
-                throw new GlobalException("距离上次切换群聊类型未超过30分钟");
-            }
+        if (DateTimeUtils.withinTimeRange(switchTime, new Date(), Constant.SWITCH_INTERVAL)) {
+            throw new GlobalException("距离上次切换群聊类型未超过" + Constant.SWITCH_INTERVAL + "天");
         }
 
         // 判断当前群聊里的模板人物是否重复
@@ -922,8 +921,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             if (!templateCharacterMap.containsKey(groupMemberVO.getTemplateCharacterId())) {
                 throw new GlobalException("数据异常");
             }
-            groupMember.setAliasName(templateCharacterMap.get(groupMemberVO.getTemplateCharacterId()).getName());
-            groupMember.setHeadImage(templateCharacterMap.get(groupMemberVO.getTemplateCharacterId()).getAvatar());
+            TemplateCharacter templateCharacter = templateCharacterMap.get(groupMemberVO.getTemplateCharacterId());
+            groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
+            groupMember.setAliasName(templateCharacter.getName());
+            groupMember.setHeadImage(templateCharacter.getAvatar());
             groupMember.setRemark(group.getName());
             groupMember.setIsTemplate(true);
             groupMember.setCharacterAvatarId(null);
@@ -957,11 +958,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         // 判断上次切换时间与当前时间间隔
         Date switchTime = group.getSwitchTime();
-        if (switchTime != null) {
-            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
-            if (interval < Constant.SWITCH_INTERVAL) {
-                throw new GlobalException("距离上次切换群聊类型未超过30分钟");
-            }
+        if (DateTimeUtils.withinTimeRange(switchTime, new Date(), Constant.SWITCH_INTERVAL)) {
+            throw new GlobalException("距离上次切换群聊类型未超过" + Constant.SWITCH_INTERVAL + "天");
         }
         // 查询群聊所有用户
         List<GroupMember> groupMemberList = groupMemberService.findByGroupId(vo.getGroupId());
@@ -976,12 +974,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         for (GroupMember groupMember : groupMemberList) {
             groupMember.setIsTemplate(false);
             groupMember.setTemplateCharacterId(0L);
+            groupMember.setTemplateGroupId(null);
             groupMember.setRemark(vo.getName());
             groupMember.setCharacterAvatarId(null);
             groupMember.setAvatarAlias(null);
             groupMember.setShowNickName(false);
             if (userMap.containsKey(groupMember.getUserId())) {
                 User userInfo = userMap.get(groupMember.getUserId());
+                // 设置用户的自定义群聊头像
                 if (StringUtils.isNotBlank(groupMember.getHeadImageDef())) {
                     groupMember.setHeadImage(groupMember.getHeadImageDef());
                 } else {
@@ -1035,11 +1035,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         // 判断上次切换时间与当前时间间隔
         Date switchTime = group.getSwitchTime();
-        if (switchTime != null) {
-            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
-            if (interval < Constant.SWITCH_INTERVAL) {
-                throw new GlobalException("距离上次切换群聊类型未超过30分钟");
-            }
+        if (DateTimeUtils.withinTimeRange(switchTime, new Date(), Constant.SWITCH_INTERVAL)) {
+            throw new GlobalException("距离上次切换群聊类型未超过" + Constant.SWITCH_INTERVAL + "天");
         }
 
         // 判断当前群聊里的模板人物是否重复
@@ -1087,8 +1084,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             if (!templateCharacterMap.containsKey(groupMemberVO.getTemplateCharacterId())) {
                 throw new GlobalException("数据异常");
             }
-            groupMember.setAliasName(templateCharacterMap.get(groupMemberVO.getTemplateCharacterId()).getName());
-            groupMember.setHeadImage(templateCharacterMap.get(groupMemberVO.getTemplateCharacterId()).getAvatar());
+            TemplateCharacter templateCharacter = templateCharacterMap.get(groupMemberVO.getTemplateCharacterId());
+            groupMember.setAliasName(templateCharacter.getName());
+            groupMember.setHeadImage(templateCharacter.getAvatar());
+            groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
             groupMember.setRemark(group.getName());
             groupMember.setIsTemplate(true);
             groupMember.setCharacterAvatarId(null);
@@ -1124,11 +1123,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         // 判断上次切换时间与当前时间间隔
         Date switchTime = group.getSwitchTime();
-        if (switchTime != null) {
-            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
-            if (interval < Constant.SWITCH_INTERVAL) {
-                throw new GlobalException("距离上次切换群聊类型未超过30分钟");
-            }
+        if (DateTimeUtils.withinTimeRange(switchTime, new Date(), Constant.SWITCH_INTERVAL)) {
+            throw new GlobalException("距离上次切换群聊类型未超过" + Constant.SWITCH_INTERVAL + "天");
         }
 
         Map<Long, List<GroupMemberVO>> characterMap = vo.getGroupMembers().stream().collect(Collectors.groupingBy(GroupMemberVO::getTemplateCharacterId));
@@ -1161,8 +1157,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             if (!templateCharacterMap.containsKey(groupMemberVO.getTemplateCharacterId())) {
                 throw new GlobalException("数据异常");
             }
-            groupMember.setAliasName(templateCharacterMap.get(groupMemberVO.getTemplateCharacterId()).getName());
-            groupMember.setHeadImage(templateCharacterMap.get(groupMemberVO.getTemplateCharacterId()).getAvatar());
+            TemplateCharacter templateCharacter = templateCharacterMap.get(groupMemberVO.getTemplateCharacterId());
+            groupMember.setAliasName(templateCharacter.getName());
+            groupMember.setHeadImage(templateCharacter.getAvatar());
+            groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
             groupMember.setRemark(group.getName());
             groupMember.setIsTemplate(true);
             groupMember.setCharacterAvatarId(null);
@@ -1213,11 +1211,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         // 判断上次切换时间与当前时间间隔
         Date switchTime = group.getSwitchTime();
-        if (switchTime != null) {
-            long interval = DateUtil.between(switchTime, new Date(), DateUnit.MINUTE);
-            if (interval < Constant.SWITCH_INTERVAL) {
-                throw new GlobalException("距离上次切换群聊类型未超过30分钟");
-            }
+        if (DateTimeUtils.withinTimeRange(switchTime, new Date(), Constant.SWITCH_INTERVAL)) {
+            throw new GlobalException("距离上次切换群聊类型未超过" + Constant.SWITCH_INTERVAL + "天");
         }
 
         Map<Long, List<GroupMemberVO>> characterMap = vo.getGroupMembers().stream().collect(Collectors.groupingBy(GroupMemberVO::getTemplateCharacterId));
@@ -1267,8 +1262,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             if (!templateCharacterMap.containsKey(groupMemberVO.getTemplateCharacterId())) {
                 throw new GlobalException("数据异常");
             }
-            groupMember.setAliasName(templateCharacterMap.get(groupMemberVO.getTemplateCharacterId()).getName());
-            groupMember.setHeadImage(templateCharacterMap.get(groupMemberVO.getTemplateCharacterId()).getAvatar());
+            TemplateCharacter templateCharacter = templateCharacterMap.get(groupMemberVO.getTemplateCharacterId());
+            groupMember.setAliasName(templateCharacter.getName());
+            groupMember.setHeadImage(templateCharacter.getAvatar());
+            groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
             groupMember.setRemark(group.getName());
             groupMember.setIsTemplate(true);
             groupMember.setCharacterAvatarId(null);

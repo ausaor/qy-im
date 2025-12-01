@@ -481,7 +481,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             throw new GlobalException("每位用户最多只能常驻3个地区群聊");
         }
 
-        // 若用户历史加入的地区群聊超过3个，判断距离最近一次加入的时间是否超过6小时
+        // 若用户历史加入的地区群聊超过3个，判断距离最近一次加入的时间是否超过1天
         if (regionGroupMembers.size() >= RegionGroupConst.MAX_REGION_GROUP_NUM) {
             checkLastPermanentJoinInterval(regionGroupMembers);
         }
@@ -523,7 +523,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             throw new GlobalException("每位用户最多只能常驻3个地区群聊");
         }
 
-        // 若用户历史加入的地区群聊超过3个，判断距离最近一次加入的时间是否超过6小时
+        // 若用户历史加入的地区群聊超过3个，判断距离最近一次加入的时间是否超过1天
         if (regionGroupMembers.size() >= RegionGroupConst.MAX_REGION_GROUP_NUM) {
             checkLastPermanentJoinInterval(regionGroupMembers);
         }
@@ -536,9 +536,9 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         Date createTime = regionGroupMembers.get(0).getCreateTime();
 
         Date now = new Date();
-        long between = DateUtil.between(createTime, now, DateUnit.HOUR);
+        long between = DateUtil.between(createTime, now, DateUnit.DAY);
         if (between < RegionGroupConst.REGION_GROUP_JOIN_GAP) {
-            throw new GlobalException("距离您上次加入地区群聊未超过" + RegionGroupConst.REGION_GROUP_JOIN_GAP + "小时，请稍后再尝试");
+            throw new GlobalException("距离您上次加入地区群聊未超过" + RegionGroupConst.REGION_GROUP_JOIN_GAP + "天，请稍后再尝试");
         }
     }
 
@@ -611,7 +611,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         // 已存在的地区群聊编号
         List<String> existsNum = new ArrayList<>();
 
-        // 不为空判断要加入的地区群聊常驻用户不超过100的群聊，获取第一个
+        // 不为空判断要加入的地区群聊常驻用户不超过400的群聊，获取第一个
         for (RegionGroup regionGroup : regionGroupList) {
             existsNum.add(regionGroup.getNum());
             // 查询当前区域下所有群聊常驻人员
@@ -626,7 +626,6 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             Optional<RegionGroupMember> optional = regionGroupMembers.stream()
                     .filter(item -> session.getUserId().equals(item.getUserId())).findFirst();
             RegionGroupMember regionGroupMember = optional.orElseGet(RegionGroupMember::new);
-            this.saveOrUpdate(regionGroup);
             saveRegionGroupMember(regionGroupMember, regionGroupDTO, regionGroup, session);
             return regionGroup;
         }

@@ -23,8 +23,12 @@ public final class Constant {
     // 常量0：否
     public static final String NO_STR = "0";
 
-    // 模板群聊切换时间间隔720MIN
-    public static final int SWITCH_INTERVAL = 720;
+    // 切换时间间隔7天
+    public static final int SWITCH_INTERVAL = 7;
+
+    // 角色切换时间间隔3天
+    public static final int CHARACTER_SWITCH_GAP = 3;
+
     // 媒体播放字典key
     public static final String MEDIA_SWITCH = "sys_media_switch";
     // 首页媒体播放字典key

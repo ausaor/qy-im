@@ -1,5 +1,6 @@
 package xyz.qy.implatform.util;
 
+import cn.hutool.core.date.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
@@ -77,5 +78,15 @@ public final class DateTimeUtils extends DateUtils {
         }
 
         return builder.toString();
+    }
+
+    public static boolean withinTimeRange(Date startTime, Date endTime, int timeRange) {
+        if (startTime == null || endTime == null) {
+            return false;
+        }
+        
+        // 使用 hutool 工具类计算两个日期之间相差的天数
+        long betweenDays = DateUtil.betweenDay(startTime, endTime, false);
+        return betweenDays < timeRange;
     }
 }

@@ -137,6 +137,7 @@ create table im_group_member
     head_image            varchar(1000) default ''                  null comment '用户头像',
     head_image_def        varchar(1000)                             null comment '自定义头像',
     is_template           tinyint(1)    default 0                   not null comment '是否模板人物',
+    template_group_id     bigint                                    null comment '群聊模板id',
     template_character_id bigint        default 0                   not null comment '模板人物id',
     character_avatar_id   bigint                                    null comment '模板人物头像id',
     avatar_alias          varchar(50)                               null comment '头像别名',

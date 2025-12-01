@@ -93,6 +93,12 @@ public class GroupMember extends Model<GroupMember> {
     private Boolean isTemplate;
 
     /**
+     * 群聊模板id
+     */
+    @TableField(value = "template_group_id", fill = FieldFill.INSERT_UPDATE)
+    private Long templateGroupId;
+
+    /**
      * 模板人物id
      */
     @TableField("template_character_id")
