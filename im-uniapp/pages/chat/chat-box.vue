@@ -176,7 +176,6 @@ export default {
 			friend: {},
 			group: {},
 			groupMembers: [],
-      groupMembersMap: new Map(),
       myGroupMemberInfo: {}, // 我的群聊成员信息
 			isReceipt: false, // 是否回执消息
 			scrollMsgIdx: 0, // 滚动条定位为到哪条消息
@@ -866,7 +865,7 @@ export default {
         const clientHeight = e.detail.clientHeight;
         const scrollTop = e.detail.scrollTop;
         const threshold = 50; // 距离底部50像素以内认为是底部
-        
+        console.log('scrollHeight', (scrollHeight - scrollTop - clientHeight < threshold))
         if (scrollHeight - scrollTop - clientHeight < threshold) {
           this.isInBottom = true;
           this.newMessageSize = 0;
@@ -1003,11 +1002,6 @@ export default {
 				method: 'GET'
 			}).then((groupMembers) => {
         this.groupMembers = groupMembers;
-        this.groupMembersMap = groupMembers.reduce((map, member) => {
-          map.set(member.userId, member);
-          return map;
-        }, new Map()); // 初始值为一个空Map
-
         this.myGroupMemberInfo = this.groupMembersMap.get(this.mine.id);
 			});
 		},
@@ -1375,6 +1369,14 @@ export default {
 			}
 			return title;
 		},
+    groupMembersMap() {
+      // 将数组转换为Map以提高查找性能
+      const map = new Map();
+      this.groupMembers.forEach(member => {
+        map.set(member.userId, member);
+      });
+      return map;
+    },
 		messageAction() {
 			return `/message/${this.chat.type.toLowerCase()}/send`;
 		},

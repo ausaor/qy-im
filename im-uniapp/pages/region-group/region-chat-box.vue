@@ -131,7 +131,6 @@ export default {
       regionGroup: {},
       myGroupMemberInfo: {},
       regionGroupMembers: [],
-      regionGroupMembersMap: new Map(),
       chatTabBox: 'none',
       showRecord: false,
       atUserIds: [],
@@ -666,10 +665,7 @@ export default {
         method: 'get'
       }).then((groupMembers) => {
         this.regionGroupMembers = groupMembers;
-        this.regionGroupMembersMap = groupMembers.reduce((map, member) => {
-          map.set(member.userId, member);
-          return map;
-        }, new Map()); // 初始值为一个空Map
+        // 使用计算属性regionGroupMembersMap替代手动更新
         this.myGroupMemberInfo = this.regionGroupMembersMap.get(this.mine.id);
       });
     },
@@ -1051,6 +1047,14 @@ export default {
       let size = this.regionGroupMembers.filter(m => !m.quit).length;
       title += `(${size})`;
       return title;
+    },
+    regionGroupMembersMap() {
+      // 将数组转换为Map以提高查找性能
+      const map = new Map();
+      this.regionGroupMembers.forEach(member => {
+        map.set(member.userId, member);
+      });
+      return map;
     },
     atUserItems() {
       let atUsers = [];
