@@ -580,8 +580,8 @@ export default {
           .group-master {
             display: inline-block;
             height: 15px;
-            background-color: orange;
-            color: white;
+            background-color: #fff2e6;
+            color: orange;
             font-size: 10px;
             padding: 0 5px;
             border-radius: 10px;
@@ -589,9 +589,9 @@ export default {
           }
 
           .blogger {
-            background-color: #1E90FF;
+            background-color: #e6f7ff;
             height: 15px;
-            color: white;
+            color: #1E90FF;
             font-size: 12px;
             padding: 0 5px;
             border-radius: 10px;
@@ -599,9 +599,9 @@ export default {
           }
 
           .sys-admin {
-            background-color: #0A6E46;
+            background-color: #eaf5f0;
             height: 15px;
-            color: white;
+            color: #0A6E46;
             font-size: 12px;
             padding: 0 5px;
             border-radius: 10px;

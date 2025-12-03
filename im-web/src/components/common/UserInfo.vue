@@ -187,9 +187,9 @@
 
             .blogger {
               margin-left: 10px;
-              background-color: #1E90FF;
+              background-color: #e6f7ff;
               height: 15px;
-              color: white;
+              color: #1E90FF;
               font-size: 12px;
               padding: 0 5px;
               border-radius: 10px;
@@ -198,9 +198,9 @@
 
             .sys-admin {
               margin-left: 10px;
-              background-color: #0A6E46;
+              background-color: #eaf5f0;
               height: 15px;
-              color: white;
+              color: #0A6E46;
               font-size: 12px;
               padding: 0 5px;
               border-radius: 10px;
