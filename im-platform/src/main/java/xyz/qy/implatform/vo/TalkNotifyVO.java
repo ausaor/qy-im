@@ -86,6 +86,11 @@ public class TalkNotifyVO {
     private Long commentUserId;
 
     /**
+     * 评论用户角色id
+     */
+    private Long commentCharacterId;
+
+    /**
      * 更新时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

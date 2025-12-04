@@ -147,6 +147,7 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
                     talkNotifyVO.setCommentUserId(talkComment.getUserId());
                     talkNotifyVO.setAvatar(talkComment.getUserAvatar());
                     talkNotifyVO.setNickname(talkComment.getUserNickname());
+                    talkNotifyVO.setCommentCharacterId(talkComment.getCharacterId());
                     talkNotifyVO.setTalkComment(BeanUtils.copyProperties(talkComment, TalkCommentVO.class));
 
                     // 查询当前评论的回复
@@ -195,6 +196,7 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
                     talkNotifyVO.setCommentUserId(talkStar.getUserId());
                     talkNotifyVO.setTalkStar(BeanUtils.copyProperties(talkStar, TalkStarVO.class));
                     talkNotifyVO.setAvatar(talkStar.getAvatar());
+                    talkNotifyVO.setCommentCharacterId(talkStar.getCharacterId());
                     talkNotifyVO.setNickname(talkStar.getNickname());
                 }
 
