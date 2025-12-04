@@ -117,6 +117,7 @@ export default {
 .online-status {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .status-indicator {
@@ -126,6 +127,25 @@ export default {
   border-radius: 50%;
   background-color: #4cd964;
   margin-right: 5px;
+  position: relative;
+}
+
+.status-indicator::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #4cd964;
+  opacity: 0;
+  transform: scale(1);
+  animation: ripple 2s infinite;
+}
+
+.status-indicator::after {
+  animation-delay: 0.5s;
 }
 
 .status-text {
@@ -200,5 +220,16 @@ export default {
   word-break: break-word;
   position: relative;
   box-sizing: border-box;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
 }
 </style>
