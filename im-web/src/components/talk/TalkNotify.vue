@@ -27,7 +27,7 @@
             <div class="user-info">
               <head-image :id="message.commentUserId" :size="45" :url="message.avatar" :name="message.nickname"></head-image>
               <div class="user-details">
-                <span class="username">{{ message.nickname }}</span>
+                <span class="username" :class="{'character-name': message.commentCharacterId !== null}">{{ message.nickname }}</span>
                 <div class="timestamp">{{ message.createTime }}</div>
               </div>
             </div>
@@ -76,9 +76,9 @@
             <!-- 回复内容 -->
             <div v-if="message.replyTalkComment && message.replyTalkComment.length" class="replies-section">
               <div v-for="reply in message.replyTalkComment" :key="reply.id" class="reply-item">
-                <span class="reply-author">{{ reply.userNickname }}</span>
-                <span v-if="reply.replyCommentId" style="margin: 0 10px;" class="reply-author reply-prefix">回复</span>
-                <span v-if="reply.replyCommentId" class="reply-author">{{ reply.replyUserNickname }}</span>
+                <span class="reply-author" :class="{'character-name': reply.characterId !== null}" @click="showUserInfo($event, reply.userId)">{{ reply.userNickname }}</span>
+                <span v-if="reply.replyCommentId" style="margin: 0 10px;" class="reply-prefix">回复</span>
+                <span v-if="reply.replyCommentId" class="reply-author" :class="{'character-name': reply.replyUserCharacterId !== null}" @click="showUserInfo($event, reply.replyUserId)">{{ reply.replyUserNickname }}</span>
                 <span>：</span>
                 <span v-if="reply.type === $enums.MESSAGE_TYPE.TEXT" v-html="$emo.transform(reply.content)" class="comment-content"></span>
                 <span v-if="reply.type === $enums.MESSAGE_TYPE.WORD_VOICE" class="comment-content">
@@ -283,7 +283,18 @@ export default {
           this.audio.play();
         }
       }
-    }
+    },
+    showUserInfo(e, userId) {
+      if (userId && userId > 0) {
+        this.$http({
+          url: `/user/find/${userId}`,
+          method: 'get'
+        }).then((user) => {
+          this.$store.commit("setUserInfoBoxPos", e);
+          this.$store.commit("showUserInfoBox", user);
+        })
+      }
+    },
   },
   watch: {
     drawerVisible(newValue) {
@@ -382,6 +393,10 @@ export default {
   color: #333333;
   margin-bottom: 2px;
   text-align: left;
+}
+
+.character-name {
+  color: #f56c6c;
 }
 
 .timestamp {
@@ -516,9 +531,9 @@ export default {
 }
 
 .reply-author {
-  color: #333333;
   font-weight: 500;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .reply-to-reply {
@@ -526,8 +541,9 @@ export default {
 }
 
 .reply-prefix {
-  color: #1890ff;
+  font-weight: 500;
   flex-shrink: 0;
+  color: #1890ff;
 }
 
 .comment-content {

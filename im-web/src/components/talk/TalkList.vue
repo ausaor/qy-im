@@ -10,7 +10,7 @@
       <div class="sayItem" v-for="(item, index) in talkList" :key="index">
         <head-image :url="item.avatar" :id="item.userId" :name="item.nickName" :size="45"></head-image>
         <div class="rightBox">
-          <div class="nickname">
+          <div class="nickname" :class="{'character-name': item.characterId !== null }">
             {{ item.nickName }}
           </div>
           <p class="content" v-highlight v-html="$emo.transform(item.content)"></p>
@@ -100,12 +100,12 @@
                    :key="comment_index">
                 <div class="comment-content">
                   <head-image class="comment-avatar" :url="comment.userAvatar" :id="comment.userId" :name="comment.userNickname" :size="24"/>
-                  <span class="username" @click="showUserInfo($event, comment.userId)">
+                  <span class="username" :class="{'character-name': comment.characterId !== null}" @click="showUserInfo($event, comment.userId)">
                       {{ comment.userNickname }}
                   </span>
                   <span style="margin-left: 5px; margin-right: 5px;" v-if="comment.replyCommentId">回复</span>
                   <head-image v-if="comment.replyCommentId" class="comment-avatar" :url="comment.replyUserAvatar" :id="comment.replyUserId" :name="comment.replyUserNickname" :size="24"/>
-                  <span class="username" v-if="comment.replyCommentId" @click="showUserInfo($event, comment.replyUserId)">{{ comment.replyUserNickname }}</span>
+                  <span class="username" :class="{'character-name': comment.replyUserCharacterId !== null}" v-if="comment.replyCommentId" @click="showUserInfo($event, comment.replyUserId)">{{ comment.replyUserNickname }}</span>
                   <span>：</span>
                   <span v-if="comment.type === $enums.MESSAGE_TYPE.TEXT" class="content point" v-html="$emo.transform(comment.content)"
                         @click="handleShowCommentBox(comment, item.id, index)">
@@ -840,7 +840,6 @@ export default {
   .contentBox {
     width: 72%;
     margin: 20px auto;
-    color: #5fb878;
 
     .talk-notice {
       display: flex;
@@ -894,6 +893,9 @@ export default {
 
         .nickname {
           text-align: left;
+        }
+
+        .character-name {
           color: #f56c6c;
         }
 
@@ -1058,6 +1060,10 @@ export default {
               .comment-content {
                 display: flex;
                 align-items: flex-end;
+
+                .nick-name {
+                  color: #f56c6c;
+                }
               }
 
               .comment-avatar {
@@ -1069,7 +1075,6 @@ export default {
               }
 
               .username {
-                color: #5597bd;
                 cursor: pointer;
               }
 
