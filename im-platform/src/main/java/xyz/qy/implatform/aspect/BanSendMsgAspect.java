@@ -284,7 +284,7 @@ public class BanSendMsgAspect {
                 }
             } else if (BanTypeEnum.MASTER.getCode().equals(group.getBanType())) {
                 // 群主不禁言
-                if (userId.equals(group.getLeaderId())) {
+                if (userId.equals(group.getOwnerId())) {
                     return;
                 }
 
@@ -304,7 +304,7 @@ public class BanSendMsgAspect {
                     regionGroupMemberMsgCheck(group, userId);
                 } else {
                     // 没有群主
-                    if (ObjectUtil.isNull(group.getLeaderId()) || now.after(group.getExpirationTime())) {
+                    if (ObjectUtil.isNull(group.getOwnerId()) || now.after(group.getExpirationTime())) {
                         // 判断群聊成员是否被禁止发言
                         regionGroupMemberMsgCheck(group, userId);
                     } else {
@@ -347,7 +347,7 @@ public class BanSendMsgAspect {
 
             // 群主身份已失效
             if (BanTypeEnum.MASTER.getCode().equals(groupMember.getBanType()) &&
-                    (ObjectUtil.isNull(regionGroup.getLeaderId()) || now.after(regionGroup.getExpirationTime()))) {
+                    (ObjectUtil.isNull(regionGroup.getOwnerId()) || now.after(regionGroup.getExpirationTime()))) {
                 return;
             }
 
@@ -373,7 +373,7 @@ public class BanSendMsgAspect {
                 Object banTypeObj = redisCache.getCacheObject(RedisKey.IM_REGION_GROUP_MEMBER_MSG_SWITCH + regionGroup.getId() + ":" + userId);
                 // 被群主禁言，但是群主身份已失效
                 if (BanTypeEnum.MASTER.getCode().equals(banTypeObj.toString()) &&
-                        (ObjectUtil.isNull(regionGroup.getLeaderId()) || new Date().after(regionGroup.getExpirationTime()))) {
+                        (ObjectUtil.isNull(regionGroup.getOwnerId()) || new Date().after(regionGroup.getExpirationTime()))) {
                     return;
                 }
 

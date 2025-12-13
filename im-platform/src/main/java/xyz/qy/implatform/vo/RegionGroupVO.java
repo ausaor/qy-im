@@ -38,7 +38,7 @@ public class RegionGroupVO {
     /**
      * 地区群聊群主id
      */
-    private Long leaderId;
+    private Long ownerId;
 
     /**
      * 群主用户名

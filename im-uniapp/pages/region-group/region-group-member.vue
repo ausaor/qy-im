@@ -15,7 +15,7 @@
             <head-image :name="member.aliasName" :online="member.online"
                         :url="member.headImage"></head-image>
             <view class="member-name">{{ member.aliasName }}
-              <uni-tag v-if="member.userId == regionGroup.leaderId" text="群主" size="small" circle type="error">
+              <uni-tag v-if="member.userId == regionGroup.ownerId" text="群主" size="small" circle type="error">
               </uni-tag>
               <uni-tag v-if="member.userId == userStore.userInfo.id" text="我" size="small" circle></uni-tag>
             </view>

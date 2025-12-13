@@ -48,8 +48,8 @@ public class RegionGroup extends BaseEntity {
     /**
      * 地区群聊群主id
      */
-    @TableField("leader_id")
-    private Long leaderId;
+    @TableField("owner_id")
+    private Long ownerId;
 
     /**
      * 群主生效时间

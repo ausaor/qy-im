@@ -23,7 +23,7 @@
                         :mine="msgInfo.sendId == mine.id"
                         :showInfo="showInfo(msgInfo)"
                         :msgInfo="msgInfo"
-                        :isOwner="regionGroup.leaderId === msgInfo.sendId"
+                        :isOwner="regionGroup.ownerId === msgInfo.sendId"
                         :myGroupMemberInfo="myGroupMemberInfo"
                         @delete="deleteMessage"
                         @recall="recallMessage"
@@ -100,7 +100,7 @@
                 </div>
               </div>
               <div class="send-content-area">
-                <ChatInput :ownerId="regionGroup.leaderId" ref="chatInputEditor" :groupMembers="regionGroupMembers"
+                <ChatInput :ownerId="regionGroup.ownerId" ref="chatInputEditor" :groupMembers="regionGroupMembers"
                            @submit="sendMessage" :quote-message="quoteMsgInfo" @removeQuoteMsg="cancelQuote"/>
                 <div class="send-btn-area">
                   <el-button type="primary" size="small" @click="notifySend()">发送</el-button>
@@ -855,7 +855,7 @@ export default {
       return this.regionGroupMembers.filter(m => !m.quit).length;
     },
     isGroupOwner() {
-      return this.regionGroup.leaderId === this.mine.id;
+      return this.regionGroup.ownerId === this.mine.id;
     },
     friends() {
       return this.$store.state.friendStore.friends;

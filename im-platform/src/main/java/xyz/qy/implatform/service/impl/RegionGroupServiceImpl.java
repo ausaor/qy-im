@@ -154,9 +154,9 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         assert vo != null;
         RegionGroupMember member = regionGroupMemberService.findByRegionGroupIdAndUserId(regionGroupId, session.getUserId());
 
-        if (ObjectUtil.isNotNull(regionGroup.getLeaderId()) && ObjectUtil.isNotNull(regionGroup.getExpirationTime())) {
+        if (ObjectUtil.isNotNull(regionGroup.getOwnerId()) && ObjectUtil.isNotNull(regionGroup.getExpirationTime())) {
             if (new Date().after(regionGroup.getExpirationTime())) {
-                vo.setLeaderId(null);
+                vo.setOwnerId(null);
             }
         }
 
@@ -189,15 +189,15 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         List<RegionGroupVO> regionGroupVOS = BeanUtils.copyProperties(regionGroups, RegionGroupVO.class);
 
         // 获取群主信息
-        List<Long> userIds = regionGroups.stream().map(RegionGroup::getLeaderId)
+        List<Long> userIds = regionGroups.stream().map(RegionGroup::getOwnerId)
                 .filter(Objects::nonNull).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(userIds)) {
             List<User> userList = userService.findUserByIds(userIds);
             // userList根据id分组获取Map
             Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, Function.identity()));
             regionGroupVOS.forEach(item -> {
-               if (ObjectUtil.isNotNull(item.getLeaderId())) {
-                   User user = userMap.get(item.getLeaderId());
+               if (ObjectUtil.isNotNull(item.getOwnerId())) {
+                   User user = userMap.get(item.getOwnerId());
                    if (ObjectUtil.isNotNull(user)) {
                        item.setGroupAdmin(user.getUserName());
                    }
@@ -316,7 +316,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 if (userId.equals(m.getUserId()) && !m.getQuit() ) {
                     hasAuth.set(true);
                 }
-                if (vo.getUserId().equals(regionGroup.getLeaderId()) && date.before(regionGroup.getExpirationTime())) {
+                if (vo.getUserId().equals(regionGroup.getOwnerId()) && date.before(regionGroup.getExpirationTime())) {
                     vo.setIsLeader(true);
                 }
                 vo.setJoinType(1);
@@ -792,7 +792,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
 
         Date now = new Date();
         // 当前群聊已有群主并且还未过失效时间
-        if (regionGroup.getLeaderId() != null && now.before(regionGroup.getExpirationTime())) {
+        if (regionGroup.getOwnerId() != null && now.before(regionGroup.getExpirationTime())) {
             throw new GlobalException("当前地区群聊已有群主，可投票解除群主或等待群主有效期结束");
         }
 
@@ -861,7 +861,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                     throw new GlobalException("您所投票的用户已是其他地区群聊群主");
                 }
                 // 将所投票用户选为群主
-                regionGroup.setLeaderId(dto.getUserId());
+                regionGroup.setOwnerId(dto.getUserId());
                 regionGroup.setEffectiveTime(now);
                 // 有效期30天
                 DateTime expirationTime = DateUtil.offsetDay(now, RegionGroupConst.REGION_LEADER_PERIOD);
@@ -910,7 +910,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
 
         Date now = new Date();
         // 当前群聊没有群主或者群主身份已过失效时间
-        if (regionGroup.getLeaderId() == null || now.after(regionGroup.getExpirationTime())) {
+        if (regionGroup.getOwnerId() == null || now.after(regionGroup.getExpirationTime())) {
             throw new GlobalException("当前地区群聊没有群主或群主身份已过期");
         }
         
@@ -937,7 +937,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             throw new GlobalException("您所投票的用户不在当前地区群聊里");
         }
         // 判断投票解除的用户是否群主
-        if (!dto.getUserId().equals(regionGroup.getLeaderId())) {
+        if (!dto.getUserId().equals(regionGroup.getOwnerId())) {
             throw new GlobalException("您所选择的用户不是群主");
         }
 
@@ -973,7 +973,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         if (count >= voteEffectNum) {
             // 将群主信息置空
             LambdaUpdateWrapper<RegionGroup> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.set(RegionGroup::getLeaderId, null);
+            updateWrapper.set(RegionGroup::getOwnerId, null);
             updateWrapper.set(RegionGroup::getEffectiveTime, null);
             updateWrapper.set(RegionGroup::getExpirationTime, null);
             updateWrapper.eq(RegionGroup::getId, regionGroup.getId());
@@ -1195,7 +1195,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             if (this.hasBecomeRegionGroupLeader(dto.getUserId())) {
                 throw new GlobalException("您所选择的用户已是其他地区群聊群主");
             }
-            regionGroup.setLeaderId(dto.getUserId());
+            regionGroup.setOwnerId(dto.getUserId());
             this.updateById(regionGroup);
 
             // 记录群主转移操作
@@ -1212,7 +1212,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
 
     @Override
     public boolean hasBecomeRegionGroupLeader(Long userId) {
-        List<RegionGroup> regionGroupList = this.lambdaQuery().eq(RegionGroup::getLeaderId, userId)
+        List<RegionGroup> regionGroupList = this.lambdaQuery().eq(RegionGroup::getOwnerId, userId)
                 .gt(RegionGroup::getExpirationTime, new Date())
                 .list();
         if (CollectionUtils.isNotEmpty(regionGroupList)) {
@@ -1223,7 +1223,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
     }
 
     private boolean isRegionGroupLeader(Long userId, RegionGroup regionGroup) {
-        return (userId.equals(regionGroup.getLeaderId()) && new Date().before(regionGroup.getExpirationTime()));
+        return (userId.equals(regionGroup.getOwnerId()) && new Date().before(regionGroup.getExpirationTime()));
     }
 
     private void quitTempRegionGroup(RegionGroupDTO regionGroupDTO, Long userId) {
@@ -1252,7 +1252,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         if (isRegionGroupLeader(regionGroupMember.getUserId(), regionGroup)) {
             // 将群主信息置空
             LambdaUpdateWrapper<RegionGroup> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.set(RegionGroup::getLeaderId, null);
+            updateWrapper.set(RegionGroup::getOwnerId, null);
             updateWrapper.set(RegionGroup::getEffectiveTime, null);
             updateWrapper.set(RegionGroup::getExpirationTime, null);
             if (regionGroup.getIsBanned() && BanTypeEnum.MASTER.getCode().equals(regionGroup.getBanType())) {

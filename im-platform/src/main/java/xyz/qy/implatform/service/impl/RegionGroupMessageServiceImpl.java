@@ -117,7 +117,7 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         User user = userService.getById(session.getUserId());
         Date now = new Date();
         // 判断是否有群主，没有群主每位群成员24小时消息数量限制50条
-        if (ObjectUtil.isNull(regionGroup.getLeaderId()) || now.after(regionGroup.getExpirationTime())) {
+        if (ObjectUtil.isNull(regionGroup.getOwnerId()) || now.after(regionGroup.getExpirationTime())) {
             Boolean exists = redisCache.hasKey(RedisKey.IM_REGION_GROUP_MSG_LIMIT + regionGroup.getId() + ":" + user.getId());
             int count = redisCache.incrementInt(RedisKey.IM_REGION_GROUP_MSG_LIMIT + regionGroup.getId() + ":" + user.getId());
             if (!exists) {

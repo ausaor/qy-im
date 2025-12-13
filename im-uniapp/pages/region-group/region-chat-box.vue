@@ -15,7 +15,7 @@
                                  @longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
                                  @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg" @playVideo="playVideo"
                                  @audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
-                                 :myGroupMemberInfo="myGroupMemberInfo" :isOwner="regionGroup.leaderId === msgInfo.sendId">
+                                 :myGroupMemberInfo="myGroupMemberInfo" :isOwner="regionGroup.ownerId === msgInfo.sendId">
               </chat-message-item>
             </view>
           </view>
@@ -101,7 +101,7 @@
       </scroll-view>
     </view>
     <!-- @用户时选择成员 -->
-    <chat-at-box ref="atBox" :ownerId="regionGroup.leaderId" :members="regionGroupMembers"
+    <chat-at-box ref="atBox" :ownerId="regionGroup.ownerId" :members="regionGroupMembers"
                  @complete="onAtComplete"></chat-at-box>
     <!-- 视频弹窗组件 -->
     <video-play

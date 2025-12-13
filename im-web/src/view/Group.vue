@@ -320,6 +320,18 @@
 								</div>
 								<div class="tool-text">查看</div>
 							</div>
+              <div class="member-tools" v-show="isOwner">
+                <div class="tool-btn" title="禁言">
+                  <i class="el-icon-turn-off-microphone"></i>
+                </div>
+                <div class="tool-text">禁言</div>
+              </div>
+              <div class="member-tools" v-show="isOwner">
+                <div class="tool-btn" title="解除禁言">
+                  <i class="el-icon-remove-outline"></i>
+                </div>
+                <div class="tool-text">解除禁言</div>
+              </div>
 							<div v-for="(member) in groupMembers" :key="member.id">
 								<group-member v-show="!member.quit" class="member-item" :member="member" :showDel="isOwner&&member.userId!==activeGroup.ownerId"
 											@del="onKick" :right-menu-visible="myGroupMemberInfo.isAdmin"

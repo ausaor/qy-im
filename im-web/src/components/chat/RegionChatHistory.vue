@@ -11,7 +11,7 @@
                 :showInfo="showInfo(msgInfo)"
 						    :msgInfo="msgInfo"
                 :menu="false"
-                :isOwner="regionGroup.leaderId === msgInfo.sendId"
+                :isOwner="regionGroup.ownerId === msgInfo.sendId"
                 :myGroupMemberInfo="myGroupMemberInfo">
 						</chat-message-item>
 					</li>
@@ -92,7 +92,7 @@
 					params: param
 				}).then(messages => {
 					messages.forEach(m => {
-              m.isOwner = m.sendId === this.regionGroup.leaderId
+              m.isOwner = m.sendId === this.regionGroup.ownerId
 					  this.messages.unshift(m)
 					});
 					this.loading = false;

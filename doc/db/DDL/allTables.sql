@@ -368,7 +368,7 @@ create table im_region_group
     code              varchar(100)         not null comment '地区编码',
     region_group_name varchar(200)         not null comment '地区群聊名称',
     num               varchar(20)          not null comment '地区群聊编号',
-    leader_id         bigint               null comment '地区群聊群主id',
+    owner_id          bigint               null comment '地区群聊群主id',
     effective_time    datetime             null comment '群主生效时间',
     expiration_time   datetime             null comment '群主失效时间',
     deleted           tinyint(1) default 0 not null comment '是否删除',
