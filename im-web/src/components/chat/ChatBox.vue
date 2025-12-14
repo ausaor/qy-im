@@ -1403,7 +1403,6 @@
 
           .send-image-area {
             text-align: left;
-            border: #53a0e7 solid 1px;
 
             .send-image-box {
               position: relative;

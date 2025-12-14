@@ -1604,10 +1604,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
             messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(), null,
                     content, GroupChangeTypeEnum.GROUP_BANNED_MSG.getCode());
-        } else {
-            if (ObjectUtil.isNull(dto.getUserId())) {
-                throw new GlobalException("未选择群成员");
-            }
+        } else if (ObjectUtil.isNotNull(dto.getUserId())) {
             if (session.getUserId().equals(dto.getUserId())) {
                 throw new GlobalException("不能禁言自己");
             }
@@ -1634,6 +1631,31 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
                     Collections.singletonList(groupMember.getUserId()),
                     content, GroupChangeTypeEnum.GROUP_BANNED_MSG.getCode());
+        } else if (CollUtil.isNotEmpty(dto.getUserIds())) {
+            dto.getUserIds().removeIf(userId -> userId.equals(session.getUserId()));
+            dto.getUserIds().forEach(userId -> {
+                GroupMember groupMember = groupMemberService.findByGroupAndUserId(group.getId(), userId);
+                if (ObjectUtil.isNotNull(groupMember) && !groupMember.getQuit()) {
+                    groupMember.setIsBanned(true);
+                    groupMember.setBanType(dto.getBanType());
+                    if (ObjectUtil.isNotNull(dto.getBanDuration()) && dto.getBanDuration() > 0) {
+                        DateTime dateTime = DateUtil.offsetMinute(now, dto.getBanDuration());
+                        groupMember.setBanExpireTime(dateTime);
+                    }
+
+                    groupMemberService.updateById(groupMember);
+                    String content = null;
+                    if (session.getUserId().equals(group.getOwnerId())) {
+                        content = "您已被群主禁言，禁言时长" + dto.getBanDuration() + "分钟";
+                    } else {
+                        content = "您已被系统禁言，禁言时长" + dto.getBanDuration() + "分钟";
+                    }
+
+                    messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
+                            Collections.singletonList(groupMember.getUserId()),
+                            content, GroupChangeTypeEnum.GROUP_BANNED_MSG.getCode());
+                }
+            });
         }
     }
 
@@ -1649,7 +1671,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
 
         // 判断是解禁全局禁言还是解禁用户
-        if (ObjectUtil.isNull(dto.getUserId())) {
+        if (ObjectUtil.isNull(dto.getUserId()) && CollUtil.isEmpty(dto.getUserIds())) {
             if (!group.getIsBanned()) {
                 throw new GlobalException("当前群聊未开启全员禁言");
             }
@@ -1671,7 +1693,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             messageSendUtil.sendTipMessage(group.getId(), session.getUserId(),
                     session.getNickName(), null,
                     content, GroupChangeTypeEnum.GROUP_BANNED_MSG.getCode());
-        } else {
+        } else if (ObjectUtil.isNotNull(dto.getUserId())) {
             GroupMember groupMember = groupMemberService.findByGroupAndUserId(group.getId(), dto.getUserId());
             if (ObjectUtil.isNull(groupMember) || groupMember.getQuit()) {
                 throw new GlobalException("用户不在当前群聊中");
@@ -1697,6 +1719,29 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             messageSendUtil.sendTipMessage(group.getId(), session.getUserId(),
                     session.getNickName(), Collections.singletonList(groupMember.getUserId()),
                     content, GroupChangeTypeEnum.GROUP_BANNED_MSG.getCode());
+        } else if (CollUtil.isNotEmpty(dto.getUserIds())) {
+            dto.getUserIds().forEach(userId -> {
+                GroupMember groupMember = groupMemberService.findByGroupAndUserId(group.getId(), userId);
+                if (ObjectUtil.isNotNull(groupMember) && !groupMember.getQuit() && groupMember.getIsBanned()) {
+                    if (BanTypeEnum.SYS.getCode().equals(groupMember.getBanType())
+                            && !StringUtils.equalsAny(session.getRole(), RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode())) {
+                        throw new GlobalException("用户被系统禁言，您无权限解除！");
+                    }
+                    LambdaUpdateWrapper<GroupMember> updateWrapper = new LambdaUpdateWrapper<>();
+                    updateWrapper.set(GroupMember::getIsBanned, false);
+                    updateWrapper.set(GroupMember::getBanType, null);
+                    updateWrapper.set(GroupMember::getBanExpireTime, null);
+                    updateWrapper.eq(GroupMember::getId, groupMember.getId());
+
+                    groupMemberService.update(updateWrapper);
+
+                    String content = "您的禁言已解除";
+
+                    messageSendUtil.sendTipMessage(group.getId(), session.getUserId(),
+                            session.getNickName(), Collections.singletonList(groupMember.getUserId()),
+                            content, GroupChangeTypeEnum.GROUP_BANNED_MSG.getCode());
+                }
+            });
         }
     }
 

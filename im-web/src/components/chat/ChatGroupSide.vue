@@ -14,6 +14,18 @@
           </div>
           <div class="tool-text">查看</div>
         </div>
+        <div class="member-tools" v-if="isOwner">
+          <div class="tool-btn" title="禁言" @click="onMuteMember">
+            <i class="el-icon-turn-off-microphone"></i>
+          </div>
+          <div class="tool-text">禁言</div>
+        </div>
+        <div class="member-tools" v-if="isOwner">
+          <div class="tool-btn" title="解除禁言" @click="onUnMuteMember">
+            <i class="el-icon-remove-outline"></i>
+          </div>
+          <div class="tool-text">解除禁言</div>
+        </div>
 				<div v-for="(member) in displayedGroupMembers" :key="member.id">
 					<group-member class="group-side-member" v-show="!member.quit && member.aliasName.startsWith(searchText)" :member="member"
 					 :showDel="false" :right-menu-visible="myGroupMemberInfo.isAdmin" @ban="banMemberMsg" @unban="unBanMemberMsg"></group-member>
@@ -241,6 +253,7 @@
         </div>
       </el-scrollbar>
     </el-dialog>
+    <BanGroupMember ref="banGroupMemberRef" :visible="banGroupMemberVisible" :operation="banOperation" :members="banMembers" @close="closeBanGroupMemberDialog" @confirm="doBanMembers"></BanGroupMember>
 	</div>
 </template>
 
@@ -254,6 +267,7 @@
   import TalkNotify from "../talk/TalkNotify.vue";
   import HeadImage from "@components/common/HeadImage.vue";
   import MusicPlay  from "@components/common/musicPlay.vue";
+  import BanGroupMember from "@components/group/BanGroupMember.vue";
 
 	export default {
 		name: "chatGroupSide",
@@ -267,6 +281,7 @@
       SpaceCover,
       TalkNotify,
       MusicPlay,
+      BanGroupMember,
 		},
 		data() {
 			return {
@@ -286,7 +301,10 @@
           key: 'UNBAN',
           name: '解除禁言',
           icon: 'el-icon-remove-outline'
-        }]
+        }],
+        banOperation: "ban",
+        banGroupMemberVisible: false,
+        banMembers: []
 			}
 		},
 		props: {
@@ -481,8 +499,8 @@
           this.group.isBanned = !value;
         })
       },
-      banMemberMsg(member) {
-        if (member.userId === this.myGroupMemberInfo.userId) {
+      banMemberMsg(userIds) {
+        if (userIds.includes(this.myGroupMemberInfo.userId)) {
           this.$message.warning('不能禁言自己');
           return
         }
@@ -494,7 +512,7 @@
         }).then(({ value }) => {
           let paramVO = {
             id: this.group.id,
-            userId: member.userId,
+            userIds: userIds,
             banDuration: value,
             banType: 'master'
           }
@@ -503,16 +521,16 @@
             method: 'post',
             data: paramVO
           }).then(() => {
-            member.isBanned = true;
             this.$message.success("操作成功");
+            this.$emit('reload');
           }).catch((e) => {
           })
         })
       },
-      unBanMemberMsg(member) {
+      unBanMemberMsg(userIds) {
         let paramVO = {
           id: this.group.id,
-          userId: member.userId,
+          userIds: userIds,
           banDuration: this.bannedTime,
           banType: 'master'
         }
@@ -521,8 +539,8 @@
           method: 'post',
           data: paramVO
         }).then(() => {
-          member.isBanned = false;
           this.$message.success("操作成功");
+          this.$emit('reload');
         }).catch((e) => {
         })
       },
@@ -567,6 +585,30 @@
       saveNotice() {
         this.editingField = '';
         this.onSaveGroup();
+      },
+      closeBanGroupMemberDialog() {
+        this.banGroupMemberVisible = false;
+      },
+      onMuteMember() {
+        this.banOperation = 'mute';
+        this.banMembers = JSON.parse(JSON.stringify(this.groupMembers));
+        this.banGroupMemberVisible = true;
+      },
+      onUnMuteMember() {
+        this.banOperation = 'unmute';
+        this.banMembers = JSON.parse(JSON.stringify(this.groupMembers.filter((m) => m.isBanned)));
+        this.banGroupMemberVisible = true;
+      },
+      doBanMembers(userIds) {
+        if (!userIds || userIds.length === 0) {
+          return
+        }
+        this.banGroupMemberVisible = false;
+        if (this.banOperation === 'mute') {
+          this.banMemberMsg(userIds);
+        } else {
+          this.unBanMemberMsg(userIds);
+        }
       }
 		},
     watch: {

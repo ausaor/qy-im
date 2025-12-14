@@ -321,21 +321,20 @@
 								<div class="tool-text">查看</div>
 							</div>
               <div class="member-tools" v-show="isOwner">
-                <div class="tool-btn" title="禁言">
+                <div class="tool-btn" title="禁言" @click="onMuteMember">
                   <i class="el-icon-turn-off-microphone"></i>
                 </div>
                 <div class="tool-text">禁言</div>
               </div>
               <div class="member-tools" v-show="isOwner">
-                <div class="tool-btn" title="解除禁言">
+                <div class="tool-btn" title="解除禁言" @click="onUnMuteMember">
                   <i class="el-icon-remove-outline"></i>
                 </div>
                 <div class="tool-text">解除禁言</div>
               </div>
 							<div v-for="(member) in groupMembers" :key="member.id">
 								<group-member v-show="!member.quit" class="member-item" :member="member" :showDel="isOwner&&member.userId!==activeGroup.ownerId"
-											@del="onKick" :right-menu-visible="myGroupMemberInfo.isAdmin"
-											@ban="banMemberMsg" @unban="unBanMemberMsg">
+											@del="onKick" :right-menu-visible="myGroupMemberInfo.isAdmin">
 								</group-member>
 							</div>
 						</div>
@@ -455,6 +454,7 @@
     <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="activeGroup.id"></music-play>
     <group-request-panel ref="groupRequestPanel" :is-owner="isOwner" :join-group-requests="joinGroupRequests" :invite-group-requests="inviteGroupRequests"></group-request-panel>
     <template-character-choose :visible="groupRequestChangeCharacterVisible" @close="groupRequestChangeCharacterVisible = false" @confirm="groupRequestChangeCharacterEvent"></template-character-choose>
+    <BanGroupMember ref="banGroupMemberRef" :visible="banGroupMemberVisible" :operation="banOperation" :members="banMembers" @close="closeBanGroupMemberDialog" @confirm="doBanMembers"></BanGroupMember>
 	</el-container>
 </template>
 
@@ -480,6 +480,7 @@
   import TalkNotify from "@components/talk/TalkNotify.vue";
   import MusicPlay from "@components/common/musicPlay.vue";
   import GroupRequestPanel from "@components/group/GroupRequestPanel.vue";
+  import BanGroupMember from "@components/group/BanGroupMember.vue";
 
 	export default {
 		name: "group",
@@ -504,6 +505,7 @@
       GroupTemplateCharacterChoose,
       TemplateCharacterChooseDialog,
       GroupRequestPanel,
+      BanGroupMember,
 		},
 		data() {
 			return {
@@ -567,7 +569,10 @@
           aliasName: false,
           nickName: false,
           notice: false
-        }
+        },
+        banOperation: "ban",
+        banGroupMemberVisible: false,
+        banMembers: []
 			};
 		},
     mounted() {
@@ -992,8 +997,8 @@
           this.loadGroup(this.activeGroup.id);
         })
       },
-      banMemberMsg(member) {
-        if (member.userId === this.myGroupMemberInfo.userId) {
+      banMemberMsg(userIds) {
+        if (userIds.includes(this.myGroupMemberInfo.userId)) {
           this.$message.warning('不能禁言自己');
           return
         }
@@ -1006,7 +1011,7 @@
         }).then(({ value }) => {
           let paramVO = {
             id: this.activeGroup.id,
-            userId: member.userId,
+            userIds: userIds,
             banDuration: value,
             banType: 'master'
           }
@@ -1015,16 +1020,16 @@
             method: 'post',
             data: paramVO
           }).then(() => {
-            member.isBanned = true;
             this.$message.success("操作成功");
+            this.loadGroupMembers();
           }).catch((e) => {
           })
         })
       },
-      unBanMemberMsg(member) {
+      unBanMemberMsg(userIds) {
         let paramVO = {
           id: this.activeGroup.id,
-          userId: member.userId,
+          userIds: userIds,
           banDuration: this.bannedTime,
           banType: 'master'
         }
@@ -1033,8 +1038,8 @@
           method: 'post',
           data: paramVO
         }).then(() => {
-          member.isBanned = false;
           this.$message.success("操作成功");
+          this.loadGroupMembers();
         }).catch((e) => {
         })
       },
@@ -1105,6 +1110,30 @@
         }).then(() => {
 
         })
+      },
+      closeBanGroupMemberDialog() {
+        this.banGroupMemberVisible = false;
+      },
+      onMuteMember() {
+        this.banOperation = 'mute';
+        this.banMembers = JSON.parse(JSON.stringify(this.groupMembers));
+        this.banGroupMemberVisible = true;
+      },
+      onUnMuteMember() {
+        this.banOperation = 'unmute';
+        this.banMembers = JSON.parse(JSON.stringify(this.groupMembers.filter((m) => m.isBanned)));
+        this.banGroupMemberVisible = true;
+      },
+      doBanMembers(userIds) {
+        if (!userIds || userIds.length === 0) {
+          return
+        }
+        this.banGroupMemberVisible = false;
+        if (this.banOperation === 'mute') {
+          this.banMemberMsg(userIds);
+        } else {
+          this.unBanMemberMsg(userIds);
+        }
       }
 		},
 		computed: {

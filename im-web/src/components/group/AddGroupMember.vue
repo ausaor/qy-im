@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="邀请好友" :visible.sync="visible"  width="50%" :before-close="onClose">
+  <el-dialog title="邀请好友" :visible.sync="visible"  width="42%" :before-close="onClose">
     <div class="agm-container">
       <div class="agm-l-box">
         <el-input width="200px" placeholder="搜索好友" class="input-with-select" v-model="searchText">
@@ -420,7 +420,6 @@
 
 		.agm-l-box {
 			flex: 1;
-      border: #53a0e79c solid 1px;
       border-radius: 5px;
       overflow: hidden;
 
@@ -440,7 +439,6 @@
 
 		.agm-r-box {
 			flex: 1;
-      border: #53a0e79c solid 1px;
       border-radius: 5px;
 
 			.agm-select-tip {
