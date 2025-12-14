@@ -425,7 +425,7 @@
           <file-upload class="avatar-uploader-group" :action="imageAction" :showLoading="true"
                        :maxSize="maxSize" @success="doneUploadSuccess" :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
             <img v-if="commonGroup.headImage" :src="commonGroup.headImage" class="avatar">
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            <div v-else class="el-icon-plus avatar-uploader-icon"></div>
           </file-upload>
           <el-form class="r-group-form" label-width="130px" :model="commonGroup" :rules="rules" ref="commonGroupForm">
             <el-form-item label="群聊名称" prop="name">
@@ -1808,51 +1808,51 @@
           }
         }
       }
+    }
 
-      .avatar-uploader-group {
+    .avatar-uploader-group {
+      width: 160px;
+      height: 160px;
+      line-height: 160px;
+      margin-bottom: 20px;
+      margin-left: 130px;
+
+      .el-upload {
+        border: 1px dashed #d9d9d9 !important;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .el-upload:hover {
+        border-color: #409EFF;
+      }
+
+      .avatar-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
         width: 160px;
         height: 160px;
         line-height: 160px;
-        margin-bottom: 20px;
-        margin-left: 130px;
-
-        .el-upload {
-          border: 1px dashed #d9d9d9 !important;
-          border-radius: 6px;
-          cursor: pointer;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .el-upload:hover {
-          border-color: #409EFF;
-        }
-
-        .avatar-uploader-icon {
-          font-size: 28px;
-          color: #8c939d;
-          width: 160px;
-          height: 160px;
-          line-height: 160px;
-          text-align: center;
-        }
-
-        .avatar {
-          width: 160px;
-          height: 160px;
-          display: block;
-        }
+        text-align: center;
       }
 
-      .character-avatar-item-left {
-        flex: 1;
+      .avatar {
+        width: 160px;
+        height: 160px;
+        display: block;
       }
+    }
 
-      .character-avatar-item-right {
-        margin-right: 10px;
-        height: 65px;
-        line-height: 65px;
-      }
+    .character-avatar-item-left {
+      flex: 1;
+    }
+
+    .character-avatar-item-right {
+      margin-right: 10px;
+      height: 65px;
+      line-height: 65px;
     }
   }
 </style>
