@@ -374,8 +374,8 @@ export default {
         this.$prompt('请输入禁言时长（分钟）', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
-          inputPattern: /^([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|60000)$/,
-          inputErrorMessage: '只能输入正整数(1~60000)'
+          inputPattern: /^(-1|[1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|60000)$/,
+          inputErrorMessage: '只能输入-1或正整数(1~60000)，其中-1表示永久禁言'
         }).then(({ value }) => {
           let paramVO = {
             id: row.id,

@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -41,7 +42,8 @@ public class GroupBanDTO {
     /**
      * 禁言时长
      */
-    @Min(value = 1, message = "禁言时长最短1分钟")
+    @Min(value = -1, message = "禁言时长不能小于-1")
+    @Max(value = 60000, message = "禁言时长不能大于60000")
     @NotNull(message = "禁言时长不能为空")
     @ApiModelProperty(value = "禁言时长")
     private Integer banDuration;

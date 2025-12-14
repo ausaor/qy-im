@@ -316,7 +316,8 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 if (userId.equals(m.getUserId()) && !m.getQuit() ) {
                     hasAuth.set(true);
                 }
-                if (vo.getUserId().equals(regionGroup.getOwnerId()) && date.before(regionGroup.getExpirationTime())) {
+                if (vo.getUserId().equals(regionGroup.getOwnerId()) && ObjectUtil.isNotNull(regionGroup.getEffectiveTime())
+                        && date.before(regionGroup.getExpirationTime())) {
                     vo.setIsLeader(true);
                 }
                 vo.setJoinType(1);

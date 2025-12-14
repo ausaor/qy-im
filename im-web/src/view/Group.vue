@@ -306,13 +306,13 @@
 								<div class="tool-btn" title="切换角色" @click="switchCharacter()">
 									<i class="el-icon-refresh"></i>
 								</div>
-								<div class="tool-text">切换</div>
+								<div class="tool-text">切换角色</div>
 							</div>
 							<div class="member-tools" v-show="activeGroup.groupType !== 0">
 								<div class="tool-btn" title="切换角色头像" @click="switchCharacterAvatar()">
 									<i class="el-icon-user-solid"></i>
 								</div>
-								<div class="tool-text">选择</div>
+								<div class="tool-text">角色头像</div>
 							</div>
 							<div class="member-tools" v-show="activeGroup.groupType !== 0">
 								<div class="tool-btn" title="群聊成员信息" @click="openGroupMemberInfoDialog">
@@ -1006,8 +1006,8 @@
         this.$prompt('请输入禁言时长（分钟）', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
-          inputPattern: /^([1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|60000)$/,
-          inputErrorMessage: '只能输入正整数(1~60000)'
+          inputPattern: /^(-1|[1-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|60000)$/,
+          inputErrorMessage: '只能输入-1或正整数(1~60000)，其中-1表示永久禁言'
         }).then(({ value }) => {
           let paramVO = {
             id: this.activeGroup.id,

@@ -742,7 +742,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 vo.setIsAdmin(true);
             }
 
-            if (m.getIsBanned() && now.after(m.getBanExpireTime())) {
+            if (m.getIsBanned() && ObjectUtil.isNotNull(m.getBanExpireTime()) && now.after(m.getBanExpireTime())) {
                 vo.setIsBanned(false);
             }
 
