@@ -1596,7 +1596,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
             this.updateById(group);
             String content = null;
-            if (StringUtils.equalsAny(session.getRole(), RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode())) {
+            if (StringUtils.equals(dto.getBanType(), BanTypeEnum.SYS.getCode())) {
                 content = "当前群聊已被系统禁言，禁言时长" + dto.getBanDuration() + "分钟";
             } else {
                 content = "群主已开启全员禁言，禁言时长" + dto.getBanDuration() + "分钟";

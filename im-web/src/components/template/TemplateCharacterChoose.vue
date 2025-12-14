@@ -42,8 +42,8 @@
       </div>
     </div>
     <span slot="footer" class="dialog-footer">
-        <div @click="viewCharacterAvatars">
-          <el-avatar icon="el-icon-user-solid" :src="characterAvatar.avatar"></el-avatar>
+        <div @click="viewCharacterAvatars" style="cursor: pointer;">
+          <el-avatar icon="el-icon-user-solid" :src="characterAvatar.avatar" size="medium"></el-avatar>
         </div>
 			  <el-button @click="handleClose()" size="small">取 消</el-button>
 			  <el-button type="primary" @click="handleOk()" size="small">确 定</el-button>

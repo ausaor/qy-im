@@ -13,22 +13,23 @@
       </div>
       <el-scrollbar style="height:400px;">
         <div v-for="(character, index) in characterList" :key="index"
-             v-show="character.name.startsWith(characterSearchText)">
-          <template-character-item class="character-item-left" :templateCharacter="character"></template-character-item>
-          <div class="character-item-right">
-            <el-button :type="characterActiveIndex === index ? 'success' : ''"
-                       icon="el-icon-check"
-                       circle
-                       @click="chooseTemplateCharacter(character, index)"></el-button>
+             v-show="character.name.startsWith(characterSearchText)" class="character-item">
+          <div class="character-item-container">
+            <template-character-item class="character-item-left" :templateCharacter="character"></template-character-item>
+            <div class="character-item-right">
+              <el-button :type="characterActiveIndex === index ? 'success' : ''"
+                         icon="el-icon-check"
+                         circle
+                         @click="chooseTemplateCharacter(character, index)"></el-button>
+            </div>
           </div>
-          <p style="clear:both;"></p>
         </div>
       </el-scrollbar>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="handleClose" size="small">取 消</el-button>
-        <el-button type="primary" @click="chooseTemplateCharacterOk" size="small">确 定</el-button>
-      </span>
     </div>
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="handleClose" size="small">取 消</el-button>
+      <el-button type="primary" @click="chooseTemplateCharacterOk" size="small">确 定</el-button>
+    </span>
   </el-dialog>
 </template>
 
@@ -101,15 +102,18 @@ export default {
 
 <style lang="scss" scoped>
 .character-choose-box {
+  .character-item-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
   .character-item-left {
-    float: left;
+    flex: 1;
   }
 
   .character-item-right {
-    float: right;
     margin-right: 10px;
-    height: 65px;
-    line-height: 65px;
   }
 }
 </style>

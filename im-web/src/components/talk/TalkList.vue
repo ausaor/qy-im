@@ -186,11 +186,11 @@
                        size="mini" circle></el-button>
           </div>
         </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="confirmCharacter()">确认</el-button>
-          <el-button @click="cancelCharacter()">取消</el-button>
-        </el-form-item>
       </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="confirmCharacter()" size="small">确认</el-button>
+        <el-button @click="cancelCharacter()" size="small">取消</el-button>
+      </span>
       <template-character-choose
           :visible.sync="chooseCharacterDialogVisible"
           :appendToBody="true"

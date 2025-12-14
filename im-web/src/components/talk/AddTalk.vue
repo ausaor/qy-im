@@ -95,11 +95,11 @@
         </batch-image-upload>-->
         <multi-media-upload :file-list="fileList" :limit="9" :file-size="10" :multiple="true" @update:fileList="updateFileList"/>
       </el-form-item>
-      <el-form-item>
-          <el-button type="primary" @click="submitForm('ruleForm')">发布</el-button>
-          <el-button @click="resetForm('ruleForm')">清空</el-button>
-      </el-form-item>
     </el-form>
+    <span slot="footer" class="dialog-footer">
+      <el-button type="primary" @click="submitForm('ruleForm')" size="small">发布</el-button>
+      <el-button @click="resetForm('ruleForm')" size="small">清空</el-button>
+    </span>
     <TemplateCharacterChoose
         :append-to-body="true"
         ref="templateCharacterChoose"

@@ -1046,7 +1046,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             }
             this.updateById(regionGroup);
             String content = null;
-            if (StringUtils.equalsAny(session.getRole(), RoleEnum.SUPER_ADMIN.getCode(), RoleEnum.ADMIN.getCode())) {
+            if (StringUtils.equals(dto.getBanType(), BanTypeEnum.SYS.getCode())) {
                 content = "当前群聊已被系统禁言，禁言时长" + dto.getBanDuration() + "小时";
             } else {
                 content = "群主已开启全员禁言，禁言时长" + dto.getBanDuration() + "小时";
@@ -1082,7 +1082,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             }
 
             String content = null;
-            if (StringUtils.equalsAny(session.getRole(), RoleEnum.SUPER_ADMIN.getCode(), RoleEnum.ADMIN.getCode())) {
+            if (StringUtils.equals(dto.getBanType(), BanTypeEnum.SYS.getCode())) {
                 content = "群成员【"+ dto.getAliasName() + "】已被系统禁言，禁言时长" + dto.getBanDuration() + "小时";
             } else {
                 content = "群成员【"+ dto.getAliasName() + "】已被群主禁言，禁言时长" + dto.getBanDuration() + "小时";
