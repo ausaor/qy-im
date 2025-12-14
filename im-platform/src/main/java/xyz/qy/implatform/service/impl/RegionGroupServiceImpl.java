@@ -313,6 +313,9 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 vo.setRole(user.getRole());
                 vo.setUserName(user.getUserName());
                 vo.setChatBubble(user.getChatBubble());
+                if (m.getIsBanned() && ObjectUtil.isNotNull(m.getBanExpireTime()) && now.after(m.getBanExpireTime())) {
+                    vo.setIsBanned(false);
+                }
                 if (userId.equals(m.getUserId()) && !m.getQuit() ) {
                     hasAuth.set(true);
                 }
@@ -1053,6 +1056,9 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         } else {
             if (ObjectUtil.isNull(dto.getUserId())) {
                 throw new GlobalException("未选择要禁言的用户");
+            }
+            if (session.getUserId().equals(dto.getUserId())) {
+                throw new GlobalException("不能禁言自己");
             }
             // 常驻成员禁言
             if (dto.getJoinType() == 1) {

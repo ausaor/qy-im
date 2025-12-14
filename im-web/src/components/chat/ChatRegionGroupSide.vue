@@ -356,6 +356,10 @@ export default {
         this.$message.warning("请先选择群聊成员");
         return;
       }
+      if (this.curMember.userId === this.mine.id) {
+        this.$message.warning("不能对自己进行操作");
+        return;
+      }
       let paramVO = {
         code: this.regionGroup.code,
         num: this.regionGroup.num,
