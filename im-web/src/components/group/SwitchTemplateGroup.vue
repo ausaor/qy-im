@@ -51,9 +51,9 @@
     </span>
     </el-dialog>
     <span slot="footer" class="dialog-footer">
-      <el-button v-show="toGroupType===2 || toGroupType === 3" @click="randomSetCharacters">随机设置</el-button>
-			<el-button @click="handleClose()">取 消</el-button>
-			<el-button type="primary" @click="handleOk()">确 定</el-button>
+      <el-button v-show="toGroupType===2 || toGroupType === 3" @click="randomSetCharacters" size="small">随机设置</el-button>
+			<el-button @click="handleClose()" size="small">取 消</el-button>
+			<el-button type="primary" @click="handleOk()" size="small">确 定</el-button>
 		</span>
   </el-dialog>
 </template>

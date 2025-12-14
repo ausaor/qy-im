@@ -45,8 +45,8 @@
         <div @click="viewCharacterAvatars">
           <el-avatar icon="el-icon-user-solid" :src="characterAvatar.avatar"></el-avatar>
         </div>
-			  <el-button @click="handleClose()">取 消</el-button>
-			  <el-button type="primary" @click="handleOk()">确 定</el-button>
+			  <el-button @click="handleClose()" size="small">取 消</el-button>
+			  <el-button type="primary" @click="handleOk()" size="small">确 定</el-button>
     </span>
     <character-avatar-choose
         :visible="characterAvatarVisible"

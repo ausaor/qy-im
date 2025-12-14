@@ -377,9 +377,9 @@
         </div>
       </el-scrollbar>
       <span slot="footer" class="dialog-footer">
-                    <el-button @click="closeSelectCharacterAvatar">取 消</el-button>
-                    <el-button type="primary" @click="chooseCharacterAvatarOk">确 定</el-button>
-                  </span>
+          <el-button @click="closeSelectCharacterAvatar" size="small">取 消</el-button>
+          <el-button type="primary" @click="chooseCharacterAvatarOk" size="small">确 定</el-button>
+      </span>
     </el-dialog>
     <el-dialog
         width="25%"
@@ -434,8 +434,8 @@
           </el-form>
         </div>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="switchCommonGroupVisible = false">取 消</el-button>
-          <el-button type="primary" @click="switchCommonGroup()">确 定</el-button>
+          <el-button @click="switchCommonGroupVisible = false" size="small">取 消</el-button>
+          <el-button type="primary" @click="switchCommonGroup()" size="small">确 定</el-button>
         </span>
     </el-dialog>
     <join-group :dialogVisible="showJoinGroup" @close="closeJoinGroup"></join-group>

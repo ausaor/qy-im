@@ -25,8 +25,8 @@
         </div>
       </el-scrollbar>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="handleClose">取 消</el-button>
-        <el-button type="primary" @click="chooseTemplateCharacterOk">确 定</el-button>
+        <el-button @click="handleClose" size="small">取 消</el-button>
+        <el-button type="primary" @click="chooseTemplateCharacterOk" size="small">确 定</el-button>
       </span>
     </div>
   </el-dialog>

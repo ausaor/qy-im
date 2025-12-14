@@ -36,8 +36,8 @@
       </div>
     </div>
     <span slot="footer" class="dialog-footer">
-			<el-button @click="handleClose()">取 消</el-button>
-			<el-button type="primary" @click="handleOk()">确 定</el-button>
+			<el-button @click="handleClose()" size="small">取 消</el-button>
+			<el-button type="primary" @click="handleOk()" size="small">确 定</el-button>
 		</span>
   </el-dialog>
 </template>

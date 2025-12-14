@@ -30,8 +30,8 @@
       </div>
     </div>
     <span slot="footer" class="dialog-footer">
-      <el-button @click="onClose()">取 消</el-button>
-      <el-button type="primary" @click="onOk()">确 定</el-button>
+      <el-button @click="onClose()" size="small">取 消</el-button>
+      <el-button type="primary" @click="onOk()" size="small">确 定</el-button>
     </span>
     <el-dialog
         width="30%"
@@ -59,8 +59,8 @@
         </div>
       </el-scrollbar>
       <span slot="footer" class="dialog-footer">
-      <el-button @click="closeSelectCharacter">取 消</el-button>
-      <el-button type="primary" @click="chooseTemplateCharacterOk">确 定</el-button>
+      <el-button @click="closeSelectCharacter" size="small">取 消</el-button>
+      <el-button type="primary" @click="chooseTemplateCharacterOk" size="small">确 定</el-button>
     </span>
     </el-dialog>
     <el-dialog title="选择群聊模板" :visible.sync="selectCharactersVisible"  width="50%" :before-close="closeCharacterDialog" append-to-body>
@@ -100,8 +100,8 @@
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
-			<el-button @click="handleClose()">取 消</el-button>
-			<el-button type="primary" @click="handleOk()">确 定</el-button>
+			<el-button @click="handleClose()" size="small">取 消</el-button>
+			<el-button type="primary" @click="handleOk()" size="small">确 定</el-button>
 		</span>
     </el-dialog>
     <group-template-character-choose

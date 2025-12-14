@@ -61,9 +61,9 @@
         </div>
       </el-scrollbar>
       <span slot="footer" class="dialog-footer">
-                    <el-button @click="closeSelectCharacter">取 消</el-button>
-                    <el-button type="primary" @click="chooseTemplateCharacterOk">确 定</el-button>
-                  </span>
+        <el-button @click="closeSelectCharacter" size="small">取 消</el-button>
+        <el-button type="primary" @click="chooseTemplateCharacterOk" size="small">确 定</el-button>
+      </span>
     </el-dialog>
     <template-character-choose :visible="characterChooseVisible" @close="characterChooseVisible = false" @confirm="switchCharacterEvent" :append-to-body="true"></template-character-choose>
     <group-template-character-choose
