@@ -731,7 +731,7 @@
         // 打开会话
         this.$store.commit("openRegionChat", chatInfo);
         // 插入消息
-        msg.isLeader = msg.sendId === regionGroup.ownerId;
+        msg.isOwner = msg.sendId === regionGroup.ownerId;
         this.$store.commit("insertRegionMessage", msg);
         if(!msg.selfSend && msg.type <= this.$enums.MESSAGE_TYPE.VIDEO
             && msg.status != this.$enums.MESSAGE_STATUS.READED){

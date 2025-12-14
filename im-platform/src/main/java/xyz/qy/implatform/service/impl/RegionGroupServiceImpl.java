@@ -318,7 +318,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 }
                 if (vo.getUserId().equals(regionGroup.getOwnerId()) && ObjectUtil.isNotNull(regionGroup.getEffectiveTime())
                         && date.before(regionGroup.getExpirationTime())) {
-                    vo.setIsLeader(true);
+                    vo.setIsOwner(true);
                 }
                 vo.setJoinType(1);
                 vo.setOnline(onlineUserIds.contains(m.getUserId()));

@@ -36,7 +36,7 @@
           <text style="margin-left: 10rpx;">{{choosedMember.aliasName}}</text>
         </view>
       </view>
-      <view class="form-item leader-transfer" v-if="myGroupMemberInfo.isLeader">
+      <view class="form-item leader-transfer" v-if="myGroupMemberInfo.isOwner">
         <text @click="leaderTransfer">群主转移</text>
       </view>
       <view class="form-item leader-vote">
@@ -51,7 +51,7 @@
           <text>通知</text>
         </view>
       </view>
-      <view class="form-item" v-if="myGroupMemberInfo.isLeader">
+      <view class="form-item" v-if="myGroupMemberInfo.isOwner">
         <view class="label">全员禁言</view>
         <view class="value" style="display: flex;align-items: center;justify-content: space-between;">
           <text>关闭</text>
@@ -59,14 +59,14 @@
           <text>开启</text>
         </view>
       </view>
-      <view class="form-item" v-if="myGroupMemberInfo.isLeader">
+      <view class="form-item" v-if="myGroupMemberInfo.isOwner">
         <view class="label">禁言时长</view>
         <view class="value" style="display: flex;align-items: center;">
           <up-number-box :min="1" :max="720" v-model="bannedTime"></up-number-box>
           <text style="margin-left: 10rpx;">小时</text>
         </view>
       </view>
-      <view class="form-item banned-msg" v-if="myGroupMemberInfo.isLeader">
+      <view class="form-item banned-msg" v-if="myGroupMemberInfo.isOwner">
         <text @click="doBanned('banned')">成员禁言</text>
         <text @click="doBanned('unBanned')">解除禁言</text>
       </view>
@@ -225,7 +225,7 @@ export default {
         });
         return;
       }
-      if (!this.choosedMember.userId || this.choosedMember.joinType === 0 || !this.choosedMember.isLeader) {
+      if (!this.choosedMember.userId || this.choosedMember.joinType === 0 || !this.choosedMember.isOwner) {
         uni.showToast({
           title: "请先选中群主",
           icon: 'none'
@@ -259,7 +259,7 @@ export default {
       });
     },
     doAllBanned(value) {
-      if (!this.myGroupMemberInfo.isLeader) {
+      if (!this.myGroupMemberInfo.isOwner) {
         uni.showToast({
           title: "您不是当前地区群聊群主",
           icon: 'none'
@@ -295,7 +295,7 @@ export default {
       })
     },
     doBanned(type) {
-      if (!this.myGroupMemberInfo.isLeader) {
+      if (!this.myGroupMemberInfo.isOwner) {
         uni.showToast({
           title: "您不是当前地区群聊群主",
           icon: 'none'

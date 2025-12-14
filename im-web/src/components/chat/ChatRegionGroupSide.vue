@@ -71,7 +71,7 @@
         </svg>
         <span style="color: orange;margin-left: 10px;font-size: 16px;">地区歌单</span>
       </div>
-      <div class="operation-item" v-if="myGroupMemberInfo.isLeader">
+      <div class="operation-item" v-if="myGroupMemberInfo.isOwner">
         <div class="leader-transfer">
           <el-button type="text" @click="leaderTransfer">群主转移</el-button>
         </div>
@@ -118,7 +118,7 @@
             @change="announceChange">
         </el-switch>
       </div>
-      <div class="operation-item all-banned" v-if="myGroupMemberInfo.isLeader">
+      <div class="operation-item all-banned" v-if="myGroupMemberInfo.isOwner">
         <div class="label-text">全员禁言：</div>
         <el-switch
             style="display: block"
@@ -130,7 +130,7 @@
             @change="doAllBanned">
         </el-switch>
       </div>
-      <div class="operation-item banned-time" v-if="myGroupMemberInfo.isLeader">
+      <div class="operation-item banned-time" v-if="myGroupMemberInfo.isOwner">
         <div class="label-text">禁言时长(小时)：</div>
         <input 
           type="number" 
@@ -141,7 +141,7 @@
           class="banned-time-input"
         />
       </div>
-      <div class="operation-item" v-if="myGroupMemberInfo.isLeader">
+      <div class="operation-item" v-if="myGroupMemberInfo.isOwner">
         <div class="user-banned">
           <el-button type="text" @click="doBanned('banned')">成员禁言</el-button>
         </div>
@@ -288,7 +288,7 @@ export default {
         this.$message.warning("您不是当前地区群聊常驻用户");
         return;
       }
-      if (this.curMember == null || this.curMember.joinType === 0 || !this.curMember.isLeader) {
+      if (this.curMember == null || this.curMember.joinType === 0 || !this.curMember.isOwner) {
         this.$message.warning("请先选中群主");
         return;
       }
@@ -318,7 +318,7 @@ export default {
       this.announce = value;
     },
     doAllBanned(value) {
-      if (!this.myGroupMemberInfo.isLeader) {
+      if (!this.myGroupMemberInfo.isOwner) {
         this.$message.warning("您不是当前地区群聊群主");
         return;
       }
@@ -348,7 +348,7 @@ export default {
       })
     },
     doBanned(type) {
-      if (!this.myGroupMemberInfo.isLeader) {
+      if (!this.myGroupMemberInfo.isOwner) {
         this.$message.warning("您不是当前地区群聊群主");
         return;
       }

@@ -7,7 +7,7 @@
         <div class="member-info">
             <div class="member-name">
               <span>{{ member.friendRemark ? member.friendRemark : member.aliasName }}</span>
-              <span v-if="member.isLeader" style="color: white;background-color: orange;font-size: 12px;margin-left: 10px">群主</span>
+              <span v-if="member.isOwner" style="color: white;background-color: orange;font-size: 12px;margin-left: 10px">群主</span>
             </div>
             <div class="join-type">
               <el-tag size="mini" type="success" v-if="member.joinType===1">常驻</el-tag>

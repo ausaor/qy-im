@@ -194,7 +194,7 @@
           <template slot-scope="scope">
             <div class="group-name-cell">
               <span>{{ scope.row.userName }}</span>
-              <el-tag size="mini" v-if="scope.row.isLeader">群主</el-tag>
+              <el-tag size="mini" v-if="scope.row.isOwner">群主</el-tag>
             </div>
           </template>
         </el-table-column>
