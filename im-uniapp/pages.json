@@ -84,6 +84,9 @@
 			"path": "pages/group/group-edit"
 		},
 		{
+			"path": "pages/group/group-setting"
+		},
+		{
 			"path": "pages/group/group-invite"
 		},
 		{

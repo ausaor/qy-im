@@ -963,6 +963,8 @@ export default {
   }
 
   .content-box {
+    position: relative;
+
     .im-chat-main {
       background: linear-gradient(to bottom, #ffffff, #f5f7fa);
       box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);

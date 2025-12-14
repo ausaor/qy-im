@@ -57,6 +57,15 @@
           <uni-icons type="right" size="20" color="#888888"></uni-icons>
         </view>
       </view>
+      <view class="form-item" @click="toGroupSetting">
+        <view class="form-item-left">
+          <svg-icon icon-class="setting" style="width: 60rpx;height: 60rpx;"></svg-icon>
+          <text style="margin-left: 10rpx;margin-right: 10rpx;">群管理</text>
+        </view>
+        <view class="form-item-right">
+          <uni-icons type="right" size="20" color="#888888"></uni-icons>
+        </view>
+      </view>
 			<view class="form-item">
 				<view class="label">群聊名称</view>
 				<view class="value">{{group.name}}</view>
@@ -172,6 +181,11 @@ export default {
     toGroupRequest() {
       uni.navigateTo({
         url: `/pages/group/group-request-list?groupId=${this.groupId}&groupOwnerId=${this.group.ownerId}`
+      })
+    },
+    toGroupSetting() {
+      uni.navigateTo({
+        url: `/pages/group/group-setting?groupId=${this.groupId}&groupOwnerId=${this.group.ownerId}`
       })
     },
 		onSendMessage() {
@@ -462,9 +476,9 @@ export default {
 	onLoad(options) {
 		this.groupId = options.id;
 		// 查询群聊信息
-		this.loadGroupInfo(options.id);
+		this.loadGroupInfo();
 		// 查询群聊成员
-		this.loadGroupMembers(options.id)
+		this.loadGroupMembers()
 	}
 
 }
