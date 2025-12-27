@@ -31,14 +31,8 @@
                 </el-tree>
               </div>
               <div class="tree-footer">
-                <div>当前选中：{{curNode.name}}</div>
-                <div style="display: flex;align-items: center;">
-                  <el-button type="text" size="medium" @click="() => joinRegionGroup(curNode, 0)">
-                    临时加入
-                  </el-button>
-                  <el-button type="text" size="medium" @click="() => joinRegionGroup(curNode, 1)">
-                    加入常驻
-                  </el-button>
+                <div class="current-selection">
+                  <span>当前选中：{{curNode.name}}</span>
                   <div class="tips">
                     <el-popover
                         placement="top-start"
@@ -47,9 +41,16 @@
                         content="临时加入的地区群聊有效时长限制2小时，到期自动退出">
                       <div class="el-icon-question" slot="reference"></div>
                     </el-popover>
-                  </div>
+                  </div></div>
+                <div class="join-buttons">
+                  <el-button type="text" size="medium" @click="() => joinRegionGroup(curNode, 0)">
+                    临时加入
+                  </el-button>
+                  <el-button type="text" size="medium" @click="() => joinRegionGroup(curNode, 1)">
+                    加入常驻
+                  </el-button>
                 </div>
-                <div style="display: flex;align-items: center;">
+                <div class="other-buttons">
                   <el-button type="text" size="medium" @click="viewActivityRegions">
                     活跃地区
                   </el-button>
@@ -409,16 +410,25 @@ export default {
       border-right: 1px solid #cccccc;
 
       .header {
-        background-color: #FFFAFA;
-        color: orange;
+        background: linear-gradient(135deg, #ffedd5 0%, #fef3c7 100%);
+        color: #c2410c;
         width: 98%;
-        line-height: 30px;
-        height: 30px;
-        border: 1px solid #6CC6CB;
-        margin: 5px auto;
-        border-radius: 6px;
+        line-height: 36px;
+        height: 36px;
+        border: 1px solid #fed7aa;
+        margin: 8px auto;
+        border-radius: 8px;
         cursor: pointer;
         text-align: center;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(254, 215, 170, 0.3);
+        }
       }
 
       .group-list-items {
@@ -432,14 +442,19 @@ export default {
       position: relative;
       overflow: hidden;
       box-sizing: border-box;
+      background: #f1f5f9;
 
       .tree-side {
-        width: 15%;
+        width: 20%;
+        min-width: 220px;
         margin-top: 10px;
         height: 100%;
         display: flex;
         flex-direction: column;
         overflow: auto;
+        padding: 10px;
+        background: #ffffff;
+        box-shadow: 4px 0 6px rgba(0, 0, 0, 0.05);
 
         .tree-aside {
           width: 100%;
@@ -448,33 +463,178 @@ export default {
           flex: 1;
           overflow-y: auto;
           flex-shrink: 0;
+          padding: 10px 5px;
+          
+          :deep(.el-tree) {
+            background: transparent;
+            
+            .el-tree-node__content {
+              height: 36px;
+              
+              &:hover {
+                background-color: #f1f5f9;
+              }
+            }
+          }
+          
+          .custom-tree-node {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            padding-right: 15px;
+          }
         }
 
         .tree-footer {
           flex: 1;
           flex-shrink: 0;
           width: 100%;
-          height: 150px;
+          height: auto;
           text-align: left;
           margin-top: 5px;
           overflow: auto;
-          padding: 5px;
-          box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+          padding: 15px;
+          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.05);
+          border: 1px solid #e2e8f0;
 
-          .tips {
-            margin-left: 10px;
-            width: 36px;
-            height: 36px;
-            line-height: 36px;
+          > div {
+            margin-bottom: 12px;
+            
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+
+          .current-selection {
+            align-items: center;
+            display: flex;
+            font-size: 14px;
+            font-weight: 500;
+            color: #334155;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-radius: 8px;
+            margin-bottom: 10px;
+
+            .tips {
+              margin-left: 8px;
+              width: 30px;
+              height: 30px;
+              line-height: 30px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 50%;
+              background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+              color: #0ea5e9;
+              cursor: pointer;
+
+              &:hover {
+                background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+              }
+            }
+          }
+
+          .join-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            
+            .el-button {
+              border-radius: 8px;
+              padding: 8px 16px;
+              font-size: 14px;
+              font-weight: 500;
+              
+              &.el-button--text {
+                color: #3b82f6;
+                background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+                border: 1px solid #93c5fd;
+                
+                &:hover {
+                  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+                  color: #1d4ed8;
+                }
+              }
+            }
+          }
+
+          .other-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            
+            .el-button {
+              border-radius: 8px;
+              padding: 8px 16px;
+              font-size: 14px;
+              font-weight: 500;
+              
+              &.el-button--text {
+                color: #10b981;
+                background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+                border: 1px solid #86efac;
+                
+                &:hover {
+                  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+                  color: #047857;
+                }
+              }
+            }
+          }
+
+          .region-space {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+            border: 1px solid #fed7aa;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            
+            &:hover {
+              background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+              transform: translateY(-2px);
+              box-shadow: 0 4px 8px rgba(254, 215, 170, 0.3);
+            }
+            
+            .icon {
+              display: block;
+              height: 30px;
+              line-height: 30px;
+              font-size: 24px;
+              color: #c2410c;
+              -webkit-transition: font-size 0.25s linear, width 0.25s linear;
+              -moz-transition: font-size 0.25s linear, width 0.25s linear;
+              transition: font-size 0.25s linear, width 0.25s linear;
+            }
+            
+            span {
+              color: #c2410c;
+              margin-left: 8px;
+              font-size: 15px;
+              font-weight: 500;
+            }
           }
         }
       }
 
       .map-aside {
-        width: 85%;
+        width: 80%;
         height: 100%;
         overscroll-behavior: contain;
         overflow: auto;
+        
+        :deep(.amap-container) {
+          height: 100%;
+        }
       }
     }
 
@@ -484,12 +644,12 @@ export default {
         align-items: center;
         justify-content: space-between;
         margin: 8px 0;
-        padding: 12px 15px;
+        padding: 15px;
         background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
-        border-radius: 8px;
+        border-radius: 12px;
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 1px solid #d9f0ff;
+        border: 1px solid #bae6fd;
         
         &:hover {
           transform: translateY(-2px);
@@ -577,6 +737,28 @@ export default {
           text-overflow: ellipsis;
           white-space: nowrap;
         }
+      }
+    }
+    
+    :deep(.el-dialog) {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      
+      .el-dialog__header {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        padding: 15px 20px;
+        border-radius: 16px 16px 0 0;
+      }
+      
+      .el-dialog__body {
+        padding: 20px;
+      }
+      
+      .el-dialog__footer {
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 0 0 16px 16px;
       }
     }
   }
