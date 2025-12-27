@@ -174,10 +174,10 @@
                width="25%">
       <el-form ref="commentSetForm" label-width="auto"
                :model="commentSetForm" class="form-box">
-        <el-form-item label="角色选择：" prop="character" label-width="120px" class="form-item">
+        <el-form-item label="角色选择：" prop="character" label-width="120px">
           <div style="display: flex;align-items: center;gap: 10px;">
             <span class="character-item" v-on:click="openCharacterChooseDialog">
-              <el-avatar fit="fit" size="medium" icon="el-icon-user-solid" :src="commentSetForm.avatar"></el-avatar>
+              <el-avatar fit="fit" size="medium" icon="el-icon-user-solid" :src="commentSetForm.avatar" style="display: flex;align-items: center;justify-content: center;cursor: pointer;"></el-avatar>
             </span>
             <span class="nick-name">{{ commentSetForm.nickName }}</span>
             <el-button @click="removeCharacter" class="del-btn"

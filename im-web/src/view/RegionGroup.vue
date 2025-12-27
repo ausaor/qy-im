@@ -49,9 +49,12 @@
                     </el-popover>
                   </div>
                 </div>
-                <div>
+                <div style="display: flex;align-items: center;">
                   <el-button type="text" size="medium" @click="viewActivityRegions">
                     活跃地区
+                  </el-button>
+                  <el-button type="text" size="medium" @click="viewRegionGroups">
+                    地区群聊
                   </el-button>
                 </div>
                 <div class="region-space" @click="openRegionSpace">
@@ -90,12 +93,27 @@
           </el-scrollbar>
         </div>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="() => joinRegionGroup(activityRegion, 0)">临时加入</el-button>
-          <el-button type="primary" @click="() => joinRegionGroup(activityRegion, 1)">加入常驻</el-button>
+          <el-button @click="() => joinRegionGroup(activityRegion, 0)" size="small">临时加入</el-button>
+          <el-button type="primary" @click="() => joinRegionGroup(activityRegion, 1)" size="small">加入常驻</el-button>
+        </span>
+      </el-dialog>
+      <el-dialog  :visible="regionGroupsVisible" width="450px" title="地区群聊" :before-close="closeRegionGroups">
+        <div class="region-groups">
+          <el-scrollbar style="height: 400px;">
+            <div v-for="(group, index) in regionGroupList" :key="index" class="region-group-item">
+              <div class="region-group-name">{{group.regionGroupName}}</div>
+              <el-button size="small" :type="regionGroupActiveIndex === index ? 'success' : ''" icon="el-icon-check" circle @click="() => chooseActivityRegionGroup(group, index)"></el-button>
+            </div>
+          </el-scrollbar>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button  @click="() => joinTargetRegionGroup(0)" size="small">临时加入</el-button>
+          <el-button type="primary" @click="() => joinTargetRegionGroup(1)" size="small">加入常驻</el-button>
         </span>
       </el-dialog>
       <region-chat-box v-if="regionGroupStore.activeRegionChat && regionGroupStore.activeRegionChat.targetId === regionGroupStore.activeRegionGroup.id"
-                       :chat="regionGroupStore.activeRegionChat"></region-chat-box>
+                       :chat="regionGroupStore.activeRegionChat">
+      </region-chat-box>
     </el-container>
   </el-container>
 </template>
@@ -141,6 +159,10 @@ export default {
       regionActiveIndex: -1,
       activityRegions: [],
       activityRegionsVisible: false,
+      regionGroupsVisible: false,
+      regionGroupList: [], // 地区群列表数据
+      regionGroupActiveIndex: -1,
+      chooseRegionGroup: {},
     }
   },
   computed: {
@@ -223,6 +245,10 @@ export default {
       })
     },
     joinRegionGroup(node, joinType) {
+      if (!node || !node.code) {
+        this.$message.warning("请先选择地区");
+        return;
+      }
       let params = {
         code: node.code,
         name: node.name,
@@ -309,15 +335,63 @@ export default {
         })
       }
     },
+    viewRegionGroups() {
+      if (!this.curNode || !this.curNode.code) {
+        this.$message.warning("请先选择地区");
+        return;
+      }
+      this.loadRegionGroupList(this.curNode.code)
+    },
     chooseActivityRegion(region, index) {
       this.activityRegion = region;
       this.regionActiveIndex = index;
       this.$refs.GaoDeMap.initAMap(region.longitude, region.latitude);
     },
+    chooseActivityRegionGroup(group, index) {
+      this.regionGroupActiveIndex = index;
+      this.chooseRegionGroup = group;
+    },
     closeActivityRegions() {
       this.activityRegionsVisible = false;
       this.activityRegion = {};
       this.regionActiveIndex = -1;
+    },
+    closeRegionGroups() {
+      this.regionGroupsVisible = false;
+      this.regionGroupActiveIndex = -1;
+      this.chooseRegionGroup = {};
+    },
+    loadRegionGroupList(regionCode) {
+      this.$http({
+        url: `/region/group/findRegionGroupsByCode?code=${regionCode}`,
+        method: 'get',
+      }).then((data) => {
+        this.regionGroupList = data;
+        this.regionGroupsVisible = true;
+      }).catch((e) => {
+        this.$message.error('查询失败');
+      })
+    },
+    joinTargetRegionGroup(joinType) {
+      if (!this.chooseRegionGroup.id) {
+        this.$message.warning("请先选择一个群聊");
+        return;
+      }
+      let params = {
+        id: this.chooseRegionGroup.id,
+        code: this.chooseRegionGroup.code,
+        num: this.chooseRegionGroup.num,
+        joinType: joinType
+      }
+      this.$http({
+        url: `/region/group/joinTarget`,
+        method: 'post',
+        data: params
+      }).then((data) => {
+        this.$message.success("加入成功");
+      }).catch((e) => {
+        this.$message.error('加入失败');
+      })
     },
   },
 }
@@ -428,6 +502,41 @@ export default {
         -webkit-transition: font-size 0.25s linear, width 0.25s linear;
         -moz-transition: font-size 0.25s linear, width 0.25s linear;
         transition: font-size 0.25s linear, width 0.25s linear;
+      }
+    }
+    
+    .region-groups {
+      padding: 10px;
+      
+      .region-group-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 10px 0;
+        padding: 15px;
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border: 1px solid #fed7aa;
+        cursor: pointer;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05);
+          background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+        }
+
+        .region-group-name {
+          font-size: 16px;
+          font-weight: 500;
+          color: #c2410c;
+          flex: 1;
+          padding-right: 15px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
       }
     }
   }

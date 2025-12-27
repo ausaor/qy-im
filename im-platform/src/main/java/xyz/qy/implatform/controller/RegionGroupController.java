@@ -76,7 +76,7 @@ public class RegionGroupController {
 
     @ApiOperation(value = "加入指定地区群聊", notes = "加入指定地区群聊")
     @PostMapping("/joinTarget")
-    public Result<RegionGroupVO> joinTargetRegionGroup(RegionGroupDTO regionGroupDTO) {
+    public Result<RegionGroupVO> joinTargetRegionGroup(@RequestBody @Valid RegionGroupDTO regionGroupDTO) {
         return ResultUtils.success(regionGroupService.joinTargetRegionGroup(regionGroupDTO));
     }
 

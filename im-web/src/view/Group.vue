@@ -346,7 +346,7 @@
         title="请选择群聊模式"
         v-dialogDrag
         :visible.sync="dialogVisible"
-        width="40%">
+        width="30%">
       <el-radio-group v-model="radio">
         <el-radio label="1">普通群聊</el-radio>
         <el-radio label="2">模板群聊</el-radio>
