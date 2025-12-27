@@ -128,42 +128,43 @@
 
     <!-- 音乐播放器 -->
     <div class="music-player" v-if="currentMusic">
-      <div class="player-info">
-        <el-image
-          :src="currentMusic.cover"
-          fit="cover"
-          style="width: 60px; height: 60px; border-radius: 8px; margin-right: 15px;"
-        >
-          <div slot="error" class="image-slot">
-            <i class="el-icon-picture-outline"></i>
+      <div class="music-box">
+        <div class="player-info">
+          <el-image
+              :src="currentMusic.cover"
+              fit="cover"
+              style="width: 60px; height: 60px; border-radius: 8px; margin-right: 15px;"
+          >
+            <div slot="error" class="image-slot">
+              <i class="el-icon-picture-outline"></i>
+            </div>
+          </el-image>
+          <div class="player-text">
+            <div class="song-name">{{ currentMusic.name }}</div>
+            <div class="singer">{{ currentMusic.singer }}</div>
           </div>
-        </el-image>
-        <div class="player-text">
-          <div class="song-name">{{ currentMusic.name }}</div>
-          <div class="singer">{{ currentMusic.singer }}</div>
+        </div>
+        <div class="player-controls">
+          <div class="audio-player-controls">
+            <el-button
+                type="text"
+                @click="togglePlayPause"
+                class="play-pause-btn"
+            >
+              <i :class="isPlaying ? 'el-icon-video-pause' : 'el-icon-video-play'" class="play-icon"></i>
+            </el-button>
+          </div>
         </div>
       </div>
-      <div class="player-controls">
-        <div class="audio-player-controls">
-          <el-button 
-            type="text" 
-            @click="togglePlayPause"
-            class="play-pause-btn"
-          >
-            <i :class="isPlaying ? 'el-icon-video-pause' : 'el-icon-video-play'" class="play-icon"></i>
-          </el-button>
-          <div class="audio-progress">
-            <span class="time">{{ formatTime(currentTime) }}</span>
-            <el-slider 
-              v-model="sliderTime" 
-              :max="currentMusic.duration || 100" 
-              @change="onSliderChange"
-              vertical
-              class="progress-slider"
-            ></el-slider>
-            <span class="time">{{ formatTime(currentMusic.duration || 0) }}</span>
-          </div>
-        </div>
+      <div class="audio-progress">
+        <span class="time">{{ formatTime(currentTime) }}</span>
+        <el-slider
+            v-model="sliderTime"
+            :max="currentMusic.duration || 100"
+            @change="onSliderChange"
+            class="progress-slider"
+        ></el-slider>
+        <span class="time">{{ formatTime(currentMusic.duration || 0) }}</span>
       </div>
     </div>
     <music-upload ref="musicUploadRef" :category="'public'" :id="form.id" @add="addMusic" @update="updateMusic"></music-upload>
@@ -553,76 +554,93 @@ export default {
     bottom: 30px;
     right: 30px;
     width: 350px;
-    height: 90px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
     padding: 15px;
     z-index: 9999;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     
-    .player-info {
+    .music-box {
       display: flex;
       align-items: center;
-      flex: 1;
+      margin-bottom: 10px;
       
-      .player-text {
-        margin-left: 15px;
-        color: white;
-        
-        .song-name {
-          font-weight: 600;
-          font-size: 16px;
-          margin-bottom: 5px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-width: 150px;
+      .player-info {
+        display: flex;
+        align-items: center;
+
+        .player-text {
+          margin-left: 15px;
+          color: white;
+          
+          .song-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+          }
+          
+          .singer {
+            font-size: 13px;
+            opacity: 0.8;
+          }
         }
-        
-        .singer {
-          font-size: 13px;
-          opacity: 0.8;
+      }
+      
+      .player-controls {
+        padding-left: 20px;
+        display: flex;
+        flex: 1;
+        .audio-player-controls {
+          .play-pause-btn {
+            font-size: 24px;
+            color: white;
+            padding: 0;
+            
+            .play-icon {
+              transition: transform 0.3s;
+            }
+          }
         }
       }
     }
     
-    .player-controls {
-      flex: 1;
+    .audio-progress {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+
+      .time {
+        color: white;
+        font-size: 12px;
+        min-width: 35px;
+      }
       
-      .audio-player-controls {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
+      .progress-slider {
+        flex: 1;
+        margin: 0 10px;
+        height: 6px;
+        border-radius: 3px;
         
-        .play-pause-btn {
-          font-size: 24px;
-          color: white;
-          padding: 0;
+        ::v-deep .el-slider__runway {
+          height: 6px;
+          border-radius: 3px;
           
-          .play-icon {
-            transition: transform 0.3s;
-          }
-        }
-        
-        .audio-progress {
-          display: flex;
-          align-items: center;
-          width: 100%;
-          margin: 0 15px;
-          
-          .time {
-            color: white;
-            font-size: 14px;
-            margin: 0 10px;
+          .el-slider__bar {
+            height: 6px;
+            border-radius: 3px;
+            background-color: #fff;
           }
           
-          .progress-slider {
-            flex: 1;
+          .el-slider__button {
+            width: 14px;
+            height: 14px;
+            border: 2px solid white;
           }
         }
       }
