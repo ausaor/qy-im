@@ -17,6 +17,7 @@
       <view class="region-name">
         <text>全部地区</text>
         <text style="color: #1E90FF;" @click="viewActivityRegions">活跃地区</text>
+        <text style="color: #1E90FF;" @click="viewRegionGroups">地区群聊</text>
       </view>
       <!-- 地区选择区域 -->
       <scroll-view class="region-list-box" scroll-y>
@@ -62,6 +63,29 @@
           </view>
         </view>
       </uni-popup>
+      <uni-popup ref="regionGroups" type="top" @change="onRegionGroupsPopupChange">
+        <view class="region-groups-box">
+          <scroll-view class="scroll-bar" scroll-with-animation="true" scroll-y="true">
+            <view class="region-group-item" v-for="(group, index) in regionGroups" :key="index" @click="chooseTargetRegionGroup(group, index)">
+              <view class="group-info">
+                <text class="group-name">{{group.regionGroupName}}</text>
+                <uni-icons 
+                  :color="regionGroupActiveIndex === index ? '#007aff' : '#c0c4cc'" 
+                  :type="regionGroupActiveIndex === index ? 'checkbox-filled' : 'circle'" 
+                  size="20">
+                </uni-icons>
+              </view>
+              <view class="group-arrow">
+                <uni-icons type="arrowright" size="16" color="#c0c4cc"></uni-icons>
+              </view>
+            </view>
+          </scroll-view>
+          <view class="btns">
+            <button type="default" size="normal" class="join-btn temp-join" @click="joinTargetRegionGroup(0)">临时加入</button>
+            <button type="primary" size="normal" class="join-btn permanent-join" @click="joinTargetRegionGroup(1)">加入常驻</button>
+          </view>
+        </view>
+      </uni-popup>
     </view>
   </view>
 </template>
@@ -95,6 +119,9 @@ export default {
       lat: 39.90923,
       activityRegions: [],
       regionActiveIndex: -1,
+      regionGroups: [],
+      regionGroupActiveIndex: -1,
+      chooseRegionGroup: {},
     }
   },
   mounted() {
@@ -332,6 +359,16 @@ export default {
         })
       }
     },
+    viewRegionGroups() {
+      if (!this.curRegion.code) {
+        uni.showToast({
+          icon: "none",
+          title: '请先选择地区',
+        })
+        return
+      }
+      this.loadRegionGroupList(this.curRegion.code)
+    },
     chooseActivityRegion(region, index) {
       this.regionActiveIndex = index;
       region.lng = region.longitude;
@@ -346,6 +383,61 @@ export default {
       this.curRegion = this.activityRegions[this.regionActiveIndex];
       this.regionActiveIndex = -1;
       this.$refs.activityRegions.close();
+    },
+    chooseTargetRegionGroup(group, index) {
+      this.regionGroupActiveIndex = index;
+      this.chooseRegionGroup = group;
+    },
+    loadRegionGroupList(regionCode) {
+      this.$http({
+        url: `/region/group/findRegionGroupsByCode?code=${regionCode}`,
+        method: 'get',
+      }).then((data) => {
+        this.regionGroups = data;
+        this.$refs.regionGroups.open();
+      }).catch((e) => {
+        uni.showToast({
+          icon: "none",
+          title: '获取地区群聊列表失败'
+        })
+      })
+    },
+    joinTargetRegionGroup(joinType) {
+      if (!this.chooseRegionGroup.id) {
+        uni.showToast({
+          icon: "none",
+          title: '请先选择一个群聊'
+        })
+        return;
+      }
+      let params = {
+        id: this.chooseRegionGroup.id,
+        code: this.chooseRegionGroup.code,
+        num: this.chooseRegionGroup.num,
+        joinType: joinType
+      }
+      this.$http({
+        url: `/region/group/joinTarget`,
+        method: 'post',
+        data: params
+      }).then((data) => {
+        uni.showToast({
+          icon: "none",
+          title: '加入成功'
+        })
+      }).catch((e) => {
+        uni.showToast({
+          icon: "none",
+          title: e.message || '加入失败'
+        })
+      })
+    },
+    onRegionGroupsPopupChange(e) {
+      if (!e.show) {
+        // 弹窗已关闭，重置选中状态
+        this.regionGroupActiveIndex = -1;
+        this.chooseRegionGroup = {};
+      }
     }
   },
   onLoad(options) {
@@ -473,5 +565,82 @@ export default {
   font-size: 30rpx;
   font-weight: bold;
   flex: 1;
+}
+  
+.region-groups-box {
+  min-height: 600rpx;
+  max-height: 1000rpx;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 10rpx;
+}
+  
+.region-group-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #fff;
+  transition: background-color 0.3s;
+}
+  
+.region-group-item:hover {
+  background-color: #f5f5f5;
+}
+  
+.group-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 15rpx;
+}
+  
+.group-name {
+  font-size: 32rpx;
+  color: #333;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+  
+.group-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+}
+  
+.join-btn {
+  flex: 1;
+  margin: 0 20rpx 20rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+}
+  
+.temp-join {
+  background-color: #f0f0f0;
+  color: #666;
+}
+  
+.permanent-join {
+  background: linear-gradient(135deg, #4285f4, #3c9cff);
+  color: #fff;
+  border: none;
+}
+  
+.btns {
+  display: flex;
+  gap: 20rpx;
+  padding: 20rpx;
 }
 </style>

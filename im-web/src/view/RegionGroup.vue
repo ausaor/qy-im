@@ -83,16 +83,19 @@
           </div>
         </template>
       </drawer>
-      <el-dialog  :visible="activityRegionsVisible" width="450px" title="活跃地区" :before-close="closeActivityRegions">
+      <el-dialog  :visible="activityRegionsVisible" width="500px" title="活跃地区" :before-close="closeActivityRegions">
         <div class="activity-regions">
           <el-scrollbar style="height: 400px;">
-            <div v-for="(region, index) in activityRegions" :key="index" class="region-item">
-              <div>{{region.fullName}}</div>
-              <el-button size="small" :type="regionActiveIndex === index ? 'success' : ''" icon="el-icon-check" circle @click="chooseActivityRegion(region, index)"></el-button>
+            <div v-for="(region, index) in activityRegions" :key="index" class="region-item" :class="{'region-item-active': regionActiveIndex === index}" @click="chooseActivityRegion(region, index)">
+              <div class="region-info">
+                <div class="region-name">{{region.fullName}}</div>
+              </div>
+              <el-button class="region-select-btn" size="small" :type="regionActiveIndex === index ? 'success' : 'info'" icon="el-icon-check" circle></el-button>
             </div>
           </el-scrollbar>
         </div>
         <span slot="footer" class="dialog-footer">
+          <el-button @click="closeActivityRegions" size="small">取消</el-button>
           <el-button @click="() => joinRegionGroup(activityRegion, 0)" size="small">临时加入</el-button>
           <el-button type="primary" @click="() => joinRegionGroup(activityRegion, 1)" size="small">加入常驻</el-button>
         </span>
@@ -480,10 +483,47 @@ export default {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-top: 10px;
-        color: orange;
-        border-bottom: 1px solid lightgray;
-        padding-bottom: 5px;
+        margin: 8px 0;
+        padding: 12px 15px;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid #d9f0ff;
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          background: linear-gradient(135deg, #e6f7ff 0%, #d1eaff 100%);
+        }
+        
+        .region-info {
+          flex: 1;
+          
+          .region-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1d4ed8;
+            margin-bottom: 5px;
+          }
+        }
+        
+        .region-select-btn {
+          margin-left: 10px;
+        }
+      }
+      
+      .region-item-active {
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        border: 1px solid #86efac;
+        
+        .region-name {
+          color: #166534;
+        }
+        
+        &:hover {
+          background: linear-gradient(135deg, #bbf7d0 0%, #a7f3d0 100%);
+        }
       }
     }
 
