@@ -4,20 +4,25 @@
     <nav-bar back :theme-index="5">选择地区</nav-bar>
     <view class="container">
       <!-- 当前选中地区 -->
-      <view class="current-location">
-        <text>当前选中：{{ curRegion.name }}</text>
-        <svg-icon icon-class="shejiaotubiao-40" style="width: 60rpx;height: 60rpx;" @click="toRegionGroup"></svg-icon>
+      <view class="current-location-card">
+        <view class="location-info">
+          <text class="location-label">当前选中</text>
+          <text class="location-name">{{ curRegion.name }}</text>
+        </view>
+        <view class="location-actions">
+          <svg-icon icon-class="shejiaotubiao-40" class="location-icon" @click="toRegionGroup"></svg-icon>
+        </view>
       </view>
 
-      <view class="header-buttons">
-        <button class="header-btn" @click="joinRegionGroup(curRegion, 0)">临时加入</button>
+            <view class="header-buttons">
+        <button class="header-btn temp-btn" @click="joinRegionGroup(curRegion, 0)">临时加入</button>
         <button class="header-btn primary-btn" @click="joinRegionGroup(curRegion, 1)">加入常驻</button>
       </view>
 
-      <view class="region-name">
-        <text>全部地区</text>
-        <text style="color: #1E90FF;" @click="viewActivityRegions">活跃地区</text>
-        <text style="color: #1E90FF;" @click="viewRegionGroups">地区群聊</text>
+            <view class="region-name">
+        <text class="region-tab active">全部地区</text>
+        <text class="region-tab" @click="viewActivityRegions">活跃地区</text>
+        <text class="region-tab" @click="viewRegionGroups">地区群聊</text>
       </view>
       <!-- 地区选择区域 -->
       <scroll-view class="region-list-box" scroll-y>
@@ -470,38 +475,98 @@ export default {
 }
 
 .header-buttons {
-  margin-top: 10rpx;
+  margin: 20rpx 40rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 80rpx;
+  gap: 40rpx;
 }
 
 .header-btn {
   margin: 0;
-  padding: 0 20rpx;
-  height: 60rpx;
-  line-height: 60rpx;
-  font-size: 14px;
-  background-color: #f5f5f5;
-  color: #666666;
-  border-radius: 6px;
+  padding: 15rpx 40rpx;
+  height: 70rpx;
+  line-height: 40rpx;
+  font-size: 28rpx;
+  border-radius: 12rpx;
+  border: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.header-btn:active {
+  transform: translateY(-2rpx);
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.12);
+}
+
+.temp-btn {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  color: #495057;
 }
 
 .primary-btn {
-  background-color: #4285f4;
+  background: linear-gradient(135deg, #4285f4, #3c9cff);
   color: #ffffff;
 }
 
-.current-location {
-  padding: 20rpx 30rpx;
+.current-location-card {
+  padding: 30rpx;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 40rpx;
+  background: linear-gradient(135deg, #f8f9ff, #eef2ff);
+  border-radius: 20rpx;
+  margin: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(66, 133, 244, 0.15);
+  border: 2rpx solid #e6e9ff;
+  transition: all 0.3s ease;
+}
+
+.current-location-card:hover {
+  box-shadow: 0 8rpx 30rpx rgba(66, 133, 244, 0.25);
+  transform: translateY(-2rpx);
+}
+
+.location-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.location-label {
+  font-size: 24rpx;
+  color: #6c757d;
+  margin-bottom: 8rpx;
+}
+
+.location-name {
+  font-size: 36rpx;
   font-weight: 600;
-  color: #666666;
-  border-bottom: 1px solid #f0f0f0;
+  color: #4285f4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-actions {
+  display: flex;
+  align-items: center;
+}
+
+.location-icon {
+  width: 60rpx;
+  height: 60rpx;
+  padding: 10rpx;
+  border-radius: 50%;
+  background: #4285f4;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.location-icon:hover {
+  background: #3c7ae4;
+  transform: scale(1.1);
 }
 
 .region-list-box {
@@ -518,11 +583,33 @@ export default {
 
 .region-name {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
-  padding: 10rpx 20rpx;
-  font-size: 16px;
-  color: #333333;
+  padding: 20rpx 30rpx;
+  margin: 0 20rpx 10rpx 20rpx;
+  background: #f8f9ff;
+  border-radius: 12rpx;
+  border-bottom: 2rpx solid #e6e9ff;
+}
+
+.region-tab {
+  padding: 12rpx 20rpx;
+  font-size: 28rpx;
+  color: #6c757d;
+  font-weight: 500;
+  border-radius: 8rpx;
+  transition: all 0.3s ease;
+}
+
+.region-tab:hover {
+  background: #eef2ff;
+  color: #4285f4;
+}
+
+.region-tab.active {
+  background: #4285f4;
+  color: white;
+  box-shadow: 0 4rpx 12rpx rgba(66, 133, 244, 0.3);
 }
 
 .drag-bar {
