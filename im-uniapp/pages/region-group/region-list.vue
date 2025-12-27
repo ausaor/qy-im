@@ -48,18 +48,26 @@
 
       <!-- 地图展示区域 -->
       <view class="map-container" ref="mapContainer" id="mapContainer" style="width: 100%; min-height: 200rpx;"></view>
-      <uni-popup ref="activityRegions" type="top">
+      <uni-popup ref="activityRegions" type="top" @change="onActivityRegionsPopupChange">
         <view class="activity-regions-box">
+          <view class="popup-header">
+            <text class="popup-title">活跃地区</text>
+            <uni-icons :color="'#4285f4'" type="star-filled" size="20"></uni-icons>
+          </view>
           <scroll-view class="scroll-bar" scroll-with-animation="true" scroll-y="true">
-            <view class="title">活跃地区<uni-icons :color="'#4285f4'" type="paperplane-filled"></uni-icons></view>
-            <view class="region-item" v-for="(region, index) in activityRegions" :key="index">
+            <view class="region-item" v-for="(region, index) in activityRegions" :key="index" @click="chooseActivityRegion(region, index)">
               <text class="region-full-name">{{region.fullName}}</text>
-              <uni-icons :color="'#3cc51f'" :type="regionActiveIndex === index ? 'circle-filled' : 'circle'" size="20" color="#999" @click="chooseActivityRegion(region, index)"></uni-icons>
+              <uni-icons 
+                :color="regionActiveIndex === index ? '#007aff' : '#c0c4cc'" 
+                :type="regionActiveIndex === index ? 'checkbox-filled' : 'circle'" 
+                size="20" 
+                color="#999">
+              </uni-icons>
             </view>
           </scroll-view>
           <view class="btns">
-            <button type="default" size="mini" @click="closeActivityRegionsPopup">取消</button>
-            <button type="primary" size="mini" @click="confirmActivityRegion">确定</button>
+            <button type="default" size="normal" class="cancel-btn" @click="closeActivityRegionsPopup">取消</button>
+            <button type="primary" size="normal" class="confirm-btn" @click="confirmActivityRegion">确定</button>
           </view>
         </view>
       </uni-popup>
@@ -438,6 +446,12 @@ export default {
         this.regionGroupActiveIndex = -1;
         this.chooseRegionGroup = {};
       }
+    },
+    onActivityRegionsPopupChange(e) {
+      if (!e.show) {
+        // 弹窗已关闭，重置选中状态
+        this.regionActiveIndex = -1;
+      }
     }
   },
   onLoad(options) {
@@ -538,35 +552,75 @@ export default {
   max-height: 1000rpx;
   background-color: white;
   display: flex;
-  flex-direction: column;      /* 垂直排列 */
-  justify-content: space-between; /* 两端对齐 */
+  flex-direction: column;
+  justify-content: space-between;
   padding-bottom: 10rpx;
+  border-radius: 20rpx 20rpx 0 0;
+  box-shadow: 0 -10rpx 30rpx rgba(0, 0, 0, 0.1);
 
-  .title {
-    padding-left: 20rpx;
-    color: #4285f4;
+  .popup-header {
+    display: flex;
+    align-items: center;
+    padding: 30rpx 20rpx 20rpx;
+    border-bottom: 1px solid #f5f5f5;
+    background-color: #fafafa;
+    border-radius: 20rpx 20rpx 0 0;
+
+    .popup-title {
+      font-size: 36rpx;
+      font-weight: 600;
+      color: #333;
+      margin-right: 15rpx;
+    }
+  }
+
+  .region-item {
+    display: flex;
+    align-items: center;
+    padding: 25rpx 30rpx;
+    border-bottom: 1px solid #f8f8f8;
+    transition: background-color 0.3s;
+  }
+
+  .region-item:hover {
+    background-color: #f5f5f5;
+  }
+
+  .region-full-name {
+    color: #333;
+    font-size: 30rpx;
+    flex: 1;
+    word-wrap: break-word;
+    word-break: break-all;
+    margin-right: 20rpx;
   }
 
   .btns {
     display: flex;
-    justify-content: center;
-    gap: 100rpx;
+    padding: 30rpx 20rpx 20rpx;
+    gap: 20rpx;
+  }
+
+  .cancel-btn, .confirm-btn {
+    flex: 1;
+    height: 80rpx;
+    border-radius: 12rpx;
+    font-size: 32rpx;
+    font-weight: 500;
+  }
+
+  .cancel-btn {
+    background-color: #f0f0f0;
+    color: #666;
+  }
+
+  .confirm-btn {
+    background: linear-gradient(135deg, #4285f4, #3c9cff);
+    color: #fff;
+    border: none;
   }
 }
 
-.region-item {
-  display: flex;
-  padding: 10rpx 20rpx;
-  border-bottom: 1px solid lightgray;
-}
-
-.region-full-name {
-  color: orange;
-  font-size: 30rpx;
-  font-weight: bold;
-  flex: 1;
-}
-  
 .region-groups-box {
   min-height: 600rpx;
   max-height: 1000rpx;
@@ -602,9 +656,9 @@ export default {
   font-size: 32rpx;
   color: #333;
   flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
 }
   
 .group-arrow {
