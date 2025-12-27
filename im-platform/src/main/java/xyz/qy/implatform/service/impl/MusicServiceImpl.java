@@ -11,6 +11,7 @@ import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.MusicAddDTO;
 import xyz.qy.implatform.dto.MusicDelDTO;
 import xyz.qy.implatform.dto.MusicQueryDTO;
+import xyz.qy.implatform.dto.MusicUpdateDTO;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.Music;
 import xyz.qy.implatform.entity.MusicStar;
@@ -130,15 +131,36 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         LambdaQueryWrapper<Music> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(Music::getDeleted, false);
         wrapper.eq(Music::getCategory, dto.getCategory());
+        wrapper.like(StringUtils.isNotBlank(dto.getName()), Music::getName, dto.getName());
+        wrapper.like(StringUtils.isNotBlank(dto.getSinger()), Music::getSinger, dto.getSinger());
         wrapper.orderByDesc(Music::getCreateTime);
         Page<Music> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
         if (CollectionUtils.isEmpty(page.getRecords())) {
             return PageResultVO.builder().data(Collections.emptyList()).total(0).build();
         }
         List<Music> musics = page.getRecords();
+        List<Long> musicIds = musics.stream().map(Music::getId).collect(Collectors.toList());
+        List<MusicStar> musicStarList = musicStarService.lambdaQuery()
+                .in(MusicStar::getMusicId, musicIds)
+                .eq(MusicStar::getDeleted, false).list();
+        // 统计每首歌曲的点赞数
+        Map<Long, Long> musicStarCountMap = musicStarList.stream().collect(Collectors.groupingBy(MusicStar::getMusicId, Collectors.counting()));
+
         List<MusicVO> musicVos = BeanUtils.copyPropertiesList(musics, MusicVO.class);
+        musicVos.forEach(musicVO -> {
+            musicVO.setLikeCount(musicStarCountMap.getOrDefault(musicVO.getId(), 0L).intValue());
+        });
 
         return PageResultVO.builder().data(musicVos).total(page.getTotal()).build();
+    }
+
+    @Override
+    public MusicVO getMusicById(Long id) {
+        Music music = this.getById(id);
+        if (ObjectUtil.isNotNull(music)) {
+            return BeanUtils.copyProperties(music, MusicVO.class);
+        }
+        return null;
     }
 
     @Override
@@ -155,6 +177,26 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         MusicVO musicVO = BeanUtils.copyProperties(music, MusicVO.class);
         musicVO.setIsOwner(Boolean.TRUE);
         return musicVO;
+    }
+
+    @Override
+    public MusicVO updateMusic(MusicUpdateDTO dto) {
+        Long userId = SessionContext.getSession().getUserId();
+        Music music = this.getById(dto.getId());
+        if (ObjectUtil.isNull(music)) {
+            throw new GlobalException("歌曲不存在");
+        }
+        if (!music.getUserId().equals(userId)) {
+            throw new GlobalException("无权限修改");
+        }
+        music.setSinger(dto.getSinger());
+        music.setName(dto.getName());
+        music.setUrl(dto.getUrl());
+        music.setCover(dto.getCover());
+        music.setDuration(dto.getDuration());
+        this.updateById(music);
+
+        return BeanUtils.copyProperties(music, MusicVO.class);
     }
 
     @Override

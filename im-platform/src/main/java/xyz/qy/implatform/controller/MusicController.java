@@ -4,10 +4,12 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.imclient.annotation.CountLimit;
 import xyz.qy.implatform.annotation.FeatureControl;
@@ -15,6 +17,7 @@ import xyz.qy.implatform.dto.MusicAddDTO;
 import xyz.qy.implatform.dto.MusicDelDTO;
 import xyz.qy.implatform.dto.MusicQueryDTO;
 import xyz.qy.implatform.dto.MusicStarDTO;
+import xyz.qy.implatform.dto.MusicUpdateDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IMusicService;
@@ -48,12 +51,24 @@ public class MusicController {
         return ResultUtils.success(musicService.listMusicPage(dto));
     }
 
+    @ApiOperation(value = "获取音乐详情", notes = "获取音乐详情")
+    @GetMapping("/detail")
+    public Result<MusicVO> getMusicById(@RequestParam @NotNull(message = "id不能为空") Long id) {
+        return ResultUtils.success(musicService.getMusicById(id));
+    }
+
     @ApiOperation(value = "新增音乐", notes = "新增音乐")
     @FeatureControl(value = "FEATURE_MUSIC_PUBLISH")
     @PostMapping("/add")
     @CountLimit(limitType = "music:", count = 20, time = 24, description = "上传音乐")
     public Result<MusicVO> addMusic(@RequestBody @Valid MusicAddDTO dto) {
         return ResultUtils.success(musicService.addMusic(dto));
+    }
+
+    @ApiOperation(value = "更新音乐", notes = "更新音乐")
+    @PostMapping("/update")
+    public Result<MusicVO> updateMusic(@RequestBody @Valid MusicUpdateDTO dto) {
+        return ResultUtils.success(musicService.updateMusic(dto));
     }
 
     @ApiOperation(value = "删除音乐", notes = "删除音乐")

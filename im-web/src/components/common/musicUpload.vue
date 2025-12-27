@@ -69,6 +69,10 @@
 export default {
   name: 'MusicUpload',
   props: {
+    id: {
+      type: Number,
+      default: null
+    },
     category: {
       type: String,
       required: true
@@ -89,6 +93,7 @@ export default {
       coverImage: [],
       fileList: [],
       form: {
+        id: null,
         category: '',
         name: '',
         singer: '',
@@ -108,6 +113,16 @@ export default {
       },
       uploadHeaders: {"accessToken":sessionStorage.getItem('accessToken')},
       fileTypes: ['image/jpeg', 'image/png', 'image/jpg'],
+    }
+  },
+  watch: {
+    dialogVisible: {
+      handler(newVal, oldVal) {
+        if (newVal && this.id) {
+          this.getMusicDetail();
+        }
+      },
+      immediate: true
     }
   },
   methods: {
@@ -170,32 +185,61 @@ export default {
     async submitForm() {
       this.$refs.musicForm.validate(async (valid) => {
         if (valid) {
-          // 模拟上传过程
-          this.$message({
-            message: '歌曲上传中...',
-            type: 'info',
-            duration: 2000
-          });
-          let musicFIle = await this.onMusicUpload(this.fileList[0])
-          if (musicFIle) {
-            this.form.groupId = this.groupId
-            this.form.regionCode = this.regionCode
-            this.form.category = this.category
-            this.form.url = musicFIle.url
-            this.form.duration = musicFIle.duration
+          if (!this.form.id) {
+            // 模拟上传过程
+            this.$message({
+              message: '歌曲上传中...',
+              type: 'info',
+              duration: 2000
+            });
+            let musicFIle = await this.onMusicUpload(this.fileList[0])
+            if (musicFIle) {
+              this.form.groupId = this.groupId
+              this.form.regionCode = this.regionCode
+              this.form.category = this.category
+              this.form.url = musicFIle.url
+              this.form.duration = musicFIle.duration
+              this.$http({
+                url: "/music/add",
+                method: 'post',
+                data: this.form
+              }).then(data => {
+                this.$message({
+                  message: '歌曲上传成功!',
+                  type: 'success',
+                  duration: 3000
+                });
+                this.form.cover = '';
+                this.resetForm();
+                this.$emit('add', data)
+              })
+            }
+          } else {
+            if (this.fileList.length) {
+              this.$message({
+                message: '歌曲上传中...',
+                type: 'info',
+                duration: 2000
+              });
+              let musicFIle = await this.onMusicUpload(this.fileList[0])
+              if (musicFIle) {
+                this.form.url = musicFIle.url
+                this.form.duration = musicFIle.duration
+              }
+            }
             this.$http({
-              url: "/music/add",
+              url: "/music/update",
               method: 'post',
               data: this.form
             }).then(data => {
               this.$message({
-                message: '歌曲上传成功!',
+                message: '歌曲更新成功!',
                 type: 'success',
                 duration: 3000
               });
               this.form.cover = '';
               this.resetForm();
-              this.$emit('add', data)
+              this.$emit('update', data)
             })
           }
         } else {
@@ -275,6 +319,17 @@ export default {
       }
       return true;
     },
+    getMusicDetail() {
+      this.$http({
+        url: `/music/detail?id=${this.id}`,
+        method: 'get',
+      }).then((data) => {
+        if (data) {
+          this.form = data;
+          this.coverPreview = data.cover;
+        }
+      })
+    }
   }
 }
 </script>

@@ -41,18 +41,12 @@
       :data="tableData"
       style="width: 100%"
       v-loading="loading"
-      @row-click="handleRowClick"
       class="music-table"
       :row-class-name="tableRowClassName"
       stripe
       :header-cell-style="{background: '#f5f7fa', color: '#606266'}"
     >
-      <el-table-column type="index" label="序号" width="80" align="center">
-        <template slot-scope="scope">
-          <el-tag v-if="scope.$index === 0">1</el-tag>
-          <el-tag v-else>{{ scope.$index + 1 }}</el-tag>
-        </template>
-      </el-table-column>
+      <el-table-column type="index" label="序号" width="80" align="center"></el-table-column>
       <el-table-column prop="name" label="歌曲名称" min-width="150">
         <template slot-scope="scope">
           <div class="song-info">
@@ -109,8 +103,8 @@
       </el-table-column>
       <el-table-column label="操作" min-width="180">
         <template slot-scope="scope">
-          <el-button size="mini" type="primary" @click="handleEdit(scope.row)" icon="el-icon-edit">编辑</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.row)" icon="el-icon-delete">删除</el-button>
+          <el-button size="mini" type="primary" @click.stop="handleEdit(scope.row)" icon="el-icon-edit">编辑</el-button>
+          <el-button size="mini" type="danger" @click.stop="handleDelete(scope.row)" icon="el-icon-delete">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -128,43 +122,6 @@
       >
       </el-pagination>
     </div>
-
-    <!-- 新增/编辑对话框 -->
-    <el-dialog
-      :title="dialogTitle"
-      :visible.sync="dialogVisible"
-      width="600px"
-      :before-close="handleDialogClose"
-      center
-    >
-      <el-form :model="form" :rules="formRules" ref="form" label-width="120px">
-        <el-form-item label="歌曲名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入歌曲名称"></el-input>
-        </el-form-item>
-        <el-form-item label="歌手" prop="singer">
-          <el-input v-model="form.singer" placeholder="请输入歌手"></el-input>
-        </el-form-item>
-        <el-form-item label="歌曲链接" prop="url">
-          <el-input v-model="form.url" placeholder="请输入歌曲链接"></el-input>
-        </el-form-item>
-        <el-form-item label="封面图链接" prop="cover">
-          <el-input v-model="form.cover" placeholder="请输入封面图链接"></el-input>
-        </el-form-item>
-        <el-form-item label="时长(秒)" prop="duration">
-          <el-input v-model.number="form.duration" placeholder="请输入时长(秒)"></el-input>
-        </el-form-item>
-        <el-form-item label="播放次数" prop="playCount">
-          <el-input v-model.number="form.playCount" placeholder="请输入播放次数"></el-input>
-        </el-form-item>
-        <el-form-item label="点赞次数" prop="likeCount">
-          <el-input v-model.number="form.likeCount" placeholder="请输入点赞次数"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="handleSave">确 定</el-button>
-      </div>
-    </el-dialog>
 
     <!-- 音乐播放器 -->
     <div class="music-player" v-if="currentMusic">
@@ -184,21 +141,46 @@
         </div>
       </div>
       <div class="player-controls">
-        <vue-audio :src="currentMusic.url" ref="audioPlayer" :autoplay="true" />
+        <div class="audio-player-controls">
+          <el-button 
+            type="text" 
+            @click="togglePlayPause"
+            class="play-pause-btn"
+          >
+            <i :class="isPlaying ? 'el-icon-video-pause' : 'el-icon-video-play'" class="play-icon"></i>
+          </el-button>
+          <div class="audio-progress">
+            <span class="time">{{ formatTime(currentTime) }}</span>
+            <el-slider 
+              v-model="sliderTime" 
+              :max="currentMusic.duration || 100" 
+              @change="onSliderChange"
+              vertical
+              class="progress-slider"
+            ></el-slider>
+            <span class="time">{{ formatTime(currentMusic.duration || 0) }}</span>
+          </div>
+        </div>
       </div>
     </div>
+    <music-upload ref="musicUploadRef" :category="'public'" :id="form.id" @add="addMusic" @update="updateMusic"></music-upload>
   </div>
 </template>
 
 <script>
+import MusicUpload from "@components/common/musicUpload.vue";
+
 export default {
   name: "MusicManagement",
+  components: {
+    MusicUpload
+  },
   data() {
     return {
       loading: false,
       searchForm: {
         name: '',
-        singer: ''
+        singer: '',
       },
       tableData: [],
       pagination: {
@@ -206,26 +188,6 @@ export default {
         pageSize: 10,
         total: 0
       },
-      // 模拟数据
-      allData: [
-        { id: 1, name: '夜曲', singer: '周杰伦', url: 'https://music.example.com/yequ.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 245, playCount: 1200, likeCount: 350 },
-        { id: 2, name: '青花瓷', singer: '周杰伦', url: 'https://music.example.com/qinghuaci.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 267, playCount: 2500, likeCount: 890 },
-        { id: 3, name: '稻香', singer: '周杰伦', url: 'https://music.example.com/daoxiang.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 210, playCount: 3100, likeCount: 1200 },
-        { id: 4, name: '七里香', singer: '周杰伦', url: 'https://music.example.com/qilixiang.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 280, playCount: 2800, likeCount: 950 },
-        { id: 5, name: '简单爱', singer: '周杰伦', url: 'https://music.example.com/jiandanai.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 235, playCount: 1900, likeCount: 720 },
-        { id: 6, name: '告白气球', singer: '周杰伦', url: 'https://music.example.com/gaobaiqiqiu.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 215, playCount: 3200, likeCount: 1100 },
-        { id: 7, name: '菊花台', singer: '周杰伦', url: 'https://music.example.com/juhuatai.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 275, playCount: 1600, likeCount: 480 },
-        { id: 8, name: '发如雪', singer: '周杰伦', url: 'https://music.example.com/faruxue.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 305, playCount: 1400, likeCount: 420 },
-        { id: 9, name: '东风破', singer: '周杰伦', url: 'https://music.example.com/dongfengpo.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 320, playCount: 2100, likeCount: 650 },
-        { id: 10, name: '双截棍', singer: '周杰伦', url: 'https://music.example.com/shuangjiejun.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 195, playCount: 1800, likeCount: 560 },
-        { id: 11, name: '龙卷风', singer: '周杰伦', url: 'https://music.example.com/longjuanfeng.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 250, playCount: 2200, likeCount: 720 },
-        { id: 12, name: '安静', singer: '周杰伦', url: 'https://music.example.com/anjing.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 260, playCount: 1700, likeCount: 480 },
-        { id: 13, name: '轨迹', singer: '周杰伦', url: 'https://music.example.com/guiji.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 240, playCount: 1500, likeCount: 410 },
-        { id: 14, name: '忍者', singer: '周杰伦', url: 'https://music.example.com/renzhe.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 200, playCount: 1300, likeCount: 350 },
-        { id: 15, name: '星晴', singer: '周杰伦', url: 'https://music.example.com/xingqing.mp3', cover: 'https://via.placeholder.com/50x50.png', duration: 225, playCount: 1650, likeCount: 460 }
-      ],
-      dialogVisible: false,
-      dialogType: 'add', // 'add' 或 'edit'
       form: {
         id: null,
         name: '',
@@ -236,37 +198,16 @@ export default {
         playCount: 0,
         likeCount: 0
       },
-      formRules: {
-        name: [
-          { required: true, message: '请输入歌曲名称', trigger: 'blur' }
-        ],
-        singer: [
-          { required: true, message: '请输入歌手', trigger: 'blur' }
-        ],
-        url: [
-          { required: true, message: '请输入歌曲链接', trigger: 'blur' }
-        ],
-        duration: [
-          { required: true, message: '请输入时长', trigger: 'blur' },
-          { type: 'number', message: '时长必须为数字值', trigger: 'blur' }
-        ],
-        playCount: [
-          { required: true, message: '请输入播放次数', trigger: 'blur' },
-          { type: 'number', message: '播放次数必须为数字值', trigger: 'blur' }
-        ],
-        likeCount: [
-          { required: true, message: '请输入点赞次数', trigger: 'blur' },
-          { type: 'number', message: '点赞次数必须为数字值', trigger: 'blur' }
-        ]
-      },
       currentMusic: null, // 当前播放的音乐
-      playingId: null // 当前正在播放的行ID
+      playingId: null, // 当前正在播放的行ID
+      isPlaying: false, // 是否正在播放
+      currentTime: 0, // 当前播放时间
+      sliderTime: 0, // 滑块时间
+      audio: null // 音频元素
     }
   },
   computed: {
-    dialogTitle() {
-      return this.dialogType === 'add' ? '新增歌曲' : '编辑歌曲';
-    }
+
   },
   methods: {
     // 格式化时长
@@ -303,32 +244,17 @@ export default {
     // 加载数据
     loadData() {
       this.loading = true;
-      
-      // 模拟异步请求延迟
-      setTimeout(() => {
-        // 过滤数据
-        let filteredData = this.allData;
-        if (this.searchForm.name) {
-          filteredData = filteredData.filter(item => 
-            item.name.toLowerCase().includes(this.searchForm.name.toLowerCase())
-          );
-        }
-        if (this.searchForm.singer) {
-          filteredData = filteredData.filter(item => 
-            item.singer.toLowerCase().includes(this.searchForm.singer.toLowerCase())
-          );
-        }
-        
-        // 计算总数
-        this.pagination.total = filteredData.length;
-        
-        // 计算当前页数据
-        const startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize;
-        const endIndex = startIndex + this.pagination.pageSize;
-        this.tableData = filteredData.slice(startIndex, endIndex);
-        
+      this.searchForm.category = 'public'
+      this.$http({
+        url: `/music/listPage?pageNo=${this.pagination.currentPage}&pageSize=${this.pagination.pageSize}`,
+        method: "post",
+        data: this.searchForm
+      }).then((data) => {
+        this.tableData = data.data;
+        this.pagination.total = data.total;
+      }).finally(() => {
         this.loading = false;
-      }, 500);
+      })
     },
     
     // 分页大小改变
@@ -346,26 +272,14 @@ export default {
     
     // 新增
     handleAdd() {
-      this.dialogType = 'add';
-      this.form = {
-        id: null,
-        name: '',
-        singer: '',
-        url: '',
-        cover: '',
-        duration: 0,
-        playCount: 0,
-        likeCount: 0
-      };
-      this.dialogVisible = true;
+      this.$refs.musicUploadRef.open();
     },
     
     // 编辑
     handleEdit(row) {
-      this.dialogType = 'edit';
       // 复制数据以避免直接修改原数据
       this.form = { ...row };
-      this.dialogVisible = true;
+      this.$refs.musicUploadRef.open();
     },
     
     // 删除
@@ -375,71 +289,115 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        // 从 allData 中删除
-        this.allData = this.allData.filter(item => item.id !== row.id);
-        // 重新加载数据
-        this.loadData();
-        this.$message.success('删除成功');
+        let params = {
+          id: row.id
+        }
+        this.$http({
+          url: `/music/delete`,
+          method: "delete",
+          data: params
+        }).then((data) => {
+          this.$message.success("删除成功");
+          // 重新加载数据
+          this.loadData();
+        })
       }).catch(() => {
         // 取消删除
       });
     },
-    
-    // 保存
-    handleSave() {
-      this.$refs.form.validate((valid) => {
-        if (valid) {
-          if (this.dialogType === 'add') {
-            // 新增
-            const newId = Math.max(...this.allData.map(item => item.id), 0) + 1;
-            const newSong = {
-              ...this.form,
-              id: newId
-            };
-            this.allData.unshift(newSong);
-            this.$message.success('新增成功');
-          } else {
-            // 编辑
-            const index = this.allData.findIndex(item => item.id === this.form.id);
-            if (index !== -1) {
-              this.allData.splice(index, 1, { ...this.form });
-              this.$message.success('编辑成功');
-            }
-          }
-          
-          this.dialogVisible = false;
-          this.loadData();
-        } else {
-          this.$message.error('请填写正确的表单信息');
-          return false;
-        }
-      });
+    addMusic() {
+      this.loadData()
     },
-    
-    // 关闭对话框
-    handleDialogClose() {
-      this.dialogVisible = false;
+    updateMusic() {
+      this.loadData()
     },
     
     // 点击行播放
     handleRowClick(row) {
       // 如果点击的是当前正在播放的音乐，则暂停
       if (this.playingId === row.id) {
-        if (this.$refs.audioPlayer) {
-          this.$refs.audioPlayer.$refs.audio.pause();
-          this.playingId = null;
+        if (this.isPlaying) {
+          this.pauseMusic();
+        } else {
+          this.playMusic(row);
         }
       } else {
         // 播放新的音乐
         this.currentMusic = row;
         this.playingId = row.id;
-        // 稍微延迟以确保DOM更新
-        this.$nextTick(() => {
-          if (this.$refs.audioPlayer) {
-            this.$refs.audioPlayer.$refs.audio.play();
-          }
-        });
+        this.playMusic(row);
       }
+    },
+    
+    // 播放音乐
+    playMusic(row) {
+      // 如果已经有音频实例，先暂停
+      if (this.audio) {
+        this.audio.pause();
+      }
+      
+      // 创建新的音频实例
+      this.audio = new Audio(row.url);
+      
+      // 设置音频事件
+      this.audio.onended = () => {
+        this.isPlaying = false;
+        this.currentTime = 0;
+        this.sliderTime = 0;
+      };
+      
+      this.audio.ontimeupdate = () => {
+        this.currentTime = this.audio.currentTime;
+        this.sliderTime = this.audio.currentTime;
+      };
+      
+      this.audio.play().then(() => {
+        this.isPlaying = true;
+      }).catch(error => {
+        console.error('播放失败:', error);
+        this.$message.error('播放失败，请检查音频链接');
+        this.isPlaying = false;
+      });
+    },
+    
+    // 暂停音乐
+    pauseMusic() {
+      if (this.audio) {
+        this.audio.pause();
+        this.isPlaying = false;
+      }
+    },
+    
+    // 切换播放暂停
+    togglePlayPause() {
+      if (this.isPlaying) {
+        this.pauseMusic();
+      } else {
+        this.playMusic(this.currentMusic);
+      }
+    },
+    
+    // 格式化时间
+    formatTime(time) {
+      const mins = Math.floor(time / 60);
+      const secs = Math.floor(time % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    },
+    
+    // 滑块改变事件
+    onSliderChange() {
+      if (this.audio) {
+        this.audio.currentTime = this.sliderTime;
+        this.currentTime = this.sliderTime;
+      }
+    }
+  },
+  
+  // 组件销毁时清理音频资源
+  beforeDestroy() {
+    if (this.audio) {
+      this.audio.pause();
+      this.audio = null;
     }
   },
   
@@ -453,7 +411,7 @@ export default {
 .music-management {
   padding: 20px;
   background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-  min-height: 100vh;
+  height: 100%;
   
   .header {
     text-align: center;
@@ -607,32 +565,38 @@ export default {
     }
     
     .player-controls {
-      flex: 1.5;
+      flex: 1;
       
-      ::v-deep .vue-audio {
-        .audio-wrapper {
-          background: rgba(255, 255, 255, 0.2) !important;
-          border-radius: 20px;
-          padding: 8px 15px !important;
+      .audio-player-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        
+        .play-pause-btn {
+          font-size: 24px;
+          color: white;
+          padding: 0;
           
-          .audio-btn {
-            color: white !important;
+          .play-icon {
+            transition: transform 0.3s;
+          }
+        }
+        
+        .audio-progress {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          margin: 0 15px;
+          
+          .time {
+            color: white;
+            font-size: 14px;
+            margin: 0 10px;
           }
           
-          .audio-timer {
-            color: white !important;
-          }
-          
-          .audio-progress {
-            background: rgba(255, 255, 255, 0.3) !important;
-            
-            .audio-progress-current {
-              background: white !important;
-            }
-            
-            .audio-progress-circle {
-              background: white !important;
-            }
+          .progress-slider {
+            flex: 1;
           }
         }
       }
