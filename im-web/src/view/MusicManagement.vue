@@ -101,8 +101,11 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="操作" min-width="180">
+      <el-table-column label="操作" min-width="220">
         <template slot-scope="scope">
+          <el-button size="mini" type="success" @click.stop="handlePlay(scope.row)" icon="el-icon-video-play" :title="isPlaying && playingId === scope.row.id ? '暂停' : '播放'">
+            {{ isPlaying && playingId === scope.row.id ? '暂停' : '播放' }}
+          </el-button>
           <el-button size="mini" type="primary" @click.stop="handleEdit(scope.row)" icon="el-icon-edit">编辑</el-button>
           <el-button size="mini" type="danger" @click.stop="handleDelete(scope.row)" icon="el-icon-delete">删除</el-button>
         </template>
@@ -282,6 +285,21 @@ export default {
       this.$refs.musicUploadRef.open();
     },
     
+    // 播放音乐
+    handlePlay(row) {
+      // 如果点击的是当前正在播放的音乐，则暂停
+      if (this.playingId === row.id) {
+        if (this.isPlaying) {
+          this.pauseMusic();
+        } else {
+          this.playMusic(row);
+        }
+      } else {
+        // 播放新的音乐
+        this.playMusic(row);
+      }
+    },
+    
     // 删除
     handleDelete(row) {
       this.$confirm(`确定要删除歌曲 "${row.name}" 吗？`, '提示', {
@@ -323,33 +341,38 @@ export default {
         }
       } else {
         // 播放新的音乐
-        this.currentMusic = row;
-        this.playingId = row.id;
         this.playMusic(row);
       }
     },
     
     // 播放音乐
     playMusic(row) {
-      // 如果已经有音频实例，先暂停
-      if (this.audio) {
-        this.audio.pause();
+      // 如果当前播放的不是同一首歌，则切换歌曲
+      if (!this.audio || this.currentMusic.id !== row.id) {
+        // 如果已经有音频实例，先暂停
+        if (this.audio) {
+          this.audio.pause();
+        }
+        
+        // 创建新的音频实例
+        this.audio = new Audio(row.url);
+        
+        // 设置音频事件
+        this.audio.onended = () => {
+          this.isPlaying = false;
+          this.currentTime = 0;
+          this.sliderTime = 0;
+        };
+        
+        this.audio.ontimeupdate = () => {
+          this.currentTime = this.audio.currentTime;
+          this.sliderTime = this.audio.currentTime;
+        };
       }
       
-      // 创建新的音频实例
-      this.audio = new Audio(row.url);
-      
-      // 设置音频事件
-      this.audio.onended = () => {
-        this.isPlaying = false;
-        this.currentTime = 0;
-        this.sliderTime = 0;
-      };
-      
-      this.audio.ontimeupdate = () => {
-        this.currentTime = this.audio.currentTime;
-        this.sliderTime = this.audio.currentTime;
-      };
+      // 更新当前播放音乐信息
+      this.currentMusic = row;
+      this.playingId = row.id;
       
       this.audio.play().then(() => {
         this.isPlaying = true;
@@ -373,7 +396,10 @@ export default {
       if (this.isPlaying) {
         this.pauseMusic();
       } else {
-        this.playMusic(this.currentMusic);
+        // 如果存在currentMusic，则播放当前音乐
+        if (this.currentMusic) {
+          this.playMusic(this.currentMusic);
+        }
       }
     },
     
@@ -390,7 +416,7 @@ export default {
         this.audio.currentTime = this.sliderTime;
         this.currentTime = this.sliderTime;
       }
-    }
+    },
   },
   
   // 组件销毁时清理音频资源
