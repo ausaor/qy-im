@@ -86,15 +86,22 @@ export default {
   .close-btn {
     position: fixed;
     top: 50%;
-    transform: translate(20px, -30px);
-    width: 20px;
+    transform: translate(30px, -30px);
+    width: 30px;
     height: 60px;
     line-height: 60px;
     border: none;
     cursor: pointer;
-    font-size: 20px;
-    color: white;
-    background-color: #cfd8e3;
+    font-size: 18px;
+    color: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 0 8px 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    font-weight: bold;
   }
 }
 </style>

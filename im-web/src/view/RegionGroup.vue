@@ -491,7 +491,7 @@ export default {
           flex: 1;
           flex-shrink: 0;
           width: 100%;
-          height: auto;
+          min-height: 200px;
           text-align: left;
           margin-top: 5px;
           overflow: auto;
