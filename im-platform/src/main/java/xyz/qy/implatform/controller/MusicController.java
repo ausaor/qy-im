@@ -20,6 +20,7 @@ import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IMusicService;
 import xyz.qy.implatform.service.IMusicStarService;
 import xyz.qy.implatform.vo.MusicVO;
+import xyz.qy.implatform.vo.PageResultVO;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -39,6 +40,12 @@ public class MusicController {
     @PostMapping("/list")
     public Result<List<MusicVO>> listMusic(@Valid @RequestBody MusicQueryDTO dto) {
         return ResultUtils.success(musicService.listMusic(dto));
+    }
+
+    @ApiOperation(value = "获取音乐列表分页", notes = "获取音乐列表分页")
+    @PostMapping("/listPage")
+    public Result<PageResultVO> listMusicPage(@RequestBody @Valid MusicQueryDTO dto) {
+        return ResultUtils.success(musicService.listMusicPage(dto));
     }
 
     @ApiOperation(value = "新增音乐", notes = "新增音乐")

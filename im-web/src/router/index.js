@@ -98,6 +98,11 @@ export default new VueRouter({
                   name: "SysMsgEdit",
                   path: "/home/square/sysMsgEdit",
                   component: () => import("../view/SysMsgEdit.vue"),
+              },
+              {
+                  name: "Musics",
+                  path: "/home/square/musics",
+                  component: () => import("../view/MusicManagement.vue"),
               }
           ]
         },

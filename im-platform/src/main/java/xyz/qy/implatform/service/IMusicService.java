@@ -6,6 +6,7 @@ import xyz.qy.implatform.dto.MusicDelDTO;
 import xyz.qy.implatform.dto.MusicQueryDTO;
 import xyz.qy.implatform.entity.Music;
 import xyz.qy.implatform.vo.MusicVO;
+import xyz.qy.implatform.vo.PageResultVO;
 
 import java.util.List;
 
@@ -17,4 +18,6 @@ public interface IMusicService extends IService<Music> {
     void deleteMusic(MusicDelDTO dto);
 
     void increasePlayCount(Long id);
+
+    PageResultVO listMusicPage(MusicQueryDTO dto);
 }

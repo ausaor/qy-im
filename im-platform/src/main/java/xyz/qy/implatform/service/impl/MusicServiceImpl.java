@@ -3,6 +3,7 @@ package xyz.qy.implatform.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +14,7 @@ import xyz.qy.implatform.dto.MusicQueryDTO;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.Music;
 import xyz.qy.implatform.entity.MusicStar;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.MusicMapper;
@@ -25,10 +27,13 @@ import org.springframework.stereotype.Service;
 import xyz.qy.implatform.service.IMusicStarService;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
 import xyz.qy.implatform.session.SessionContext;
+import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.vo.FriendVO;
 import xyz.qy.implatform.vo.MusicVO;
+import xyz.qy.implatform.vo.PageResultVO;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -120,6 +125,23 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     }
 
     @Override
+    public PageResultVO listMusicPage(MusicQueryDTO dto) {
+        UserSession session = SessionContext.getSession();
+        LambdaQueryWrapper<Music> wrapper = Wrappers.lambdaQuery();
+        wrapper.eq(Music::getDeleted, false);
+        wrapper.eq(Music::getCategory, dto.getCategory());
+        wrapper.orderByDesc(Music::getCreateTime);
+        Page<Music> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
+        if (CollectionUtils.isEmpty(page.getRecords())) {
+            return PageResultVO.builder().data(Collections.emptyList()).total(0).build();
+        }
+        List<Music> musics = page.getRecords();
+        List<MusicVO> musicVos = BeanUtils.copyPropertiesList(musics, MusicVO.class);
+
+        return PageResultVO.builder().data(musicVos).total(page.getTotal()).build();
+    }
+
+    @Override
     public MusicVO addMusic(MusicAddDTO dto) {
         long userId = SessionContext.getSession().getUserId();
 
@@ -157,7 +179,8 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     }
 
     private void checkMusicData(MusicAddDTO dto) {
-        long userId = SessionContext.getSession().getUserId();
+        UserSession session = SessionContext.getSession();
+        long userId = session.getUserId();
 
         if (StringUtils.equalsAny(dto.getCategory(), TalkCategoryEnum.GROUP.getCode(), TalkCategoryEnum.REGION.getCode())) {
             // 查询是否在一个月内上传数量超过100
@@ -208,6 +231,11 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             List<Music> musics = this.list(wrapper);
             if (musics.size() >= 100) {
                 throw new GlobalException("您在一个月内上传数量超过100，无法继续上传");
+            }
+        } else if (StringUtils.equals(dto.getCategory(), TalkCategoryEnum.PUBLIC.getCode())) {
+            // 判断用户是否超级管理员
+            if (!StringUtils.equals(RoleEnum.SUPER_ADMIN.getCode(), session.getRole())) {
+                throw new GlobalException("无操作权限");
             }
         }
     }
