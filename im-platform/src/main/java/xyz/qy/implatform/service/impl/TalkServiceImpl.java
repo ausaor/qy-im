@@ -25,6 +25,7 @@ import xyz.qy.implatform.dto.TalkQueryDTO;
 import xyz.qy.implatform.dto.TalkUpdateDTO;
 import xyz.qy.implatform.dto.UserDataAuthDTO;
 import xyz.qy.implatform.entity.CharacterAvatar;
+import xyz.qy.implatform.entity.CharacterUser;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.Region;
@@ -35,6 +36,7 @@ import xyz.qy.implatform.entity.TalkComment;
 import xyz.qy.implatform.entity.TalkNotify;
 import xyz.qy.implatform.entity.TalkStar;
 import xyz.qy.implatform.entity.TemplateCharacter;
+import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
@@ -43,6 +45,7 @@ import xyz.qy.implatform.enums.ViewScopeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
+import xyz.qy.implatform.service.ICharacterUserService;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
@@ -53,6 +56,7 @@ import xyz.qy.implatform.service.ITalkNotifyService;
 import xyz.qy.implatform.service.ITalkService;
 import xyz.qy.implatform.service.ITalkStarService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
+import xyz.qy.implatform.service.ITemplateGroupService;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
@@ -98,6 +102,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     private IGroupMemberService groupMemberService;
 
     @Resource
+    private ITemplateGroupService templateGroupService;
+
+    @Resource
     private ITemplateCharacterService characterService;
 
     @Resource
@@ -125,6 +132,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     private ITalkNotifyService talkNotifyService;
 
     @Resource
+    private ICharacterUserService characterUserService;
+
+    @Resource
     private IMClient imClient;
 
     @Transactional
@@ -139,8 +149,12 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         talk.setUserId(session.getUserId());
         talk.setCreateBy(session.getUserId());
         talk.setAddress(user.getProvince());
-        if (!Objects.isNull(talkAddDTO.getCharacterId())) {
-            checkCharacterInfo(talkAddDTO.getCharacterId(), talkAddDTO.getAvatarId(), talk);
+        if (ObjectUtil.isNotNull(talkAddDTO.getCharacterId()) || ObjectUtil.isNotNull(talkAddDTO.getGroupTemplateId())) {
+            checkCharacterInfo(talkAddDTO.getCharacterId(), talkAddDTO.getAvatarId(), talkAddDTO.getGroupTemplateId(), talk);
+        }
+        if (TalkCategoryEnum.CHARACTER.getCode().equals(talkAddDTO.getCategory())
+            || (talkAddDTO.getCharacterVisible() && TalkCategoryEnum.PRIVATE.getCode().equals(talkAddDTO.getCategory()))) {
+            checkCharacterUser(talkAddDTO.getCharacterId(), talkAddDTO.getGroupTemplateId(), session.getUserId());
         }
 
         if (StringUtils.isBlank(talk.getNickName())) {
@@ -220,13 +234,19 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         if (!talk.getCategory().equals(talkUpdateDTO.getCategory())) {
             throw new GlobalException("数据异常");
         }
+
+        if (TalkCategoryEnum.CHARACTER.getCode().equals(talkUpdateDTO.getCategory())
+                || (talkUpdateDTO.getCharacterVisible() && TalkCategoryEnum.PRIVATE.getCode().equals(talkUpdateDTO.getCategory()))) {
+            checkCharacterUser(talkUpdateDTO.getCharacterId(), talkUpdateDTO.getGroupTemplateId(), session.getUserId());
+        }
+
         BeanUtils.copyProperties(talkUpdateDTO, talk);
 
         if (CollectionUtils.isNotEmpty(talkUpdateDTO.getFiles())) {
             talk.setFiles(talkUpdateDTO.getFiles().toJSONString());
         }
-        if (!Objects.isNull(talkUpdateDTO.getCharacterId())) {
-            checkCharacterInfo(talkUpdateDTO.getCharacterId(), talkUpdateDTO.getAvatarId(), talk);
+        if (ObjectUtil.isNotNull(talkUpdateDTO.getCharacterId()) || ObjectUtil.isNotNull(talkUpdateDTO.getGroupTemplateId())) {
+            checkCharacterInfo(talkUpdateDTO.getCharacterId(), talkUpdateDTO.getAvatarId(), talkUpdateDTO.getGroupTemplateId(), talk);
         }
         talk.setAddress(user.getProvince());
         talk.setUpdateBy(userId);
@@ -240,15 +260,53 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         this.baseMapper.updateById(talk);
     }
 
-    private void checkCharacterInfo(Long characterId, Long avatarId, Talk talk) {
-        TemplateCharacter character = characterService.getById(characterId);
-        if (Objects.isNull(character)) {
-            throw new GlobalException("角色不存在");
+    private void checkCharacterUser(Long characterId, Long groupTemplateId, Long userId) {
+        if (ObjectUtil.isNull(characterId) && ObjectUtil.isNull(groupTemplateId)) {
+            throw new GlobalException("参数异常");
         }
+        if (ObjectUtil.isNotNull(characterId)) {
+            TemplateCharacter character = characterService.getById(characterId);
+            if (Objects.isNull(character)) {
+                throw new GlobalException("角色不存在");
+            }
+
+            // 角色的创建者可以发布角色空间动态
+            if (character.getCreateBy().equals(String.valueOf(userId))) {
+                return;
+            }
+
+            CharacterUser characterUser = characterUserService.lambdaQuery()
+                    .eq(CharacterUser::getCharacterId, characterId)
+                    .eq(CharacterUser::getUserId, userId)
+                    .eq(CharacterUser::getDeleted, false).one();
+            if (Objects.isNull(characterUser)) {
+                throw new GlobalException("您没有权限发布该角色空间动态");
+            }
+        }
+
+        if (ObjectUtil.isNotNull(groupTemplateId)) {
+            TemplateGroup templateGroup = templateGroupService.getById(groupTemplateId);
+            if (Objects.isNull(templateGroup)) {
+                throw new GlobalException("群聊模板不存在");
+            }
+
+            // 群聊模板的创建者可以发布群聊模板动态
+            if (!templateGroup.getCreateBy().equals(String.valueOf(userId))) {
+                throw new GlobalException("您没有权限发布该群聊模板动态");
+            }
+        }
+
+    }
+
+    private void checkCharacterInfo(Long characterId, Long avatarId, Long groupTemplateId, Talk talk) {
         if (avatarId != null) {
             CharacterAvatar characterAvatar = characterAvatarService.getById(avatarId);
             if (ObjectUtil.isNull(characterAvatar)) {
                 throw new GlobalException("角色头像不存在");
+            }
+            TemplateCharacter character = characterService.getById(characterId);
+            if (Objects.isNull(character)) {
+                throw new GlobalException("角色不存在");
             }
             if (!characterId.equals(characterAvatar.getTemplateCharacterId())) {
                 throw new GlobalException("所选角色头像不属于当前角色");
@@ -259,9 +317,20 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 talk.setNickName(characterAvatar.getName());
             }
             talk.setAvatar(characterAvatar.getAvatar());
-        } else {
+        } else if (ObjectUtil.isNotNull(characterId)) {
+            TemplateCharacter character = characterService.getById(characterId);
+            if (Objects.isNull(character)) {
+                throw new GlobalException("角色不存在");
+            }
             talk.setNickName(character.getName());
             talk.setAvatar(character.getAvatar());
+        } else if (groupTemplateId != null) {
+            TemplateGroup templateGroup = templateGroupService.getById(groupTemplateId);
+            if (Objects.isNull(templateGroup)) {
+                throw new GlobalException("群聊模板不存在");
+            }
+            talk.setNickName(templateGroup.getGroupName());
+            talk.setAvatar(templateGroup.getAvatar());
         }
     }
 
@@ -410,7 +479,54 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
+        } else if ("character".equals(queryDTO.getSection())) {
+            if (ObjectUtil.isNull(queryDTO.getCharacterId())) {
+                throw new GlobalException("角色参数异常");
+            }
+            List<Long> userIdList = characterUserService.getUserIdListByCharacterId(List.of(queryDTO.getCharacterId()));
+            if (CollectionUtils.isNotEmpty(userIdList)) {
+                dto.setCharacterUserIds(userIdList);
+            }
+
+            talkPage = this.baseMapper.pageQueryCharacterTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
+            if (ObjectUtil.isNotNull(talkPage)) {
+                records = talkPage.getRecords();
+            }
+        } else if ("groupTemplate".equals(queryDTO.getSection())) {
+            if (ObjectUtil.isNull(queryDTO.getGroupTemplateId())) {
+                throw new GlobalException("参数异常");
+            }
+            talkPage = this.baseMapper.pageQueryGroupTemplateTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
+            if (ObjectUtil.isNotNull(talkPage)) {
+                records = talkPage.getRecords();
+            }
+        } else if ("groupTemplate&Characters".equals(queryDTO.getSection())) {
+            if (ObjectUtil.isNull(queryDTO.getGroupTemplateId())) {
+                throw new GlobalException("参数异常");
+            }
+            List<Long> characterIds = characterService.findPublishedCharacterIdsByGroupId(queryDTO.getGroupTemplateId());
+            if (CollectionUtils.isNotEmpty(characterIds)) {
+                queryDTO.setCharacterIds(characterIds);
+
+                List<Long> userIdList = characterUserService.getUserIdListByCharacterId(List.of(queryDTO.getCharacterId()));
+                if (CollectionUtils.isNotEmpty(userIdList)) {
+                    dto.setCharacterUserIds(userIdList);
+                }
+            }
+            talkPage = this.baseMapper.pageQueryGroupTemplateCharactersTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
+            if (ObjectUtil.isNotNull(talkPage)) {
+                records = talkPage.getRecords();
+            }
+        } else if ("characters".equals(queryDTO.getSection())) {
+            if (CollectionUtils.isEmpty(queryDTO.getCharacterIds())) {
+                throw new GlobalException("参数异常");
+            }
+            talkPage = this.baseMapper.pageQueryCharactersTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
+            if (ObjectUtil.isNotNull(talkPage)) {
+                records = talkPage.getRecords();
+            }
         }
+
         if (CollectionUtils.isEmpty(records)) {
             return PageResultVO.builder().data(Collections.emptyList()).build();
         }

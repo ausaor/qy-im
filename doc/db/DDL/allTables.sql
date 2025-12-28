@@ -701,6 +701,29 @@ create table im_group_request
     comment '群组请求表';
 
 
+create table im_character_user
+(
+    id           bigint               not null
+        primary key,
+    character_id bigint               not null comment '角色id',
+    user_id      bigint               not null comment '用户id',
+    create_by    bigint               not null comment '创建者',
+    create_time  datetime             not null comment '创建时间',
+    update_by    bigint               null comment '更新者',
+    update_time  datetime             null comment '更新者',
+    deleted      tinyint(1) default 0 not null comment '是否删除',
+    constraint idx_3
+        unique (character_id, user_id)
+)
+    comment '模板角色与用户关系表';
+
+create index idx_1
+    on im_character_user (character_id);
+
+create index idx_2
+    on im_character_user (user_id);
+
+
 create table ai_chat_message
 (
     id          bigint auto_increment comment '主键'

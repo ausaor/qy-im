@@ -73,11 +73,11 @@ export default {
 
 
   .info {
+    width: 100%;
     position: absolute;
     top: 60%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     font-size: 50px;
+    text-align: center;
     color: #ffffff;
     font-weight: 700;
     text-shadow: 0 0 10px red,0 0 20px red,0 0 30px red,0 0 40px red;

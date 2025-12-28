@@ -13,6 +13,7 @@ import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TemplateCharacterMapper;
+import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IGroupService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
@@ -20,6 +21,7 @@ import xyz.qy.implatform.service.ITemplateGroupService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.vo.CharacterAvatarVO;
 import xyz.qy.implatform.vo.SelectableTemplateCharacterVO;
 import xyz.qy.implatform.vo.TemplateCharacterVO;
 import xyz.qy.implatform.vo.TemplateGroupVO;
@@ -28,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +51,9 @@ public class TemplateCharacterServiceImpl extends ServiceImpl<TemplateCharacterM
 
     @Autowired
     private IGroupMemberService groupMemberService;
+
+    @Resource
+    private ICharacterAvatarService characterAvatarService;
 
     @Override
     public List<TemplateCharacterVO> findTemplateCharactersByGroupId(Long templateGroupId) {
@@ -114,6 +120,18 @@ public class TemplateCharacterServiceImpl extends ServiceImpl<TemplateCharacterM
         });
 
         return characterVOList;
+    }
+
+    @Override
+    public TemplateCharacterVO findByCharacterId(Long id) {
+        TemplateCharacter templateCharacter = this.getById(id);
+        if (ObjectUtil.isNull(templateCharacter)) {
+            throw new GlobalException("模板角色不存在");
+        }
+        TemplateCharacterVO templateCharacterVO = BeanUtils.copyProperties(templateCharacter, TemplateCharacterVO.class);
+        List<CharacterAvatarVO> characterAvatarVOS = characterAvatarService.queryAllCharacterAvatarByCharacterId(id);
+        templateCharacterVO.setCharacterAvatarVOList(characterAvatarVOS);
+        return templateCharacterVO;
     }
 
     @Override
@@ -206,6 +224,18 @@ public class TemplateCharacterServiceImpl extends ServiceImpl<TemplateCharacterM
         }
 
         return BeanUtils.copyProperties(templateCharacterList, TemplateCharacterVO.class);
+    }
+
+    @Override
+    public List<Long> findPublishedCharacterIdsByGroupId(Long templateGroupId) {
+        LambdaQueryWrapper<TemplateCharacter> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TemplateCharacter::getTemplateGroupId, templateGroupId);
+        queryWrapper.eq(TemplateCharacter::getDeleted, false);
+        queryWrapper.eq(TemplateCharacter::getStatus, ReviewEnum.REVIEWED.getCode());
+        queryWrapper.select(TemplateCharacter::getId);
+
+        List<TemplateCharacter> templateCharacterList = this.list(queryWrapper);
+        return templateCharacterList.stream().map(TemplateCharacter::getId).collect(Collectors.toList());
     }
 
     @Override

@@ -26,6 +26,14 @@ public interface ITemplateCharacterService extends IService<TemplateCharacter> {
     List<TemplateCharacterVO> findSelectableTemplateCharacter(SelectableTemplateCharacterVO vo);
 
     /**
+     * 根据模板角色id查询模板角色
+     *
+     * @param id 模板角色id
+     * @return 模板角色
+     */
+    TemplateCharacterVO findByCharacterId(Long id);
+
+    /**
      * 新增或修改模板人物信息
      *
      * @param templateGroupVO 模板群聊VO
@@ -53,6 +61,14 @@ public interface ITemplateCharacterService extends IService<TemplateCharacter> {
      * @return 已发布的模板角色
      */
     List<TemplateCharacterVO> findPublishedByGroupId(Long templateGroupId);
+
+    /**
+     * 根据群聊模板id查询模板角色id
+     *
+     * @param templateGroupId 群聊模板id
+     * @return 模板角色id
+     */
+    List<Long> findPublishedCharacterIdsByGroupId(Long templateGroupId);
 
     /**
      * 查询已发布的模板角色

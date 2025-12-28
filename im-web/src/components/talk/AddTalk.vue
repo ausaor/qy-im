@@ -107,6 +107,28 @@
         @close="closeChooseCharacterDialog"
         @confirm="handleOk">
     </TemplateCharacterChoose>
+    <el-dialog
+        width="30%"
+        title="角色头像"
+        :append-to-body="true"
+        :visible.sync="selectCharacterAvatarVisible"
+        :before-close="closeSelectCharacterAvatar">
+      <el-scrollbar style="height:400px;">
+        <div v-for="(characterAvatar, index) in characterAvatars" :key="index" style="display: flex;justify-content: space-between;align-items: center;">
+          <character-avatar-item class="character-avatar-item-left" :characterAvatar="characterAvatar"></character-avatar-item>
+          <div class="character-avatar-item-right">
+            <el-button :type="avatarActiveIndex === index ? 'success' : ''"
+                       icon="el-icon-check"
+                       circle
+                       @click="chooseCharacterAvatar(characterAvatar, index)"></el-button>
+          </div>
+        </div>
+      </el-scrollbar>
+      <span slot="footer" class="dialog-footer">
+          <el-button @click="closeSelectCharacterAvatar" size="small">取 消</el-button>
+          <el-button type="primary" @click="chooseCharacterAvatarOk" size="small">确 定</el-button>
+      </span>
+    </el-dialog>
   </el-dialog>
 </template>
 
@@ -119,6 +141,7 @@ import TemplateCharacterItem from "@/components/group/TemplateCharacterItem";
 import Emoji from '@/components/emoji';
 import MultiMediaUpload from "@/components/common/MultiMediaUpload";
 import TemplateCharacterChoose  from "../template/TemplateCharacterChoose.vue";
+import CharacterAvatarItem from "@/components/group/CharacterAvatarItem";
 
 export default {
   name: "AddTalk",
@@ -131,6 +154,7 @@ export default {
     Emoji,
     MultiMediaUpload,
     TemplateCharacterChoose,
+    CharacterAvatarItem,
   },
   props: {
     visible: {
@@ -152,7 +176,11 @@ export default {
     },
     regionCode: {
       type: String,
-    }
+    },
+    characterId: {
+      type: Number,
+      default: null
+    },
   },
   data() {
     return {
@@ -198,11 +226,19 @@ export default {
       lastEditRange: null,
       showEmoji: false,
       fileUploadLoading: null,
+      avatarActiveIndex: -1,
+      characterAvatars: [],
+      selectCharacterAvatarVisible: false,
+      newCharacterAvatar: {},
+      character: {}
     }
   },
   created() {
     if (this.talkId !== null) {
       this.getTalkDetail(this.talkId);
+    }
+    if (this.characterId) {
+      this.getCharacterDetail();
     }
   },
   methods: {
@@ -456,11 +492,15 @@ export default {
       this.fileList = [];
     },
     openCharacterChooseDialog() {
-      if (!this.form.characterId) {
+      if (!this.form.characterId && !this.characterId) {
         this.chooseCharacterDialogVisible = true;
         this.queryTemplateGroup();
       } else {
-        this.$message.warning("已存在角色");
+        if (this.characterId) {
+          this.selectCharacterAvatarVisible = true;
+        } else {
+          this.$message.warning("已存在角色");
+        }
       }
     },
     closeChooseCharacterDialog() {
@@ -533,6 +573,32 @@ export default {
     regionVisibleChange(value) {
       this.form.regionVisible = value;
     },
+    getCharacterDetail() {
+      this.$http({
+        url: `/templateCharacter/findByCharacterId?id=${this.characterId}`,
+        method: 'get'
+      }).then((data) => {
+        this.character = data;
+        this.form.characterId = data.id;
+        this.form.avatar = data.avatar;
+        this.form.nickName = data.name;
+        this.characterAvatars = data.characterAvatarVOList;
+      });
+    },
+    closeSelectCharacterAvatar() {
+      this.avatarActiveIndex = -1;
+      this.selectCharacterAvatarVisible = false;
+    },
+    chooseCharacterAvatar(characterAvatar, index) {
+      this.newCharacterAvatar = characterAvatar;
+      this.avatarActiveIndex = index;
+    },
+    chooseCharacterAvatarOk() {
+      this.form.avatarId = this.newCharacterAvatar.id;
+      this.form.nickName = this.newCharacterAvatar.level === 0 ? this.character.name : this.newCharacterAvatar.name;
+      this.form.avatar = this.newCharacterAvatar.avatar;
+      this.closeSelectCharacterAvatar();
+    }
   },
   computed: {
     imageAction() {
@@ -547,6 +613,9 @@ export default {
     fileAction() {
       return `/file/upload`;
     }
+  },
+  watch: {
+
   },
 }
 </script>
@@ -659,6 +728,16 @@ export default {
       }
     }
   }
+}
+
+.character-avatar-item-left {
+  flex: 1;
+}
+
+.character-avatar-item-right {
+  margin-right: 10px;
+  height: 65px;
+  line-height: 65px;
 }
 
 </style>

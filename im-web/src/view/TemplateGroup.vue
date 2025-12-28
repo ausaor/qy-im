@@ -93,6 +93,7 @@
                :title="curTemplateGroup.groupName"
                :visible.sync="showEditTemplateCharacterDialog"
                width="510px"
+               v-dialogDrag
                :before-close="handleEditTemplateCharacterClose">
       <div class="template-group-avatar">
         <head-image class="head-image" :url="curTemplateGroup.avatar" :size="80"></head-image>
@@ -137,7 +138,7 @@
               <el-tag class="tag" v-if="templateCharacter.status==='0'" effect="dark" size="mini" type="info">待审批
               </el-tag>
             </div>
-            <el-button class="edit-character-avatar" type="warning" icon="el-icon-orange" circle
+            <el-button class="edit-character-avatar" type="warning" icon="el-icon-user" circle
                        @click="openCharacterAvatarDialog(templateCharacter)" size="mini"></el-button>
             <el-button style="margin-left: 8px;" type="primary" circle size="mini"
                        @click="openCharacterWordDialog({templateGroup: curTemplateGroup, character: templateCharacter})">词</el-button>
@@ -146,6 +147,8 @@
             <el-button v-if="curTemplateGroup.isOwner" class="delete-button"
                        type="danger" icon="el-icon-delete" circle size="mini"
                        @click="deleteTemplateCharacter(templateCharacter, index)"></el-button>
+            <el-button v-if="curTemplateGroup.isOwner" class="edit-character-space"
+                       icon="icon iconfont icon-shejiaotubiao-40" circle size="mini" @click="openCharacterSpaceDialog(templateCharacter)"></el-button>
           </div>
         </el-scrollbar>
       </div>
@@ -301,6 +304,17 @@
         <el-button type="primary" @click="saveEmo" v-if="curTemplateGroup.isOwner">保存</el-button>
       </div>
     </el-dialog>
+    <drawer
+        :visible="characterSpaceVisible"
+        @close="closeDrawer"
+        :width=60>
+      <template v-slot:header>
+        <space-cover :name="spaceName" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify"></space-cover>
+      </template>
+      <template v-slot:main>
+        <talk-list ref="talkListRef" :category="'character'" :section="section" :character-id="characterId"></talk-list>
+      </template>
+    </drawer>
   </div>
 </template>
 
@@ -309,6 +323,9 @@ import HeadImage from "@/components/common/HeadImage";
 import FileUpload from "@/components/common/FileUpload";
 import BatchFileUpload from "@/components/common/BatchFileUpload";
 import TemplateCharacterItem from "@/components/group/TemplateCharacterItem";
+import SpaceCover from "@components/common/SpaceCover.vue";
+import Drawer from "@components/common/Drawer.vue";
+import TalkList from "@components/talk/TalkList.vue";
 
 export default {
   name: "TemplateGroup",
@@ -316,7 +333,10 @@ export default {
     HeadImage,
     FileUpload,
     TemplateCharacterItem,
-    BatchFileUpload
+    BatchFileUpload,
+    Drawer,
+    SpaceCover,
+    TalkList,
   },
   data() {
     return {
@@ -353,6 +373,10 @@ export default {
       activeWordIndex: -1,
       audio: null,
       audioSrc: '',
+      characterSpaceVisible: false,
+      section: 'character',
+      spaceName: '角色空间',
+      characterId: null
     }
   },
   created() {
@@ -698,6 +722,11 @@ export default {
       }
       this.queryCharacterEmo(param);
     },
+    openCharacterSpaceDialog(templateCharacter) {
+      this.characterId = templateCharacter.id;
+      this.spaceName = templateCharacter.name + "-角色空间";
+      this.characterSpaceVisible = true;
+    },
     queryCharacterWord(param) {
       this.$http({
         url: "/character/word/findCharacterWords",
@@ -868,6 +897,18 @@ export default {
           });
         })
       }
+    },
+    closeDrawer() {
+      this.characterSpaceVisible = false;
+    },
+    refreshTalkList() {
+      this.$refs.talkListRef.refreshTalkList();
+    },
+    handleShowAddTalk() {
+      this.$refs.talkListRef.handleShowAddTalk();
+    },
+    showTalkNotify() {
+
     }
   },
   computed: {
@@ -1027,6 +1068,10 @@ export default {
 
       .delete-button {
         margin-left: 8px;
+      }
+
+      .edit-character-space {
+        color: orange;
       }
     }
 

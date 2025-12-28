@@ -56,4 +56,37 @@ public interface TalkMapper extends BaseMapper<Talk> {
      * @return 动态列表
      */
     Page<Talk> pageQueryRegionTalkList(@Param("page") Page<Object> page, @Param("queryDTO") TalkQueryDTO queryDTO);
+
+    /**
+     * 分页查询角色空间动态
+     *
+     * @param page 分页对象
+     * @param queryDTO 查询DTO
+     * @return 动态列表
+     */
+    Page<Talk> pageQueryCharacterTalkList(@Param("page") Page<Object> page, @Param("queryDTO") TalkQueryDTO queryDTO);
+
+    /**
+     * 分页查询群聊模版动态
+     * @param page 分页对象
+     * @param queryDTO 查询DTO
+     * @return 动态列表
+     */
+    Page<Talk> pageQueryGroupTemplateTalkList(@Param("page") Page<Object> page, @Param("queryDTO") TalkQueryDTO queryDTO);
+
+    /**
+     * 分页查询群聊模版与角色动态
+     * @param page 分页对象
+     * @param queryDTO 查询DTO
+     * @return 动态列表
+     */
+    Page<Talk> pageQueryGroupTemplateCharactersTalkList(@Param("page") Page<Object> page, @Param("queryDTO") TalkQueryDTO queryDTO);
+
+    /**
+     * 分页多个角色动态
+     * @param page 分页对象
+     * @param queryDTO 查询DTO
+     * @return 动态列表
+     */
+    Page<Talk> pageQueryCharactersTalkList(@Param("page") Page<Object> page, @Param("queryDTO") TalkQueryDTO queryDTO);
 }

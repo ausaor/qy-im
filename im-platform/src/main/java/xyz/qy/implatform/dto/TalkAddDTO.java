@@ -23,6 +23,9 @@ public class TalkAddDTO {
     @ApiModelProperty(value = "用户id")
     private String userId;
 
+    @ApiModelProperty(value = "群模板id")
+    private Long groupTemplateId;
+
     @ApiModelProperty(value = "角色人物id")
     private Long characterId;
 
@@ -65,6 +68,9 @@ public class TalkAddDTO {
 
     @ApiModelProperty(value = "地区空间可见")
     private Boolean regionVisible;
+
+    @ApiModelProperty(value = "角色空间可见")
+    private Boolean characterVisible;
 
     @ApiModelProperty(value = "群id")
     private Long groupId;

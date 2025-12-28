@@ -162,6 +162,7 @@
               :group-id="groupId"
               :region-group-id="regionGroupId"
               :region-code="regionCode"
+              :character-id="characterId"
               @close="closeAddTalkDialog"
               @refresh="refreshTalkList"
               :talkId="curTalk.id">
@@ -252,6 +253,10 @@ export default {
     regionCode: {
       type: String,
       default: null,
+    },
+    characterId: {
+      type: Number,
+      default: null
     },
     newTalkList: {
       type: Array,
@@ -454,6 +459,7 @@ export default {
         regionGroupId: this.regionGroupId,
         regionCode: this.regionCode,
         friendIds: friendIds,
+        characterId: this.characterId,
       }
       this.$http({
         url: `/talk/pageQueryTalkList?pageNo=${this.page.pageNo}&pageSize=${this.page.pageSize}`,
@@ -752,6 +758,14 @@ export default {
       handler(newRegionCode, oldRegionCode) {
         console.log("newRegionCode", newRegionCode);
         if (newRegionCode !== oldRegionCode && this.section === 'region') {
+          this.refreshTalkList();
+        }
+      }
+    },
+    characterId: {
+      handler(newCharacterId, oldCharacterId) {
+        console.log("newCharacterId", newCharacterId);
+        if (newCharacterId !== oldCharacterId) {
           this.refreshTalkList();
         }
       }

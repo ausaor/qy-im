@@ -27,7 +27,7 @@ public class TalkQueryDTO {
     @ApiModelProperty(value = "分类")
     private String category;
 
-    @ApiModelProperty("查询范围：my-自己的，friends-朋友的，group-群聊的，region-地区的；")
+    @ApiModelProperty("查询范围：my-自己的，friends-朋友的，group-群聊的，region-地区的；groupTemplate-群聊模板的；character-单个角色的；groupTemplate&Characters-群聊模板与所有角色的；characters-多个角色的")
     private String section;
 
     @ApiModelProperty("群id")
@@ -38,4 +38,16 @@ public class TalkQueryDTO {
 
     @ApiModelProperty("地区编码")
     private String regionCode;
+
+    @ApiModelProperty("角色id")
+    private Long characterId;
+
+    @ApiModelProperty("群聊模板id")
+    private Long groupTemplateId;
+
+    @ApiModelProperty("角色绑定的用户id")
+    private List<Long> characterUserIds;
+
+    @ApiModelProperty("角色id列表")
+    private List<Long> characterIds;
 }

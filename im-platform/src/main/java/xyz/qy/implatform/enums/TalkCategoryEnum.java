@@ -12,7 +12,9 @@ public enum TalkCategoryEnum {
 
     GROUP("group"),
 
-    PUBLIC("public");
+    PUBLIC("public"),
+
+    CHARACTER("character");
 
     private final String code;
 

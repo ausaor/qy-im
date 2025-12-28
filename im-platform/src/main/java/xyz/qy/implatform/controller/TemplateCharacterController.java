@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
@@ -49,6 +50,12 @@ public class TemplateCharacterController {
     @PostMapping("/findSelectableTemplateCharacter")
     public Result<List<TemplateCharacterVO>> findSelectableTemplateCharacter(@RequestBody SelectableTemplateCharacterVO vo) {
         return ResultUtils.success(templateCharacterService.findSelectableTemplateCharacter(vo));
+    }
+
+    @ApiOperation(value = "通过id查询模板角色信息", notes = "通过id查询模板角色信息")
+    @GetMapping("/findByCharacterId")
+    public Result<TemplateCharacterVO> findByCharacterId(@RequestParam @NotNull(message = "id不能为空") Long id) {
+        return ResultUtils.success(templateCharacterService.findByCharacterId(id));
     }
 
     @ApiOperation(value = "新增或修改模板人物信息", notes = "新增或修改模板人物信息")

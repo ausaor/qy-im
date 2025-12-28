@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -96,6 +97,12 @@ public class Talk extends BaseEntity{
     private Boolean regionVisible;
 
     /**
+     * 角色空间可见
+     */
+    @TableField("character_visible")
+    private Boolean characterVisible;
+
+    /**
      * 群聊id
      */
     @TableField("group_id")
@@ -106,4 +113,7 @@ public class Talk extends BaseEntity{
      */
     @TableField("region_code")
     private String regionCode;
+
+    @TableField("group_template_id")
+    private Long groupTemplateId;
 }
