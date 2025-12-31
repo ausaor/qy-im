@@ -24,4 +24,11 @@ public class CharacterUserController {
         characterUserService.bindCharacterUser(dto);
         return ResultUtils.success();
     }
+
+    @ApiOperation("解绑角色用户关系")
+    @RequestMapping("/unbindCharacterUser")
+    public Result unbindCharacterUser(@RequestBody @Valid CharacterUserBindDTO dto) {
+        characterUserService.unbindCharacterUser(dto);
+        return ResultUtils.success();
+    }
 }

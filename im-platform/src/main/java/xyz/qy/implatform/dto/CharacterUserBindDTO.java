@@ -17,5 +17,5 @@ public class CharacterUserBindDTO {
 
     @NotEmpty(message = "用户id不能为空")
     @ApiModelProperty("用户id")
-    private List<Long> userId;
+    private List<Long> userIds;
 }

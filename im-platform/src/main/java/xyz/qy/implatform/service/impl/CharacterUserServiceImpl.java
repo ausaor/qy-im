@@ -2,6 +2,7 @@ package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -50,10 +51,10 @@ public class CharacterUserServiceImpl extends ServiceImpl<CharacterUserMapper, C
 
         LambdaQueryWrapper<CharacterUser> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(CharacterUser::getCharacterId, dto.getCharacterId());
-        wrapper.in(CharacterUser::getUserId, dto.getUserId());
+        wrapper.in(CharacterUser::getUserId, dto.getUserIds());
 
         List<CharacterUser> characterUsers = this.list(wrapper);
-        List<CharacterUser> characterUserList = dto.getUserId().stream().map(userId -> {
+        List<CharacterUser> characterUserList = dto.getUserIds().stream().map(userId -> {
             Optional<CharacterUser> optional = characterUsers.stream().filter(characterUser -> characterUser.getUserId().equals(userId)).findFirst();
             CharacterUser item = optional.orElseGet(CharacterUser::new);
             item.setCharacterId(dto.getCharacterId());
@@ -64,5 +65,25 @@ public class CharacterUserServiceImpl extends ServiceImpl<CharacterUserMapper, C
         }).collect(Collectors.toList());
 
         this.saveOrUpdateBatch(characterUserList);
+    }
+
+    @Override
+    public void unbindCharacterUser(CharacterUserBindDTO dto) {
+        UserSession session = SessionContext.getSession();
+
+        TemplateCharacter character = templateCharacterService.getById(dto.getCharacterId());
+        if (ObjectUtil.isNull(character)) {
+            throw new RuntimeException("角色不存在");
+        }
+        if (!character.getCreateBy().equals(String.valueOf(session.getUserId()))) {
+            throw new RuntimeException("无权限操作");
+        }
+
+        LambdaUpdateWrapper<CharacterUser> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(CharacterUser::getCharacterId, dto.getCharacterId());
+        wrapper.in(CharacterUser::getUserId, dto.getUserIds());
+        wrapper.set(CharacterUser::getUpdateBy, session.getUserId());
+        wrapper.set(CharacterUser::getDeleted, true);
+        this.update(wrapper);
     }
 }

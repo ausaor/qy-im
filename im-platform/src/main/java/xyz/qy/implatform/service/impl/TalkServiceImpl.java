@@ -264,6 +264,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         if (ObjectUtil.isNull(characterId) && ObjectUtil.isNull(groupTemplateId)) {
             throw new GlobalException("参数异常");
         }
+        if (ObjectUtil.isNotNull(characterId) && ObjectUtil.isNotNull(groupTemplateId)) {
+            throw new GlobalException("参数异常");
+        }
         if (ObjectUtil.isNotNull(characterId)) {
             TemplateCharacter character = characterService.getById(characterId);
             if (Objects.isNull(character)) {
