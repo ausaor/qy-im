@@ -315,7 +315,8 @@
         @close="closeDrawer"
         :width=60>
       <template v-slot:header>
-        <space-cover :name="spaceName" :show-add="section!=='groupTemplate&Characters'" :show-notify="section!=='groupTemplate&Characters'" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify"></space-cover>
+        <space-cover :name="spaceName" :show-add="section!=='groupTemplate&Characters' && isOwner" :show-notify="section!=='groupTemplate&Characters'"
+                     @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify"></space-cover>
       </template>
       <template v-slot:main>
         <talk-list ref="talkListRef" :category="'character'" :section="section" :character-id="characterId" :group-template-id="groupTemplateId"></talk-list>
@@ -384,6 +385,7 @@ export default {
       spaceName: '角色空间',
       characterId: null,
       groupTemplateId: null,
+      isOwner: false,
     }
   },
   created() {
@@ -734,6 +736,7 @@ export default {
       this.section = "character";
       this.characterId = templateCharacter.id;
       this.spaceName = templateCharacter.name + "•星空间";
+      this.isOwner = templateCharacter.isOwner;
       this.characterSpaceVisible = true;
     },
     openGroupTemplateSpaceDialog(groupTemplate) {
@@ -741,6 +744,7 @@ export default {
       this.section = "groupTemplate";
       this.groupTemplateId = groupTemplate.id;
       this.spaceName = groupTemplate.groupName + "•星空间";
+      this.isOwner = groupTemplate.isOwner;
       this.characterSpaceVisible = true;
     },
     openGroupTemplateCharactersSpaceDialog(groupTemplate) {
