@@ -25,6 +25,9 @@ public class TalkVO {
     @ApiModelProperty(value = "用户id")
     private Long userId;
 
+    @ApiModelProperty(value = "群模板id")
+    private Long groupTemplateId;
+
     @ApiModelProperty(value = "角色id")
     private Long characterId;
 

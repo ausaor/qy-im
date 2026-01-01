@@ -157,10 +157,10 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             checkCharacterUser(talkAddDTO.getCharacterId(), talkAddDTO.getGroupTemplateId(), session.getUserId());
         }
 
-        if (StringUtils.isBlank(talk.getNickName())) {
+        if (StringUtils.isBlank(talk.getNickName()) && ObjectUtil.isNull(talkAddDTO.getCharacterId()) && ObjectUtil.isNull(talkAddDTO.getGroupTemplateId())) {
             talk.setNickName(user.getNickName());
         }
-        if (StringUtils.isBlank(talk.getAvatar())) {
+        if (StringUtils.isBlank(talk.getAvatar()) && ObjectUtil.isNull(talkAddDTO.getCharacterId()) && ObjectUtil.isNull(talkAddDTO.getGroupTemplateId())) {
             talk.setAvatar(user.getHeadImage());
         }
         talk.setContent(SensitiveUtil.filter(talk.getContent()));
@@ -250,10 +250,10 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         }
         talk.setAddress(user.getProvince());
         talk.setUpdateBy(userId);
-        if (StringUtils.isBlank(talk.getNickName())) {
+        if (StringUtils.isBlank(talk.getNickName()) && ObjectUtil.isNull(talkUpdateDTO.getCharacterId()) && ObjectUtil.isNull(talkUpdateDTO.getGroupTemplateId())) {
             talk.setNickName(user.getNickName());
         }
-        if (StringUtils.isBlank(talk.getAvatar())) {
+        if (StringUtils.isBlank(talk.getAvatar()) && ObjectUtil.isNull(talkUpdateDTO.getCharacterId()) && ObjectUtil.isNull(talkUpdateDTO.getGroupTemplateId())) {
             talk.setAvatar(user.getHeadImage());
         }
         talk.setContent(SensitiveUtil.filter(talk.getContent()));
@@ -327,7 +327,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             }
             talk.setNickName(character.getName());
             talk.setAvatar(character.getAvatar());
-        } else if (groupTemplateId != null) {
+        } else if (ObjectUtil.isNotNull(groupTemplateId)) {
             TemplateGroup templateGroup = templateGroupService.getById(groupTemplateId);
             if (Objects.isNull(templateGroup)) {
                 throw new GlobalException("群聊模板不存在");
@@ -486,7 +486,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNull(queryDTO.getCharacterId())) {
                 throw new GlobalException("角色参数异常");
             }
-            List<Long> userIdList = characterUserService.getUserIdListByCharacterId(List.of(queryDTO.getCharacterId()));
+            List<Long> userIdList = characterUserService.getUserIdListByCharacterIds(List.of(queryDTO.getCharacterId()));
             if (CollectionUtils.isNotEmpty(userIdList)) {
                 dto.setCharacterUserIds(userIdList);
             }
@@ -511,7 +511,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (CollectionUtils.isNotEmpty(characterIds)) {
                 queryDTO.setCharacterIds(characterIds);
 
-                List<Long> userIdList = characterUserService.getUserIdListByCharacterId(List.of(queryDTO.getCharacterId()));
+                List<Long> userIdList = characterUserService.getUserIdListByCharacterIds(characterIds);
                 if (CollectionUtils.isNotEmpty(userIdList)) {
                     dto.setCharacterUserIds(userIdList);
                 }
@@ -611,6 +611,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                     talkVO.setCommentCharacterName(talkVO.getNickName());
                     talkVO.setCommentCharacterAvatar(talkVO.getAvatar());
                 }
+            } else if (ObjectUtil.isNotNull(talkVO.getGroupTemplateId())) {
+                log.info("群聊模板id：{}", talkVO.getGroupTemplateId());
             } else {
                 talkVO.setAvatar(userMap.get(obj.getUserId()).getHeadImage());
                 talkVO.setNickName(userMap.get(obj.getUserId()).getNickName());
@@ -1056,6 +1058,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 return true;
             }
         } else if (TalkCategoryEnum.PUBLIC.getCode().equals(dto.getCategory())) {
+            return true;
+        } else if (TalkCategoryEnum.CHARACTER.getCode().equals(dto.getCategory())) {
             return true;
         }
         return false;

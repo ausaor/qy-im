@@ -17,20 +17,25 @@
         <div slot="header" class="header">
           <span>{{ templateGroup.groupName }}</span>
           <el-button v-if="templateGroup.isOwner" class="operate-button"
-                     type="primary" icon="el-icon-edit" circle
+                     type="primary" icon="el-icon-edit" circle size="mini"
                      @click="editTemplateGroup(templateGroup)"></el-button>
           <el-button v-if="templateGroup.isOwner" class="operate-button"
-                     type="danger" icon="el-icon-delete" circle
+                     type="danger" icon="el-icon-delete" circle size="mini"
                      @click="deleteTemplateGroup(templateGroup)"></el-button>
           <el-button class="operate-button"
-                     icon="el-icon-user-solid" circle
+                     icon="el-icon-user-solid" circle size="mini"
                      @click="editTemplateCharacter(templateGroup)"></el-button>
-          <el-button class="operate-button" circle
+          <el-button class="operate-button" circle size="mini" icon="icon iconfont icon-minganci"
                      @click="openCharacterWordDialog({templateGroup: templateGroup})">
-            词
           </el-button>
-          <el-button class="operate-button" circle icon="icon iconfont icon-biaoqing"
+          <el-button class="operate-button" circle icon="icon iconfont icon-biaoqing" size="mini"
                      @click="openCharacterEmoDialog({templateGroup: templateGroup})">
+          </el-button>
+          <el-button class="operate-button template-group-space" circle icon="icon iconfont icon-shejiaotubiao-40" size="mini"
+                     @click="openGroupTemplateSpaceDialog(templateGroup)">
+          </el-button>
+          <el-button class="operate-button template-group-characters-space" circle icon="icon iconfont icon-shejiaotubiao-40" size="mini"
+                     @click="openGroupTemplateCharactersSpaceDialog(templateGroup)">
           </el-button>
         </div>
         <div>
@@ -144,11 +149,11 @@
                        @click="openCharacterWordDialog({templateGroup: curTemplateGroup, character: templateCharacter})">词</el-button>
             <el-button style="margin-left: 8px;" icon="icon iconfont icon-biaoqing" circle size="mini"
                        @click="openCharacterEmoDialog({templateGroup: curTemplateGroup, character: templateCharacter})"></el-button>
+            <el-button class="edit-character-space"
+                       icon="icon iconfont icon-shejiaotubiao-40" circle size="mini" @click="openCharacterSpaceDialog(templateCharacter)"></el-button>
             <el-button v-if="curTemplateGroup.isOwner" class="delete-button"
                        type="danger" icon="el-icon-delete" circle size="mini"
                        @click="deleteTemplateCharacter(templateCharacter, index)"></el-button>
-            <el-button v-if="curTemplateGroup.isOwner" class="edit-character-space"
-                       icon="icon iconfont icon-shejiaotubiao-40" circle size="mini" @click="openCharacterSpaceDialog(templateCharacter)"></el-button>
           </div>
         </el-scrollbar>
       </div>
@@ -305,14 +310,15 @@
       </div>
     </el-dialog>
     <drawer
+        v-if="characterSpaceVisible"
         :visible="characterSpaceVisible"
         @close="closeDrawer"
         :width=60>
       <template v-slot:header>
-        <space-cover :name="spaceName" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify"></space-cover>
+        <space-cover :name="spaceName" :show-add="section!=='groupTemplate&Characters'" :show-notify="section!=='groupTemplate&Characters'" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify"></space-cover>
       </template>
       <template v-slot:main>
-        <talk-list ref="talkListRef" :category="'character'" :section="section" :character-id="characterId"></talk-list>
+        <talk-list ref="talkListRef" :category="'character'" :section="section" :character-id="characterId" :group-template-id="groupTemplateId"></talk-list>
       </template>
     </drawer>
   </div>
@@ -376,7 +382,8 @@ export default {
       characterSpaceVisible: false,
       section: 'character',
       spaceName: '角色空间',
-      characterId: null
+      characterId: null,
+      groupTemplateId: null,
     }
   },
   created() {
@@ -723,8 +730,24 @@ export default {
       this.queryCharacterEmo(param);
     },
     openCharacterSpaceDialog(templateCharacter) {
+      this.groupTemplateId = null;
+      this.section = "character";
       this.characterId = templateCharacter.id;
-      this.spaceName = templateCharacter.name + "-角色空间";
+      this.spaceName = templateCharacter.name + "•星空间";
+      this.characterSpaceVisible = true;
+    },
+    openGroupTemplateSpaceDialog(groupTemplate) {
+      this.characterId = null;
+      this.section = "groupTemplate";
+      this.groupTemplateId = groupTemplate.id;
+      this.spaceName = groupTemplate.groupName + "•星空间";
+      this.characterSpaceVisible = true;
+    },
+    openGroupTemplateCharactersSpaceDialog(groupTemplate) {
+      this.characterId = null;
+      this.section = "groupTemplate&Characters";
+      this.groupTemplateId = groupTemplate.id;
+      this.spaceName = groupTemplate.groupName + "•星空间";
       this.characterSpaceVisible = true;
     },
     queryCharacterWord(param) {
@@ -952,6 +975,14 @@ export default {
         padding: 3px 0;
         width: 32px;
         height: 32px
+      }
+
+      .template-group-space {
+        color: orange;
+      }
+
+      .template-group-characters-space {
+        color: #00f2fe;
       }
     }
 

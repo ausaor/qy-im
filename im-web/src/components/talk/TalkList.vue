@@ -163,6 +163,7 @@
               :region-group-id="regionGroupId"
               :region-code="regionCode"
               :character-id="characterId"
+              :group-template-id="groupTemplateId"
               @close="closeAddTalkDialog"
               @refresh="refreshTalkList"
               :talkId="curTalk.id">
@@ -258,6 +259,10 @@ export default {
       type: Number,
       default: null
     },
+    groupTemplateId: {
+      type: Number,
+      default: null
+    },
     newTalkList: {
       type: Array,
       default: () => {
@@ -311,7 +316,7 @@ export default {
     }
   },
   created() {
-    if(this.section === 'my-friends') {
+    if(this.section === 'my-friends' || this.section === 'character' || this.section === 'groupTemplate' || this.section === 'groupTemplate&Characters') {
       this.pageQueryTalkList();
     }
   },
@@ -452,6 +457,12 @@ export default {
       if (this.section === 'region' && !this.regionCode) {
         return
       }
+      if (this.section === 'character' && !this.characterId) {
+        return;
+      }
+      if ((this.section === 'groupTemplate' || this.section === 'groupTemplate&Characters') && !this.groupTemplateId) {
+        return;
+      }
       let params = {
         category: this.category,
         section: this.section,
@@ -460,6 +471,7 @@ export default {
         regionCode: this.regionCode,
         friendIds: friendIds,
         characterId: this.characterId,
+        groupTemplateId: this.groupTemplateId,
       }
       this.$http({
         url: `/talk/pageQueryTalkList?pageNo=${this.page.pageNo}&pageSize=${this.page.pageSize}`,
@@ -762,14 +774,6 @@ export default {
         }
       }
     },
-    characterId: {
-      handler(newCharacterId, oldCharacterId) {
-        console.log("newCharacterId", newCharacterId);
-        if (newCharacterId !== oldCharacterId) {
-          this.refreshTalkList();
-        }
-      }
-    }
   }
 }
 </script>

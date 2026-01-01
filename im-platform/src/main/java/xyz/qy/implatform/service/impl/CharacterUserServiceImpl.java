@@ -27,7 +27,7 @@ public class CharacterUserServiceImpl extends ServiceImpl<CharacterUserMapper, C
     private ITemplateCharacterService templateCharacterService;
 
     @Override
-    public List<Long> getUserIdListByCharacterId(List<Long> characterIds) {
+    public List<Long> getUserIdListByCharacterIds(List<Long> characterIds) {
         List<CharacterUser> characterUsers = this.lambdaQuery()
                 .in(CharacterUser::getCharacterId, characterIds)
                 .eq(CharacterUser::getDeleted, false)

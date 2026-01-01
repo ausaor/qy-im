@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ICharacterUserService extends IService<CharacterUser> {
 
-    List<Long> getUserIdListByCharacterId(List<Long> characterIds);
+    List<Long> getUserIdListByCharacterIds(List<Long> characterIds);
 
     void bindCharacterUser(CharacterUserBindDTO dto);
 

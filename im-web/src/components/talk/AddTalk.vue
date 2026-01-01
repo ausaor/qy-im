@@ -74,12 +74,12 @@
           </div>
         </div>
       </el-form-item>
-      <el-form-item label="角色选择：" prop="character" label-width="120px" class="form-item">
+      <el-form-item label="角色选择：" prop="character" label-width="120px" class="form-item" v-if="!groupTemplateId">
         <span class="character-item" v-on:click="openCharacterChooseDialog">
           <el-avatar :fit="fit" size="medium" icon="el-icon-user-solid" :src="form.avatar">
           </el-avatar>
         </span>
-        <span class="nick-name">{{form.nickName}} <el-button @click="removeCharacter" class="del-btn" v-if="form.characterId" type="danger" icon="el-icon-delete" size="mini" circle></el-button></span>
+        <span class="nick-name">{{form.nickName}} <el-button @click="removeCharacter" class="del-btn" v-if="form.characterId && category!=='character'" type="danger" icon="el-icon-delete" size="mini" circle></el-button></span>
       </el-form-item>
       <el-form-item label="图片|视频|音频：" prop="imgUrl" label-width="120px" class="form-item">
 <!--        <batch-image-upload class="form-content"
@@ -181,6 +181,10 @@ export default {
       type: Number,
       default: null
     },
+    groupTemplateId: {
+      type: Number,
+      default: null
+    }
   },
   data() {
     return {
@@ -366,6 +370,7 @@ export default {
       talkParam.groupId = this.groupId;
       talkParam.regionGroupId = this.regionGroupId;
       talkParam.regionCode = this.regionCode;
+      talkParam.groupTemplateId = this.groupTemplateId;
       //talkParam.imgUrls = this.imageList.map(obj => {return obj.url});
       let el = this.$refs.textareaRef;
       if (!el.innerHTML) {
