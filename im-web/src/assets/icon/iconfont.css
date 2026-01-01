@@ -1,11 +1,11 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4728505 */
-  src: url('iconfont.eot?t=1763864075514'); /* IE9 */
-  src: url('iconfont.eot?t=1763864075514#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1763864075514') format('woff2'),
-       url('iconfont.woff?t=1763864075514') format('woff'),
-       url('iconfont.ttf?t=1763864075514') format('truetype'),
-       url('iconfont.svg?t=1763864075514#iconfont') format('svg');
+  src: url('iconfont.eot?t=1767259285384'); /* IE9 */
+  src: url('iconfont.eot?t=1767259285384#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1767259285384') format('woff2'),
+       url('iconfont.woff?t=1767259285384') format('woff'),
+       url('iconfont.ttf?t=1767259285384') format('truetype'),
+       url('iconfont.svg?t=1767259285384#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,6 +14,18 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-kongjian1:before {
+  content: "\100bd";
+}
+
+.icon-kongjian2:before {
+  content: "\100c0";
+}
+
+.icon-skin:before {
+  content: "\eb79";
 }
 
 .icon-theme:before {

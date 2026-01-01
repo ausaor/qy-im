@@ -524,6 +524,11 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (CollectionUtils.isEmpty(queryDTO.getCharacterIds())) {
                 throw new GlobalException("参数异常");
             }
+            queryDTO.setCharacterIds(queryDTO.getCharacterIds().stream().distinct().collect(Collectors.toList()));
+            List<Long> userIdList = characterUserService.getUserIdListByCharacterIds(queryDTO.getCharacterIds());
+            if (CollectionUtils.isNotEmpty(userIdList)) {
+                dto.setCharacterUserIds(userIdList);
+            }
             talkPage = this.baseMapper.pageQueryCharactersTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();

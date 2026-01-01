@@ -44,6 +44,12 @@
         </div>
         <div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
       </div>
+      <div class="group-space" v-if="!group.quit && group.groupType!==0" @click="openStarSpace">
+        <svg class="icon svg-icon" aria-hidden="true">
+          <use xlink:href="#icon-kongjian2"></use>
+        </svg>
+        <span style="color: #409eff;margin-left: 10px;font-size: 16px;">星空间</span>
+      </div>
       <div class="group-music" @click="openGroupMusic">
         <svg class="icon svg-icon" aria-hidden="true">
           <use xlink:href="#icon-Music"></use>
@@ -230,6 +236,18 @@
         <talk-list ref="talkListRef" :category="'group'" :section="'group'" :group-id="group.id" :new-talk-list="talkList" :new-talk-count="unreadTalkCount"></talk-list>
       </template>
     </drawer>
+    <drawer
+        v-if="starSpaceVisible"
+        :visible="starSpaceVisible"
+        @close="closeStarSpaceDrawer"
+        :width=60>
+      <template v-slot:header>
+        <space-cover :name="spaceName" :show-add="false" @refresh="refreshStarTalkList"></space-cover>
+      </template>
+      <template v-slot:main>
+        <talk-list ref="starTalkListRef" :category="'character'" :section="section" :group-template-id="groupTemplateId" :character-id-list="characterIdList"></talk-list>
+      </template>
+    </drawer>
     <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="group.id"></talk-notify>
     <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="group.id"></music-play>
     <add-group-member
@@ -304,7 +322,12 @@
         }],
         banOperation: "ban",
         banGroupMemberVisible: false,
-        banMembers: []
+        banMembers: [],
+        starSpaceVisible: false,
+        section: null,
+        groupTemplateId: null,
+        spaceName: '星空间',
+        characterIdList: [],
 			}
 		},
 		props: {
@@ -443,11 +466,28 @@
         this.$refs.talkListRef.refreshTalkList();
         this.$store.commit("resetGroupTalk", this.group.id);
       },
+      openStarSpace() {
+        if (this.group.groupType === 1 || this.group.groupType === 4) {
+          this.characterIdList = []
+          this.groupTemplateId = this.group.templateGroupId;
+          this.section = "groupTemplate&Characters"
+          this.spaceName = this.group.name + "•星空间";
+        } else if (this.group.groupType === 2 || this.group.groupType === 3) {
+          this.groupTemplateId = null;
+          this.section = "characters"
+          this.spaceName = "星空间";
+          this.characterIdList = this.groupMembers.map(item => !item.quit && item.templateCharacterId);
+        }
+        this.starSpaceVisible = true;
+      },
       openGroupMusic() {
         this.$refs.musicPlayRef.show();
       },
       closeDrawer() {
         this.groupSpaceVisible = false;
+      },
+      closeStarSpaceDrawer() {
+        this.starSpaceVisible = false;
       },
       handleShowAddTalk() {
         this.$refs.talkListRef.handleShowAddTalk();
@@ -456,6 +496,9 @@
         this.$refs.talkListRef.refreshTalkList();
         this.$store.commit("resetGroupTalk", this.group.id);
         this.$store.commit("resetGroupNotify", this.group.id);
+      },
+      refreshStarTalkList() {
+        this.$refs.starTalkListRef.refreshTalkList();
       },
       showTalkNotify() {
         this.$refs.talkNotifyRef.show();

@@ -259,6 +259,12 @@ export default {
       type: Number,
       default: null
     },
+    characterIdList: {
+      type: Array,
+      default: () => {
+        return []
+      }
+    },
     groupTemplateId: {
       type: Number,
       default: null
@@ -316,7 +322,7 @@ export default {
     }
   },
   created() {
-    if(this.section === 'my-friends' || this.section === 'character' || this.section === 'groupTemplate' || this.section === 'groupTemplate&Characters') {
+    if(this.section === 'my-friends' || this.section === 'character' || this.section === 'groupTemplate' || this.section === 'groupTemplate&Characters' || this.section === 'characters') {
       this.pageQueryTalkList();
     }
   },
@@ -463,6 +469,9 @@ export default {
       if ((this.section === 'groupTemplate' || this.section === 'groupTemplate&Characters') && !this.groupTemplateId) {
         return;
       }
+      if (this.section === 'characters' && !this.characterIdList.length) {
+        return;
+      }
       let params = {
         category: this.category,
         section: this.section,
@@ -472,6 +481,7 @@ export default {
         friendIds: friendIds,
         characterId: this.characterId,
         groupTemplateId: this.groupTemplateId,
+        characterIds: this.characterIdList,
       }
       this.$http({
         url: `/talk/pageQueryTalkList?pageNo=${this.page.pageNo}&pageSize=${this.page.pageSize}`,

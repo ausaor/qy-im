@@ -246,6 +246,14 @@
 									</div>
 									<div v-show="unreadNotifyCount>0" class="unread-text">{{unreadNotifyCount}}</div>
 								</div>
+                <div class="group-function-item" v-if="activeGroup.groupType!==0" @click="openStarSpace">
+                  <div class="function-icon bg-purple">
+                    <svg class="icon svg-icon" aria-hidden="true">
+                      <use xlink:href="#icon-kongjian2"></use>
+                    </svg>
+                  </div>
+                  <div class="function-text">星空间</div>
+                </div>
 								<div class="group-function-item" @click="openGroupMusic">
 									<div class="function-icon bg-green">
 										<svg class="icon svg-icon" aria-hidden="true">
@@ -450,6 +458,18 @@
         <talk-list ref="talkListRef" :category="'group'" :section="'group'" :group-id="activeGroup.id" :new-talk-list="talkList" :new-talk-count="unreadTalkCount"></talk-list>
       </template>
     </drawer>
+    <drawer
+        v-if="starSpaceVisible"
+        :visible="starSpaceVisible"
+        @close="closeStarSpaceDrawer"
+        :width=60>
+      <template v-slot:header>
+        <space-cover :name="spaceName" :show-add="false" @refresh="refreshStarTalkList"></space-cover>
+      </template>
+      <template v-slot:main>
+        <talk-list ref="starTalkListRef" :category="'character'" :section="section" :group-template-id="groupTemplateId" :character-id-list="characterIdList"></talk-list>
+      </template>
+    </drawer>
     <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="activeGroup.id"></talk-notify>
     <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="activeGroup.id"></music-play>
     <group-request-panel ref="groupRequestPanel" :is-owner="isOwner" :join-group-requests="joinGroupRequests" :invite-group-requests="inviteGroupRequests"></group-request-panel>
@@ -561,6 +581,7 @@
         }],
         bannedTime: 1,
         groupSpaceVisible: false,
+        starSpaceVisible: false,
         showType: 0, // 0:不展示；1:新的群聊 2:群组信息
         curGroupRequest: null,
         // 添加编辑状态管理
@@ -572,7 +593,11 @@
         },
         banOperation: "ban",
         banGroupMemberVisible: false,
-        banMembers: []
+        banMembers: [],
+        section: null,
+        groupTemplateId: null,
+        spaceName: '星空间',
+        characterIdList: [],
 			};
 		},
     mounted() {
@@ -1048,6 +1073,20 @@
         this.$refs.talkListRef.refreshTalkList();
         this.$store.commit("resetGroupTalk", this.activeGroup.id);
       },
+      openStarSpace() {
+        if (this.activeGroup.groupType === 1 || this.activeGroup.groupType === 4) {
+          this.characterIdList = []
+          this.groupTemplateId = this.activeGroup.templateGroupId;
+          this.section = "groupTemplate&Characters"
+          this.spaceName = this.activeGroup.name + "•星空间";
+        } else if (this.activeGroup.groupType === 2 || this.activeGroup.groupType === 3) {
+          this.groupTemplateId = null;
+          this.section = "characters"
+          this.spaceName = "星空间";
+          this.characterIdList = this.groupMembers.map(item => !item.quit && item.templateCharacterId);
+        }
+        this.starSpaceVisible = true;
+      },
       openGroupMusic() {
         this.$refs.musicPlayRef.show();
       },
@@ -1057,6 +1096,9 @@
       closeDrawer() {
         this.groupSpaceVisible = false;
       },
+      closeStarSpaceDrawer() {
+        this.starSpaceVisible = false;
+      },
       handleShowAddTalk() {
         this.$refs.talkListRef.handleShowAddTalk();
       },
@@ -1064,6 +1106,9 @@
         this.$refs.talkListRef.refreshTalkList();
         this.$store.commit("resetGroupTalk", this.activeGroup.id);
         this.$store.commit("resetGroupNotify", this.activeGroup.id);
+      },
+      refreshStarTalkList() {
+        this.$refs.starTalkListRef.refreshTalkList();
       },
       showTalkNotify() {
         this.$refs.talkNotifyRef.show();
@@ -1641,6 +1686,10 @@
                 &.bg-blue {
                   //background: linear-gradient(135deg, #4fc3f7, #03a9f4);
                   box-shadow: 0 4px 10px rgba(3, 169, 244, 0.3);
+                }
+
+                &.bg-purple {
+                  box-shadow: 0 4px 10px rgba(171, 71, 188, 0.3);
                 }
 
                 .svg-icon {

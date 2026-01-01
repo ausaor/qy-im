@@ -3,6 +3,7 @@ package xyz.qy.implatform.dto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -48,6 +49,7 @@ public class TalkQueryDTO {
     @ApiModelProperty("角色绑定的用户id")
     private List<Long> characterUserIds;
 
+    @Size(max = 500)
     @ApiModelProperty("角色id列表")
     private List<Long> characterIds;
 }
