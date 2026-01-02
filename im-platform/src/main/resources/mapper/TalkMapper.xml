@@ -196,6 +196,7 @@
                 and g.deleted = 0
             </if>
         </where>
+        order by create_time desc
     </select>
 
     <select id="pageQueryGroupTemplateCharactersTalkList" resultType="xyz.qy.implatform.entity.Talk">
@@ -307,5 +308,6 @@
                 </if>
             </where>
         </if>
+        order by create_time desc
     </select>
 </mapper> 
