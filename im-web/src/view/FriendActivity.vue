@@ -74,6 +74,7 @@ export default {
     },
     handleTabClick(tab, event) {
       this.section = tab.name;
+      this.$refs.talkListRef.refreshTalkList();
     },
     readedTalkNotify() {
       let params = {

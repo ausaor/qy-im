@@ -459,7 +459,6 @@
       </template>
     </drawer>
     <drawer
-        v-if="starSpaceVisible"
         :visible="starSpaceVisible"
         @close="closeStarSpaceDrawer"
         :width=60>
@@ -594,7 +593,7 @@
         banOperation: "ban",
         banGroupMemberVisible: false,
         banMembers: [],
-        section: null,
+        section: '',
         groupTemplateId: null,
         spaceName: '星空间',
         characterIdList: [],
@@ -1086,6 +1085,7 @@
           this.characterIdList = this.groupMembers.map(item => !item.quit && item.templateCharacterId);
         }
         this.starSpaceVisible = true;
+        this.refreshStarTalkList();
       },
       openGroupMusic() {
         this.$refs.musicPlayRef.show();

@@ -74,7 +74,7 @@
                   :zIndex=19
                   :width=50>
                 <template v-slot:header>
-                  <space-cover :name="'地区空间'" @refresh="refreshTalkList" :show-add="false" :show-notify="false"></space-cover>
+                  <space-cover :name="spaceName" @refresh="refreshTalkList" :show-add="false" :show-notify="false"></space-cover>
                 </template>
                 <template v-slot:main>
                   <talk-list ref="talkListRef" :category="'region'" :section="'region'" :region-code="curNode?.code"></talk-list>
@@ -175,6 +175,9 @@ export default {
     },
     loading(){
       return this.regionGroupStore.loadingRegionGroupMsg
+    },
+    spaceName() {
+      return this.curNode && this.curNode.name ? this.curNode.name : "地区空间";
     }
   },
   created() {
@@ -297,22 +300,36 @@ export default {
       } else {
         this.getRegionLngLat(data, node);
       }
+      if (this.regionSpaceVisible) {
+        this.refreshTalkList();
+      }
     },
     getRegionLngLat(data, node) {
       this.$http({
         url: "/region/getRegionLonAndLat?code=" + data.code,
         method: "get",
       }).then((region) => {
-        if(region.longitude, region.latitude) {
+        if(region.longitude && region.latitude) {
           node.data.longitude = region.longitude;
           node.data.latitude = region.latitude;
           this.$refs.GaoDeMap.initAMap(region.longitude, region.latitude);
         }
       })
     },
+    getRegionLngAndLat(region) {
+      this.$http({
+        url: "/region/getRegionLonAndLat?code=" + region.code,
+        method: "get",
+      }).then((data) => {
+        if(data.longitude && data.latitude) {
+          this.$refs.GaoDeMap.initAMap(data.longitude, data.latitude);
+        }
+      })
+    },
     openRegionSpace() {
       if (this.curNode && this.curNode.code) {
         this.regionSpaceVisible = true;
+        this.refreshTalkList();
       } else {
         this.$message.warning('请先选择一个地区');
       }
@@ -349,7 +366,11 @@ export default {
     chooseActivityRegion(region, index) {
       this.activityRegion = region;
       this.regionActiveIndex = index;
-      this.$refs.GaoDeMap.initAMap(region.longitude, region.latitude);
+      if (region.longitude && region.latitude) {
+        this.$refs.GaoDeMap.initAMap(region.longitude, region.latitude);
+      } else {
+        this.getRegionLngAndLat(region);
+      }
     },
     chooseActivityRegionGroup(group, index) {
       this.regionGroupActiveIndex = index;

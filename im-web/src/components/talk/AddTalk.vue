@@ -52,6 +52,28 @@
           </div>
         </div>
       </el-form-item>
+      <el-form-item label="星空间可见：" prop="characterVisible" label-width="120px" class="form-item" v-if="category==='private'">
+        <div style="display: flex">
+          <el-switch
+              style="display: block"
+              v-model="form.characterVisible"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-text="开启"
+              inactive-text="关闭"
+              @change="characterVisibleChange">
+          </el-switch>
+          <div class="tips">
+            <el-popover
+                placement="top-start"
+                width="200"
+                trigger="hover"
+                content="星空间可见需要将可见范围设置成【公开】, 角色信息需要选择绑定的模板角色">
+              <div class="el-icon-question" slot="reference"></div>
+            </el-popover>
+          </div>
+        </div>
+      </el-form-item>
       <el-form-item label="地区空间可见：" prop="regionVisible" label-width="120px" class="form-item" v-if="category==='private'">
         <div style="display: flex">
           <el-switch
@@ -208,8 +230,9 @@ export default {
         characterId: null,
         avatarId: null,
         enableCharacterChoose: true,
-        groupVisible: true,
-        regionVisible: true,
+        groupVisible: false,
+        regionVisible: false,
+        characterVisible: false,
         files: []
       },
       fileList: [],
@@ -577,6 +600,9 @@ export default {
     },
     regionVisibleChange(value) {
       this.form.regionVisible = value;
+    },
+    characterVisibleChange(value) {
+      this.form.characterVisible = value;
     },
     getCharacterDetail() {
       this.$http({

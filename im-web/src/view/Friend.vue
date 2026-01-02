@@ -358,6 +358,7 @@ export default {
     },
     openFriendSpace() {
       this.friendSpaceVisible = true;
+      this.refreshTalkList();
     },
     openFriendMusic() {
       this.$refs.musicPlayRef.show();

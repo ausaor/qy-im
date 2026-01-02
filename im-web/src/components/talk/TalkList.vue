@@ -319,10 +319,11 @@ export default {
       audio: null,
       audioSrc: '',
       playCommentId: null,
+      timer: null
     }
   },
   created() {
-    if(this.section === 'my-friends' || this.section === 'character' || this.section === 'groupTemplate' || this.section === 'groupTemplate&Characters' || this.section === 'characters') {
+    if(this.section === 'my-friends') {
       this.pageQueryTalkList();
     }
   },
@@ -444,9 +445,21 @@ export default {
       this.page.pageNo = 1;
       this.page.totalPage = 0;
       this.talkList = [];
-      this.pageQueryTalkList();
+      // 清除之前的定时器
+      if (this.timer) {
+        clearTimeout(this.timer)
+      }
+
+      // 设置新的定时器
+      this.timer = setTimeout(() => {
+        this.pageQueryTalkList();
+        this.timer = null
+      }, 0) // 使用 0 延迟，确保在下一个事件循环执行
     },
     pageQueryTalkList() {
+      if (!this.section) {
+        return;
+      }
       let friendIds = [];
       if (this.friendId) {
         friendIds.push(this.friendId);
@@ -744,46 +757,14 @@ export default {
     }
   },
   watch: {
-    section: {
-      handler(newSection, oldSection) {
-        console.log("newSection", newSection);
-        if (newSection !== oldSection) {
-          this.refreshTalkList();
-        }
-      }
-    },
-    groupId: {
-      handler(newGroupId, oldGroupId) {
-        console.log("newGroupId", newGroupId);
-        if (newGroupId !== oldGroupId) {
-          this.refreshTalkList();
-        }
-      }
-    },
-    regionGroupId: {
-      handler(newRegionGroupId, oldRegionGroupId) {
-        console.log("newRegionGroupId", newRegionGroupId);
-        if (newRegionGroupId !== oldRegionGroupId) {
-          this.refreshTalkList();
-        }
-      }
-    },
-    friendId: {
-      handler(newFriendId, oldFriendId) {
-        console.log("newFriendId", newFriendId);
-        if (newFriendId && newFriendId !== oldFriendId) {
-          this.refreshTalkList();
-        }
-      }
-    },
-    regionCode: {
-      handler(newRegionCode, oldRegionCode) {
-        console.log("newRegionCode", newRegionCode);
-        if (newRegionCode !== oldRegionCode && this.section === 'region') {
-          this.refreshTalkList();
-        }
-      }
-    },
+    
+  },
+  beforeDestroy() {
+    // 组件销毁时清除定时器
+    if (this.timer) {
+      console.log("TalkList clearTimeout");
+      clearTimeout(this.timer)
+    }
   }
 }
 </script>

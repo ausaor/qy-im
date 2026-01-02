@@ -488,7 +488,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             }
             List<Long> userIdList = characterUserService.getUserIdListByCharacterIds(List.of(queryDTO.getCharacterId()));
             if (CollectionUtils.isNotEmpty(userIdList)) {
-                dto.setCharacterUserIds(userIdList);
+                queryDTO.setCharacterUserIds(userIdList);
             }
 
             talkPage = this.baseMapper.pageQueryCharacterTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
@@ -513,7 +513,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
                 List<Long> userIdList = characterUserService.getUserIdListByCharacterIds(characterIds);
                 if (CollectionUtils.isNotEmpty(userIdList)) {
-                    dto.setCharacterUserIds(userIdList);
+                    queryDTO.setCharacterUserIds(userIdList);
                 }
             }
             talkPage = this.baseMapper.pageQueryGroupTemplateCharactersTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
@@ -527,7 +527,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             queryDTO.setCharacterIds(queryDTO.getCharacterIds().stream().distinct().collect(Collectors.toList()));
             List<Long> userIdList = characterUserService.getUserIdListByCharacterIds(queryDTO.getCharacterIds());
             if (CollectionUtils.isNotEmpty(userIdList)) {
-                dto.setCharacterUserIds(userIdList);
+                queryDTO.setCharacterUserIds(userIdList);
             }
             talkPage = this.baseMapper.pageQueryCharactersTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
             if (ObjectUtil.isNotNull(talkPage)) {

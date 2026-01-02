@@ -369,7 +369,6 @@
       </div>
     </el-dialog>
     <drawer
-        v-if="characterSpaceVisible"
         :visible="characterSpaceVisible"
         @close="closeDrawer"
         :width=60>
@@ -378,7 +377,7 @@
                      @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify"></space-cover>
       </template>
       <template v-slot:main>
-        <talk-list ref="talkListRef" :category="'character'" :section="section" :character-id="characterId" :group-template-id="groupTemplateId"></talk-list>
+        <talk-list ref="talkListRef" :category="'character'" :visible="characterSpaceVisible" :section="section" :character-id="characterId" :group-template-id="groupTemplateId"></talk-list>
       </template>
     </drawer>
   </div>
@@ -440,7 +439,7 @@ export default {
       audio: null,
       audioSrc: '',
       characterSpaceVisible: false,
-      section: 'character',
+      section: '',
       spaceName: '角色空间',
       characterId: null,
       groupTemplateId: null,
@@ -802,6 +801,7 @@ export default {
       this.spaceName = templateCharacter.name + "•星空间";
       this.isOwner = templateCharacter.isOwner;
       this.characterSpaceVisible = true;
+      this.refreshTalkList();
     },
     openGroupTemplateSpaceDialog(groupTemplate) {
       this.characterId = null;
@@ -810,6 +810,7 @@ export default {
       this.spaceName = groupTemplate.groupName + "•星空间";
       this.isOwner = groupTemplate.isOwner;
       this.characterSpaceVisible = true;
+      this.refreshTalkList();
     },
     openGroupTemplateCharactersSpaceDialog(groupTemplate) {
       this.characterId = null;
@@ -817,6 +818,7 @@ export default {
       this.groupTemplateId = groupTemplate.id;
       this.spaceName = groupTemplate.groupName + "•星空间";
       this.characterSpaceVisible = true;
+      this.refreshTalkList();
     },
     openCharacterUserDialog(character) {
       this.curTemplateCharacter = character;
@@ -1066,6 +1068,9 @@ export default {
       return this.characterUsers.some(user => user.userId === userId);
     },
     closeDrawer() {
+      this.section = '';
+      this.characterId = null;
+      this.groupTemplateId = null;
       this.characterSpaceVisible = false;
     },
     refreshTalkList() {

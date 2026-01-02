@@ -160,7 +160,8 @@
             union
             <include refid="taskQueryBase"/> u
             <where>
-                u.user_id in
+                u.character_id = #{queryDTO.characterId}
+                and u.user_id in
                 <foreach collection="queryDTO.characterUserIds" item="userId" index="index" separator="," open="(" close=")">
                     #{userId}
                 </foreach>
@@ -238,6 +239,12 @@
                 <foreach collection="queryDTO.characterUserIds" item="userId" index="index" separator="," open="(" close=")">
                     #{userId}
                 </foreach>
+                <if test="queryDTO.characterIds != null and queryDTO.characterIds.size() > 0">
+                    and u.character_id in
+                    <foreach collection="queryDTO.characterIds" item="characterId" index="index" separator="," open="(" close=")">
+                        #{characterId}
+                    </foreach>
+                </if>
                 <if test="true">
                     and u.category = 'private'
                 </if>
@@ -280,6 +287,12 @@
                 <foreach collection="queryDTO.characterUserIds" item="userId" index="index" separator="," open="(" close=")">
                     #{userId}
                 </foreach>
+                <if test="queryDTO.characterIds != null and queryDTO.characterIds.size() > 0">
+                    and u.character_id in
+                    <foreach collection="queryDTO.characterIds" item="characterId" index="index" separator="," open="(" close=")">
+                        #{characterId}
+                    </foreach>
+                </if>
                 <if test="true">
                     and u.category = 'private'
                 </if>
