@@ -97,7 +97,7 @@
     <el-dialog class="edit-template-character"
                :title="curTemplateGroup.groupName"
                :visible.sync="showEditTemplateCharacterDialog"
-               width="510px"
+               width="540px"
                v-dialogDrag
                :before-close="handleEditTemplateCharacterClose">
       <div class="template-group-avatar">
@@ -151,6 +151,8 @@
                        @click="openCharacterEmoDialog({templateGroup: curTemplateGroup, character: templateCharacter})"></el-button>
             <el-button class="edit-character-space"
                        icon="icon iconfont icon-shejiaotubiao-40" circle size="mini" @click="openCharacterSpaceDialog(templateCharacter)"></el-button>
+            <el-button class="edit-character-user" type="primary" icon="el-icon-user-solid" circle
+                       @click="openCharacterUserDialog(templateCharacter)" size="mini"></el-button>
             <el-button v-if="curTemplateGroup.isOwner" class="delete-button"
                        type="danger" icon="el-icon-delete" circle size="mini"
                        @click="deleteTemplateCharacter(templateCharacter, index)"></el-button>
@@ -309,6 +311,63 @@
         <el-button type="primary" @click="saveEmo" v-if="curTemplateGroup.isOwner">保存</el-button>
       </div>
     </el-dialog>
+    <el-dialog class="edit-character-users"
+               :title="characterUserTitle"
+               :visible.sync="showCharacterUsersDialog"
+               width="600px"
+               :before-close="closeCharacterUsersDialog">
+      <div class="character-users-content">
+        <!-- 已绑定用户列表 -->
+        <div class="bound-users-section">
+          <h3>已绑定用户</h3>
+          <div v-if="characterUsers.length > 0" class="user-list">
+            <div v-for="user in characterUsers" :key="'bound-' + user.userId" class="user-item">
+              <head-image :url="user.headImage" :name="user.userName" :size="40"></head-image>
+              <span class="user-name">{{ user.userName }}</span>
+              <el-button
+                v-if="curTemplateCharacter.isOwner"
+                type="danger"
+                size="mini"
+                @click="unBindCharacterUser(user)">
+                解除
+              </el-button>
+            </div>
+          </div>
+          <div v-else class="empty-state">暂无已绑定用户</div>
+        </div>
+
+        <!-- 搜索用户区域 -->
+        <div class="search-users-section">
+          <h3>添加用户</h3>
+          <div class="search-box">
+            <el-input
+              v-model="userNameParam"
+              placeholder="输入用户名搜索"
+              class="search-input"
+              clearable
+            >
+              <el-button slot="append" icon="el-icon-search" @click="queryUsers"></el-button>
+            </el-input>
+          </div>
+
+          <!-- 搜索结果用户列表 -->
+          <div v-if="userList.length > 0" class="user-list">
+            <div v-for="user in userList" :key="'search-' + user.id" class="user-item">
+              <head-image :url="user.headImage" :name="user.userName" :size="40"></head-image>
+              <span class="user-name">{{ user.userName }}</span>
+              <el-button v-if="curTemplateCharacter.isOwner"
+                type="primary"
+                size="mini"
+                @click="bindCharacterUser(user.id)"
+                :disabled="isUserAlreadyBound(user.id)">
+                {{ isUserAlreadyBound(user.id) ? '已绑定' : '绑定' }}
+              </el-button>
+            </div>
+          </div>
+          <div v-else class="empty-state">暂无搜索结果</div>
+        </div>
+      </div>
+    </el-dialog>
     <drawer
         v-if="characterSpaceVisible"
         :visible="characterSpaceVisible"
@@ -386,6 +445,11 @@ export default {
       characterId: null,
       groupTemplateId: null,
       isOwner: false,
+      characterUsers: [],
+      userList: [],
+      showCharacterUsersDialog: false,
+      userNameParam: '',
+      characterUserTitle: '',
     }
   },
   created() {
@@ -754,6 +818,32 @@ export default {
       this.spaceName = groupTemplate.groupName + "•星空间";
       this.characterSpaceVisible = true;
     },
+    openCharacterUserDialog(character) {
+      this.curTemplateCharacter = character;
+      this.characterUserTitle = character.name + "-绑定用户";
+      this.showCharacterUsersDialog = true;
+      this.queryCharacterUsers(character.id);
+    },
+    queryCharacterUsers(characterId) {
+      this.$http({
+        url: `/characterUser/getCharacterUsers?characterId=${characterId}`,
+        method: 'get'
+      }).then((data) => {
+        this.characterUsers = data;
+      })
+    },
+    queryUsers() {
+      if (!this.userNameParam) {
+        this.$message.warning("请输入用户名");
+        return;
+      }
+      this.$http({
+        url: `/user/findByName?name=${this.userNameParam}`,
+        method: 'get'
+      }).then((data) => {
+        this.userList = data;
+      })
+    },
     queryCharacterWord(param) {
       this.$http({
         url: "/character/word/findCharacterWords",
@@ -780,6 +870,12 @@ export default {
     },
     handleEmoDialogClose() {
       this.showEditEmoDialog = false;
+    },
+    closeCharacterUsersDialog() {
+      this.curTemplateCharacter = {};
+      this.userList = [];
+      this.characterUsers = [];
+      this.showCharacterUsersDialog = false;
     },
     submitWordForm(formName) {
       this.$refs[formName].validate((valid) => {
@@ -924,6 +1020,50 @@ export default {
           });
         })
       }
+    },
+    bindCharacterUser(userId) {
+      // 检查用户是否已经绑定
+      if (this.isUserAlreadyBound(userId)) {
+        this.$message.warning('该用户已绑定到角色');
+        return;
+      }
+      
+      let param = {
+        characterId: this.curTemplateCharacter.id,
+        userIds: [userId],
+      }
+      this.$http({
+        url: "/characterUser/bindCharacterUser",
+        method: 'post',
+        data: param
+      }).then((data) => {
+        this.$message.success('绑定成功');
+        // 重新查询角色用户列表
+        this.queryCharacterUsers(this.curTemplateCharacter.id);
+      }).catch(error => {
+        this.$message.error('绑定失败');
+      });
+    },
+    unBindCharacterUser(characterUser) {
+      let param = {
+        characterId: characterUser.characterId,
+        userIds: [characterUser.userId],
+      }
+      this.$http({
+        url: "/characterUser/unbindCharacterUser",
+        method: 'post',
+        data: param
+      }).then((data) => {
+        this.$message.success('解除成功');
+        // 重新查询角色用户列表
+        this.queryCharacterUsers(this.curTemplateCharacter.id);
+      }).catch(error => {
+        this.$message.error('绑定失败');
+      });
+    },
+    isUserAlreadyBound(userId) {
+      // 检查用户是否已绑定到当前角色
+      return this.characterUsers.some(user => user.userId === userId);
     },
     closeDrawer() {
       this.characterSpaceVisible = false;
@@ -1267,6 +1407,73 @@ export default {
       color: #ce1818;
     }
 
+  }
+}
+
+.edit-character-users {
+  .character-users-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px 0;
+  }
+
+  .bound-users-section,
+  .search-users-section {
+    margin-bottom: 20px;
+  }
+
+  .bound-users-section h3,
+  .search-users-section h3 {
+    margin: 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .search-box {
+    margin: 15px 0;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+
+  .user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .user-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid #ebeef5;
+    border-radius: 4px;
+    background-color: #f5f7fa;
+    transition: all 0.3s;
+
+    &:hover {
+      background-color: #e6f7ff;
+      border-color: #91d5ff;
+    }
+
+    .user-name {
+      margin: 0 15px;
+      flex: 1;
+      color: #333;
+    }
+
+    .el-button {
+      margin-left: auto;
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    color: #909399;
+    font-size: 14px;
+    padding: 20px;
   }
 }
 

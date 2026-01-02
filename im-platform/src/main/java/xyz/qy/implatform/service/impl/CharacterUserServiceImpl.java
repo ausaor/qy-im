@@ -1,30 +1,42 @@
 package xyz.qy.implatform.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.implatform.dto.CharacterUserBindDTO;
 import xyz.qy.implatform.entity.CharacterUser;
 import xyz.qy.implatform.entity.TemplateCharacter;
+import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.mapper.CharacterUserMapper;
 import xyz.qy.implatform.service.ICharacterUserService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
+import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
+import xyz.qy.implatform.vo.CharacterUserVO;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class CharacterUserServiceImpl extends ServiceImpl<CharacterUserMapper, CharacterUser> implements ICharacterUserService {
     @Resource
     private ITemplateCharacterService templateCharacterService;
+
+    @Resource
+    private IUserService userService;
 
     @Override
     public List<Long> getUserIdListByCharacterIds(List<Long> characterIds) {
@@ -34,6 +46,37 @@ public class CharacterUserServiceImpl extends ServiceImpl<CharacterUserMapper, C
                 .select(CharacterUser::getUserId)
                 .list();
         return characterUsers.stream().map(CharacterUser::getUserId).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CharacterUserVO> getCharacterUsersByCharacterId(Long characterId) {
+        List<CharacterUser> characterUsers = this.lambdaQuery()
+                .eq(CharacterUser::getCharacterId, characterId)
+                .eq(CharacterUser::getDeleted, false)
+                .list();
+        if (CollUtil.isEmpty(characterUsers)) {
+            return Collections.emptyList();
+        }
+
+        List<Long> userIds = characterUsers.stream().map(CharacterUser::getUserId).collect(Collectors.toList());
+        List<User> userList = userService.findUserByIds(userIds);
+        // userList根据id分组得到Map<Long, User>
+        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, user -> user));
+
+        return characterUsers.stream().map(characterUser -> {
+            CharacterUserVO vo = new CharacterUserVO();
+            vo.setId(characterUser.getId());
+            vo.setCharacterId(characterUser.getCharacterId());
+            vo.setUserId(characterUser.getUserId());
+            
+            User user = userMap.get(characterUser.getUserId());
+            if (user != null) {
+                vo.setNickName(user.getNickName());
+                vo.setHeadImage(user.getHeadImage());
+                vo.setUserName(user.getUserName());
+            }
+            return vo;
+        }).collect(Collectors.toList());
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -49,12 +92,24 @@ public class CharacterUserServiceImpl extends ServiceImpl<CharacterUserMapper, C
             throw new RuntimeException("无权限操作");
         }
 
+        dto.setUserIds(dto.getUserIds().stream().distinct().collect(Collectors.toList()));
+        
+        // 判断用户是否存在
+        List<User> userList = userService.findUserByIds(dto.getUserIds());
+        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, user -> user));
+
+
         LambdaQueryWrapper<CharacterUser> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(CharacterUser::getCharacterId, dto.getCharacterId());
         wrapper.in(CharacterUser::getUserId, dto.getUserIds());
 
         List<CharacterUser> characterUsers = this.list(wrapper);
         List<CharacterUser> characterUserList = dto.getUserIds().stream().map(userId -> {
+            User user = userMap.get(userId);
+            if (ObjectUtil.isNull(user)) {
+                log.info("用户不存在：{}", userId);
+                throw new RuntimeException("用户不存在:" + userId);
+            }
             Optional<CharacterUser> optional = characterUsers.stream().filter(characterUser -> characterUser.getUserId().equals(userId)).findFirst();
             CharacterUser item = optional.orElseGet(CharacterUser::new);
             item.setCharacterId(dto.getCharacterId());
@@ -83,6 +138,7 @@ public class CharacterUserServiceImpl extends ServiceImpl<CharacterUserMapper, C
         wrapper.eq(CharacterUser::getCharacterId, dto.getCharacterId());
         wrapper.in(CharacterUser::getUserId, dto.getUserIds());
         wrapper.set(CharacterUser::getUpdateBy, session.getUserId());
+        wrapper.set(CharacterUser::getUpdateTime, DateUtil.date());
         wrapper.set(CharacterUser::getDeleted, true);
         this.update(wrapper);
     }
