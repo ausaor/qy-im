@@ -82,7 +82,7 @@
             </svg>
           </div>
           <div class="content-item">
-            <svg class="icon svg-icon" aria-hidden="true">
+            <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterAvatarDialog(item.character)">
               <use xlink:href="#icon-person"></use>
             </svg>
           </div>

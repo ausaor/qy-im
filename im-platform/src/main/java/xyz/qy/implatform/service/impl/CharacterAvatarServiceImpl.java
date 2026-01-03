@@ -11,6 +11,7 @@ import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.CharacterAvatarMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
+import xyz.qy.implatform.service.ICharacterUserService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
@@ -20,9 +21,9 @@ import xyz.qy.implatform.vo.ReviewVO;
 import xyz.qy.implatform.vo.TemplateCharacterVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +38,11 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CharacterAvatarServiceImpl extends ServiceImpl<CharacterAvatarMapper, CharacterAvatar> implements ICharacterAvatarService {
-    @Autowired
+    @Resource
     private ITemplateCharacterService templateCharacterService;
+
+    @Resource
+    private ICharacterUserService characterUserService;
 
     @Override
     public List<CharacterAvatarVO> queryPublishedCharacterAvatarByCharacterId(Long templateCharacterId) {
@@ -83,6 +87,9 @@ public class CharacterAvatarServiceImpl extends ServiceImpl<CharacterAvatarMappe
     public void addOrModifyCharacterAvatars(TemplateCharacterVO templateCharacterVO) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
+        if (ObjectUtil.isNull(templateCharacterVO.getId())) {
+            throw new GlobalException("参数异常");
+        }
 
         Long templateCharacterId = templateCharacterVO.getId();
 
@@ -90,8 +97,10 @@ public class CharacterAvatarServiceImpl extends ServiceImpl<CharacterAvatarMappe
         if (ObjectUtil.isNull(templateCharacter) || templateCharacter.getDeleted()) {
             throw new GlobalException("当前模板人物已被删除");
         }
-        if (!userId.toString().equals(templateCharacter.getCreateBy())) {
-            throw new GlobalException("您不是当前模板人物的创建人");
+        List<Long> myCharacterIds = characterUserService.getMyCharacterIds();
+
+        if (!userId.toString().equals(templateCharacter.getCreateBy()) && !myCharacterIds.contains(templateCharacterId)) {
+            throw new GlobalException("您没有权限");
         }
         if (!ReviewEnum.REVIEWED.getCode().equals(templateCharacter.getStatus())) {
             throw new GlobalException("当前模板人物需审核通过后才能配置人物头像");
@@ -125,8 +134,11 @@ public class CharacterAvatarServiceImpl extends ServiceImpl<CharacterAvatarMappe
         if (ObjectUtil.isNull(templateCharacter) || templateCharacter.getDeleted()) {
             throw new GlobalException("当前模板人物不存在");
         }
-        if (!userId.toString().equals(templateCharacter.getCreateBy())) {
-            throw new GlobalException("您不是当前模板人物创建人");
+
+        List<Long> myCharacterIds = characterUserService.getMyCharacterIds();
+
+        if (!userId.toString().equals(templateCharacter.getCreateBy()) && !myCharacterIds.contains(templateCharacterId)) {
+            throw new GlobalException("您没有权限");
         }
         if (!ReviewEnum.REVIEWED.getCode().equals(templateCharacter.getStatus())) {
             throw new GlobalException("当前模板人物未审核通过");
@@ -159,8 +171,10 @@ public class CharacterAvatarServiceImpl extends ServiceImpl<CharacterAvatarMappe
         if (ObjectUtil.isNull(templateCharacter) || templateCharacter.getDeleted()) {
             throw new GlobalException("当前模板人物不存在");
         }
-        if (!userId.toString().equals(templateCharacter.getCreateBy())) {
-            throw new GlobalException("您不是当前模板人物创建人");
+
+        List<Long> myCharacterIds = characterUserService.getMyCharacterIds();
+        if (!userId.toString().equals(templateCharacter.getCreateBy()) && !myCharacterIds.contains(templateCharacterId)) {
+            throw new GlobalException("您没有权限");
         }
         LambdaQueryWrapper<CharacterAvatar> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CharacterAvatar::getTemplateCharacterId, templateCharacterId);
