@@ -27,6 +27,12 @@ public class CharacterUserController {
         return ResultUtils.success(characterUserService.getCharacterUsersByCharacterId(characterId));
     }
 
+    @ApiOperation("获取我的角色")
+    @GetMapping("/getMyCharacters")
+    public Result getMyCharacters() {
+        return ResultUtils.success(characterUserService.getMyCharacters());
+    }
+
     @ApiOperation("绑定角色用户关系")
     @RequestMapping("/bindCharacterUser")
     public Result bindCharacterUser(@RequestBody @Valid CharacterUserBindDTO dto) {

@@ -13,6 +13,12 @@ public class CharacterUserVO {
     @ApiModelProperty("角色id")
     private Long characterId;
 
+    @ApiModelProperty("角色名称")
+    private String characterName;
+
+    @ApiModelProperty("角色头像")
+    private String characterAvatar;
+
     @ApiModelProperty("用户id")
     private Long userId;
 
@@ -24,4 +30,7 @@ public class CharacterUserVO {
 
     @ApiModelProperty("用户名称")
     private String userName;
+
+    @ApiModelProperty("角色信息")
+    private TemplateCharacterVO character;
 }

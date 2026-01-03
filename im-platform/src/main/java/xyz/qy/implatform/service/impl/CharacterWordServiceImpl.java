@@ -19,6 +19,7 @@ import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.CharacterWordMapper;
+import xyz.qy.implatform.service.ICharacterUserService;
 import xyz.qy.implatform.service.ICharacterWordService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.service.ITemplateGroupService;
@@ -43,6 +44,9 @@ public class CharacterWordServiceImpl extends ServiceImpl<CharacterWordMapper, C
 
     @Resource
     private ITemplateCharacterService templateCharacterService;
+
+    @Resource
+    private ICharacterUserService characterUserService;
     @Override
     public JSONObject findPublishedWordByCharacterId(Long characterId) {
         TemplateCharacter character = characterService.getById(characterId);
@@ -111,8 +115,10 @@ public class CharacterWordServiceImpl extends ServiceImpl<CharacterWordMapper, C
             throw new GlobalException("群聊模板不存在");
         }
 
-        if (!userId.toString().equals(templateGroup.getCreateBy())) {
-            throw new GlobalException("您不是群聊模板创建人");
+        boolean hasAuth = false;
+
+        if (userId.toString().equals(templateGroup.getCreateBy())) {
+            hasAuth = true;
         }
 
         String characterName;
@@ -127,14 +133,19 @@ public class CharacterWordServiceImpl extends ServiceImpl<CharacterWordMapper, C
                 throw new GlobalException("角色不存在");
             }
 
-            if (!userId.toString().equals(templateCharacter.getCreateBy())) {
-                throw new GlobalException("您不是角色创建人");
+            List<Long> myCharacterIds = characterUserService.getMyCharacterIds();
+
+            if (userId.toString().equals(templateCharacter.getCreateBy()) || myCharacterIds.contains(dto.getCharacterId())) {
+                hasAuth = true;
             }
             characterName = templateCharacter.getName();
         } else {
             characterName = templateGroup.getGroupName();
         }
 
+        if (!hasAuth) {
+            throw new GlobalException("您没有权限");
+        }
 
         Long characterId = ObjectUtil.isNotNull(dto.getCharacterId()) ? dto.getCharacterId() : -1;
 
@@ -178,8 +189,9 @@ public class CharacterWordServiceImpl extends ServiceImpl<CharacterWordMapper, C
             throw new GlobalException("群聊模板不存在");
         }
 
-        if (!userId.toString().equals(templateGroup.getCreateBy())) {
-            throw new GlobalException("您不是群聊模板创建人");
+        boolean hasAuth = false;
+        if (userId.toString().equals(templateGroup.getCreateBy())) {
+            hasAuth = true;
         }
 
         // 判断角色是否存在
@@ -194,9 +206,15 @@ public class CharacterWordServiceImpl extends ServiceImpl<CharacterWordMapper, C
                 throw new GlobalException("角色不存在");
             }
 
-            if (!userId.toString().equals(templateCharacter.getCreateBy())) {
-                throw new GlobalException("您不是角色创建人");
+            List<Long> myCharacterIds = characterUserService.getMyCharacterIds();
+
+            if (userId.toString().equals(templateCharacter.getCreateBy()) || myCharacterIds.contains(dto.getCharacterId())) {
+                hasAuth = true;
             }
+        }
+
+        if (!hasAuth) {
+            throw new GlobalException("您没有权限");
         }
 
         Long characterId = ObjectUtil.isNotNull(dto.getCharacterId()) ? dto.getCharacterId() : -1;

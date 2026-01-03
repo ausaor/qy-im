@@ -520,15 +520,11 @@ export default {
       this.fileList = [];
     },
     openCharacterChooseDialog() {
-      if (!this.form.characterId && !this.characterId) {
+      if (this.characterId) {
+        this.selectCharacterAvatarVisible = true;
+      } else {
         this.chooseCharacterDialogVisible = true;
         this.queryTemplateGroup();
-      } else {
-        if (this.characterId) {
-          this.selectCharacterAvatarVisible = true;
-        } else {
-          this.$message.warning("已存在角色");
-        }
       }
     },
     closeChooseCharacterDialog() {
@@ -573,6 +569,7 @@ export default {
         this.form.nickName = data.templateCharacter.name;
         this.form.avatar = data.templateCharacter.avatar;
         this.form.characterId = data.templateCharacter.id;
+        this.form.avatarId = null;
       }
 
       this.closeChooseCharacterDialog();

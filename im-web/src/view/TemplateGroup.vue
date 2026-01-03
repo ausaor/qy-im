@@ -10,9 +10,11 @@
         </el-tab-pane>
         <el-tab-pane label="全部群聊模板" name="allTemplateGroup">
         </el-tab-pane>
+        <el-tab-pane label="我的绑定角色" name="myCharacters">
+        </el-tab-pane>
       </el-tabs>
     </div>
-    <div class="template-group-list">
+    <div class="template-group-list" v-show="activeTab === 'templateGroup' || activeTab === 'allTemplateGroup'">
       <el-card shadow="always" class="box-card" v-for="(templateGroup,index) in templateGroups" :key="index">
         <div slot="header" class="header">
           <span>{{ templateGroup.groupName }}</span>
@@ -56,6 +58,41 @@
           </div>
         </div>
       </el-card>
+    </div>
+    <div class="my-characters" v-show="activeTab === 'myCharacters'">
+      <div class="character-item" v-for="(item,index) in myCharacters" :key="index">
+        <div class="character-avatar">
+          <head-image :name="item.characterName" :url="item.characterAvatar" :size="60"></head-image>
+          <div class="character-name">{{ item.characterName }}</div>
+        </div>
+        <div class="character-content">
+          <div class="content-item" @click="openCharacterSpaceDialog(item.character)">
+            <svg class="icon svg-icon" aria-hidden="true">
+              <use xlink:href="#icon-kongjian2"></use>
+            </svg>
+          </div>
+          <div class="content-item">
+            <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterWordDialog({templateGroup: {id: item.character.templateGroupId}, character: item.character })">
+              <use xlink:href="#icon-minganci"></use>
+            </svg>
+          </div>
+          <div class="content-item" @click="openCharacterEmoDialog({templateGroup: {id: item.character.templateGroupId}, character: item.character })">
+            <svg class="icon svg-icon" aria-hidden="true">
+              <use xlink:href="#icon-biaoqing"></use>
+            </svg>
+          </div>
+          <div class="content-item">
+            <svg class="icon svg-icon" aria-hidden="true">
+              <use xlink:href="#icon-person"></use>
+            </svg>
+          </div>
+          <div class="content-item">
+            <svg class="icon svg-icon" aria-hidden="true">
+              <use xlink:href="#icon-Music"></use>
+            </svg>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="page-box" v-show="activeTab === 'allTemplateGroup'">
       <el-button class="previous"
@@ -258,9 +295,9 @@
               :key="item.id || item.tempId"
               :rules="{required: true, message: '台词不能为空', trigger: 'blur'}"
           >
-            <el-input v-model="item.word" :minlength="1" :maxlength="50" :show-word-limit="true" :clearable="true" :disabled="!curTemplateGroup.isOwner"></el-input>
+            <el-input v-model="item.word" :minlength="1" :maxlength="50" :show-word-limit="true" :clearable="true" :disabled="!curTemplateGroup.isOwner && !curTemplateCharacter.isOwner"></el-input>
             <el-button class="voice" v-if="item.voice" icon="el-icon-mic" circle style="color: orange;margin-left: 8px;position: relative;" @click="playWordVoice(item.voice)">
-              <i v-if="curTemplateGroup.isOwner" @click.stop="onDeleteVoice(index)" class="btn-remove el-icon-error"></i>
+              <i v-if="curTemplateGroup.isOwner || curTemplateCharacter.isOwner" @click.stop="onDeleteVoice(index)" class="btn-remove el-icon-error"></i>
             </el-button>
             <file-upload v-else class="voice-uploader" :action="audioAction"
                          :showLoading="true" :maxSize="maxSize" @success="onUploadVoiceSuccess"
@@ -273,16 +310,16 @@
               <el-tag v-if="item.status==='1'" effect="dark" size="mini" type="warning">审核中</el-tag>
               <el-tag v-if="item.status==='0'" effect="dark" size="mini" type="info">待发布</el-tag>
             </div>
-            <el-button v-if="curTemplateGroup.isOwner" :type="activeWordIndex === index ? 'success' : ''" icon="el-icon-check" circle
+            <el-button v-if="curTemplateGroup.isOwner || curTemplateCharacter.isOwner" :type="activeWordIndex === index ? 'success' : ''" icon="el-icon-check" circle
                        style="margin-left: 8px;" @click="chooseWord(index)"></el-button>
           </el-form-item>
         </el-form>
       </el-scrollbar>
       <div slot="footer" class="dialog-footer">
-        <el-button type="danger"  @click.prevent="removeWord" v-if="curTemplateGroup.isOwner">删除</el-button>
-        <el-button type="primary" @click="submitWordForm('dynamicValidateForm')" v-if="curTemplateGroup.isOwner">提交</el-button>
-        <el-button type="success" @click="publishWord" v-if="curTemplateGroup.isOwner">发布</el-button>
-        <el-button @click="addWord" v-if="curTemplateGroup.isOwner">新增</el-button>
+        <el-button type="danger"  @click.prevent="removeWord" v-if="curTemplateGroup.isOwner || curTemplateCharacter.isOwner">删除</el-button>
+        <el-button type="primary" @click="submitWordForm('dynamicValidateForm')" v-if="curTemplateGroup.isOwner || curTemplateCharacter.isOwner">提交</el-button>
+        <el-button type="success" @click="publishWord" v-if="curTemplateGroup.isOwner || curTemplateCharacter.isOwner">发布</el-button>
+        <el-button @click="addWord" v-if="curTemplateGroup.isOwner || curTemplateCharacter.isOwner">新增</el-button>
       </div>
     </el-dialog>
     <el-dialog class="edit-character-emo"
@@ -291,7 +328,7 @@
                width="600px"
                :before-close="handleEmoDialogClose">
       <div style="height:500px;" class="character-emo-box">
-        <div v-if="curTemplateGroup.isOwner" class="upload-emo">
+        <div v-if="curTemplateGroup.isOwner || curTemplateCharacter.isOwner" class="upload-emo">
           <batch-file-upload class="emo-uploader"
                              :action="imageAction"
                              :showLoading="true"
@@ -308,7 +345,7 @@
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="saveEmo" v-if="curTemplateGroup.isOwner">保存</el-button>
+        <el-button type="primary" @click="saveEmo" v-if="curTemplateGroup.isOwner || curTemplateCharacter.isOwner">保存</el-button>
       </div>
     </el-dialog>
     <el-dialog class="edit-character-users"
@@ -449,6 +486,7 @@ export default {
       showCharacterUsersDialog: false,
       userNameParam: '',
       characterUserTitle: '',
+      myCharacters: [],
     }
   },
   created() {
@@ -753,7 +791,18 @@ export default {
         this.activeTab = 'allTemplateGroup';
         this.page.pageNo = 1;
         this.queryAllTemplateGroups();
+      } else if (tab.name === 'myCharacters') {
+        this.activeTab = 'myCharacters';
+        this.queryMyCharacters();
       }
+    },
+    queryMyCharacters() {
+      this.$http({
+        url: "/characterUser/getMyCharacters",
+        method: 'get'
+      }).then((data) => {
+        this.myCharacters = data;
+      });
     },
     prePageTemplateGroup() {
       if (this.page.pageNo === 1) {
@@ -795,6 +844,10 @@ export default {
       this.queryCharacterEmo(param);
     },
     openCharacterSpaceDialog(templateCharacter) {
+      if (!templateCharacter) {
+        this.$message.warning('角色信息为空');
+        return
+      }
       this.groupTemplateId = null;
       this.section = "character";
       this.characterId = templateCharacter.id;
@@ -1145,6 +1198,64 @@ export default {
       float: left;
       display: inline-block;
       width: 240px;
+    }
+  }
+}
+
+.my-characters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+  padding: 20px;
+
+  .character-item {
+    padding: 10px;
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .character-avatar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+
+      .character-name {
+        text-align: center;
+        font-size: 14px;
+        font-weight: 500;
+        word-break: break-all;
+        max-width: 100%;
+      }
+    }
+
+    .character-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(30%, 1fr));
+      gap: 5px;
+      justify-content: center;
+      width: 100%;
+      margin-top: 10px;
+
+      .content-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .icon {
+        display: block;
+        height: 25px;
+        width: 25px;
+        line-height: 25px;
+      }
     }
   }
 }

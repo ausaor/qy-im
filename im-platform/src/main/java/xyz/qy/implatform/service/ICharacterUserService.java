@@ -13,6 +13,10 @@ public interface ICharacterUserService extends IService<CharacterUser> {
 
     List<CharacterUserVO> getCharacterUsersByCharacterId(Long characterId);
 
+    List<CharacterUserVO> getMyCharacters();
+
+    List<Long> getMyCharacterIds();
+
     void bindCharacterUser(CharacterUserBindDTO dto);
 
     void unbindCharacterUser(CharacterUserBindDTO dto);

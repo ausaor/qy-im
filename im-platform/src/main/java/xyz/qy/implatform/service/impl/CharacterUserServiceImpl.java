@@ -20,7 +20,9 @@ import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
+import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.vo.CharacterUserVO;
+import xyz.qy.implatform.vo.TemplateCharacterVO;
 
 import javax.annotation.Resource;
 import java.util.Collections;
@@ -77,6 +79,53 @@ public class CharacterUserServiceImpl extends ServiceImpl<CharacterUserMapper, C
             }
             return vo;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CharacterUserVO> getMyCharacters() {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        List<CharacterUser> characterUsers = this.lambdaQuery()
+                .eq(CharacterUser::getUserId, userId)
+                .eq(CharacterUser::getDeleted, false)
+                .list();
+        if (CollUtil.isEmpty(characterUsers)) {
+            return Collections.emptyList();
+        }
+        List<Long> characterIds = characterUsers.stream().map(CharacterUser::getCharacterId).collect(Collectors.toList());
+        List<TemplateCharacter> templateCharacterList = templateCharacterService.findPublishedByCharacterIds(characterIds);
+        // templateCharacterList根据id分组得到Map<Long, TemplateCharacter>
+        Map<Long, TemplateCharacter> characterMap = templateCharacterList.stream().collect(Collectors.toMap(TemplateCharacter::getId, character -> character));
+        return characterUsers.stream().map(characterUser -> {
+            CharacterUserVO vo = new CharacterUserVO();
+            vo.setId(characterUser.getId());
+            vo.setCharacterId(characterUser.getCharacterId());
+            vo.setUserId(characterUser.getUserId());
+            TemplateCharacter character = characterMap.get(characterUser.getCharacterId());
+            if (character != null) {
+                vo.setCharacterName(character.getName());
+                vo.setCharacterAvatar(character.getAvatar());
+                TemplateCharacterVO templateCharacterVO = BeanUtils.copyProperties(character, TemplateCharacterVO.class);
+                assert templateCharacterVO != null;
+                templateCharacterVO.setIsOwner(true);
+                vo.setCharacter(templateCharacterVO);
+            }
+            return vo;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Long> getMyCharacterIds() {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        List<CharacterUser> characterUsers = this.lambdaQuery()
+                .eq(CharacterUser::getUserId, userId)
+                .eq(CharacterUser::getDeleted, false)
+                .list();
+        if (CollUtil.isEmpty(characterUsers)) {
+            return Collections.emptyList();
+        }
+        return characterUsers.stream().map(CharacterUser::getCharacterId).collect(Collectors.toList());
     }
 
     @Transactional(rollbackFor = Exception.class)

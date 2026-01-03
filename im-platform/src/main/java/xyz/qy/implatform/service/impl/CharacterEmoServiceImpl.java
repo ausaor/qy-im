@@ -19,6 +19,7 @@ import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.CharacterEmoMapper;
 import xyz.qy.implatform.service.ICharacterEmoService;
+import xyz.qy.implatform.service.ICharacterUserService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.service.ITemplateGroupService;
 import xyz.qy.implatform.session.SessionContext;
@@ -41,6 +42,9 @@ public class CharacterEmoServiceImpl extends ServiceImpl<CharacterEmoMapper, Cha
 
     @Resource
     private ITemplateCharacterService templateCharacterService;
+
+    @Resource
+    private ICharacterUserService characterUserService;
 
     @Override
     public JSONObject findPublishedEmoByCharacterId(Long characterId) {
@@ -123,8 +127,9 @@ public class CharacterEmoServiceImpl extends ServiceImpl<CharacterEmoMapper, Cha
             throw new GlobalException("群聊模板不存在");
         }
 
-        if (!userId.toString().equals(templateGroup.getCreateBy())) {
-            throw new GlobalException("您不是群聊模板创建人");
+        boolean hasAuth = false;
+        if (userId.toString().equals(templateGroup.getCreateBy())) {
+            hasAuth = true;
         }
 
         String characterName;
@@ -139,12 +144,17 @@ public class CharacterEmoServiceImpl extends ServiceImpl<CharacterEmoMapper, Cha
                 throw new GlobalException("角色不存在");
             }
 
-            if (!userId.toString().equals(templateCharacter.getCreateBy())) {
-                throw new GlobalException("您不是角色创建人");
+            List<Long> myCharacterIds = characterUserService.getMyCharacterIds();
+
+            if (userId.toString().equals(templateCharacter.getCreateBy()) || myCharacterIds.contains(dto.getCharacterId())) {
+                hasAuth = true;
             }
             characterName = templateCharacter.getName();
         } else {
             characterName = templateGroup.getGroupName();
+        }
+        if (!hasAuth) {
+            throw new GlobalException("您没有权限");
         }
 
 
