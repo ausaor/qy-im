@@ -329,7 +329,10 @@ export default {
     openRegionSpace() {
       if (this.curNode && this.curNode.code) {
         this.regionSpaceVisible = true;
-        this.refreshTalkList();
+        // 使用 $nextTick 确保所有 props 已更新到子组件
+        this.$nextTick(() => {
+          this.refreshTalkList();
+        })
       } else {
         this.$message.warning('请先选择一个地区');
       }

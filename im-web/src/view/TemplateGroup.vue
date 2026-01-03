@@ -414,7 +414,7 @@
                      @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify"></space-cover>
       </template>
       <template v-slot:main>
-        <talk-list ref="talkListRef" :category="'character'" :visible="characterSpaceVisible" :section="section" :character-id="characterId" :group-template-id="groupTemplateId"></talk-list>
+        <talk-list ref="talkListRef" :category="'character'" :section="section" :character-id="characterId" :group-template-id="groupTemplateId"></talk-list>
       </template>
     </drawer>
   </div>
@@ -854,7 +854,10 @@ export default {
       this.spaceName = templateCharacter.name + "•星空间";
       this.isOwner = templateCharacter.isOwner;
       this.characterSpaceVisible = true;
-      this.refreshTalkList();
+      // 使用 $nextTick 确保所有 props 已更新到子组件
+      this.$nextTick(() => {
+        this.refreshTalkList();
+      })
     },
     openGroupTemplateSpaceDialog(groupTemplate) {
       this.characterId = null;
@@ -863,7 +866,10 @@ export default {
       this.spaceName = groupTemplate.groupName + "•星空间";
       this.isOwner = groupTemplate.isOwner;
       this.characterSpaceVisible = true;
-      this.refreshTalkList();
+      // 使用 $nextTick 确保所有 props 已更新到子组件
+      this.$nextTick(() => {
+        this.refreshTalkList();
+      })
     },
     openGroupTemplateCharactersSpaceDialog(groupTemplate) {
       this.characterId = null;
@@ -871,7 +877,10 @@ export default {
       this.groupTemplateId = groupTemplate.id;
       this.spaceName = groupTemplate.groupName + "•星空间";
       this.characterSpaceVisible = true;
-      this.refreshTalkList();
+      // 使用 $nextTick 确保所有 props 已更新到子组件
+      this.$nextTick(() => {
+        this.refreshTalkList();
+      })
     },
     openCharacterUserDialog(character) {
       this.curTemplateCharacter = character;

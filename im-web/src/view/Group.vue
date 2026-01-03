@@ -1069,7 +1069,10 @@
       },
       openGroupSpace() {
         this.groupSpaceVisible = true;
-        this.$refs.talkListRef.refreshTalkList();
+        // 使用 $nextTick 确保所有 props 已更新到子组件
+        this.$nextTick(() => {
+          this.$refs.talkListRef.refreshTalkList();
+        })
         this.$store.commit("resetGroupTalk", this.activeGroup.id);
       },
       openStarSpace() {
@@ -1085,7 +1088,10 @@
           this.characterIdList = this.groupMembers.map(item => !item.quit && item.templateCharacterId);
         }
         this.starSpaceVisible = true;
-        this.refreshStarTalkList();
+        // 使用 $nextTick 确保所有 props 已更新到子组件
+        this.$nextTick(() => {
+          this.refreshStarTalkList();
+        })
       },
       openGroupMusic() {
         this.$refs.musicPlayRef.show();

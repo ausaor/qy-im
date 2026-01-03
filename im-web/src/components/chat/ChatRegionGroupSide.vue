@@ -418,7 +418,10 @@ export default {
     openRegionSpace() {
       this.regionSpaceVisible = true;
       this.$store.commit("resetRegionTalk", this.regionGroup.code);
-      this.$refs.talkListRef.refreshTalkList();
+      // 使用 $nextTick 确保所有 props 已更新到子组件
+      this.$nextTick(() => {
+        this.$refs.talkListRef.refreshTalkList();
+      })
     },
     openRegionMusic() {
       this.$refs.musicPlayRef.show();

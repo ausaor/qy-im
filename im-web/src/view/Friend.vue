@@ -358,7 +358,10 @@ export default {
     },
     openFriendSpace() {
       this.friendSpaceVisible = true;
-      this.refreshTalkList();
+      // 使用 $nextTick 确保所有 props 已更新到子组件
+      this.$nextTick(() => {
+        this.refreshTalkList();
+      })
     },
     openFriendMusic() {
       this.$refs.musicPlayRef.show();
