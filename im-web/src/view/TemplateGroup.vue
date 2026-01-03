@@ -52,7 +52,7 @@
                 <el-tag v-if="templateGroup.status==='3'" effect="dark" size="small" type="danger">未通过</el-tag>
                 <el-tag v-if="templateGroup.status==='2'" effect="dark" size="small" type="success">已发布</el-tag>
                 <el-tag v-if="templateGroup.status==='1'" effect="dark" size="small" type="warning">审核中</el-tag>
-                <el-tag v-if="templateGroup.status==='0'" effect="dark" size="small" type="info">待审批</el-tag>
+                <el-tag v-if="templateGroup.status==='0'" effect="dark" size="small" type="info">编辑中</el-tag>
               </el-descriptions-item>
             </el-descriptions>
           </div>
@@ -262,7 +262,7 @@
               </el-tag>
               <el-tag class="tag" v-if="characterAvatar.status==='1'" effect="dark" size="mini" type="warning">审核中
               </el-tag>
-              <el-tag class="tag" v-if="characterAvatar.status==='0'" effect="dark" size="mini" type="info">待审批
+              <el-tag class="tag" v-if="characterAvatar.status==='0'" effect="dark" size="mini" type="info">编辑中
               </el-tag>
             </div>
             <el-button  v-if="curTemplateCharacter.isOwner" class="delete-button" size="mini"

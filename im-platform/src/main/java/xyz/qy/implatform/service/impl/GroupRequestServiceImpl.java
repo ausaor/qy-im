@@ -475,6 +475,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 member.setRemark(group.getName());
                 member.setAliasName(templateCharacter.get(0).getName());
                 member.setHeadImage(templateCharacter.get(0).getAvatar());
+                member.setTemplateGroupId(templateCharacter.get(0).getTemplateGroupId());
                 member.setTemplateCharacterId(groupRequest.getTemplateCharacterId());
                 member.setIsTemplate(true);
                 member.setCreatedTime(new Date());
@@ -504,6 +505,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 member.setUserId(user.getId());
                 member.setAliasName(templateCharacter.getName());
                 member.setHeadImage(templateCharacter.getAvatar());
+                member.setTemplateGroupId(templateCharacter.getTemplateGroupId());
                 member.setTemplateCharacterId(templateCharacterId);
                 member.setIsTemplate(true);
                 member.setRemark(group.getName());
@@ -546,6 +548,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 member.setUserId(user.getId());
                 member.setAliasName(templateCharacter.getName());
                 member.setHeadImage(templateCharacter.getAvatar());
+                member.setTemplateGroupId(templateCharacter.getTemplateGroupId());
                 member.setTemplateCharacterId(templateCharacterId);
                 member.setIsTemplate(true);
                 member.setRemark(group.getName());
