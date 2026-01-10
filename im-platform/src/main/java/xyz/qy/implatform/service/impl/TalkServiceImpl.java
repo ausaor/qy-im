@@ -39,6 +39,7 @@ import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.ResultCode;
+import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
 import xyz.qy.implatform.enums.ViewScopeEnum;
@@ -384,7 +385,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         Page<Talk> talkPage = null;
 
         // 查询自己和所有好友的
-        if ("my-friends".equals(queryDTO.getSection())) {
+        if (SectionEnum.MY_FRIENDS.getCode().equals(queryDTO.getSection())) {
             dto.setOwnerId(myUserId);
             // 查询获取好友用户id
             List<Long> friendIds = friendService.getFriendIdsByUserId(myUserId);
@@ -393,13 +394,13 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
-        } else if ("my".equals(queryDTO.getSection())) {// 查询自己的
+        } else if (SectionEnum.MY.getCode().equals(queryDTO.getSection())) {// 查询自己的
             dto.setOwnerId(myUserId);
             talkPage = this.baseMapper.pageQueryMyTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), dto);
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
-        } else if ("friends".equals(queryDTO.getSection())) {// 查询所有好友的
+        } else if (SectionEnum.FRIENDS.getCode().equals(queryDTO.getSection())) {// 查询所有好友的
             // 查询获取好友用户id
             List<Long> friendIds = friendService.getFriendIdsByUserId(myUserId);
             if (CollectionUtils.isEmpty(friendIds)) {
@@ -410,7 +411,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
-        } else if ("friend".equals(queryDTO.getSection())) {// 查询单个好友的
+        } else if (SectionEnum.FRIEND.getCode().equals(queryDTO.getSection())) {// 查询单个好友的
             if (CollectionUtils.isEmpty(queryDTO.getFriendIds())) {
                 throw new GlobalException("好友参数异常");
             }
@@ -425,7 +426,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
-        } else if ("group".equals(queryDTO.getSection())) {
+        } else if (SectionEnum.GROUP.getCode().equals(queryDTO.getSection())) {
             if (ObjectUtil.isNull(queryDTO.getGroupId())) {
                 throw new GlobalException("群参数异常");
             }
@@ -445,7 +446,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
-        } else if ("my-region".equals(queryDTO.getSection())) {
+        } else if (SectionEnum.MY_REGION.getCode().equals(queryDTO.getSection())) {
             if (ObjectUtil.isNull(queryDTO.getRegionGroupId())) {
                 throw new GlobalException("地区参数异常");
             }
@@ -467,7 +468,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
-        } else if ("region".equals(queryDTO.getSection())) {
+        } else if (SectionEnum.REGION.getCode().equals(queryDTO.getSection())) {
             if (StringUtils.isBlank(queryDTO.getRegionCode())) {
                 throw new GlobalException("地区参数异常");
             }
@@ -480,7 +481,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
-        } else if ("character".equals(queryDTO.getSection())) {
+        } else if (SectionEnum.CHARACTER.getCode().equals(queryDTO.getSection())) {
             if (ObjectUtil.isNull(queryDTO.getCharacterId())) {
                 throw new GlobalException("角色参数异常");
             }
@@ -493,7 +494,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
-        } else if ("groupTemplate".equals(queryDTO.getSection())) {
+        } else if (SectionEnum.GROUP_TEMPLATE.getCode().equals(queryDTO.getSection())) {
             if (ObjectUtil.isNull(queryDTO.getGroupTemplateId())) {
                 throw new GlobalException("参数异常");
             }
@@ -501,7 +502,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
-        } else if ("groupTemplate&Characters".equals(queryDTO.getSection())) {
+        } else if (SectionEnum.GROUP_TEMPLATE_CHARACTERS.getCode().equals(queryDTO.getSection())) {
             if (ObjectUtil.isNull(queryDTO.getGroupTemplateId())) {
                 throw new GlobalException("参数异常");
             }
@@ -518,7 +519,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
-        } else if ("characters".equals(queryDTO.getSection())) {
+        } else if (SectionEnum.CHARACTERS.getCode().equals(queryDTO.getSection())) {
             if (CollectionUtils.isEmpty(queryDTO.getCharacterIds())) {
                 throw new GlobalException("参数异常");
             }

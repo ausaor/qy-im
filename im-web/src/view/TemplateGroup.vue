@@ -424,6 +424,7 @@
     </drawer>
     <talk-notify ref="talkNotifyRef"
                 :category="'character'"
+                 :section="section"
                 :character-id="characterId"
                 :group-template-id="groupTemplateId"></talk-notify>
   </div>

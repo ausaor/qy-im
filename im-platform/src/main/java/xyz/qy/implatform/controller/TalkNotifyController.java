@@ -34,7 +34,7 @@ public class TalkNotifyController {
 
     @ApiModelProperty(value = "查询动态通知消息", notes = "查询动态通知消息")
     @PostMapping("/pageQueryTalkNotify")
-    public Result pageQueryTalkNotify(@RequestBody TalkNotifyQueryDTO dto) {
+    public Result pageQueryTalkNotify(@RequestBody @Valid TalkNotifyQueryDTO dto) {
         return ResultUtils.success(talkNotifyService.pageQueryTalkNotify(dto));
     }
 }

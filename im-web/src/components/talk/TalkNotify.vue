@@ -117,6 +117,10 @@ export default {
       type: String,
       required: true
     },
+    section: {
+      type: String,
+      default: null
+    },
     groupId: {
       type: Number,
       default: null,
@@ -128,6 +132,12 @@ export default {
     characterId: {
       type: Number,
       default: null,
+    },
+    characterIds: {
+      type: Array,
+      default() {
+        return []
+      }
     },
     groupTemplateId: {
       type: Number,
@@ -160,9 +170,11 @@ export default {
     queryTalkNotify() {
       let params = {
         category: this.category,
+        section: this.section,
         groupId: this.groupId,
         regionCode: this.regionCode,
         characterId: this.characterId,
+        characterIds: this.characterIds,
         groupTemplateId: this.groupTemplateId
       };
 

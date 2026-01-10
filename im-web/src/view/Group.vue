@@ -463,13 +463,14 @@
         @close="closeStarSpaceDrawer"
         :width=60>
       <template v-slot:header>
-        <space-cover :name="spaceName" :show-add="false" @refresh="refreshStarTalkList"></space-cover>
+        <space-cover :name="spaceName" :show-add="false" @refresh="refreshStarTalkList" @showTalkNotify="showStarTalkSpaceNotify"></space-cover>
       </template>
       <template v-slot:main>
         <talk-list ref="starTalkListRef" :category="'character'" :section="section" :group-template-id="groupTemplateId" :character-id-list="characterIdList"></talk-list>
       </template>
     </drawer>
     <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="activeGroup.id"></talk-notify>
+    <talk-notify ref="starTalkNotifyRef" :category="'character'" :section="section" :group-template-id="groupTemplateId" :character-ids="characterIdList"></talk-notify>
     <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="activeGroup.id"></music-play>
     <group-request-panel ref="groupRequestPanel" :is-owner="isOwner" :join-group-requests="joinGroupRequests" :invite-group-requests="inviteGroupRequests"></group-request-panel>
     <template-character-choose :visible="groupRequestChangeCharacterVisible" @close="groupRequestChangeCharacterVisible = false" @confirm="groupRequestChangeCharacterEvent"></template-character-choose>
@@ -528,6 +529,7 @@
 		},
 		data() {
 			return {
+        category: '',
 			  toGroupType: null,// 要切换到的群聊类型
 			  groupType: 0,
 				searchText: "",
@@ -1069,6 +1071,7 @@
       },
       openGroupSpace() {
         this.groupSpaceVisible = true;
+        this.category = "group"
         // 使用 $nextTick 确保所有 props 已更新到子组件
         this.$nextTick(() => {
           this.$refs.talkListRef.refreshTalkList();
@@ -1087,6 +1090,7 @@
           this.spaceName = "星空间";
           this.characterIdList = this.groupMembers.map(item => !item.quit && item.templateCharacterId);
         }
+        this.category = "character"
         this.starSpaceVisible = true;
         // 使用 $nextTick 确保所有 props 已更新到子组件
         this.$nextTick(() => {
@@ -1101,9 +1105,11 @@
       },
       closeDrawer() {
         this.groupSpaceVisible = false;
+        this.category = '';
       },
       closeStarSpaceDrawer() {
         this.starSpaceVisible = false;
+        this.category = '';
       },
       handleShowAddTalk() {
         this.$refs.talkListRef.handleShowAddTalk();
@@ -1122,6 +1128,9 @@
         if (this.unreadNotifyCount > 0) {
           this.readedTalkNotify();
         }
+      },
+      showStarTalkSpaceNotify() {
+        this.$refs.starTalkNotifyRef.show();
       },
       readedTalkNotify() {
         let params = {

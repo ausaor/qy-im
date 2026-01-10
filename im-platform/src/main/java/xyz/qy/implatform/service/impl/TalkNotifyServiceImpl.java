@@ -1,5 +1,6 @@
 package xyz.qy.implatform.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -16,6 +17,7 @@ import xyz.qy.implatform.entity.Talk;
 import xyz.qy.implatform.entity.TalkComment;
 import xyz.qy.implatform.entity.TalkNotify;
 import xyz.qy.implatform.entity.TalkStar;
+import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkNotifyMapper;
@@ -23,6 +25,7 @@ import xyz.qy.implatform.service.ITalkCommentService;
 import xyz.qy.implatform.service.ITalkNotifyService;
 import xyz.qy.implatform.service.ITalkService;
 import xyz.qy.implatform.service.ITalkStarService;
+import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
@@ -58,6 +61,9 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
     @Resource
     private ITalkStarService  talkStarService;
 
+    @Resource
+    private ITemplateCharacterService templateCharacterService;
+
     @Override
     public void readedTalkNotify(TalkNotifyUpdateDTO dto) {
         UserSession session = SessionContext.getSession();
@@ -91,8 +97,19 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
         wrapper.eq(TalkNotify::getCategory, dto.getCategory());
         wrapper.eq(ObjectUtil.isNotNull(dto.getGroupId()), TalkNotify::getGroupId, dto.getGroupId());
         wrapper.eq(StringUtils.isNotBlank(dto.getRegionCode()), TalkNotify::getRegionCode, dto.getRegionCode());
-        wrapper.eq(ObjectUtil.isNotNull(dto.getGroupTemplateId()), TalkNotify::getGroupTemplateId, dto.getGroupTemplateId());
+        if (ObjectUtil.isNotNull(dto.getGroupTemplateId())) {
+            if (SectionEnum.GROUP_TEMPLATE_CHARACTERS.getCode().equals(dto.getSection())) {
+                // 查询群模板下的角色
+                List<Long> characterIds = templateCharacterService.findPublishedCharacterIdsByGroupId(dto.getGroupTemplateId());
+                wrapper.and(wrapper1 -> wrapper1.in(TalkNotify::getCharacterId, characterIds)
+                        .or()
+                        .eq(TalkNotify::getGroupTemplateId, dto.getGroupTemplateId()));
+            } else {
+                wrapper.eq(TalkNotify::getGroupTemplateId, dto.getGroupTemplateId());
+            }
+        }
         wrapper.eq(ObjectUtil.isNotNull(dto.getCharacterId()), TalkNotify::getCharacterId, dto.getCharacterId());
+        wrapper.in(CollUtil.isNotEmpty(dto.getCharacterIds()), TalkNotify::getCharacterId, dto.getCharacterIds());
 
         wrapper.orderByDesc(TalkNotify::getCreateTime);
         Page<TalkNotify> selectPage = this.baseMapper.selectPage(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
