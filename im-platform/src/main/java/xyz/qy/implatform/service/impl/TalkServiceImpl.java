@@ -154,7 +154,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         }
         if (TalkCategoryEnum.CHARACTER.getCode().equals(talkAddDTO.getCategory())
             || (talkAddDTO.getCharacterVisible() && TalkCategoryEnum.PRIVATE.getCode().equals(talkAddDTO.getCategory()))) {
-            checkCharacterUser(talkAddDTO.getCharacterId(), talkAddDTO.getGroupTemplateId(), session.getUserId());
+            checkCharacterUser(talkAddDTO.getCharacterId(), talkAddDTO.getGroupTemplateId(), session.getUserId(), talkAddDTO.getCategory());
         }
 
         if (StringUtils.isBlank(talk.getNickName()) && ObjectUtil.isNull(talkAddDTO.getCharacterId()) && ObjectUtil.isNull(talkAddDTO.getGroupTemplateId())) {
@@ -237,7 +237,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
         if (TalkCategoryEnum.CHARACTER.getCode().equals(talkUpdateDTO.getCategory())
                 || (talkUpdateDTO.getCharacterVisible() && TalkCategoryEnum.PRIVATE.getCode().equals(talkUpdateDTO.getCategory()))) {
-            checkCharacterUser(talkUpdateDTO.getCharacterId(), talkUpdateDTO.getGroupTemplateId(), session.getUserId());
+            checkCharacterUser(talkUpdateDTO.getCharacterId(), talkUpdateDTO.getGroupTemplateId(), session.getUserId(), talk.getCategory());
         }
 
         BeanUtils.copyProperties(talkUpdateDTO, talk);
@@ -260,7 +260,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         this.baseMapper.updateById(talk);
     }
 
-    private void checkCharacterUser(Long characterId, Long groupTemplateId, Long userId) {
+    private void checkCharacterUser(Long characterId, Long groupTemplateId, Long userId, String category) {
         if (ObjectUtil.isNull(characterId) && ObjectUtil.isNull(groupTemplateId)) {
             throw new GlobalException("参数异常");
         }
@@ -274,7 +274,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             }
 
             // 角色的创建者可以发布角色空间动态
-            if (character.getCreateBy().equals(String.valueOf(userId))) {
+            if (character.getCreateBy().equals(String.valueOf(userId)) && TalkCategoryEnum.CHARACTER.getCode().equals(category)) {
                 return;
             }
 
@@ -285,16 +285,14 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (Objects.isNull(characterUser)) {
                 throw new GlobalException("您没有权限发布该角色空间动态");
             }
-        }
-
-        if (ObjectUtil.isNotNull(groupTemplateId)) {
+        } else if (ObjectUtil.isNotNull(groupTemplateId)) {
             TemplateGroup templateGroup = templateGroupService.getById(groupTemplateId);
             if (Objects.isNull(templateGroup)) {
                 throw new GlobalException("群聊模板不存在");
             }
 
             // 群聊模板的创建者可以发布群聊模板动态
-            if (!templateGroup.getCreateBy().equals(String.valueOf(userId))) {
+            if (!templateGroup.getCreateBy().equals(String.valueOf(userId)) || !TalkCategoryEnum.CHARACTER.getCode().equals(category)) {
                 throw new GlobalException("您没有权限发布该群聊模板动态");
             }
         }

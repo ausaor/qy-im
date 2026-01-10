@@ -10,7 +10,9 @@ export default {
         groupsTalks: new Map(),
         regionTalks: new Map(),
         groupNotify: new Map(),
-        regionNotify: new Map()
+        regionNotify: new Map(),
+        characterNotify: new Map(),
+        groupTemplateNotify: new Map(),
     },
     mutations: {
         initTalkInfo(state, talkInfo) {
@@ -119,6 +121,34 @@ export default {
                 state.regionNotify = newMap;
             }
         },
+        addStarSpaceNotifyCount(state, talk) {
+            if (talk.characterId) {
+                const newMap = new Map(state.characterNotify); // 创建副本
+                if (!newMap.has(talk.characterId)) {
+                    newMap.set(talk.characterId, 1);
+                } else {
+                    let count = newMap.get(talk.characterId);
+                    newMap.set(talk.characterId, count + 1);
+                }
+                state.characterNotify = newMap;
+            } else if (talk.groupTemplateId) {
+                const newMap = new Map(state.groupTemplateNotify); // 创建副本
+                if (!newMap.has(talk.groupTemplateId)) {
+                    newMap.set(talk.groupTemplateId, 1);
+                } else {
+                    let count = newMap.get(talk.groupTemplateId);
+                    newMap.set(talk.groupTemplateId, count + 1);
+                }
+                state.groupTemplateNotify = newMap;
+            }
+        },
+        resetGroupTemplateNotify(state, groupTemplateId) {
+            const newMap = new Map(state.groupTemplateNotify);
+            if (newMap.has(groupTemplateId)) {
+                newMap.set(groupTemplateId, 0);
+                state.groupTemplateNotify = newMap;
+            }
+        },
         saveTalkToStorage(state) {
             let userId = userStore.state.userInfo.id;
             let key = "talk-" + userId;
@@ -140,6 +170,9 @@ export default {
     getters: {
         getGroupTalkList: (state, getters) =>  (groupId) => {
             return state.groupsTalks.get(groupId) || [];
+        },
+        getGroupTemplateNotifyCount: (state, getters) => (groupTemplateId) => {
+            return state.groupTemplateNotify.get(groupTemplateId) || 0;
         }
     },
     actions: {

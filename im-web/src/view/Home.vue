@@ -685,7 +685,7 @@
         this.insertSystemMessage(msg);
       },
       handleTalkMessage(msg) {
-        if (msg.type === 1) {
+        if (msg.type === 1) { // 新的动态通知
           if (msg.talk.category === 'private') {
             this.$store.commit("addNewTalk", msg.talk);
           } else if (msg.talk.category === 'group') {
@@ -693,13 +693,15 @@
           } else if (msg.talk.category === 'region') {
             this.$store.commit("addRegionTalk", msg.talk);
           }
-        } else if (msg.type === 2 ||  msg.type === 3) {
+        } else if (msg.type === 2 ||  msg.type === 3) { // 新的评论或点赞通知
           if (msg.talk.category === 'private') {
             this.$store.commit("addNotifyCount", msg);
           } else if (msg.talk.category === 'group') {
             this.$store.commit("addGroupNotifyCount", msg.talk);
           } else if (msg.talk.category === 'region') {
             this.$store.commit("addRegionNotifyCount", msg.talk);
+          } else if (msg.talk.category === 'character') {
+            this.$store.commit("addStarSpaceNotifyCount", msg.talk);
           }
         }
       },

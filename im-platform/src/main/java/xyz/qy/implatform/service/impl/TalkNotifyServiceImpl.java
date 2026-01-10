@@ -91,6 +91,9 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
         wrapper.eq(TalkNotify::getCategory, dto.getCategory());
         wrapper.eq(ObjectUtil.isNotNull(dto.getGroupId()), TalkNotify::getGroupId, dto.getGroupId());
         wrapper.eq(StringUtils.isNotBlank(dto.getRegionCode()), TalkNotify::getRegionCode, dto.getRegionCode());
+        wrapper.eq(ObjectUtil.isNotNull(dto.getGroupTemplateId()), TalkNotify::getGroupTemplateId, dto.getGroupTemplateId());
+        wrapper.eq(ObjectUtil.isNotNull(dto.getCharacterId()), TalkNotify::getCharacterId, dto.getCharacterId());
+
         wrapper.orderByDesc(TalkNotify::getCreateTime);
         Page<TalkNotify> selectPage = this.baseMapper.selectPage(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
 

@@ -57,6 +57,18 @@ public class TalkNotify {
     private String regionCode;
 
     /**
+     * 群模板id
+     */
+    @TableField("group_template_id")
+    private Long groupTemplateId;
+
+    /**
+     * 角色id
+     */
+    @TableField("character_id")
+    private Long characterId;
+
+    /**
      * 提醒类型（1点赞 2评论 3@提及）
      */
     @TableField("action_type")

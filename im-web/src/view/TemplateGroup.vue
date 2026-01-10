@@ -16,29 +16,34 @@
     </div>
     <div class="template-group-list" v-show="activeTab === 'templateGroup' || activeTab === 'allTemplateGroup'">
       <el-card shadow="always" class="box-card" v-for="(templateGroup,index) in templateGroups" :key="index">
-        <div slot="header" class="header">
-          <span>{{ templateGroup.groupName }}</span>
-          <el-button v-if="templateGroup.isOwner" class="operate-button"
-                     type="primary" icon="el-icon-edit" circle size="mini"
-                     @click="editTemplateGroup(templateGroup)"></el-button>
-          <el-button v-if="templateGroup.isOwner" class="operate-button"
-                     type="danger" icon="el-icon-delete" circle size="mini"
-                     @click="deleteTemplateGroup(templateGroup)"></el-button>
-          <el-button class="operate-button"
-                     icon="el-icon-user-solid" circle size="mini"
-                     @click="editTemplateCharacter(templateGroup)"></el-button>
-          <el-button class="operate-button" circle size="mini" icon="icon iconfont icon-minganci"
-                     @click="openCharacterWordDialog({templateGroup: templateGroup})">
-          </el-button>
-          <el-button class="operate-button" circle icon="icon iconfont icon-biaoqing" size="mini"
-                     @click="openCharacterEmoDialog({templateGroup: templateGroup})">
-          </el-button>
-          <el-button class="operate-button template-group-space" circle icon="icon iconfont icon-shejiaotubiao-40" size="mini"
-                     @click="openGroupTemplateSpaceDialog(templateGroup)">
-          </el-button>
-          <el-button class="operate-button template-group-characters-space" circle icon="icon iconfont icon-shejiaotubiao-40" size="mini"
-                     @click="openGroupTemplateCharactersSpaceDialog(templateGroup)">
-          </el-button>
+        <div slot="header" class="header" style="display: flex;justify-content: space-between;">
+          <div>{{ templateGroup.groupName }}</div>
+          <div style="display: flex;justify-content: right;">
+            <el-button v-if="templateGroup.isOwner" class="operate-button"
+                       type="primary" icon="el-icon-edit" circle size="mini"
+                       @click="editTemplateGroup(templateGroup)"></el-button>
+            <el-button v-if="templateGroup.isOwner" class="operate-button"
+                       type="danger" icon="el-icon-delete" circle size="mini"
+                       @click="deleteTemplateGroup(templateGroup)"></el-button>
+            <el-button class="operate-button"
+                       icon="el-icon-user-solid" circle size="mini"
+                       @click="editTemplateCharacter(templateGroup)"></el-button>
+            <el-button class="operate-button" circle size="mini" icon="icon iconfont icon-minganci"
+                       @click="openCharacterWordDialog({templateGroup: templateGroup})">
+            </el-button>
+            <el-button class="operate-button" circle icon="icon iconfont icon-biaoqing" size="mini"
+                       @click="openCharacterEmoDialog({templateGroup: templateGroup})">
+            </el-button>
+            <div style="position: relative;">
+              <div v-if="groupTemplateNotifyCount(templateGroup.id) > 0" class="group-template-notify">{{groupTemplateNotifyCount(templateGroup.id)}}</div>
+              <el-button class="operate-button template-group-space" circle icon="icon iconfont icon-shejiaotubiao-40" size="mini"
+                         @click="openGroupTemplateSpaceDialog(templateGroup)">
+              </el-button>
+            </div>
+            <el-button class="operate-button template-group-characters-space" circle icon="icon iconfont icon-shejiaotubiao-40" size="mini"
+                       @click="openGroupTemplateCharactersSpaceDialog(templateGroup)">
+            </el-button>
+          </div>
         </div>
         <div>
           <head-image class="head-image" :url="templateGroup.avatar" :size="80"></head-image>
@@ -410,13 +415,17 @@
         @close="closeDrawer"
         :width=60>
       <template v-slot:header>
-        <space-cover :name="spaceName" :show-add="section!=='groupTemplate&Characters' && isOwner" :show-notify="section!=='groupTemplate&Characters'"
+        <space-cover :name="spaceName" :show-add="section!=='groupTemplate&Characters' && isOwner"
                      @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify"></space-cover>
       </template>
       <template v-slot:main>
         <talk-list ref="talkListRef" :category="'character'" :section="section" :character-id="characterId" :group-template-id="groupTemplateId"></talk-list>
       </template>
     </drawer>
+    <talk-notify ref="talkNotifyRef"
+                :category="'character'"
+                :character-id="characterId"
+                :group-template-id="groupTemplateId"></talk-notify>
   </div>
 </template>
 
@@ -428,6 +437,7 @@ import TemplateCharacterItem from "@/components/group/TemplateCharacterItem";
 import SpaceCover from "@components/common/SpaceCover.vue";
 import Drawer from "@components/common/Drawer.vue";
 import TalkList from "@components/talk/TalkList.vue";
+import TalkNotify from "@components/talk/TalkNotify.vue";
 
 export default {
   name: "TemplateGroup",
@@ -439,6 +449,7 @@ export default {
     Drawer,
     SpaceCover,
     TalkList,
+    TalkNotify,
   },
   data() {
     return {
@@ -870,6 +881,7 @@ export default {
       this.$nextTick(() => {
         this.refreshTalkList();
       })
+      this.$store.commit("resetGroupTemplateNotify", groupTemplate.id);
     },
     openGroupTemplateCharactersSpaceDialog(groupTemplate) {
       this.characterId = null;
@@ -1142,8 +1154,13 @@ export default {
       this.$refs.talkListRef.handleShowAddTalk();
     },
     showTalkNotify() {
-
-    }
+      this.$nextTick(() => {
+        this.$refs.talkNotifyRef.show();
+      })
+    },
+    groupTemplateNotifyCount(groupTemplateId) {
+      return this.$store.getters.getGroupTemplateNotifyCount(groupTemplateId)
+    },
   },
   computed: {
     imageAction() {
@@ -1179,6 +1196,20 @@ export default {
   .box-card {
 
     .header {
+
+      .group-template-notify {
+        position: absolute;
+        top: -10px;
+        right: 0px;
+        background-color: #f56c6c;
+        color: #fff;
+        border-radius: 30px;
+        padding: 1px 5px;
+        font-size: 10px;
+        text-align: center;
+        white-space: nowrap;
+        border: 1px solid #f1e5e5;
+      }
 
       .operate-button {
         margin: 0 5px;

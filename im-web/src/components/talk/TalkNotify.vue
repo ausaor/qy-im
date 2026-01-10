@@ -124,6 +124,14 @@ export default {
     regionCode: {
       type: String,
       default: null,
+    },
+    characterId: {
+      type: Number,
+      default: null,
+    },
+    groupTemplateId: {
+      type: Number,
+      default: null
     }
   },
   data() {
@@ -153,7 +161,9 @@ export default {
       let params = {
         category: this.category,
         groupId: this.groupId,
-        regionCode: this.regionCode
+        regionCode: this.regionCode,
+        characterId: this.characterId,
+        groupTemplateId: this.groupTemplateId
       };
 
       this.$http({

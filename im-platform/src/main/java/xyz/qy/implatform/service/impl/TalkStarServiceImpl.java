@@ -20,6 +20,7 @@ import xyz.qy.implatform.entity.TalkNotify;
 import xyz.qy.implatform.entity.TalkStar;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkStarMapper;
@@ -149,6 +150,10 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
             talkNotify.setCategory(talk.getCategory());
             talkNotify.setGroupId(talk.getGroupId());
             talkNotify.setRegionCode(talk.getRegionCode());
+            if (TalkCategoryEnum.CHARACTER.getCode().equals(talk.getCategory())) {
+                talkNotify.setCharacterId(talk.getCharacterId());
+                talkNotify.setGroupTemplateId(talk.getGroupTemplateId());
+            }
             talkNotify.setActionType(TalkNotifyActionTypeEnum.LIKE.getCode());
             talkNotify.setCreateTime(LocalDateTime.now());
             talkNotifyService.save(talkNotify);

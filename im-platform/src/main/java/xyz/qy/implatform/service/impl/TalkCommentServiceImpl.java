@@ -19,6 +19,7 @@ import xyz.qy.implatform.entity.TalkComment;
 import xyz.qy.implatform.entity.TalkNotify;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkCommentMapper;
@@ -166,6 +167,10 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
             talkNotify.setCommentId(talkComment.getId());
             talkNotify.setGroupId(talk.getGroupId());
             talkNotify.setRegionCode(talk.getRegionCode());
+            if (TalkCategoryEnum.CHARACTER.getCode().equals(talk.getCategory())) {
+                talkNotify.setCharacterId(talk.getCharacterId());
+                talkNotify.setGroupTemplateId(talk.getGroupTemplateId());
+            }
             talkNotify.setActionType(TalkNotifyActionTypeEnum.COMMENT.getCode());
             talkNotify.setCategory(talk.getCategory());
             talkNotify.setCreateTime(LocalDateTime.now());

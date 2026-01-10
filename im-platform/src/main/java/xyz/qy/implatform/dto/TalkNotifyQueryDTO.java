@@ -14,4 +14,8 @@ public class TalkNotifyQueryDTO {
     private Long groupId;
 
     private String regionCode;
+
+    private Long groupTemplateId;
+
+    private Long characterId;
 }
