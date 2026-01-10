@@ -149,6 +149,13 @@ export default {
                 state.groupTemplateNotify = newMap;
             }
         },
+        resetCharacterNotify(state, characterId) {
+            const newMap = new Map(state.characterNotify);
+            if (newMap.has(characterId)) {
+                newMap.set(characterId, 0);
+                state.characterNotify = newMap;
+            }
+        },
         saveTalkToStorage(state) {
             let userId = userStore.state.userInfo.id;
             let key = "talk-" + userId;
@@ -173,7 +180,10 @@ export default {
         },
         getGroupTemplateNotifyCount: (state, getters) => (groupTemplateId) => {
             return state.groupTemplateNotify.get(groupTemplateId) || 0;
-        }
+        },
+        getCharacterNotifyCount: (state, getters) => (characterId) => {
+            return state.characterNotify.get(characterId) || 0;
+        },
     },
     actions: {
         loadTalkInfo(context) {

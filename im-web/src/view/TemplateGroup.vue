@@ -71,7 +71,8 @@
           <div class="character-name">{{ item.characterName }}</div>
         </div>
         <div class="character-content">
-          <div class="content-item" @click="openCharacterSpaceDialog(item.character)">
+          <div class="content-item" @click="openCharacterSpaceDialog(item.character)" style="position: relative;">
+            <div v-if="characterNotifyCount(item.characterId) > 0" class="my-character-notify">{{characterNotifyCount(item.characterId)}}</div>
             <svg class="icon svg-icon" aria-hidden="true">
               <use xlink:href="#icon-kongjian2"></use>
             </svg>
@@ -191,8 +192,11 @@
                        @click="openCharacterWordDialog({templateGroup: curTemplateGroup, character: templateCharacter})">词</el-button>
             <el-button style="margin-left: 8px;" icon="icon iconfont icon-biaoqing" circle size="mini"
                        @click="openCharacterEmoDialog({templateGroup: curTemplateGroup, character: templateCharacter})"></el-button>
-            <el-button class="edit-character-space"
-                       icon="icon iconfont icon-shejiaotubiao-40" circle size="mini" @click="openCharacterSpaceDialog(templateCharacter)"></el-button>
+            <div style="position: relative;margin-left: 8px;margin-right: 8px;">
+              <div v-if="characterNotifyCount(templateCharacter.id)>0" class="character-notify">{{characterNotifyCount(templateCharacter.id)}}</div>
+              <el-button class="edit-character-space"
+                         icon="icon iconfont icon-shejiaotubiao-40" circle size="mini" @click="openCharacterSpaceDialog(templateCharacter)"></el-button>
+            </div>
             <el-button class="edit-character-user" type="primary" icon="el-icon-user-solid" circle
                        @click="openCharacterUserDialog(templateCharacter)" size="mini"></el-button>
             <el-button v-if="curTemplateGroup.isOwner" class="delete-button"
@@ -870,6 +874,10 @@ export default {
       this.$nextTick(() => {
         this.refreshTalkList();
       })
+      if (this.characterNotifyCount(templateCharacter.id) > 0) {
+        this.readedCharacterTalkNotify(templateCharacter.id);
+      }
+      this.$store.commit("resetCharacterNotify", templateCharacter.id);
     },
     openGroupTemplateSpaceDialog(groupTemplate) {
       this.characterId = null;
@@ -882,6 +890,9 @@ export default {
       this.$nextTick(() => {
         this.refreshTalkList();
       })
+      if (this.groupTemplateNotifyCount(groupTemplate.id) > 0) {
+        this.readedGroupTemplateTalkNotify(groupTemplate.id);
+      }
       this.$store.commit("resetGroupTemplateNotify", groupTemplate.id);
     },
     openGroupTemplateCharactersSpaceDialog(groupTemplate) {
@@ -900,6 +911,28 @@ export default {
       this.characterUserTitle = character.name + "-绑定用户";
       this.showCharacterUsersDialog = true;
       this.queryCharacterUsers(character.id);
+    },
+    readedCharacterTalkNotify(characterId) {
+      let params = {
+        category: 'character',
+        characterId: characterId
+      };
+      this.$http({
+        url: `/talk-notify/readed`,
+        method: 'post',
+        data: params
+      }).then(() => {})
+    },
+    readedGroupTemplateTalkNotify(groupTemplateId) {
+      let params = {
+        category: 'character',
+        groupTemplateId: groupTemplateId
+      };
+      this.$http({
+        url: `/talk-notify/readed`,
+        method: 'post',
+        data: params
+      }).then(() => {})
     },
     queryCharacterUsers(characterId) {
       this.$http({
@@ -1162,6 +1195,9 @@ export default {
     groupTemplateNotifyCount(groupTemplateId) {
       return this.$store.getters.getGroupTemplateNotifyCount(groupTemplateId)
     },
+    characterNotifyCount(characterId) {
+      return this.$store.getters.getCharacterNotifyCount(characterId)
+    }
   },
   computed: {
     imageAction() {
@@ -1289,6 +1325,20 @@ export default {
         display: flex;
         align-items: center;
         justify-content: center;
+
+        .my-character-notify {
+          position: absolute;
+          top: -10px;
+          right: 6px;
+          background-color: #f56c6c;
+          color: #fff;
+          border-radius: 30px;
+          padding: 1px 5px;
+          font-size: 10px;
+          text-align: center;
+          white-space: nowrap;
+          border: 1px solid #f1e5e5;
+        }
       }
 
       .icon {
@@ -1396,6 +1446,20 @@ export default {
 
       .edit-character-avatar {
         margin-left: 8px;
+      }
+
+      .character-notify {
+        position: absolute;
+        top: -8px;
+        right: 0;
+        background-color: #f56c6c;
+        color: #fff;
+        border-radius: 30px;
+        padding: 1px 5px;
+        font-size: 10px;
+        text-align: center;
+        white-space: nowrap;
+        border: 1px solid #f1e5e5;
       }
 
       .delete-button {
