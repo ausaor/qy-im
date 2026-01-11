@@ -420,6 +420,7 @@
     <drawer
         :visible="characterSpaceVisible"
         @close="closeDrawer"
+        :zIndex=3
         :width=60>
       <template v-slot:header>
         <space-cover :name="spaceName" :show-add="section!=='groupTemplate&Characters' && isOwner"
