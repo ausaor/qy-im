@@ -453,29 +453,31 @@ create table im_system_message
 
 create table im_talk
 (
-    id             int auto_increment comment '主键'
+    id                int auto_increment comment '主键'
         primary key,
-    user_id        bigint               not null comment '用户id',
-    character_id   bigint               null comment '角色人物id',
-    avatar_id      bigint               null comment '角色头像id',
-    nick_name      varchar(50)          null comment '用户昵称',
-    avatar         varchar(1000)        null comment '用户头像',
-    content        varchar(200)         not null comment '内容',
-    files          text                 null comment '文件列表',
-    scope          tinyint(1)           not null comment '公布范围（1：私密；2：好友可见；9：公开）',
-    category       varchar(10)          not null comment '分类（private：个人，group：群聊，region：地区）',
-    group_id       bigint               null comment '群聊id',
-    region_code    varchar(50)          null comment '地区编码',
-    group_visible  tinyint(1) default 0 not null comment '群聊空间可见',
-    region_visible tinyint(1) default 0 not null comment '地区空间可见',
-    address        varchar(200)         null comment '发布地址',
-    create_time    datetime             not null comment '创建时间',
-    create_by      bigint               not null comment '创建人',
-    update_time    datetime             null comment '更新时间',
-    update_by      bigint               null comment '更新人',
-    deleted        tinyint(1) default 0 not null comment '是否删除（1：是；0：否）'
+    user_id           bigint               not null comment '用户id',
+    character_id      bigint               null comment '角色人物id',
+    avatar_id         bigint               null comment '角色头像id',
+    nick_name         varchar(50)          not null comment '用户昵称',
+    avatar            varchar(1000)        null comment '用户头像',
+    content           varchar(200)         not null comment '内容',
+    files             text                 null comment '文件列表',
+    scope             tinyint(1)           not null comment '公布范围（1：私密；2：好友可见；9：公开）',
+    category          varchar(10)          not null comment '分类（private：个人，group：群聊，region：地区，character：角色）',
+    group_id          bigint               null comment '群聊id',
+    region_code       varchar(50)          null comment '地区编码',
+    group_template_id bigint               null comment '群聊模板id',
+    group_visible     tinyint(1) default 0 not null comment '群聊空间可见',
+    region_visible    tinyint(1) default 0 not null comment '地区空间可见',
+    character_visible tinyint(1) default 0 not null comment '角色空间可见',
+    address           varchar(200)         null comment '发布地址',
+    create_time       datetime             not null comment '创建时间',
+    create_by         bigint               not null comment '创建人',
+    update_time       datetime             null comment '更新时间',
+    update_by         bigint               null comment '更新人',
+    deleted           tinyint(1) default 0 not null comment '是否删除（1：是；0：否）'
 )
-    comment '说说表';
+    comment '说说表' row_format = DYNAMIC;
 
 create index idx_1
     on im_talk (user_id);
@@ -516,22 +518,24 @@ create index idx_2
 
 create table im_talk_notify
 (
-    id          bigint auto_increment comment '主键'
+    id                bigint auto_increment comment '主键'
         primary key,
-    user_id     bigint               not null comment '接收提醒的用户ID',
-    talk_id     bigint               not null comment '动态id',
-    comment_id  bigint               null comment '评论id',
-    star_id     bigint               null comment '点赞id',
-    action_type tinyint(1)           not null comment '提醒类型（点赞、评论、@提及）',
-    category    varchar(100)         not null comment '分类',
-    group_id    bigint               null comment '群聊id',
-    region_code varchar(50)          null comment '地区编码',
-    is_read     tinyint(1) default 0 not null comment '是否已读',
-    deleted     tinyint(1) default 0 not null comment '删除标识',
-    create_time datetime             not null comment '提醒生成的时间',
-    update_time datetime             null comment '更新时间'
+    user_id           bigint               not null comment '接收提醒的用户ID',
+    talk_id           bigint               not null comment '动态id',
+    comment_id        bigint               null comment '评论id',
+    star_id           bigint               null comment '点赞id',
+    action_type       tinyint(1)           not null comment '提醒类型（点赞、评论、@提及）',
+    category          varchar(100)         not null comment '分类',
+    group_id          bigint               null comment '群聊id',
+    region_code       varchar(50)          null comment '地区编码',
+    group_template_id bigint               null comment '群模板id',
+    character_id      bigint               null comment '角色id',
+    is_read           tinyint(1) default 0 not null comment '是否已读',
+    deleted           tinyint(1) default 0 not null comment '删除标识',
+    create_time       datetime             not null comment '提醒生成的时间',
+    update_time       datetime             null comment '更新时间'
 )
-    comment '朋友圈动态通知表';
+    comment '朋友圈动态通知表' row_format = DYNAMIC;
 
 create index idx_1
     on im_talk_notify (user_id);
