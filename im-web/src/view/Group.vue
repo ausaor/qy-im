@@ -253,6 +253,7 @@
                     </svg>
                   </div>
                   <div class="function-text">星空间</div>
+                  <div v-if="starSpaceNotifyCount > 0" class="unread-text">{{starSpaceNotifyCount}}</div>
                 </div>
 								<div class="group-function-item" @click="openGroupMusic">
 									<div class="function-icon bg-green">
@@ -463,7 +464,7 @@
         @close="closeStarSpaceDrawer"
         :width=60>
       <template v-slot:header>
-        <space-cover :name="spaceName" :show-add="false" @refresh="refreshStarTalkList" @showTalkNotify="showStarTalkSpaceNotify"></space-cover>
+        <space-cover :name="spaceName" :show-add="false" @refresh="refreshStarTalkList" @showTalkNotify="showStarTalkSpaceNotify" :notify-count="starSpaceNotifyCount"></space-cover>
       </template>
       <template v-slot:main>
         <talk-list ref="starTalkListRef" :category="'character'" :section="section" :group-template-id="groupTemplateId" :character-id-list="characterIdList"></talk-list>
@@ -599,6 +600,8 @@
         groupTemplateId: null,
         spaceName: '星空间',
         characterIdList: [],
+        allCharacterIds: new Set(),
+        starSpaceNotifyCount: 0,
 			};
 		},
     mounted() {
@@ -802,13 +805,17 @@
 				this.$http({
 					url: `/group/members/${this.activeGroup.id}`,
 					method: "get"
-				}).then((members) => {
-				  members.forEach((item, index) => {
+				}).then(async (members) => {
+          this.allCharacterIds.clear();
+          members.forEach((item, index) => {
             if (item.userId === this.mine.id) {
               this.myGroupMemberInfo = item;
             }
-				    if (!item.quit) {
-				      this.groupMemberCount += 1;
+            if (!item.quit) {
+              this.groupMemberCount += 1;
+            }
+            if (item.isTemplate) {
+              this.allCharacterIds.add(item.templateCharacterId);
             }
             let friend = this.friends.find((f) => f.id === item.userId);
             if (friend) {
@@ -819,8 +826,14 @@
               }
             }
           })
-					this.groupMembers = members;
-				})
+          this.groupMembers = members;
+          if (this.activeGroup.groupType === 1 || this.activeGroup.groupType === 4) {
+            await this.queryGroupTemplateCharacterIds();
+            this.starSpaceNotifyCount = this.getStarSpaceNotifyCount();
+          } else if (this.activeGroup.groupType === 2 || this.activeGroup.groupType === 3) {
+            this.starSpaceNotifyCount = this.getStarSpaceNotifyCount();
+          }
+        })
 			},
       querySelectableTemplateCharacter() {
         let paramVO = {
@@ -1131,11 +1144,46 @@
       },
       showStarTalkSpaceNotify() {
         this.$refs.starTalkNotifyRef.show();
+        if (this.starSpaceNotifyCount > 0) {
+          if (this.activeGroup.groupType === 1 || this.activeGroup.groupType === 4) {
+            this.readedGroupTemplateTalkNotify(this.activeGroup.templateGroupId);
+            this.readedCharacterTalkNotify([...this.allCharacterIds]);
+            this.$store.commit("resetGroupTemplateNotify", this.activeGroup.templateGroupId);
+            this.$store.commit("resetCharacterListNotify", [...this.allCharacterIds]);
+            this.starSpaceNotifyCount = this.getStarSpaceNotifyCount();
+          } else if (this.activeGroup.groupType === 2 || this.activeGroup.groupType === 3) {
+            this.readedCharacterTalkNotify([...this.allCharacterIds])
+            this.$store.commit("resetCharacterListNotify", [...this.allCharacterIds]);
+            this.starSpaceNotifyCount = this.getStarSpaceNotifyCount();
+          }
+        }
       },
       readedTalkNotify() {
         let params = {
           category: 'group',
           groupId: this.activeGroup.id
+        };
+        this.$http({
+          url: `/talk-notify/readed`,
+          method: 'post',
+          data: params
+        }).then(() => {})
+      },
+      readedCharacterTalkNotify(characterIds) {
+        let params = {
+          category: 'character',
+          characterIds: characterIds
+        };
+        this.$http({
+          url: `/talk-notify/readed`,
+          method: 'post',
+          data: params
+        }).then(() => {})
+      },
+      readedGroupTemplateTalkNotify(groupTemplateId) {
+        let params = {
+          category: 'character',
+          groupTemplateId: groupTemplateId
         };
         this.$http({
           url: `/talk-notify/readed`,
@@ -1194,6 +1242,9 @@
         } else {
           this.unBanMemberMsg(userIds);
         }
+      },
+      getStarSpaceNotifyCount() {
+        return this.$store.getters.getGroupTemplateNotifyCount(this.activeGroup.templateGroupId) + this.$store.getters.getCharactersNotifyCount(this.allCharacterIds.values());
       }
 		},
 		computed: {
@@ -1258,7 +1309,7 @@
       },
       joinGroupRequestCount() {
         return this.joinGroupRequests.length;
-      }
+      },
 		},
 	}
 </script>

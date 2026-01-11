@@ -133,7 +133,7 @@
           <el-aside class="chat-group-side-box" width="300px" v-show="showSide">
             <chat-group-side :group="group" :groupMembers="groupMembers" @reload="loadGroup(group.id)"
                              :myGroupMemberInfo="myGroupMemberInfo"
-                             :friends="friends"
+                             :friends="friends" :all-character-ids.sync="allCharacterIds"
                              @change="modifyMyGroupMember">
             </chat-group-side>
           </el-aside>
@@ -167,7 +167,7 @@
   import VideoPlay  from "../common/VideoPlay.vue";
 
 	export default {
-		name: "chatPrivate",
+		name: "chatBox",
 		components: {
 			ChatMessageItem,
 			FileUpload,
@@ -227,6 +227,7 @@
         isInBottom: false, // 滚动条是否在底部
         newMessageSize: 0, // 滚动条不在底部时新的消息数量
         lastScrollTop: 0,
+        allCharacterIds: new Set(),
 			}
 		},
     created() {
@@ -918,22 +919,31 @@
 					this.group = group;
 					this.$store.commit("updateChatFromGroup", group);
 					this.$store.commit("updateGroup", group);
+          this.loadGroupMembers();
 				});
-
-				this.$http({
-					url: `/group/members/${groupId}`,
-					method: 'get'
-				}).then((groupMembers) => {
-					this.groupMembers = groupMembers;
-
+			},
+      loadGroupMembers() {
+        this.$http({
+          url: `/group/members/${this.group.id}`,
+          method: 'get'
+        }).then((groupMembers) => {
+          this.groupMembers = groupMembers;
+          let characterIdsArr = [];
           this.groupMembersMap = groupMembers.reduce((map, member) => {
+            if (member.isTemplate) {
+              characterIdsArr.push(member.templateCharacterId)
+            }
             map.set(member.userId, member);
             return map;
           }, new Map()); // 初始值为一个空Map
-
+          this.allCharacterIds = new Set(characterIdsArr);
           this.myGroupMemberInfo = this.groupMembersMap.get(this.mine.id);
-				});
-			},
+
+          if (this.group.groupType === 1 || this.group.groupType === 4) {
+            this.queryGroupTemplateCharacterIds();
+          }
+        });
+      },
 			loadFriend(friendId) {
 				// 获取对方最新信息
 				this.$http({
@@ -945,6 +955,19 @@
 					this.$store.commit("updateFriend", friend);
 				})
 			},
+      queryGroupTemplateCharacterIds() {
+        this.$http({
+          url: `/templateCharacter/characterIds?templateGroupId=${this.group.templateGroupId}`,
+          method: 'get',
+        }).then((data) => {
+          // 将数组数据转换为Set，以保持对象的一致性
+          if (Array.isArray(data)) {
+            this.allCharacterIds = new Set(data);
+          } else {
+            this.allCharacterIds = data;
+          }
+        })
+      },
       showInfo(msgInfo) {
         let showInfoObj = {
           showName: "",

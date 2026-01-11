@@ -156,6 +156,15 @@ export default {
                 state.characterNotify = newMap;
             }
         },
+        resetCharacterListNotify(state, characterIds) {
+            characterIds.forEach(characterId => {
+                if (state.characterNotify.has(characterId)) {
+                    const newMap = new Map(state.characterNotify);
+                    newMap.set(characterId, 0);
+                    state.characterNotify = newMap;
+                }
+            });
+        },
         saveTalkToStorage(state) {
             let userId = userStore.state.userInfo.id;
             let key = "talk-" + userId;
@@ -183,6 +192,13 @@ export default {
         },
         getCharacterNotifyCount: (state, getters) => (characterId) => {
             return state.characterNotify.get(characterId) || 0;
+        },
+        getCharactersNotifyCount: (state, getters) => (characterIds) => {
+            let count = 0;
+            characterIds.forEach(characterId => {
+                count += state.characterNotify.get(characterId) || 0;
+            });
+            return count;
         },
     },
     actions: {

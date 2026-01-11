@@ -49,6 +49,7 @@
           <use xlink:href="#icon-kongjian2"></use>
         </svg>
         <span style="color: #409eff;margin-left: 10px;font-size: 16px;">星空间</span>
+        <div v-if="starSpaceNotifyCount>0" class="unread-text">{{starSpaceNotifyCount}}</div>
       </div>
       <div class="group-music" @click="openGroupMusic">
         <svg class="icon svg-icon" aria-hidden="true">
@@ -241,13 +242,14 @@
         @close="closeStarSpaceDrawer"
         :width=60>
       <template v-slot:header>
-        <space-cover :name="spaceName" :show-add="false" @refresh="refreshStarTalkList"></space-cover>
+        <space-cover :name="spaceName" :show-add="false" @refresh="refreshStarTalkList" @showTalkNotify="showStarTalkNotify" :notify-count="starSpaceNotifyCount"></space-cover>
       </template>
       <template v-slot:main>
         <talk-list ref="starTalkListRef" :category="'character'" :section="section" :group-template-id="groupTemplateId" :character-id-list="characterIdList"></talk-list>
       </template>
     </drawer>
     <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="group.id"></talk-notify>
+    <talk-notify ref="starTalkNotifyRef" :category="'character'" :section="section" :group-template-id="groupTemplateId" :character-ids="characterIdList"></talk-notify>
     <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="group.id"></music-play>
     <add-group-member
         :visible="showAddGroupMember"
@@ -323,10 +325,11 @@
         banGroupMemberVisible: false,
         banMembers: [],
         starSpaceVisible: false,
-        section: null,
         groupTemplateId: null,
         spaceName: '星空间',
         characterIdList: [],
+        starSpaceNotifyCount: 0,
+        section: '',
 			}
 		},
 		props: {
@@ -341,7 +344,13 @@
       },
       myGroupMemberInfo: {
         type: Object
-      }
+      },
+      allCharacterIds: {
+        type: Set,
+        default() {
+          return new Set()
+        }
+      },
 		},
 		computed: {
 			displayedGroupMembers() {
@@ -512,10 +521,48 @@
           this.readedTalkNotify();
         }
       },
+      showStarTalkNotify() {
+        this.$refs.starTalkNotifyRef.show();
+        if (this.starSpaceNotifyCount > 0) {
+          if (this.group.groupType === 1 || this.group.groupType === 4) {
+            this.readedGroupTemplateTalkNotify(this.group.templateGroupId);
+            this.readedCharacterTalkNotify([...this.allCharacterIds]);
+            this.$store.commit("resetGroupTemplateNotify", this.group.templateGroupId);
+            this.$store.commit("resetCharacterListNotify", [...this.allCharacterIds]);
+            this.starSpaceNotifyCount = this.getStarSpaceNotifyCount(this.allCharacterIds);
+          } else if (this.group.groupType === 2 || this.group.groupType === 3) {
+            this.readedCharacterTalkNotify([...this.allCharacterIds])
+            this.$store.commit("resetCharacterListNotify", [...this.allCharacterIds]);
+            this.starSpaceNotifyCount = this.getStarSpaceNotifyCount(this.allCharacterIds);
+          }
+        }
+      },
       readedTalkNotify() {
         let params = {
           category: 'group',
           groupId: this.group.id
+        };
+        this.$http({
+          url: `/talk-notify/readed`,
+          method: 'post',
+          data: params
+        }).then(() => {})
+      },
+      readedCharacterTalkNotify(characterIds) {
+        let params = {
+          category: 'character',
+          characterIds: characterIds
+        };
+        this.$http({
+          url: `/talk-notify/readed`,
+          method: 'post',
+          data: params
+        }).then(() => {})
+      },
+      readedGroupTemplateTalkNotify(groupTemplateId) {
+        let params = {
+          category: 'character',
+          groupTemplateId: groupTemplateId
         };
         this.$http({
           url: `/talk-notify/readed`,
@@ -657,6 +704,9 @@
         } else {
           this.unBanMemberMsg(userIds);
         }
+      },
+      getStarSpaceNotifyCount(allCharacterIds) {
+        return this.$store.getters.getGroupTemplateNotifyCount(this.group.templateGroupId) + this.$store.getters.getCharactersNotifyCount(allCharacterIds.values());
       }
 		},
     watch: {
@@ -677,6 +727,11 @@
               }
             }
           })
+        }
+      },
+      allCharacterIds: {
+        handler(newCharacterIds, oldCharacterIds) {
+          this.starSpaceNotifyCount = this.getStarSpaceNotifyCount(newCharacterIds);
         }
       }
     }

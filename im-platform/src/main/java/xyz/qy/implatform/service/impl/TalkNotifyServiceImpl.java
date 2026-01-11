@@ -72,10 +72,13 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
             throw new GlobalException("群聊Id不能为空");
         } else if (TalkCategoryEnum.REGION.getCode().equals(dto.getCategory()) && StringUtils.isBlank(dto.getRegionCode())) {
             throw new GlobalException("地区编码不能为空");
-        } else if (TalkCategoryEnum.CHARACTER.getCode().equals(dto.getCategory()) && ObjectUtil.isNull(dto.getCharacterId()) && ObjectUtil.isNull(dto.getGroupTemplateId())) {
+        } else if (TalkCategoryEnum.CHARACTER.getCode().equals(dto.getCategory())
+                && ObjectUtil.isNull(dto.getCharacterId())
+                && ObjectUtil.isNull(dto.getGroupTemplateId())
+                && CollUtil.isEmpty(dto.getCharacterIds())) {
             throw new GlobalException("角色Id不能为空");
         }
-        if (ObjectUtil.isNotNull(dto.getGroupTemplateId()) && ObjectUtil.isNotNull(dto.getCharacterId())) {
+        if (ObjectUtil.isNotNull(dto.getGroupTemplateId()) && ObjectUtil.isNotNull(dto.getCharacterId()) && CollUtil.isNotEmpty(dto.getCharacterIds())) {
             throw new GlobalException("参数异常");
         }
 
@@ -86,6 +89,7 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
         updateWrapper.eq(ObjectUtil.isNotNull(dto.getGroupId()), TalkNotify::getGroupId, dto.getGroupId());
         updateWrapper.eq(StringUtils.isNotBlank(dto.getRegionCode()), TalkNotify::getRegionCode, dto.getRegionCode());
         updateWrapper.eq(ObjectUtil.isNotNull(dto.getCharacterId()), TalkNotify::getCharacterId, dto.getCharacterId());
+        updateWrapper.in(CollUtil.isNotEmpty(dto.getCharacterIds()), TalkNotify::getCharacterId, dto.getCharacterIds());
         updateWrapper.eq(ObjectUtil.isNotNull(dto.getGroupTemplateId()), TalkNotify::getGroupTemplateId, dto.getGroupTemplateId());
         updateWrapper.set(TalkNotify::getIsRead, true);
         updateWrapper.set(TalkNotify::getUpdateTime, LocalDateTime.now());

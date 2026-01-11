@@ -40,6 +40,12 @@ public class TemplateCharacterController {
         return ResultUtils.success(templateCharacterService.findTemplateCharactersByGroupId(templateGroupId));
     }
 
+    @ApiOperation(value = "查询已发布模板角色id", notes = "查询已发布模板角色id")
+    @GetMapping("/characterIds")
+    public Result<List<Long>> findPublishedCharacterIdsByGroupId(@NotNull(message = "群聊模板id不能为空") Long templateGroupId) {
+        return ResultUtils.success(templateCharacterService.findPublishedCharacterIdsByGroupId(templateGroupId));
+    }
+
     @ApiOperation(value = "查询已发布模板角色", notes = "查询已发布模板角色")
     @GetMapping("/list-published/{templateGroupId}")
     public Result<List<TemplateCharacterVO>> findPublishedByGroupId(@NotNull(message = "模板群聊id不能为空") @PathVariable Long templateGroupId) {

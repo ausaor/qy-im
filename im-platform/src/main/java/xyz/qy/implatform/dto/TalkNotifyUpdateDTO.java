@@ -6,6 +6,7 @@ import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.ValidEnum;
 
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 @Data
 @ApiModel("群聊通知更新DTO")
@@ -21,4 +22,6 @@ public class TalkNotifyUpdateDTO {
     private Long groupTemplateId;
 
     private Long characterId;
+
+    private List<Long> characterIds;
 }

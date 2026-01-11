@@ -237,7 +237,7 @@ export default {
     },
     section: {
       type: String,
-      required: true
+      default: ''
     },
     friendId: {
       type: Number,
