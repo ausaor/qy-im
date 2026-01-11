@@ -108,6 +108,23 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
     }
 
     @Override
+    public void readedAllTalkNotify(TalkNotifyUpdateDTO dto) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        if (!TalkCategoryEnum.CHARACTER.getCode().equals(dto.getCategory())) {
+            throw new GlobalException("参数异常");
+        }
+        LambdaUpdateWrapper<TalkNotify> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(TalkNotify::getUserId, userId);
+        updateWrapper.eq(TalkNotify::getCategory, dto.getCategory());
+        updateWrapper.eq(TalkNotify::getIsRead, false);
+        updateWrapper.set(TalkNotify::getIsRead, true);
+        updateWrapper.set(TalkNotify::getUpdateTime, LocalDateTime.now());
+
+        this.update(updateWrapper);
+    }
+
+    @Override
     public PageResultVO pageQueryTalkNotify(TalkNotifyQueryDTO dto) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();

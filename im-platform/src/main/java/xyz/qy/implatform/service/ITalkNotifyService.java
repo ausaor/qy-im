@@ -10,6 +10,8 @@ public interface ITalkNotifyService extends IService<TalkNotify> {
 
     void readedTalkNotify(TalkNotifyUpdateDTO dto);
 
+    void readedAllTalkNotify(TalkNotifyUpdateDTO dto);
+
     PageResultVO pageQueryTalkNotify(TalkNotifyQueryDTO dto);
 
     void pullOfflineNotify();

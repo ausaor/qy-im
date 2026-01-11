@@ -165,6 +165,10 @@ export default {
                 }
             });
         },
+        resetAllCharacterNotify(state) {
+            state.characterNotify = new Map();
+            state.groupTemplateNotify = new Map();
+        },
         saveTalkToStorage(state) {
             let userId = userStore.state.userInfo.id;
             let key = "talk-" + userId;

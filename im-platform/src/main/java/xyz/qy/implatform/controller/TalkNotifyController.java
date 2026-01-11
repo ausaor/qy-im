@@ -32,6 +32,13 @@ public class TalkNotifyController {
         return ResultUtils.success();
     }
 
+    @ApiOperation(value = "已读动态提醒", notes = "已读动态提醒")
+    @PostMapping("/readedAllTalkNotify")
+    public Result readedAllTalkNotify(@RequestBody @Valid TalkNotifyUpdateDTO dto) {
+        talkNotifyService.readedAllTalkNotify(dto);
+        return ResultUtils.success();
+    }
+
     @ApiOperation(value = "查询动态通知消息", notes = "查询动态通知消息")
     @PostMapping("/pageQueryTalkNotify")
     public Result pageQueryTalkNotify(@RequestBody @Valid TalkNotifyQueryDTO dto) {

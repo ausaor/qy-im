@@ -12,6 +12,9 @@
         </el-tab-pane>
         <el-tab-pane label="我的绑定角色" name="myCharacters">
         </el-tab-pane>
+        <el-tab-pane name="charactersNotify">
+          <span slot="label"><i class="el-icon-chat-dot-round"></i>评论通知<span class="total-characters-notify" v-show="totalCharacterNotifyCount>0">{{totalCharacterNotifyCount}}</span></span>
+        </el-tab-pane>
       </el-tabs>
     </div>
     <div class="template-group-list" v-show="activeTab === 'templateGroup' || activeTab === 'allTemplateGroup'">
@@ -814,6 +817,8 @@ export default {
       } else if (tab.name === 'myCharacters') {
         this.activeTab = 'myCharacters';
         this.queryMyCharacters();
+      } else if (tab.name === 'charactersNotify') {
+        this.showTalkNotify();
       }
     },
     queryMyCharacters() {
@@ -934,6 +939,16 @@ export default {
       };
       this.$http({
         url: `/talk-notify/readed`,
+        method: 'post',
+        data: params
+      }).then(() => {})
+    },
+    readedAllTalkNotify() {
+      let params = {
+        category: 'character',
+      };
+      this.$http({
+        url: `/talk-notify//readedAllTalkNotify`,
         method: 'post',
         data: params
       }).then(() => {})
@@ -1195,6 +1210,10 @@ export default {
       this.$nextTick(() => {
         this.$refs.talkNotifyRef.show();
       })
+      if (this.totalCharacterNotifyCount > 0) {
+        this.readedAllTalkNotify();
+      }
+      this.$store.commit("resetAllCharacterNotify");
     },
     groupTemplateNotifyCount(groupTemplateId) {
       return this.$store.getters.getGroupTemplateNotifyCount(groupTemplateId)
@@ -1215,7 +1234,10 @@ export default {
     },
     isAdmin() {
       return this.$store.state.userStore.userInfo.id === 1;
-    }
+    },
+    totalCharacterNotifyCount() {
+      return this.$store.getters.getTotalCharacterNotifyCount();
+    },
   }
 }
 </script>
@@ -1229,6 +1251,14 @@ export default {
 .tab-box {
   margin-top: 10px;
   margin-left: 10px;
+
+  .total-characters-notify {
+    background-color: #f56c6c;
+    color: #fff;
+    border-radius: 30px;
+    padding: 1px 5px;
+    font-size: 10px;
+  }
 }
 
 .template-group-list {
