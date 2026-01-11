@@ -1,6 +1,6 @@
 package xyz.qy.implatform.controller;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,16 +25,23 @@ public class TalkNotifyController {
     @Resource
     private ITalkNotifyService  talkNotifyService;
 
-    @ApiModelProperty(value = "已读动态提醒", notes = "已读动态提醒")
+    @ApiOperation(value = "已读动态提醒", notes = "已读动态提醒")
     @PostMapping("/readed")
     public Result readedTalkNotify(@RequestBody @Valid TalkNotifyUpdateDTO dto) {
         talkNotifyService.readedTalkNotify(dto);
         return ResultUtils.success();
     }
 
-    @ApiModelProperty(value = "查询动态通知消息", notes = "查询动态通知消息")
+    @ApiOperation(value = "查询动态通知消息", notes = "查询动态通知消息")
     @PostMapping("/pageQueryTalkNotify")
     public Result pageQueryTalkNotify(@RequestBody @Valid TalkNotifyQueryDTO dto) {
         return ResultUtils.success(talkNotifyService.pageQueryTalkNotify(dto));
+    }
+
+    @ApiOperation(value = "拉取未读动态消息通知", notes = "拉取未读动态消息通知")
+    @GetMapping("/pullOfflineNotify")
+    public Result pullOfflineNotify() {
+        talkNotifyService.pullOfflineNotify();
+        return ResultUtils.success();
     }
 }

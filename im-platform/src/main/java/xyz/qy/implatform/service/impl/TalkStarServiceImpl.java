@@ -22,6 +22,7 @@ import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
+import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkStarMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
@@ -159,7 +160,7 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
             talkNotifyService.save(talkNotify);
 
             TalkMessageVO msgInfo = new TalkMessageVO();
-            msgInfo.setType(3);
+            msgInfo.setType(TalkNotifyMsgTypeEnum.STAR.getCode());
             msgInfo.setTalk(talk);
             msgInfo.setTalkStar(talkStar);
 

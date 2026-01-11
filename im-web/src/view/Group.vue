@@ -1137,10 +1137,10 @@
       },
       showTalkNotify() {
         this.$refs.talkNotifyRef.show();
-        this.$store.commit("resetGroupNotify", this.activeGroup.id);
         if (this.unreadNotifyCount > 0) {
           this.readedTalkNotify();
         }
+        this.$store.commit("resetGroupNotify", this.activeGroup.id);
       },
       showStarTalkSpaceNotify() {
         this.$refs.starTalkNotifyRef.show();

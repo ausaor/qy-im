@@ -5,7 +5,7 @@
         <community-item-talk :community="communityList[0]" :active="communityList[0].sort === activeIndex"
                           @click.native="gotoTalkSpace(communityList[0])"></community-item-talk>
         <community-item :community="communityList[1]" :active="communityList[1].sort === activeIndex"
-                        @click.native="handleActiveItem(communityList[1])"></community-item>
+                        @click.native="handleActiveItem(communityList[1])" :notify-count="totalCharacterNotifyCount"></community-item>
         <community-item v-if="isAdmin" :community="communityList[2]" :active="communityList[2].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[2])"></community-item>
         <community-item v-if="isAdmin" :community="communityList[3]" :active="communityList[3].sort === activeIndex"
@@ -82,6 +82,9 @@ export default {
     },
     notifyCount() {
       return this.$store.state.talkStore.notifyCount;
+    },
+    totalCharacterNotifyCount() {
+      return this.$store.getters.getTotalCharacterNotifyCount();
     },
     mine() {
       return this.$store.state.userStore.userInfo;

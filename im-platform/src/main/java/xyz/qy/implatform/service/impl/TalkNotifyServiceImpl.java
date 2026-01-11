@@ -11,6 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import xyz.qy.imclient.IMClient;
+import xyz.qy.imcommon.model.IMTalkMessage;
+import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.dto.TalkNotifyQueryDTO;
 import xyz.qy.implatform.dto.TalkNotifyUpdateDTO;
 import xyz.qy.implatform.entity.Talk;
@@ -19,6 +22,8 @@ import xyz.qy.implatform.entity.TalkNotify;
 import xyz.qy.implatform.entity.TalkStar;
 import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
+import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
+import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkNotifyMapper;
 import xyz.qy.implatform.service.ITalkCommentService;
@@ -32,6 +37,7 @@ import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.TalkCommentVO;
+import xyz.qy.implatform.vo.TalkMessageVO;
 import xyz.qy.implatform.vo.TalkNotifyVO;
 import xyz.qy.implatform.vo.TalkStarVO;
 import xyz.qy.implatform.vo.TalkVO;
@@ -39,6 +45,7 @@ import xyz.qy.implatform.vo.TalkVO;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +70,9 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
 
     @Resource
     private ITemplateCharacterService templateCharacterService;
+
+    @Resource
+    private IMClient imClient;
 
     @Override
     public void readedTalkNotify(TalkNotifyUpdateDTO dto) {
@@ -238,5 +248,60 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
         }
 
         return PageResultVO.builder().data(Collections.emptyList()).total(selectPage.getTotal()).build();
+    }
+
+    @Override
+    public void pullOfflineNotify() {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime minDate = now.minusMonths(6);
+
+        // 获取未读点赞和评论数据数量
+        LambdaQueryWrapper<TalkNotify> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TalkNotify::getUserId, userId);
+        wrapper.eq(TalkNotify::getIsRead, false);
+        wrapper.eq(TalkNotify::getDeleted, false);
+        wrapper.in(TalkNotify::getCategory, Arrays.asList(TalkCategoryEnum.GROUP.getCode(), TalkCategoryEnum.CHARACTER.getCode(), TalkCategoryEnum.REGION.getCode()));
+        wrapper.in(TalkNotify::getActionType, Arrays.asList(TalkNotifyActionTypeEnum.COMMENT.getCode(),  TalkNotifyActionTypeEnum.LIKE.getCode()));
+        wrapper.ge(TalkNotify::getCreateTime, minDate);
+
+        List<TalkNotify> talkNotifyList = this.list(wrapper);
+        if (CollUtil.isEmpty(talkNotifyList)) {
+            return;
+        }
+
+        List<Long> talkIds = talkNotifyList.stream().map(TalkNotify::getTalkId).collect(Collectors.toList());
+        List<Talk> talkList = talkService.lambdaQuery()
+                .eq(Talk::getDeleted, false)
+                .in(Talk::getId, talkIds)
+                .list();
+        Map<Long, Talk> talkMap = talkList.stream().collect(Collectors.toMap(Talk::getId, item -> item));
+
+        TalkMessageVO msgInfo = null;
+        for (TalkNotify talkNotify : talkNotifyList) {
+            Talk talk = talkMap.get(talkNotify.getTalkId());
+            if (ObjectUtil.isNull(talk)) {
+                continue;
+            }
+
+            msgInfo = new TalkMessageVO();
+            if (ObjectUtil.isNotNull(talkNotify.getCommentId())) {
+                msgInfo.setType(TalkNotifyMsgTypeEnum.COMMENT.getCode());
+            } else if (ObjectUtil.isNotNull(talkNotify.getStarId())) {
+                msgInfo.setType(TalkNotifyMsgTypeEnum.STAR.getCode());
+            } else {
+                continue;
+            }
+            msgInfo.setTalk(talk);
+
+            IMTalkMessage<TalkMessageVO> sendMessage = new IMTalkMessage<>();
+            sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+            sendMessage.setRecvIds(Collections.singletonList(userId));
+            sendMessage.setSendResult(false);
+            sendMessage.setData(msgInfo);
+            imClient.sendTalkMessage(sendMessage);
+        }
     }
 }

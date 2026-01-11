@@ -200,6 +200,16 @@ export default {
             });
             return count;
         },
+        getTotalCharacterNotifyCount: (state)  => () => {
+            let count = 0;
+            state.characterNotify.forEach(value => {
+                count += value;
+            });
+            state.groupTemplateNotify.forEach(value => {
+                count += value;
+            });
+            return count;
+        },
     },
     actions: {
         loadTalkInfo(context) {

@@ -439,10 +439,10 @@ export default {
     },
     showTalkNotify() {
       this.$refs.talkNotifyRef.show();
-      this.$store.commit("resetRegionNotify", this.regionGroup.code);
       if (this.unreadNotifyCount > 0) {
         this.readedTalkNotify();
       }
+      this.$store.commit("resetRegionNotify", this.regionGroup.code);
     },
     readedTalkNotify() {
       let params = {

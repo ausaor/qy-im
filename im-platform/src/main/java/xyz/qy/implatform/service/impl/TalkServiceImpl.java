@@ -42,6 +42,7 @@ import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
+import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
 import xyz.qy.implatform.enums.ViewScopeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkMapper;
@@ -171,7 +172,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         this.baseMapper.insert(talk);
 
         // 自己可见的不通知
-        if (!talk.getScope().equals(1)) {
+        if (!talk.getScope().equals(ViewScopeEnum.PRIVATE.getCode())) {
             List<Long> userIds = new ArrayList<>();
             // 个人动态通知好友列表
             if (TalkCategoryEnum.PRIVATE.getCode().equals(talk.getCategory())) {
@@ -198,7 +199,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
             if (CollectionUtils.isNotEmpty(userIds)) {
                 TalkMessageVO msgInfo = new TalkMessageVO();
-                msgInfo.setType(1);
+                msgInfo.setType(TalkNotifyMsgTypeEnum.TALK.getCode());
                 msgInfo.setTalk(talk);
 
                 IMTalkMessage<TalkMessageVO> sendMessage = new IMTalkMessage<>();
@@ -963,7 +964,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         wrapper.eq(TalkNotify::getUserId, userId);
         wrapper.eq(TalkNotify::getIsRead, false);
         wrapper.eq(TalkNotify::getDeleted, false);
-        wrapper.eq(TalkNotify::getCategory, "private");
+        wrapper.eq(TalkNotify::getCategory, TalkCategoryEnum.PRIVATE.getCode());
         wrapper.in(TalkNotify::getActionType, Arrays.asList(TalkNotifyActionTypeEnum.COMMENT.getCode(),  TalkNotifyActionTypeEnum.LIKE.getCode()));
 
         int notifyCount = talkNotifyService.count(wrapper);
@@ -985,8 +986,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         // 查询未读的好友一个月内发布的动态数量
         List<Talk> talkList = this.lambdaQuery()
                 .in(Talk::getUserId, friendIds)
-                .in(Talk::getScope, Arrays.asList(2, 9))
-                .eq(Talk::getCategory, "private")
+                .in(Talk::getScope, Arrays.asList(ViewScopeEnum.FRIENDS.getCode(), ViewScopeEnum.PUBLIC.getCode()))
+                .eq(Talk::getCategory, TalkCategoryEnum.PRIVATE.getCode())
                 .eq(Talk::getDeleted, false)
                 .ge(Talk::getCreateTime, minDate)
                 .gt(Talk::getId, minId)

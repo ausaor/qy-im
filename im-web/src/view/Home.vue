@@ -77,7 +77,7 @@
                      <use xlink:href="#icon-fenleiorguangchangorqitatianchong"></use>
                     </svg>
                   </span>
-                  <div v-show="unreadUserCount > 0 || notifyCount > 0" class="unread-text">{{unreadUserCount + notifyCount}}</div>
+                  <div v-show="unreadUserCount > 0 || notifyCount > 0 || totalCharacterNotifyCount > 0" class="unread-text">{{unreadUserCount + notifyCount + totalCharacterNotifyCount}}</div>
                 </div>
               </router-link>
             </div>
@@ -240,6 +240,9 @@
       notifyCount() {
         return this.$store.state.talkStore.notifyCount;
       },
+      totalCharacterNotifyCount() {
+        return this.$store.getters.getTotalCharacterNotifyCount();
+      },
       showFloatMusic() {
         return this.$store.state.musicStore.showFloatMusic;
       },
@@ -322,6 +325,7 @@
             this.pullOfflineTalks(this.$store.state.talkStore.privateTalkMaxId);
             this.pullFriendRequests();
             this.pullGroupRequests();
+            this.pullOfflineTalkNotify();
           });
           this.$wsApi.onMessage((cmd, msgInfo) => {
             if (cmd == 2) {
@@ -419,6 +423,14 @@
           this.$store.commit("setUnreadTalkInfo", data)
         }).catch(() => {
 
+        })
+      },
+      pullOfflineTalkNotify() {
+        this.$http({
+          url: "/talk-notify/pullOfflineNotify",
+          method: 'GET'
+        }).then((data) => {
+        }).catch((err) => {
         })
       },
       pullFriendRequests() {
