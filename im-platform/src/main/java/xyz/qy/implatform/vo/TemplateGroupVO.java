@@ -58,7 +58,12 @@ public class TemplateGroupVO {
     private Boolean isOwner = false;
 
     /**
-     * 模板人物
+     * 模板角色
      */
     private List<TemplateCharacterVO> templateCharacterVOList;
+
+    /**
+     * 角色ids
+     */
+    private List<Long> characterIds;
 }

@@ -7,6 +7,7 @@ import xyz.qy.implatform.vo.TemplateCharacterVO;
 import xyz.qy.implatform.vo.TemplateGroupVO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @description:
@@ -101,4 +102,12 @@ public interface ITemplateCharacterService extends IService<TemplateCharacter> {
      * @return 模板角色
      */
     List<TemplateCharacterVO> getRandomCharacters(Integer count);
+
+    /**
+     * 根据群聊模板id查询模板角色id
+     *
+     * @param groupTemplateIds 群聊模板id
+     * @return 模板角色id
+     */
+    Map<Long, List<Long>> getCharacterIdsByGroupTemplateIds(List<Long> groupTemplateIds);
 }

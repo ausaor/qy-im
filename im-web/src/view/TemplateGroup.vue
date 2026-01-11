@@ -25,9 +25,12 @@
             <el-button v-if="templateGroup.isOwner" class="operate-button"
                        type="danger" icon="el-icon-delete" circle size="mini"
                        @click="deleteTemplateGroup(templateGroup)"></el-button>
-            <el-button class="operate-button"
-                       icon="el-icon-user-solid" circle size="mini"
-                       @click="editTemplateCharacter(templateGroup)"></el-button>
+            <div style="position: relative;">
+              <div v-if="characterListNotifyCount(templateGroup.characterIds) > 0" class="group-template-notify">{{characterListNotifyCount(templateGroup.characterIds)}}</div>
+              <el-button class="operate-button"
+                         icon="el-icon-user-solid" circle size="mini"
+                         @click="editTemplateCharacter(templateGroup)"></el-button>
+            </div>
             <el-button class="operate-button" circle size="mini" icon="icon iconfont icon-minganci"
                        @click="openCharacterWordDialog({templateGroup: templateGroup})">
             </el-button>
@@ -1197,6 +1200,9 @@ export default {
     },
     characterNotifyCount(characterId) {
       return this.$store.getters.getCharacterNotifyCount(characterId)
+    },
+    characterListNotifyCount(characterIds) {
+      return this.$store.getters.getCharactersNotifyCount(characterIds)
     }
   },
   computed: {

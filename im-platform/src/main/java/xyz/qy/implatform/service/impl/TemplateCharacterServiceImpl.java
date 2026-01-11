@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -272,5 +273,19 @@ public class TemplateCharacterServiceImpl extends ServiceImpl<TemplateCharacterM
                 .list();
 
         return BeanUtils.copyPropertiesList(templateCharacters, TemplateCharacterVO.class);
+    }
+
+    @Override
+    public Map<Long, List<Long>> getCharacterIdsByGroupTemplateIds(List<Long> groupTemplateIds) {
+        LambdaQueryWrapper<TemplateCharacter> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(TemplateCharacter::getTemplateGroupId, TemplateCharacter::getId);
+        queryWrapper.in(TemplateCharacter::getTemplateGroupId, groupTemplateIds);
+        queryWrapper.eq(TemplateCharacter::getDeleted, false);
+        List<TemplateCharacter> templateCharacters = this.list(queryWrapper);
+        if (CollectionUtils.isEmpty(templateCharacters)) {
+            return Collections.emptyMap();
+        }
+        return templateCharacters.stream().collect(Collectors.groupingBy(TemplateCharacter::getTemplateGroupId,
+                Collectors.mapping(TemplateCharacter::getId, Collectors.toList())));
     }
 }

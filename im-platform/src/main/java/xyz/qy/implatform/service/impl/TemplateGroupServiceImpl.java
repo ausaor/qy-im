@@ -127,10 +127,18 @@ public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, T
         queryWrapper.eq(TemplateGroup::getCreateBy, userId);
         queryWrapper.eq(TemplateGroup::getDeleted, false);
         List<TemplateGroup> templateGroupList = this.list(queryWrapper);
+        
+        if (CollectionUtils.isEmpty(templateGroupList)) {
+            return Collections.emptyList();
+        }
+        List<Long> groupTemplateIds = templateGroupList.stream().map(TemplateGroup::getId).collect(Collectors.toList());
+        Map<Long, List<Long>> characterMap = templateCharacterService.getCharacterIdsByGroupTemplateIds(groupTemplateIds);
+
         List<TemplateGroupVO> templateGroupVOS = BeanUtils.copyProperties(templateGroupList, TemplateGroupVO.class);
         templateGroupVOS.forEach(item -> {
             item.setCreator(session.getUserName());
             item.setIsOwner(true);
+            item.setCharacterIds(characterMap.getOrDefault(item.getId(), Collections.emptyList()));
         });
         return templateGroupVOS;
     }
@@ -149,6 +157,10 @@ public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, T
         List<String> userIds = templateGroupList.stream().map(TemplateGroup::getCreateBy)
                 .distinct().collect(Collectors.toList());
         List<TemplateGroupVO> templateGroupVOS = BeanUtils.copyProperties(templateGroupList, TemplateGroupVO.class);
+
+        List<Long> groupTemplateIds = templateGroupList.stream().map(TemplateGroup::getId).collect(Collectors.toList());
+        Map<Long, List<Long>> characterMap = templateCharacterService.getCharacterIdsByGroupTemplateIds(groupTemplateIds);
+
         List<User> userList = userService.listByIds(userIds);
         Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, Function.identity(), (key1, key2) -> key2));
         for (TemplateGroupVO templateGroupVO : templateGroupVOS) {
@@ -159,6 +171,7 @@ public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, T
             if (String.valueOf(userId).equals(templateGroupVO.getCreateBy())) {
                 templateGroupVO.setIsOwner(true);
             }
+            templateGroupVO.setCharacterIds(characterMap.getOrDefault(templateGroupVO.getId(), Collections.emptyList()));
         }
         return templateGroupVOS;
     }
