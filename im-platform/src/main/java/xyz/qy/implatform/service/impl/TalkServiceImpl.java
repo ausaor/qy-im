@@ -143,6 +143,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     @Override
     public void addTalk(TalkAddDTO talkAddDTO) {
         checkTalkFiles(talkAddDTO.getFiles());
+        checkViewScope(talkAddDTO.getScope(), talkAddDTO.getGroupVisible(), talkAddDTO.getRegionVisible(), talkAddDTO.getCharacterVisible());
         UserSession session = SessionContext.getSession();
         User user = userService.getById(session.getUserId());
         Talk talk = BeanUtils.copyProperties(talkAddDTO, Talk.class);
@@ -218,6 +219,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     @Override
     public void updateTalk(TalkUpdateDTO talkUpdateDTO) {
         checkTalkFiles(talkUpdateDTO.getFiles());
+        checkViewScope(talkUpdateDTO.getScope(), talkUpdateDTO.getGroupVisible(), talkUpdateDTO.getRegionVisible(), talkUpdateDTO.getCharacterVisible());
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
         User user = userService.getById(userId);
@@ -260,6 +262,12 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         }
         talk.setContent(SensitiveUtil.filter(talk.getContent()));
         this.baseMapper.updateById(talk);
+    }
+
+    private void checkViewScope(Integer scope, Boolean groupVisible, Boolean regionVisible, Boolean characterVisible) {
+        if ((groupVisible || regionVisible || characterVisible) && !ViewScopeEnum.PUBLIC.getCode().equals(scope)) {
+            throw new GlobalException("可见范围请选择公开");
+        }
     }
 
     private void checkCharacterUser(Long characterId, Long groupTemplateId, Long userId, String category) {

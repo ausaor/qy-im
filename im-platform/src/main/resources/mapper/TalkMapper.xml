@@ -12,7 +12,7 @@
 
     <select id="pageQueryMyTalkList" resultType="xyz.qy.implatform.entity.Talk">
         <include refid="taskQueryBase"/> my
-        where my.user_id = #{queryDTO.ownerId} and my.deleted = 0
+        where my.user_id = #{queryDTO.ownerId} and my.deleted = 0 and my.category in ('private', 'group', 'region')
         order by create_time desc
     </select>
 
@@ -24,6 +24,9 @@
             </if>
             <if test="true">
                 and my.deleted = 0
+            </if>
+            <if test="true">
+                and my.category in ('private', 'group', 'region')
             </if>
         </where>
         <if test="queryDTO.friendIds != null and queryDTO.friendIds.size() > 0">
