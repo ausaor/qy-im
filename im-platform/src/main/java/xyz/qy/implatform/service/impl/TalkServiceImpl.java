@@ -144,6 +144,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     public void addTalk(TalkAddDTO talkAddDTO) {
         checkTalkFiles(talkAddDTO.getFiles());
         checkViewScope(talkAddDTO.getScope(), talkAddDTO.getGroupVisible(), talkAddDTO.getRegionVisible(), talkAddDTO.getCharacterVisible());
+        checkCategory(talkAddDTO.getCategory(), talkAddDTO.getGroupId(), talkAddDTO.getRegionCode(), talkAddDTO.getCharacterId(), talkAddDTO.getGroupTemplateId());
         UserSession session = SessionContext.getSession();
         User user = userService.getById(session.getUserId());
         Talk talk = BeanUtils.copyProperties(talkAddDTO, Talk.class);
@@ -220,6 +221,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     public void updateTalk(TalkUpdateDTO talkUpdateDTO) {
         checkTalkFiles(talkUpdateDTO.getFiles());
         checkViewScope(talkUpdateDTO.getScope(), talkUpdateDTO.getGroupVisible(), talkUpdateDTO.getRegionVisible(), talkUpdateDTO.getCharacterVisible());
+        checkCategory(talkUpdateDTO.getCategory(), talkUpdateDTO.getGroupId(), talkUpdateDTO.getRegionCode(), talkUpdateDTO.getCharacterId(), talkUpdateDTO.getGroupTemplateId());
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
         User user = userService.getById(userId);
@@ -262,6 +264,18 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         }
         talk.setContent(SensitiveUtil.filter(talk.getContent()));
         this.baseMapper.updateById(talk);
+    }
+
+    private void checkCategory(String category, Long groupId, String regionCode, Long characterId, Long groupTemplateId) {
+        if (TalkCategoryEnum.GROUP.getCode().equals(category) && ObjectUtil.isNull(groupId)) {
+            throw new GlobalException("群聊id为空");
+        }
+        if (TalkCategoryEnum.REGION.getCode().equals(category) && StringUtils.isBlank(regionCode)) {
+            throw new GlobalException("地区编码为空");
+        }
+        if (TalkCategoryEnum.CHARACTER.getCode().equals(category) && (ObjectUtil.isNull(characterId) && ObjectUtil.isNull(groupTemplateId))) {
+            throw new GlobalException("角色id为空");
+        }
     }
 
     private void checkViewScope(Integer scope, Boolean groupVisible, Boolean regionVisible, Boolean characterVisible) {
