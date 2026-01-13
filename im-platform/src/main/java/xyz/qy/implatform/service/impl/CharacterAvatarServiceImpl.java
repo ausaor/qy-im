@@ -71,6 +71,16 @@ public class CharacterAvatarServiceImpl extends ServiceImpl<CharacterAvatarMappe
     }
 
     @Override
+    public List<CharacterAvatarVO> queryPublishCharacterAvatarByCharacterIds(List<Long> characterIds) {
+        LambdaQueryWrapper<CharacterAvatar> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(CharacterAvatar::getTemplateCharacterId, characterIds);
+        queryWrapper.eq(CharacterAvatar::getStatus, ReviewEnum.REVIEWED.getCode());
+        queryWrapper.eq(CharacterAvatar::getDeleted, false);
+        List<CharacterAvatar> characterAvatars = baseMapper.selectList(queryWrapper);
+        return BeanUtils.copyProperties(characterAvatars, CharacterAvatarVO.class);
+    }
+
+    @Override
     public void delete(Long id) {
         UserSession session = SessionContext.getSession();
 

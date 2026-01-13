@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @ApiModel("角色用户关系")
 public class CharacterUserVO {
@@ -33,4 +35,7 @@ public class CharacterUserVO {
 
     @ApiModelProperty("角色信息")
     private TemplateCharacterVO character;
+
+    @ApiModelProperty("角色头像信息")
+    private List<CharacterAvatarVO> characterAvatars;
 }

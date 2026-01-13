@@ -39,6 +39,14 @@ public interface ICharacterAvatarService extends IService<CharacterAvatar> {
     List<CharacterAvatarVO> queryAllCharacterAvatarByCharacterId(Long templateCharacterId);
 
     /**
+     * 根据模板角色id查询模板角色头像
+     *
+     * @param characterIds 角色id
+     * @return 角色头像
+     */
+    List<CharacterAvatarVO> queryPublishCharacterAvatarByCharacterIds(List<Long> characterIds);
+
+    /**
      * 删除模板人物头像
      *
      * @param id id

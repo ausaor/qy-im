@@ -103,6 +103,30 @@
         </span>
         <span class="nick-name">{{form.nickName}} <el-button @click="removeCharacter" class="del-btn" v-if="form.characterId && category!=='character'" type="danger" icon="el-icon-delete" size="mini" circle></el-button></span>
       </el-form-item>
+      <el-form-item label="我的角色：" prop="myCharacters" label-width="120px" class="form-item" v-if="(category==='character' || category ==='private') && !characterId && !groupTemplateId">
+        <div class="my-characters" style="display: flex;align-items: center;gap: 10px;">
+          <el-select v-model="selectValue" placeholder="请选择" @change="selectMyCharacterChange">
+            <el-option
+                v-for="item in myCharacters"
+                :key="item.characterId"
+                :label="item.characterName"
+                :value="item.characterId">
+              <span style="float: left">{{ item.characterName }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px"><head-image :name="item.characterName" :url="item.characterAvatar" :size="30"></head-image></span>
+            </el-option>
+          </el-select>
+          <el-select v-model="selectAvatarValue" placeholder="请选择" @change="selectMyCharacterAvatarChange">
+            <el-option
+                v-for="item in selectAvatars"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              <span style="float: left">{{ item.name }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px"><head-image :name="item.name" :url="item.avatar" :size="30"></head-image></span>
+            </el-option>
+          </el-select>
+        </div>
+      </el-form-item>
       <el-form-item label="图片|视频|音频：" prop="imgUrl" label-width="120px" class="form-item">
 <!--        <batch-image-upload class="form-content"
                             :action="imageAction"
@@ -257,7 +281,11 @@ export default {
       characterAvatars: [],
       selectCharacterAvatarVisible: false,
       newCharacterAvatar: {},
-      character: {}
+      character: {},
+      myCharacters: [],
+      selectValue: '',
+      selectAvatarValue: '',
+      selectAvatars: [],
     }
   },
   created() {
@@ -266,6 +294,9 @@ export default {
     }
     if (this.characterId) {
       this.getCharacterDetail();
+    }
+    if ((this.category === "private" || this.category === "character") && !this.characterId && !this.groupTemplateId) {
+      this.queryMyCharacters();
     }
   },
   methods: {
@@ -579,6 +610,21 @@ export default {
       this.form.nickName = '';
       this.form.characterId = null;
     },
+    selectMyCharacterChange(value) {
+      let character = this.myCharacters.find(item => item.characterId === value)
+      this.form.nickName = character.characterName;
+      this.form.avatar = character.characterAvatar;
+      this.form.characterId = character.characterId;
+      this.form.avatarId = null;
+      this.selectAvatarValue = '';
+      this.selectAvatars = character.characterAvatars;
+    },
+    selectMyCharacterAvatarChange(value) {
+      let obj = this.selectAvatars.find(item => item.id === value)
+      this.form.avatar = obj.avatar;
+      this.form.avatarId = obj.id;
+      this.form.nickName = obj.level === 0 ? obj.templateCharacterName : obj.name;
+    },
     getTalkDetail(talkId) {
       let _this = this
       this.$http({
@@ -626,7 +672,15 @@ export default {
       this.form.nickName = this.newCharacterAvatar.level === 0 ? this.character.name : this.newCharacterAvatar.name;
       this.form.avatar = this.newCharacterAvatar.avatar;
       this.closeSelectCharacterAvatar();
-    }
+    },
+    queryMyCharacters() {
+      this.$http({
+        url: "/characterUser/getMyCharacters",
+        method: 'get'
+      }).then((data) => {
+        this.myCharacters = data;
+      });
+    },
   },
   computed: {
     imageAction() {

@@ -835,6 +835,24 @@
           }
         })
 			},
+      queryGroupTemplateCharacterIds() {
+        return new Promise((resolve, reject) => {
+          this.$http({
+            url: `/templateCharacter/characterIds?templateGroupId=${this.activeGroup.templateGroupId}`,
+            method: 'get',
+          }).then((data) => {
+            // 将数组数据转换为Set，以保持对象的一致性
+            if (Array.isArray(data)) {
+              this.allCharacterIds = new Set(data);
+            } else {
+              this.allCharacterIds = data;
+            }
+            resolve();
+          }).catch(error => {
+            reject(error);
+          })
+        })
+      },
       querySelectableTemplateCharacter() {
         let paramVO = {
           groupId: this.activeGroup.id,

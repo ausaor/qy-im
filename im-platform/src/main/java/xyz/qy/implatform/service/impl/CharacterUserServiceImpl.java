@@ -15,12 +15,14 @@ import xyz.qy.implatform.entity.CharacterUser;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.mapper.CharacterUserMapper;
+import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.ICharacterUserService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.vo.CharacterAvatarVO;
 import xyz.qy.implatform.vo.CharacterUserVO;
 import xyz.qy.implatform.vo.TemplateCharacterVO;
 
@@ -36,6 +38,9 @@ import java.util.stream.Collectors;
 public class CharacterUserServiceImpl extends ServiceImpl<CharacterUserMapper, CharacterUser> implements ICharacterUserService {
     @Resource
     private ITemplateCharacterService templateCharacterService;
+
+    @Resource
+    private ICharacterAvatarService characterAvatarService;
 
     @Resource
     private IUserService userService;
@@ -94,6 +99,11 @@ public class CharacterUserServiceImpl extends ServiceImpl<CharacterUserMapper, C
         }
         List<Long> characterIds = characterUsers.stream().map(CharacterUser::getCharacterId).collect(Collectors.toList());
         List<TemplateCharacter> templateCharacterList = templateCharacterService.findPublishedByCharacterIds(characterIds);
+
+        List<CharacterAvatarVO> characterAvatars = characterAvatarService.queryPublishCharacterAvatarByCharacterIds(characterIds);
+        // characterAvatars根据characterId分组得到Map<Long, List<CharacterAvatarVO>>
+        Map<Long, List<CharacterAvatarVO>> characterAvatarMap = characterAvatars.stream().collect(Collectors.groupingBy(CharacterAvatarVO::getTemplateCharacterId));
+
         // templateCharacterList根据id分组得到Map<Long, TemplateCharacter>
         Map<Long, TemplateCharacter> characterMap = templateCharacterList.stream().collect(Collectors.toMap(TemplateCharacter::getId, character -> character));
         return characterUsers.stream().map(characterUser -> {
@@ -110,6 +120,7 @@ public class CharacterUserServiceImpl extends ServiceImpl<CharacterUserMapper, C
                 templateCharacterVO.setIsOwner(true);
                 vo.setCharacter(templateCharacterVO);
             }
+            vo.setCharacterAvatars(characterAvatarMap.getOrDefault(characterUser.getCharacterId(), Collections.emptyList()));
             return vo;
         }).collect(Collectors.toList());
     }
