@@ -30,7 +30,7 @@
             </if>
         </where>
         <if test="queryDTO.friendIds != null and queryDTO.friendIds.size() > 0">
-            union
+            union all
             <include refid="taskQueryBase"/> f
             <where>
                 f.user_id in
@@ -85,7 +85,7 @@
             </if>
         </where>
         <if test="queryDTO.groupMemberUserIds != null and queryDTO.groupMemberUserIds.size() > 0">
-            union
+            union all
             <include refid="taskQueryBase"/> u
             <where>
                 u.user_id in
@@ -121,7 +121,7 @@
             </if>
         </where>
         <if test="queryDTO.groupMemberUserIds != null and queryDTO.groupMemberUserIds.size() > 0">
-            union
+            union all
             <include refid="taskQueryBase"/> u
             <where>
                 u.user_id in
@@ -160,7 +160,7 @@
             </if>
         </where>
         <if test="queryDTO.characterUserIds != null and queryDTO.characterUserIds.size() > 0">
-            union
+            union all
             <include refid="taskQueryBase"/> u
             <where>
                 u.character_id = #{queryDTO.characterId}
@@ -236,7 +236,7 @@
             </where>
         </if>
         <if test="queryDTO.characterUserIds != null and queryDTO.characterUserIds.size() > 0">
-            union
+            union all
             <include refid="taskQueryBase"/> u
             <where>
                 u.user_id in
@@ -284,7 +284,7 @@
             </if>
         </where>
         <if test="queryDTO.characterUserIds != null and queryDTO.characterUserIds.size() > 0">
-            union
+            union all
             <include refid="taskQueryBase"/> u
             <where>
                 u.user_id in
@@ -311,6 +311,80 @@
                 </if>
             </where>
         </if>
+        order by create_time desc
+    </select>
+
+    <select id="pageQueryAllCharactersTalkList" resultType="xyz.qy.implatform.entity.Talk">
+        <include refid="taskQueryBase"/> c
+        <where>
+            <if test="true">
+                and c.category = 'character'
+            </if>
+            <if test="true">
+                and c.scope = 9
+            </if>
+            <if test="true">
+                and c.deleted = 0
+            </if>
+        </where>
+        union all
+        <include refid="taskQueryBase"/> u
+        <where>
+            <if test="true">
+                and u.category = 'private'
+            </if>
+            <if test="true">
+                and u.deleted = 0
+            </if>
+            <if test="true">
+                and u.character_visible = 1
+            </if>
+            <if test="true">
+                and u.scope = 9
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="pageQueryMyCharactersTalkList" resultType="xyz.qy.implatform.entity.Talk">
+        <include refid="taskQueryBase"/> c
+        <where>
+            c.user_id = #{queryDTO.ownerId}
+            and c.character_id in
+            <foreach collection="queryDTO.characterIds" item="characterId" index="index" separator="," open="(" close=")">
+                #{characterId}
+            </foreach>
+            <if test="true">
+                and c.category = 'character'
+            </if>
+            <if test="true">
+                and c.scope = 9
+            </if>
+            <if test="true">
+                and c.deleted = 0
+            </if>
+        </where>
+        union all
+        <include refid="taskQueryBase"/> u
+        <where>
+            u.user_id = #{queryDTO.ownerId}
+            and u.character_id in
+            <foreach collection="queryDTO.characterIds" item="characterId" index="index" separator="," open="(" close=")">
+                #{characterId}
+            </foreach>
+            <if test="true">
+                and u.category = 'private'
+            </if>
+            <if test="true">
+                and u.deleted = 0
+            </if>
+            <if test="true">
+                and u.character_visible = 1
+            </if>
+            <if test="true">
+                and u.scope = 9
+            </if>
+        </where>
         order by create_time desc
     </select>
 </mapper> 

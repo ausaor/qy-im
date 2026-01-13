@@ -323,7 +323,7 @@ export default {
     }
   },
   created() {
-    if(this.section === 'my-friends') {
+    if(this.section === 'my-friends' || this.section === 'allCharacters') {
       this.pageQueryTalkList();
     }
   },

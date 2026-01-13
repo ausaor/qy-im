@@ -26,7 +26,11 @@ public enum SectionEnum {
 
     GROUP_TEMPLATE_CHARACTERS("groupTemplate&Characters"),
 
-    CHARACTERS("characters");
+    CHARACTERS("characters"),
+
+    ALL_CHARACTERS("allCharacters"),
+
+    MY_CHARACTERS("myCharacters");
 
     private final String code;
 

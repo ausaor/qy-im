@@ -6,16 +6,18 @@
                           @click.native="gotoTalkSpace(communityList[0])"></community-item-talk>
         <community-item :community="communityList[1]" :active="communityList[1].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[1])" :notify-count="totalCharacterNotifyCount"></community-item>
-        <community-item v-if="isAdmin" :community="communityList[2]" :active="communityList[2].sort === activeIndex"
-                        @click.native="handleActiveItem(communityList[2])"></community-item>
+        <community-item :community="communityList[2]" :active="communityList[2].sort === activeIndex"
+                        @click.native="handleActiveItem(communityList[2])" :notify-count="totalCharacterNotifyCount"></community-item>
         <community-item v-if="isAdmin" :community="communityList[3]" :active="communityList[3].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[3])"></community-item>
         <community-item v-if="isAdmin" :community="communityList[4]" :active="communityList[4].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[4])"></community-item>
-        <community-item v-if="isSuperAdmin" :community="communityList[5]" :active="communityList[5].sort === activeIndex"
+        <community-item v-if="isAdmin" :community="communityList[5]" :active="communityList[5].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[5])"></community-item>
         <community-item v-if="isSuperAdmin" :community="communityList[6]" :active="communityList[6].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[6])"></community-item>
+        <community-item v-if="isSuperAdmin" :community="communityList[7]" :active="communityList[7].sort === activeIndex"
+                        @click.native="handleActiveItem(communityList[7])"></community-item>
       </div>
     </el-aside>
     <el-main class="community-box">
@@ -38,12 +40,13 @@ export default {
     return {
       communityList: [
         {name: "空间动态", sort: 1, route: '/home/square/friendActivity', iconId: '#icon-shejiaotubiao-40'},
-        {name: "群聊模板", sort: 2, route: '/home/square/templateGroup', iconId: '#icon-qiqiaoban'},
-        {name: "用户管理", sort: 3, route: '/home/square/users', iconId: '#icon-person'},
-        {name: "群聊管理", sort: 4, route: '/home/square/groups', iconId: '#icon-qunliaoguanli'},
-        {name: "地区管理", sort: 5, route: '/home/square/regions', iconId: '#icon-diquguanli'},
-        {name: "系统消息", sort: 6, route: '/home/square/sysMsg', iconId: '#icon-xitongxiaoxi'},
-        {name: "歌曲管理", sort: 7, route: '/home/square/musics', iconId: '#icon-Music'},
+        {name: "星空间", sort: 2, route: '/home/square/starSpace', iconId: '#icon-kongjian2'},
+        {name: "群聊模板", sort: 3, route: '/home/square/templateGroup', iconId: '#icon-qiqiaoban'},
+        {name: "用户管理", sort: 4, route: '/home/square/users', iconId: '#icon-person'},
+        {name: "群聊管理", sort: 5, route: '/home/square/groups', iconId: '#icon-qunliaoguanli'},
+        {name: "地区管理", sort: 6, route: '/home/square/regions', iconId: '#icon-diquguanli'},
+        {name: "系统消息", sort: 7, route: '/home/square/sysMsg', iconId: '#icon-xitongxiaoxi'},
+        {name: "歌曲管理", sort: 8, route: '/home/square/musics', iconId: '#icon-Music'},
       ],
       activeIndex: -1,
     }

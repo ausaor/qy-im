@@ -70,6 +70,11 @@ export default new VueRouter({
                   component: () => import("../view/FriendActivity"),
               },
               {
+                  name: "StarSpace",
+                  path: "/home/square/starSpace",
+                  component: () => import("../view/StarSpace"),
+              },
+              {
                   name: "Review",
                   path: "/home/square/review",
                   component: () => import("../view/Review"),

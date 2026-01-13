@@ -2,7 +2,11 @@ package xyz.qy.implatform.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import xyz.qy.implatform.enums.SectionEnum;
+import xyz.qy.implatform.enums.TalkCategoryEnum;
+import xyz.qy.implatform.enums.ValidEnum;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.List;
 
@@ -26,9 +30,12 @@ public class TalkQueryDTO {
     private List<Long> groupMemberUserIds;
 
     @ApiModelProperty(value = "分类")
+    @NotBlank(message = "未选择分类")
+    @ValidEnum(enumClass = TalkCategoryEnum.class, property = "code", message = "无效的分类")
     private String category;
 
-    @ApiModelProperty("查询范围：my-自己的，friends-朋友的，group-群聊的，region-地区的；groupTemplate-群聊模板的；character-单个角色的；groupTemplate&Characters-群聊模板与所有角色的；characters-多个角色的")
+    @ApiModelProperty("查询范围：my-自己的，friends-朋友的，group-群聊的，region-地区的；groupTemplate-群聊模板的；character-单个角色的；groupTemplate&Characters-群聊模板与所有角色的；characters-多个角色的；allCharacters-所有角色的")
+    @ValidEnum(enumClass = SectionEnum.class, property = "code", message = "无效的分类")
     private String section;
 
     @ApiModelProperty("群id")

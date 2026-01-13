@@ -2,23 +2,18 @@
   <div class="say-main container">
     <div class="say-container">
       <div class="cover">
-        <div class="info">心语</div>
+        <div class="info">星空间</div>
         <a class="operateBtn" @click="handleShowAddTalk">
           <i class="el-icon-camera-solid"></i>
         </a>
         <div class="tab-box">
           <el-tabs @tab-click="handleTabClick" v-model="section">
-            <el-tab-pane label="全部" name="my-friends">
+            <el-tab-pane label="全部" name="allCharacters">
             </el-tab-pane>
-            <el-tab-pane label="我的" name="my">
-            </el-tab-pane>
-            <el-tab-pane label="好友" name="friends">
+            <el-tab-pane label="我的" name="myCharacters">
             </el-tab-pane>
           </el-tabs>
           <div class="btns">
-             <span class="play-music-play" @click="showMusicPlay">
-              <i class="el-icon-headset"></i>
-            </span>
             <span class="talk-notify-msg" @click="showTalkNotify">
               <i class="el-icon-chat-dot-round"></i>
               <span v-if="notifyCount > 0" class="unread-text">{{notifyCount}}</span>
@@ -29,36 +24,30 @@
           </div>
         </div>
       </div>
-      <talk-notify ref="talkNotify" :category="'private'"></talk-notify>
-      <talk-list ref="talkListRef" :category="'private'" :section="section"></talk-list>
-      <music-play ref="musicPlayRef" :category="'private'" :section="'my'"></music-play>
+      <talk-notify ref="talkNotify" :category="'character'"></talk-notify>
+      <talk-list ref="talkListRef" :category="'character'" :section="section"></talk-list>
     </div>
   </div>
 </template>
 
 <script>
 import TalkList from "@/components/talk/TalkList";
-import TalkNotify from "../components/talk/TalkNotify.vue";
-import MusicPlay from "@components/common/musicPlay.vue";
+import TalkNotify from "@/components/talk/TalkNotify.vue";
 
 export default {
-  name: "FriendActivity",
+  name: "StarSpace",
   components: {
     TalkList,
     TalkNotify,
-    MusicPlay,
   },
   data() {
     return {
-      section: 'my-friends'
+      section: 'allCharacters'
     }
-  },
-  created() {
-
   },
   computed: {
     notifyCount() {
-      return this.$store.state.talkStore.notifyCount;
+      return this.$store.getters.getTotalCharacterNotifyCount();
     },
   },
   methods: {
@@ -69,19 +58,21 @@ export default {
       if (this.notifyCount > 0) {
         this.readedTalkNotify();
       }
-      this.$store.commit("resetUnreadTalkInfo")
+      this.$store.commit("resetAllCharacterNotify")
       this.$refs.talkListRef.refreshTalkList();
     },
     handleTabClick(tab, event) {
       this.section = tab.name;
-      this.$refs.talkListRef.refreshTalkList();
+      this.$nextTick(() => {
+        this.$refs.talkListRef.refreshTalkList();
+      })
     },
     readedTalkNotify() {
       let params = {
-        category: 'private'
+        category: 'character'
       };
       this.$http({
-        url: `/talk-notify/readed`,
+        url: `/talk-notify/readedAllTalkNotify`,
         method: 'post',
         data: params
       }).then(() => {})
@@ -89,7 +80,7 @@ export default {
     showTalkNotify() {
       if (this.notifyCount > 0) {
         this.readedTalkNotify();
-        this.$store.commit("resetUnreadTalkNotify");
+        this.$store.commit("resetAllCharacterNotify");
       }
       this.$refs.talkNotify.show();
     },
@@ -99,6 +90,8 @@ export default {
   }
 }
 </script>
+
+
 
 <style scoped lang="scss">
 .say-main {

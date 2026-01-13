@@ -85,6 +85,9 @@ public class TalkVO {
     @ApiModelProperty(value = "地区空间可见")
     private Boolean regionVisible;
 
+    @ApiModelProperty(value = "角色空间可见")
+    private Boolean characterVisible;
+
     @ApiModelProperty(value = "群id")
     private Long groupId;
 

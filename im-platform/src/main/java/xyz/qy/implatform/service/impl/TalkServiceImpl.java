@@ -555,6 +555,21 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
+        } else if (SectionEnum.ALL_CHARACTERS.getCode().equals(queryDTO.getSection())) {
+            talkPage = this.baseMapper.pageQueryAllCharactersTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()));
+            if (ObjectUtil.isNotNull(talkPage)) {
+                records = talkPage.getRecords();
+            }
+        } else if (SectionEnum.MY_CHARACTERS.getCode().equals(queryDTO.getSection())) {
+            List<Long> myCharacterIds = characterUserService.getMyCharacterIds();
+            if (CollectionUtils.isNotEmpty(myCharacterIds)) {
+                queryDTO.setCharacterIds(myCharacterIds);
+                queryDTO.setOwnerId(myUserId);
+                talkPage = this.baseMapper.pageQueryMyCharactersTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
+                if (ObjectUtil.isNotNull(talkPage)) {
+                    records = talkPage.getRecords();
+                }
+            }
         }
 
         if (CollectionUtils.isEmpty(records)) {
