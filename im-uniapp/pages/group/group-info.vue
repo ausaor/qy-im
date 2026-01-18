@@ -47,7 +47,7 @@
           <uni-icons type="right" size="20" color="#888888"></uni-icons>
         </view>
       </view>
-      <view class="form-item" @click="toStarSpace">
+      <view class="form-item" @click="toStarSpace" v-if="group.groupType !== 0">
         <view class="form-item-left">
           <svg-icon icon-class="kongjian2" style="width: 60rpx;height: 60rpx;"></svg-icon>
           <text style="margin-left: 10rpx;margin-right: 10rpx;">星空间</text>
