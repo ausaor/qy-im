@@ -21,7 +21,7 @@
             </span>
             <span class="talk-notify-msg" @click="showTalkNotify">
               <i class="el-icon-chat-dot-round"></i>
-              <span v-if="notifyCount > 0" class="unread-text">{{notifyCount}}</span>
+              <div v-if="notifyCount > 0" class="unread-text">{{notifyCount}}</div>
             </span>
             <span class="refreshBtn" @click="refreshTalkList">
               <i class="el-icon-refresh"></i>
@@ -189,6 +189,8 @@ export default {
 
           .unread-text {
             position: absolute;
+            height: 20px;
+            min-width: 20px;
             line-height: 20px;
             background-color: #f56c6c;
             left: 20px;

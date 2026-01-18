@@ -15,8 +15,13 @@
       <view class="content">
         <!-- 用户信息 -->
         <view class="user-info">
-          <head-image class="avatar" :name="form.nickName" :url="form.avatar" :size="80" @click="openCharacterChoosePopup"></head-image>
-          <text class="nickname">{{form.nickName}}</text>
+          <view class="user-info-left">
+            <head-image class="avatar" :name="form.nickName" :url="form.avatar" :size="80" @click="openCharacterChoosePopup"></head-image>
+            <text class="nickname">{{form.nickName}}</text>
+          </view>
+          <view class="user-info-right" @click="chooseMyCharacters" v-if="myCharacters.length">
+            我的角色
+          </view>
         </view>
 
         <!-- 文本输入区 -->
@@ -140,6 +145,10 @@
             <text style="margin-right: 20rpx;">地区空间可见</text>
             <up-switch v-model="form.regionVisible" activeColor="#13ce66" inactiveColor="#ff4949"></up-switch>
           </view>
+          <view class="visible-range-item">
+            <text style="margin-right: 20rpx;">星空间可见</text>
+            <up-switch v-model="form.characterVisible" activeColor="#13ce66" inactiveColor="#ff4949"></up-switch>
+          </view>
         </view>
       </view>
 
@@ -191,8 +200,9 @@ export default {
         characterId: null,
         avatarId: null,
         enableCharacterChoose: true,
-        groupVisible: true,
-        regionVisible: true,
+        groupVisible: false,
+        regionVisible: false,
+        characterVisible: false,
         groupId: null,
         regionCode: '',
         files: []
@@ -211,6 +221,7 @@ export default {
       isFocus: false, // 编辑器是否焦点
       isReadOnly: false, // 编辑器是否只读
       showEmo: false,
+      myCharacters: [],
     };
   },
 
@@ -759,6 +770,7 @@ export default {
       this.form.nickName = character.name;
       this.form.avatar = character.avatar;
       this.form.characterId = character.id;
+      this.form.avatarId = null;
     },
     async moreCharacterAvatars(character) {
       this.form.nickName = character.name;
@@ -781,7 +793,24 @@ export default {
       if (characterAvatar.level !== 0) {
         this.form.nickName = characterAvatar.name;
       }
-    }
+    },
+    queryMyCharacters() {
+      this.$http({
+        url: "/characterUser/getMyCharacters",
+        method: 'get'
+      }).then((data) => {
+        this.myCharacters = data;
+      });
+    },
+    chooseMyCharacters() {
+      this.characterList = [];
+      if (this.myCharacters.length) {
+        this.myCharacters.forEach(item => {
+          this.characterList.push(item.character);
+        });
+        this.$refs.characterList.open();
+      }
+    },
   },
   onLoad(options) {
     this.form.category = options.category;
@@ -797,6 +826,9 @@ export default {
     } else {
       this.form.avatar = this.userInfo.headImage;
       this.form.nickName = this.userInfo.nickName;
+    }
+    if (this.category === 'private' || this.category === 'character') {
+        this.queryMyCharacters();
     }
   },
   onHide() {
@@ -873,7 +905,18 @@ export default {
 .user-info {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 20rpx;
+}
+
+.user-info-left {
+  display: flex;
+  align-items: center;
+}
+
+.user-info-right {
+  color: #2b85e4;
+  font-size: small;
 }
 
 .avatar {

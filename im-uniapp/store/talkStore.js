@@ -2,16 +2,20 @@ import { defineStore } from 'pinia';
 import useUserStore from './userStore';
 
 export default defineStore('talkStore', {
-    state: () => ({
-        privateTalkMaxId: 0,
-        notifyCount: 0,
-        unreadUserList: [],
-        lastTalks: [],
-        groupsTalks: new Map(),
-        regionTalks: new Map(),
-        groupNotify: new Map(),
-        regionNotify: new Map()
-    }),
+    state: () => {
+        return {
+            privateTalkMaxId: 0,
+            notifyCount: 0,
+            unreadUserList: [],
+            lastTalks: [],
+            groupsTalks: new Map(),
+            regionTalks: new Map(),
+            groupNotify: new Map(),
+            regionNotify: new Map(),
+            characterNotify: new Map(),
+            groupTemplateNotify: new Map(),
+        }
+    },
     actions: {
         initTalkInfo(talkInfo) {
             console.log("初始化动态信息", talkInfo);
@@ -125,6 +129,45 @@ export default defineStore('talkStore', {
                 this.regionNotify = newMap;
             }
         },
+        addStarSpaceNotifyCount(talk) {
+            if (talk.characterId) {
+                const newMap = new Map(this.characterNotify); // 创建副本
+                if (!newMap.has(talk.characterId)) {
+                    newMap.set(talk.characterId, 1);
+                } else {
+                    let count = newMap.get(talk.characterId);
+                    newMap.set(talk.characterId, count + 1);
+                }
+                this.characterNotify = newMap;
+            } else if (talk.groupTemplateId) {
+                const newMap = new Map(this.groupTemplateNotify); // 创建副本
+                if (!newMap.has(talk.groupTemplateId)) {
+                    newMap.set(talk.groupTemplateId, 1);
+                } else {
+                    let count = newMap.get(talk.groupTemplateId);
+                    newMap.set(talk.groupTemplateId, count + 1);
+                }
+                this.groupTemplateNotify = newMap;
+            }
+        },
+        resetGroupTemplateNotify(groupTemplateId) {
+            const newMap = new Map(this.groupTemplateNotify);
+            if (newMap.has(groupTemplateId)) {
+                newMap.set(groupTemplateId, 0);
+                this.groupTemplateNotify = newMap;
+            }
+        },
+        resetCharacterNotify(characterId) {
+            const newMap = new Map(this.characterNotify);
+            if (newMap.has(characterId)) {
+                newMap.set(characterId, 0);
+                this.characterNotify = newMap;
+            }
+        },
+        resetAllCharacterNotify(state) {
+            this.characterNotify = new Map();
+            this.groupTemplateNotify = new Map();
+        },
         saveTalkToStorage() {
             let userStore = useUserStore();
             let userId = userStore.userInfo.id;
@@ -153,6 +196,21 @@ export default defineStore('talkStore', {
         }
     },
     getters: {
-
+        getGroupTemplateNotifyCount: (state) => (groupTemplateId) => {
+            return state.groupTemplateNotify.get(groupTemplateId) || 0;
+        },
+        getCharacterNotifyCount: (state) => (characterId) => {
+            return state.characterNotify.get(characterId) || 0;
+        },
+        getTotalCharacterNotifyCount: (state)  => () => {
+            let count = 0;
+            state.characterNotify.forEach(value => {
+                count += value;
+            });
+            state.groupTemplateNotify.forEach(value => {
+                count += value;
+            });
+            return count;
+        },
     },
 })

@@ -23,6 +23,16 @@
         </view>
         <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
       </view>
+      <view class="socializes-item" @click.stop="toStarSpace">
+        <view class="item-icon">
+          <svg-icon class="svg-icon" icon-class="kongjian2"></svg-icon>
+        </view>
+        <view class="item-info">
+          <view class="item-name">星空间</view>
+          <uni-badge v-show="starSpaceNotifyCount > 0" :text="starSpaceNotifyCount" />
+        </view>
+        <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
+      </view>
       <view class="socializes-item" @click.stop="toFriendRequestPage">
         <view class="item-icon">
           <svg-icon class="svg-icon" icon-class="xindepengyou"></svg-icon>
@@ -113,6 +123,11 @@ export default {
         url: "/pages/activity/activity-space?category=private&section=my-friends"
       })
     },
+    toStarSpace() {
+      uni.navigateTo({
+        url: "/pages/activity/activity-space?category=character&section=allCharacters&spaceTitle=星空间"
+      })
+    },
     toGroupPage() {
 			uni.navigateTo({
 				url: "/pages/group/group"
@@ -129,10 +144,10 @@ export default {
       })
     },
     refreshUnreadBadge() {
-      if (this.friendRequestCount > 0 || this.notifyCount > 0 || this.unreadUserCount > 0 || this.receivedGroupRequestsCount > 0 || this.joinGroupRequestsCount > 0) {
+      if (this.friendRequestCount > 0 || this.notifyCount > 0 || this.unreadUserCount > 0 || this.receivedGroupRequestsCount > 0 || this.joinGroupRequestsCount > 0 || this.starSpaceNotifyCount > 0) {
         uni.setTabBarBadge({
           index: 2,
-          text: this.friendRequestCount + this.notifyCount + this.unreadUserCount + this.receivedGroupRequestsCount + this.joinGroupRequestsCount + ""
+          text: this.friendRequestCount + this.notifyCount + this.unreadUserCount + this.receivedGroupRequestsCount + this.joinGroupRequestsCount  + this.starSpaceNotifyCount + ""
         })
       } else {
         uni.removeTabBarBadge({
@@ -219,6 +234,9 @@ export default {
     },
     talkList() {
       return this.talkStore.lastTalks;
+    },
+    starSpaceNotifyCount() {
+      return this.talkStore.getTotalCharacterNotifyCount();
     }
 	},
   watch: {
@@ -235,6 +253,9 @@ export default {
       this.refreshUnreadBadge();
     },
     notifyCount(newCount, oldCount) {
+      this.refreshUnreadBadge();
+    },
+    starSpaceNotifyCount(newCount, oldCount) {
       this.refreshUnreadBadge();
     }
   },

@@ -64,13 +64,13 @@ public class TalkAddDTO {
     private String category;
 
     @ApiModelProperty(value = "群聊空间可见")
-    private Boolean groupVisible;
+    private Boolean groupVisible = Boolean.FALSE;
 
     @ApiModelProperty(value = "地区空间可见")
-    private Boolean regionVisible;
+    private Boolean regionVisible = Boolean.FALSE;
 
     @ApiModelProperty(value = "角色空间可见")
-    private Boolean characterVisible;
+    private Boolean characterVisible = Boolean.FALSE;
 
     @ApiModelProperty(value = "群id")
     private Long groupId;

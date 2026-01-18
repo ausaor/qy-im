@@ -788,8 +788,12 @@ export default {
         groupId: this.groupId,
         regionCode: this.regionCode
       }
+      let url = `/talk-notify/readed`;
+      if (this.category === 'character' && this.section === 'allCharacters') {
+        url = `/talk-notify/readedAllTalkNotify`;
+      }
       this.$http({
-        url: `/talk-notify/readed`,
+        url: url,
         method: 'post',
         data: params
       }).then(() => {
@@ -876,6 +880,10 @@ export default {
       } else if (this.category === 'region') {
         url += `&regionCode=${this.regionCode}`;
         this.talkStore.resetRegionNotify(this.regionCode);
+      } else if (this.category === 'character') {
+        if (this.section === 'allCharacters') {
+          this.talkStore.resetAllCharacterNotify();
+        }
       }
       uni.navigateTo({
         url: url
@@ -1009,6 +1017,10 @@ export default {
         let count = notifyMap.get(this.regionCode);
         if (count) {
           return count;
+        }
+      } else if (this.category === 'character') {
+        if (this.section === 'allCharacters') {
+          return this.talkStore.getTotalCharacterNotifyCount();
         }
       }
 

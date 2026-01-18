@@ -49,6 +49,7 @@ export default {
         this.pullOfflineTalks(this.talkStore.privateTalkMaxId);
         this.pullFriendRequests();
         this.pullGroupRequests();
+        this.pullOfflineTalkNotify();
 			});
 			wsApi.onMessage((cmd, msgInfo) => {
 				if (cmd == 2) {
@@ -170,6 +171,14 @@ export default {
       }).then((data) => {
         this.groupStore.setGroupRequests(data);
       }).catch(() => {
+      })
+    },
+    pullOfflineTalkNotify() {
+      http({
+        url: "/talk-notify/pullOfflineNotify",
+        method: 'GET'
+      }).then((data) => {
+      }).catch((err) => {
       })
     },
 		handlePrivateMessage(msg) {
@@ -390,6 +399,8 @@ export default {
           this.talkStore.addGroupNotifyCount(msg.talk);
         } else if (msg.talk.category === 'region') {
           this.talkStore.addRegionNotifyCount(msg.talk);
+        } else if (msg.talk.category === 'character') {
+          this.talkStore.addStarSpaceNotifyCount(msg.talk);
         }
       }
     },

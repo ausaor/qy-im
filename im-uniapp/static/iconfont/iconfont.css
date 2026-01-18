@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4843012 */
-  src: url('iconfont.woff2?t=1765701177794') format('woff2'),
-       url('iconfont.woff?t=1765701177794') format('woff'),
-       url('iconfont.ttf?t=1765701177794') format('truetype');
+  src: url('iconfont.woff2?t=1768696361094') format('woff2'),
+       url('iconfont.woff?t=1768696361094') format('woff'),
+       url('iconfont.ttf?t=1768696361094') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,10 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-kongjian2:before {
+  content: "\100c0";
 }
 
 .icon-setting:before {
@@ -95,14 +99,6 @@
 
 .icon-mv:before {
   content: "\e8d0";
-}
-
-.icon-swiper:before {
-  content: "\e600";
-}
-
-.icon-grid:before {
-  content: "\e671";
 }
 
 .icon-yinpinbofang:before {
