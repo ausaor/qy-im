@@ -445,4 +445,15 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
     public Boolean existsInSameGroup(Long userId1, Long userId2) {
         return this.baseMapper.existsInSameGroup(userId1, userId2);
     }
+
+    @Override
+    public List<Long> getGroupCharacterIds(Long groupId) {
+        LambdaQueryWrapper<GroupMember> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(GroupMember::getGroupId, groupId);
+        queryWrapper.eq(GroupMember::getQuit, false);
+        queryWrapper.eq(GroupMember::getIsTemplate,  true);
+        queryWrapper.select(GroupMember::getTemplateCharacterId);
+        return this.list(queryWrapper).stream().map(GroupMember::getTemplateCharacterId).filter(ObjectUtil::isNotNull)
+                .distinct().collect(Collectors.toList());
+    }
 }

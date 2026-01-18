@@ -426,7 +426,7 @@
         :zIndex=3
         :width=60>
       <template v-slot:header>
-        <space-cover :name="spaceName" :show-add="section!=='groupTemplate&Characters' && isOwner"
+        <space-cover :name="spaceName" :show-add="section!=='groupTemplate-characters' && isOwner"
                      @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify"></space-cover>
       </template>
       <template v-slot:main>
@@ -906,7 +906,7 @@ export default {
     },
     openGroupTemplateCharactersSpaceDialog(groupTemplate) {
       this.characterId = null;
-      this.section = "groupTemplate&Characters";
+      this.section = "groupTemplate-characters";
       this.groupTemplateId = groupTemplate.id;
       this.spaceName = groupTemplate.groupName + "•星空间";
       this.characterSpaceVisible = true;

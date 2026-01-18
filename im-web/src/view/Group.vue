@@ -1113,7 +1113,7 @@
         if (this.activeGroup.groupType === 1 || this.activeGroup.groupType === 4) {
           this.characterIdList = []
           this.groupTemplateId = this.activeGroup.templateGroupId;
-          this.section = "groupTemplate&Characters"
+          this.section = "groupTemplate-characters"
           this.spaceName = this.activeGroup.name + "•星空间";
         } else if (this.activeGroup.groupType === 2 || this.activeGroup.groupType === 3) {
           this.groupTemplateId = null;

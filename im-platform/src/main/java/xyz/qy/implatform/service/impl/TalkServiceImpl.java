@@ -543,6 +543,10 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 records = talkPage.getRecords();
             }
         } else if (SectionEnum.CHARACTERS.getCode().equals(queryDTO.getSection())) {
+            if (ObjectUtil.isNotNull(queryDTO.getGroupId())) {
+                queryDTO.setCharacterIds(groupMemberService.getGroupCharacterIds(queryDTO.getGroupId()));
+            }
+
             if (CollectionUtils.isEmpty(queryDTO.getCharacterIds())) {
                 throw new GlobalException("参数异常");
             }

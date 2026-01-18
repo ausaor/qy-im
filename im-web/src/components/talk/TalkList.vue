@@ -479,7 +479,7 @@ export default {
       if (this.section === 'character' && !this.characterId) {
         return;
       }
-      if ((this.section === 'groupTemplate' || this.section === 'groupTemplate&Characters') && !this.groupTemplateId) {
+      if ((this.section === 'groupTemplate' || this.section === 'groupTemplate-characters') && !this.groupTemplateId) {
         return;
       }
       if (this.section === 'characters' && !this.characterIdList.length) {

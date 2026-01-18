@@ -202,6 +202,13 @@ export default defineStore('talkStore', {
         getCharacterNotifyCount: (state) => (characterId) => {
             return state.characterNotify.get(characterId) || 0;
         },
+        getCharactersNotifyCount: (state) => (characterIds) => {
+            let count = 0;
+            characterIds.forEach(characterId => {
+                count += state.characterNotify.get(characterId) || 0;
+            });
+            return count;
+        },
         getTotalCharacterNotifyCount: (state)  => () => {
             let count = 0;
             state.characterNotify.forEach(value => {

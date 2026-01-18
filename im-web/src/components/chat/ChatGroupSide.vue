@@ -480,7 +480,7 @@
         if (this.group.groupType === 1 || this.group.groupType === 4) {
           this.characterIdList = []
           this.groupTemplateId = this.group.templateGroupId;
-          this.section = "groupTemplate&Characters"
+          this.section = "groupTemplate-characters"
           this.spaceName = this.group.name + "•星空间";
         } else if (this.group.groupType === 2 || this.group.groupType === 3) {
           this.groupTemplateId = null;

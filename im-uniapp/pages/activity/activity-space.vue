@@ -217,6 +217,7 @@ export default {
       groupId: null,
       regionGroupId: null,
       regionCode: null,
+      groupTemplateId: null,
       page: {
         pageNo: 1,
         pageSize: 10,
@@ -399,6 +400,7 @@ export default {
         regionGroupId: this.regionGroupId,
         regionCode: this.regionCode,
         friendIds: friendIds,
+        groupTemplateId: this.groupTemplateId,
       }
       this.$http({
         url: `/talk/pageQueryTalkList?pageNo=${this.page.pageNo}&pageSize=${this.page.pageSize}`,
@@ -766,7 +768,11 @@ export default {
     },
     refreshTalkList() {
       if (this.notifyCount > 0) {
-        this.readedTalkNotify();
+        if (this.category !== 'character') {
+          this.readedTalkNotify();
+        } else {
+          this.readedAllTalkNotify();
+        }
       }
       if (this.category === 'private') {
         this.talkStore.resetUnreadTalkInfo();
@@ -798,6 +804,16 @@ export default {
         data: params
       }).then(() => {
       })
+    },
+    readedAllTalkNotify() {
+      let params = {
+        category: 'character'
+      };
+      this.$http({
+        url: `/talk-notify/readedAllTalkNotify`,
+        method: 'post',
+        data: params
+      }).then(() => {})
     },
     showGroupTemplatesPopup() {
       if (!this.groupTemplates || this.groupTemplates.length === 0) {
@@ -868,7 +884,11 @@ export default {
     },
     toNotifyPage() {
       if (this.notifyCount > 0) {
-        this.readedTalkNotify();
+        if (this.category !== 'character') {
+          this.readedTalkNotify();
+        } else {
+          this.readedAllTalkNotify();
+        }
       }
 
       let url = `/pages/activity/activity-notify?category=${this.category}`;
@@ -881,9 +901,7 @@ export default {
         url += `&regionCode=${this.regionCode}`;
         this.talkStore.resetRegionNotify(this.regionCode);
       } else if (this.category === 'character') {
-        if (this.section === 'allCharacters') {
-          this.talkStore.resetAllCharacterNotify();
-        }
+        this.talkStore.resetAllCharacterNotify();
       }
       uni.navigateTo({
         url: url
@@ -1019,9 +1037,7 @@ export default {
           return count;
         }
       } else if (this.category === 'character') {
-        if (this.section === 'allCharacters') {
-          return this.talkStore.getTotalCharacterNotifyCount();
-        }
+        return this.talkStore.getTotalCharacterNotifyCount();
       }
 
       return 0;
@@ -1052,8 +1068,10 @@ export default {
     console.log(options.section)
     this.category = options.category;
     this.section = options.section;
-    if (this.section === 'friend' || this.section === 'region') {
+    if (this.section === 'friend' || this.section === 'region' || this.section === 'groupTemplate-characters' || this.section === 'characters') {
       this.showAdd = false;
+    }
+    if (this.section === 'friend' || this.section === 'region') {
       this.showNotify = false;
     }
     if (options.groupId) {
@@ -1070,6 +1088,9 @@ export default {
     }
     if (options.regionCode) {
       this.regionCode = options.regionCode;
+    }
+    if (options.groupTemplateId) {
+      this.groupTemplateId = options.groupTemplateId;
     }
     this.pageQueryTalkList();
   },

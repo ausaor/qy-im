@@ -60,4 +60,12 @@ public interface IGroupMemberService extends IService<GroupMember> {
      * @return 布尔值
      */
     Boolean existsInSameGroup(Long userId1,Long userId2);
+
+    /**
+     * 获取群聊所有角色id
+     *
+     * @param groupId 群聊id
+     * @return 角色id
+     */
+    List<Long> getGroupCharacterIds(Long groupId);
 }

@@ -24,7 +24,7 @@ public enum SectionEnum {
 
     GROUP_TEMPLATE("groupTemplate"),
 
-    GROUP_TEMPLATE_CHARACTERS("groupTemplate&Characters"),
+    GROUP_TEMPLATE_CHARACTERS("groupTemplate-characters"),
 
     CHARACTERS("characters"),
 

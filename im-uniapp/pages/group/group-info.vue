@@ -35,7 +35,7 @@
 			<view class="member-more" @click="onShowMoreMmeber()">{{ `查看全部群成员${groupMembers.length}人` }}></view>
 		</view>
 		<view class="form">
-      <view class="form-item" style="padding-top: 15rpx;" @click="toGroupSpace">
+      <view class="form-item" @click="toGroupSpace">
         <view class="form-item-left">
           <svg-icon icon-class="shejiaotubiao-40" style="width: 60rpx;height: 60rpx;"></svg-icon>
           <text style="margin-left: 10rpx;margin-right: 10rpx;">群空间</text>
@@ -44,6 +44,16 @@
         <view class="form-item-right">
           <text class="unread-talk-count" v-show="unreadTalkCount > 0">{{unreadTalkCount}}条新动态</text>
           <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="45"></head-image>
+          <uni-icons type="right" size="20" color="#888888"></uni-icons>
+        </view>
+      </view>
+      <view class="form-item" @click="toStarSpace">
+        <view class="form-item-left">
+          <svg-icon icon-class="kongjian2" style="width: 60rpx;height: 60rpx;"></svg-icon>
+          <text style="margin-left: 10rpx;margin-right: 10rpx;">星空间</text>
+          <view v-show="starSpaceNotifyCount > 0" class="notify-count">{{starSpaceNotifyCount}}</view>
+        </view>
+        <view class="form-item-right">
           <uni-icons type="right" size="20" color="#888888"></uni-icons>
         </view>
       </view>
@@ -153,6 +163,8 @@ export default {
       characters: [],
       characterAvatars: [],
       activeGroupTemplateId: null,
+      allCharacterIds: new Set(),
+      starSpaceNotifyCount: 0,
 		}
 	},
 	methods: {
@@ -176,6 +188,27 @@ export default {
       this.talkStore.resetGroupTalk(Number(this.groupId));
       uni.navigateTo({
         url: `/pages/activity/activity-space?category=group&section=group&groupId=${this.groupId}&spaceTitle=群空间动态`
+      })
+    },
+    toStarSpace() {
+      let spaceTitle = '';
+      let groupTemplateId;
+      let groupId;
+      let section = '';
+      if (this.group.groupType === 1 || this.group.groupType === 4) {
+        groupTemplateId = this.group.templateGroupId;
+        section = "groupTemplate-characters"
+        spaceTitle = this.group.name + "•星空间";
+      } else if (this.group.groupType === 2 || this.group.groupType === 3) {
+        section = "characters"
+        spaceTitle = "星空间";
+        groupId = this.group.id;
+      }
+      let toUrl = `/pages/activity/activity-space?category=character&section=${section}&spaceTitle=${spaceTitle}`;
+      toUrl += groupTemplateId ? `&groupTemplateId=${groupTemplateId}` : '';
+      toUrl += groupId ? `&groupId=${groupId}` : '';
+      uni.navigateTo({
+        url: toUrl
       })
     },
     toGroupRequest() {
@@ -262,27 +295,68 @@ export default {
 			});
 		},
 		loadGroupInfo() {
-			this.$http({
-				url: `/group/find/${this.groupId}`,
-				method: 'GET'
-			}).then((group) => {
-				this.group = group;
-				// 更新聊天页面的群聊信息
-				this.chatStore.updateChatFromGroup(group);
-				// 更新聊天列表的群聊信息
-				this.groupStore.updateGroup(group);
-			});
+			return new Promise((resolve, reject) => {
+        this.$http({
+          url: `/group/find/${this.groupId}`,
+          method: 'GET'
+        }).then((group) => {
+          this.group = group;
+          // 更新聊天页面的群聊信息
+          this.chatStore.updateChatFromGroup(group);
+          // 更新聊天列表的群聊信息
+          this.groupStore.updateGroup(group);
+          resolve();
+        }).catch((error) => {
+          reject(error);
+        });
+      })
 		},
 		loadGroupMembers() {
-			console.log("loadGroupMembers")
-			this.$http({
-				url: `/group/members/${this.groupId}`,
-				method: "GET"
-			}).then((members) => {
-				this.groupMembers = members.filter(m => !m.quit);
-        this.myGroupMemberInfo = this.groupMembers.find((m) => m.userId === this.mine.id);
-			})
+      return new Promise((resolve, reject) => {
+        this.$http({
+          url: `/group/members/${this.groupId}`,
+          method: "GET"
+        }).then(async (members) => {
+          this.groupMembers = members.filter(m => !m.quit);
+          this.myGroupMemberInfo = this.groupMembers.find((m) => m.userId === this.mine.id);
+          this.groupMembers.forEach((item) => {
+            if (item.isTemplate) {
+              this.allCharacterIds.add(item.templateCharacterId);
+            }
+          })
+          if (this.group.groupType === 1 || this.group.groupType === 4) {
+            await this.queryGroupTemplateCharacterIds();
+            this.starSpaceNotifyCount = this.getStarSpaceNotifyCount();
+          } else if (this.group.groupType === 2 || this.group.groupType === 3) {
+            this.starSpaceNotifyCount = this.getStarSpaceNotifyCount();
+          }
+          resolve();
+        }).catch((error) => {
+          reject(error);
+        })
+      })
 		},
+    queryGroupTemplateCharacterIds() {
+      return new Promise((resolve, reject) => {
+        this.$http({
+          url: `/templateCharacter/characterIds?templateGroupId=${this.group.templateGroupId}`,
+          method: 'get',
+        }).then((data) => {
+          // 将数组数据转换为Set，以保持对象的一致性
+          if (Array.isArray(data)) {
+            this.allCharacterIds = new Set(data);
+          } else {
+            this.allCharacterIds = data;
+          }
+          resolve();
+        }).catch(error => {
+          reject(error);
+        })
+      })
+    },
+    getStarSpaceNotifyCount() {
+      return this.talkStore.getGroupTemplateNotifyCount(this.group.templateGroupId) + this.talkStore.getCharactersNotifyCount([...this.allCharacterIds]);
+    },
     viewGroupMemberInfo() {
       this.$refs.groupMemberList.open();
     },
@@ -308,9 +382,9 @@ export default {
         url: "/group/switchCommonGroup",
         method: 'post',
         data: paramVO
-      }).then((group) => {
-        this.loadGroupInfo();
-        this.loadGroupMembers();
+      }).then(async (group) => {
+        await this.loadGroupInfo();
+        await this.loadGroupMembers();
       }).finally(() =>{
         this.showSwitchCommonGroup = false;
       })
@@ -381,13 +455,13 @@ export default {
         url: "/group/member/switchTemplateCharacter",
         method: 'post',
         data: groupMemberVO
-      }).then(() => {
+      }).then(async () => {
         uni.showToast({
           title: "切换成功",
           icon: 'none'
         });
-        this.loadGroupInfo();
-        this.loadGroupMembers();
+        await this.loadGroupInfo();
+        await this.loadGroupMembers();
       }).finally(() =>{
       })
     },
@@ -403,13 +477,13 @@ export default {
         url: "/group/member/switchCharacterAvatar",
         method: 'post',
         data: switchCharacterAvatarVO
-      }).then(() => {
+      }).then(async () => {
         uni.showToast({
           title: "切换成功",
           icon: 'none'
         });
-        this.loadGroupMembers();
-        this.loadGroupInfo();
+        await this.loadGroupInfo();
+        await this.loadGroupMembers();
       }).finally(() =>{
 
       })
@@ -473,13 +547,13 @@ export default {
       return this.joinGroupRequests.length;
     }
 	},
-	onLoad(options) {
-		this.groupId = options.id;
-		// 查询群聊信息
-		this.loadGroupInfo();
-		// 查询群聊成员
-		this.loadGroupMembers()
-	}
+	async onLoad(options) {
+    this.groupId = options.id;
+    // 查询群聊信息
+    await this.loadGroupInfo();
+    // 查询群聊成员
+    await this.loadGroupMembers()
+  }
 
 }
 </script>
