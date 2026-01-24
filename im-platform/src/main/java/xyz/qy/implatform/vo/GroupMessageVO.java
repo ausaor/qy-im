@@ -30,6 +30,9 @@ public class GroupMessageVO {
     @ApiModelProperty(value = " 发送者头像")
     private String sendUserAvatar;
 
+    @ApiModelProperty(value = "是否模板角色消息")
+    private Boolean isTemplate;
+
     @ApiModelProperty(value = "消息内容")
     private String content;
 

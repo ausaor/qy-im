@@ -114,6 +114,7 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         // 根据加入类型判断用户是否在群里
         checkUserInRegionGroup(dto.getJoinType(), session.getUserId(), regionGroup);
 
+
         User user = userService.getById(session.getUserId());
         Date now = new Date();
         // 判断是否有群主，没有群主每位群成员24小时消息数量限制50条
@@ -127,6 +128,7 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
                 throw new GlobalException("当前群聊没有群主，您在" + RegionGroupConst.MSG_LIMIT_TIME + "小时内发言数已超过" + RegionGroupConst.MSG_LIMIT_COUNT+ "条，不能再继续发言");
             }
         }
+        RegionGroupMember regionGroupMember = regionGroupMemberService.findByRegionGroupIdAndUserId(regionGroup.getId(), session.getUserId());
 
         // 查询常驻用户id
         List<Long> userIds = regionGroupMemberService.findUserIdsByRegionGroupId(regionGroup.getId());
@@ -152,7 +154,13 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         RegionGroupMessage msg = BeanUtils.copyProperties(dto, RegionGroupMessage.class);
         msg.setSendId(session.getUserId());
         msg.setSendTime(now);
-        msg.setSendNickName(user.getNickName());
+        if (ObjectUtil.isNotNull(regionGroupMember) && !regionGroupMember.getQuit()) {
+            msg.setSendNickName(regionGroupMember.getAliasName());
+            msg.setSendUserAvatar(regionGroupMember.getHeadImage());
+        } else {
+            msg.setSendNickName(user.getNickName());
+            msg.setSendUserAvatar(user.getHeadImage());
+        }
         if (MessageType.TEXT.code().equals(msg.getType())) {
             msg.setContent(SensitiveUtil.filter(msg.getContent()));
         }
@@ -172,7 +180,6 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         userIds = userIds.stream().filter(id -> !session.getUserId().equals(id)).collect(Collectors.toList());
         // 群发
         RegionGroupMessageVO msgInfo = BeanUtils.copyProperties(msg, RegionGroupMessageVO.class);
-        msgInfo.setSendUserAvatar(user.getHeadImage());
         if (quoteMsg1 != null) {
             msgInfo.setQuoteMsg(quoteMsg1);
         }
@@ -198,6 +205,8 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         quoteMsg.setType(message.getType());
         quoteMsg.setSendId(message.getSendId());
         quoteMsg.setAtUserIds(CommaTextUtils.asLongList(message.getAtUserIds()));
+        quoteMsg.setSendNickName(message.getSendNickName());
+        quoteMsg.setSendAvatar(message.getSendUserAvatar());
         return quoteMsg;
     }
 

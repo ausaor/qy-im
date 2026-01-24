@@ -55,6 +55,18 @@ public class GroupMessage extends Model<GroupMessage> {
     private String sendNickName;
 
     /**
+     * 发送用户头像
+     */
+    @TableField("send_user_avatar")
+    private String sendUserAvatar;
+
+    /**
+     * 是否模板角色消息
+     */
+    @TableField("is_template")
+    private Boolean isTemplate;
+
+    /**
      * 接受用户id,为空表示全体发送
      */
     @TableField("recv_ids")

@@ -153,6 +153,8 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         msg.setSendId(session.getUserId());
         msg.setSendTime(new Date());
         msg.setSendNickName(member.getAliasName());
+        msg.setSendUserAvatar(member.getHeadImage());
+        msg.setIsTemplate(member.getIsTemplate());
         if (MessageType.TEXT.code().equals(msg.getType())) {
             msg.setContent(SensitiveUtil.filter(msg.getContent()));
         }
@@ -174,7 +176,6 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
             msgInfo.setQuoteMsg(quoteMsg1);
         }
         msgInfo.setAtUserIds(dto.getAtUserIds());
-        msgInfo.setSendUserAvatar(member.getHeadImage());
         IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
         sendMessage.setRecvIds(userIds);
@@ -193,6 +194,9 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         quoteMsg.setType(message.getType());
         quoteMsg.setSendId(message.getSendId());
         quoteMsg.setAtUserIds(CommaTextUtils.asLongList(message.getAtUserIds()));
+        quoteMsg.setSendNickName(message.getSendNickName());
+        quoteMsg.setSendAvatar(message.getSendUserAvatar());
+        quoteMsg.setIsTemplate(message.getIsTemplate());
         return quoteMsg;
     }
 

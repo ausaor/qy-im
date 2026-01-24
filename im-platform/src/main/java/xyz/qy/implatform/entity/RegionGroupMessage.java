@@ -54,6 +54,12 @@ public class RegionGroupMessage extends Model<RegionGroupMessage> {
     private String sendNickName;
 
     /**
+     * 发送用户头像
+     */
+    @TableField("send_user_avatar")
+    private String sendUserAvatar;
+
+    /**
      * 接受用户id,为空表示全体发送
      */
     @TableField("recv_ids")

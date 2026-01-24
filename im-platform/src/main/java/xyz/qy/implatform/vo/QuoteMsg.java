@@ -17,4 +17,10 @@ public class QuoteMsg {
     private Integer type;
 
     private List<Long> atUserIds;
+
+    private String sendAvatar;
+
+    private String sendNickName;
+
+    private Boolean isTemplate;
 }

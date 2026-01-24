@@ -979,54 +979,54 @@
           chatBubbleIndex: 0,
         };
         if (this.chat.type === 'GROUP') {
-          //let friend = this.friends.find((f) => f.id === msgInfo.sendId);
+          let member = this.groupMembersMap.get(msgInfo.sendId);
           let friend = this.friendsMap.get(msgInfo.sendId);
           if (friend) {
-            showInfoObj.role = friend.role;
             if (friend.friendRemark) {
               showInfoObj.nickName = friend.friendRemark;
-            } else if (friend.friendNickName) {
-              showInfoObj.nickName = friend.friendNickName;
-            }
-          }
-          // 是普通群聊
-          if (this.group.groupType === 0) {
-            if (friend) {
-              if (friend.friendRemark) {
-                showInfoObj.showName = friend.friendRemark;
-              } else if (friend.friendNickName) {
-                showInfoObj.showName = friend.friendNickName;
-              }
-            }
-          }
-          //let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
-          let member = this.groupMembersMap.get(msgInfo.sendId);
-          if (msgInfo.quoteMsg) {
-            //let member2 = this.groupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
-            let member2 = this.groupMembersMap.get(msgInfo.quoteMsg.sendId);
-            showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
-          }
-          if (member) {
-            showInfoObj.role = member.role;
-            showInfoObj.characterNum = member.characterNum;
-            showInfoObj.headImage = member.headImage;
-            showInfoObj.chatBubbleIndex = member.chatBubble;
-            if (!showInfoObj.showName) {
-              showInfoObj.showName = member.aliasName;
-            }
-            if (!showInfoObj.nickName) {
+            } else if (member) {
               showInfoObj.nickName = member.nickName;
             }
           }
 
+          if (!msgInfo.isTemplate) { // 不是作为模板角色发送的消息
+            if (friend) {
+              if (friend.friendRemark) {
+                showInfoObj.showName = friend.friendRemark;
+              }
+              if (member) {
+                showInfoObj.headImage = member.headImage;
+              }
+            } else if (member) {
+              showInfoObj.showName = member.aliasName;
+              showInfoObj.headImage = member.headImage;
+              showInfoObj.nickName = member.nickName;
+            }
+          } else {
+            showInfoObj.showName = msgInfo.sendNickName;
+            showInfoObj.headImage = msgInfo.sendUserAvatar;
+          }
+          if (member) {
+            showInfoObj.role = member.role;
+            showInfoObj.characterNum = member.characterNum;
+            showInfoObj.chatBubbleIndex = member.chatBubble;
+          }
           if (!showInfoObj.showName) {
             if (msgInfo.sendNickName) {
               showInfoObj.showName = msgInfo.sendNickName;
             }
           }
           if (!showInfoObj.headImage) {
-            if (msgInfo.sendUserAvatar && this.group.groupType !== 0) {
+            if (msgInfo.sendUserAvatar) {
               showInfoObj.headImage = msgInfo.sendUserAvatar;
+            }
+          }
+          if (msgInfo.quoteMsg) {
+            let member2 = this.groupMembersMap.get(msgInfo.quoteMsg.sendId);
+            if (msgInfo.quoteMsg.isTemplate) {
+              showInfoObj.quoteShowName = msgInfo.quoteMsg.sendNickName;
+            } else {
+              showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
             }
           }
         } else {
