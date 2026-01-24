@@ -809,7 +809,6 @@ export default {
         chatBubbleIndex: 0,
       };
       if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
-        //let friend = this.friends.find((f) => f.id === msgInfo.sendId);
         let friend = this.friendsMap.get(msgInfo.sendId);
         if (friend) {
           showInfoObj.role = friend.role;
@@ -817,22 +816,20 @@ export default {
             showInfoObj.showName = friend.friendRemark;
           }
         }
-        //let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
         let member = this.regionGroupMembersMap.get(msgInfo.sendId);
+        if (msgInfo.quoteMsg) {
+          let member2 = this.regionGroupMembersMap.get(msgInfo.quoteMsg.sendId);
+          showInfoObj.quoteShowName = member2 ? member2.aliasName : msgInfo.quoteMsg.sendNickName;
+        }
         if (!showInfoObj.showName) {
           if (member) {
             showInfoObj.showName = member.aliasName;
           }
         }
         if (member) {
-          showInfoObj.headImage = member.headImage;
           showInfoObj.role = member.role;
+          showInfoObj.headImage = member.headImage;
           showInfoObj.chatBubbleIndex = member.chatBubble;
-        }
-        if (msgInfo.quoteMsg) {
-          //let member2 = this.regionGroupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
-          let member2 = this.regionGroupMembersMap.get(msgInfo.quoteMsg.sendId);
-          showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
         }
         if (!showInfoObj.showName) {
           if (msgInfo.sendNickName) {

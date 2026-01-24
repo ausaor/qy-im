@@ -1438,6 +1438,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             member.setAliasName(templateCharacter.get(0).getName());
             member.setHeadImage(templateCharacter.get(0).getAvatar());
             member.setTemplateCharacterId(templateCharacterId);
+            member.setTemplateGroupId(templateCharacter.get(0).getTemplateGroupId());
             member.setIsTemplate(true);
             member.setCreatedTime(new Date());
             member.setQuit(false);
@@ -1466,6 +1467,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             member.setAliasName(templateCharacter.getName());
             member.setHeadImage(templateCharacter.getAvatar());
             member.setTemplateCharacterId(templateCharacterId);
+            member.setTemplateGroupId(templateCharacter.getTemplateGroupId());
             member.setIsTemplate(true);
             member.setRemark(group.getName());
             member.setCreatedTime(new Date());
@@ -1516,6 +1518,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             member.setAliasName(templateCharacter.getName());
             member.setHeadImage(templateCharacter.getAvatar());
             member.setTemplateCharacterId(templateCharacterId);
+            member.setTemplateGroupId(templateCharacter.getTemplateGroupId());
             member.setIsTemplate(true);
             member.setRemark(group.getName());
             member.setCreatedTime(new Date());
