@@ -115,11 +115,11 @@ create table im_group
     is_banned         smallint(1)   default 0                   not null comment '禁止发言（1：是；0否）',
     ban_type          varchar(50)                               null comment '被禁止发言类型（admin：管理员禁止；master：群主禁止）',
     ban_expire_time   datetime                                  null comment '禁止发言失效时间',
-    enter_review      tinyint(1)    default 1                   not null comment '加群审核'
+    enter_review      tinyint(1)    default 1                   not null comment '加群审核',
     deleted           tinyint(1)    default 0                   not null comment '是否已删除',
     created_time      datetime      default current_timestamp() null comment '创建时间',
     switch_time       datetime                                  null comment '切换模板群聊时间',
-    version           varchar(30)   default ''                  not null comment '群版本号',
+    version           varchar(30)   default ''                  not null comment '群版本号'
 )
     comment '群';
 
