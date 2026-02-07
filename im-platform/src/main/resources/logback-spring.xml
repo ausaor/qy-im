@@ -3,6 +3,7 @@
 	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
 	<property name="LOG_PATH" value="log"/>
 	<property name="APP_NAME" value="im-platform"/>
+
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>info</level>
@@ -12,6 +13,7 @@
 			<charset>UTF-8</charset>
 		</encoder>
 	</appender>
+
 	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<file>${LOG_PATH}/${APP_NAME}.log</file>
 		<encoder>
@@ -25,20 +27,23 @@
 			<totalSizeCap>20GB</totalSizeCap>
 		</rollingPolicy>
 	</appender>
-	<!-- 开发环境下的日志配置 -->
+
+	<!-- 开发环境 -->
 	<springProfile name="dev">
 		<root level="INFO">
 			<appender-ref ref="CONSOLE"/>
 		</root>
 	</springProfile>
-	<!-- 测试环境下的日志配置 -->
+
+	<!-- 测试环境 -->
 	<springProfile name="test">
 		<root level="INFO">
 			<appender-ref ref="CONSOLE"/>
 			<appender-ref ref="FILE"/>
 		</root>
 	</springProfile>
-	<!-- 生产环境下的日志配置 -->
+
+	<!-- 生产环境 -->
 	<springProfile name="prod">
 		<root level="INFO">
 			<appender-ref ref="CONSOLE"/>
