@@ -90,7 +90,8 @@ create table im_friend
     friend_nick_name  varchar(255)                             not null comment '好友昵称',
     friend_head_image varchar(255) default ''                  null comment '好友头像',
     friend_remark     varchar(50)                              null comment '好友备注',
-    created_time      datetime     default current_timestamp() null comment '创建时间'
+    created_time      datetime     default current_timestamp() null comment '创建时间',
+    deleted           tinyint(1)   default 0                   not null comment '是否删除'
 )
     comment '好友表';
 
