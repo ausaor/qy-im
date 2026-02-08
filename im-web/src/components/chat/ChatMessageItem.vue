@@ -642,13 +642,80 @@ export default {
 						flex-direction: row;
 						align-items: center;
 
-						.send-image {
-              min-width: 200px;
-              min-height: 150px;
-              max-width: 400px;
-              max-height: 300px;
-              border-radius: 8px;
-              cursor: pointer;
+						.img-load-box {
+              position: relative;
+              border: 2px solid transparent;
+              border-radius: 12px;
+              background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+              padding: 3px;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+              transition: all 0.3s ease;
+              overflow: hidden;
+
+              &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(45deg,
+                  rgba(255,255,255,0.2) 0%,
+                  rgba(255,255,255,0.4) 50%,
+                  rgba(255,255,255,0.2) 100%);
+                z-index: 1;
+                border-radius: 10px;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+              }
+
+              &::after {
+                content: '\\e785'; /* Element UI 放大镜图标 */
+                font-family: 'element-icons' !important;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 40px;
+                color: rgba(255, 255, 255, 0.8);
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                z-index: 2;
+                opacity: 0;
+                transition: all 0.3s ease;
+                pointer-events: none;
+              }
+
+              &:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+                background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+                
+                &::before {
+                  opacity: 1;
+                }
+                
+                &::after {
+                  opacity: 1;
+                  transform: translate(-50%, -50%) scale(1.1);
+                }
+              }
+
+              .send-image {
+                min-width: 200px;
+                min-height: 150px;
+                max-width: 400px;
+                max-height: 300px;
+                border-radius: 10px;
+                cursor: pointer;
+                position: relative;
+                z-index: 3;
+                transition: all 0.3s ease;
+                
+                &:hover {
+                  transform: scale(1.02);
+                }
+              }
 						}
 
 						.send-fail {
@@ -667,14 +734,46 @@ export default {
 
             .video-load-box {
               position: relative;
+              border: 2px solid transparent;
+              border-radius: 12px;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              padding: 3px;
+              box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+              transition: all 0.3s ease;
+              overflow: hidden;
+
+              &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(45deg, 
+                  rgba(255,255,255,0.1) 0%, 
+                  rgba(255,255,255,0.3) 50%, 
+                  rgba(255,255,255,0.1) 100%);
+                z-index: 1;
+                border-radius: 10px;
+                pointer-events: none;
+              }
+
+              &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+                background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+              }
 
               .video-image {
                 min-width: 200px;
                 max-width: 400px;
                 min-height: 150px;
                 max-height: 300px;
-                border-radius: 8px;
+                border-radius: 10px;
                 cursor: pointer;
+                position: relative;
+                z-index: 2;
+                backdrop-filter: blur(10px);
               }
 
               .play-icon {
@@ -689,6 +788,14 @@ export default {
                 transform: translate(-50%, -50%);
                 cursor: pointer;
                 color: #ffffff;
+                text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+                z-index: 3;
+                transition: all 0.3s ease;
+                
+                &:hover {
+                  transform: translate(-50%, -50%) scale(1.1);
+                  text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+                }
               }
             }
           }
