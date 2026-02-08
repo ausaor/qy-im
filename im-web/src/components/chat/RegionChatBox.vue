@@ -178,6 +178,7 @@ export default {
       isInBottom: false, // 滚动条是否在底部
       newMessageSize: 0, // 滚动条不在底部时新的消息数量
       lastScrollTop: 0,
+      maxTmpId: 0 // 最后生成的临时ID
     }
   },
   created() {
@@ -242,7 +243,7 @@ export default {
         content: JSON.stringify(data),
         sendTime: new Date().getTime(),
         selfSend: true,
-        type: 1,
+        type: this.$enums.MESSAGE_TYPE.IMAGE,
         readedCount: 0,
         loadStatus: "loading",
         joinType: this.regionGroup.joinType,
@@ -288,7 +289,7 @@ export default {
         content: JSON.stringify(data),
         sendTime: new Date().getTime(),
         selfSend: true,
-        type: 4,
+        type: this.$enums.MESSAGE_TYPE.VIDEO,
         readedCount: 0,
         loadStatus: "loading",
         status: this.$enums.MESSAGE_STATUS.UNSEND,
@@ -334,7 +335,7 @@ export default {
         content: JSON.stringify(data),
         sendTime: new Date().getTime(),
         selfSend: true,
-        type: 3,
+        type: this.$enums.MESSAGE_TYPE.AUDIO,
         readedCount: 0,
         loadStatus: "loading",
         status: this.$enums.MESSAGE_STATUS.UNSEND,
@@ -390,7 +391,7 @@ export default {
         content: JSON.stringify(data),
         sendTime: new Date().getTime(),
         selfSend: true,
-        type: 2,
+        type: this.$enums.MESSAGE_TYPE.FILE,
         readedCount: 0,
         loadStatus: "loading",
         joinType: this.regionGroup.joinType,
@@ -513,8 +514,9 @@ export default {
     },
     onSendRecord(data) {
       let msgInfo = {
+        tmpId: this.generateId(),
         content: JSON.stringify(data),
-        type: 3,
+        type: this.$enums.MESSAGE_TYPE.AUDIO,
         receipt: this.isReceipt,
         joinType: this.regionGroup.joinType,
       }
@@ -588,8 +590,9 @@ export default {
           reject();
         }
         let msgInfo = {
+          tmpId: this.generateId(),
           content: sendText,
-          type: 0
+          type: this.$enums.MESSAGE_TYPE.TEXT
         }
         // 填充对方id
         this.fillTargetId(msgInfo, this.chat.targetId);
@@ -793,7 +796,13 @@ export default {
     },
     generateId(){
       // 生成临时id
-      return String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
+      const id = String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
+      // 必须保证id是递增
+      if (this.maxTmpId > id) {
+        return this.generateId();
+      }
+      this.maxTmpId = id;
+      return id;
     },
     scrollToTargetMsg(messageId) {
       const element = this.$refs[`message-${messageId}`][0];
@@ -882,6 +891,7 @@ export default {
           this.resetEditor();
           // 复位回执消息
           this.isReceipt = false;
+          this.maxTmpId = 0;
         }
       },
       immediate: true

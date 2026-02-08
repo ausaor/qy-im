@@ -255,12 +255,13 @@ export default {
 			for (let idx in chat.messages) {
 				// 已经发送成功的，根据id删除
 				if (chat.messages[idx].id && chat.messages[idx].id == msgInfo.id) {
+					console.log("已经发送成功的消息，根据id删除")
 					chat.messages.splice(idx, 1);
 					break;
 				}
-				// 正在发送中的消息可能没有id，根据发送时间删除
-				if (msgInfo.selfSend && chat.messages[idx].selfSend &&
-					chat.messages[idx].sendTime == msgInfo.sendTime) {
+				// 正在发送中的消息可能没有id，只有临时id
+				if (chat.messages[idx].tmpId && chat.messages[idx].tmpId == msgInfo.tmpId) {
+					console.log("正在发送中的消息，根据临时id删除")
 					chat.messages.splice(idx, 1);
 					break;
 				}

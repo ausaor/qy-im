@@ -228,6 +228,7 @@
         newMessageSize: 0, // 滚动条不在底部时新的消息数量
         lastScrollTop: 0,
         allCharacterIds: new Set(),
+        maxTmpId: 0 // 最后生成的临时ID
 			}
 		},
     created() {
@@ -322,7 +323,7 @@
           content: JSON.stringify(data),
           sendTime: new Date().getTime(),
           selfSend: true,
-          type: 1,
+          type: this.$enums.MESSAGE_TYPE.IMAGE,
           readedCount: 0,
           loadStatus: "loading",
           status: this.$enums.MESSAGE_STATUS.UNSEND,
@@ -370,7 +371,7 @@
           content: JSON.stringify(data),
           sendTime: new Date().getTime(),
           selfSend: true,
-          type: 4,
+          type: this.$enums.MESSAGE_TYPE.VIDEO,
           readedCount: 0,
           loadStatus: "loading",
           status: this.$enums.MESSAGE_STATUS.UNSEND,
@@ -418,7 +419,7 @@
           content: JSON.stringify(data),
           sendTime: new Date().getTime(),
           selfSend: true,
-          type: 3,
+          type: this.$enums.MESSAGE_TYPE.AUDIO,
           readedCount: 0,
           loadStatus: "loading",
           status: this.$enums.MESSAGE_STATUS.UNSEND,
@@ -476,7 +477,7 @@
 					content: JSON.stringify(data),
 					sendTime: new Date().getTime(),
 					selfSend: true,
-					type: 2,
+					type: this.$enums.MESSAGE_TYPE.FILE,
           readedCount: 0,
 					loadStatus: "loading",
           status: this.$enums.MESSAGE_STATUS.UNSEND,
@@ -672,8 +673,9 @@
           voice: data.voice
         }
         let msgInfo = {
+          tmpId: this.generateId(),
           content: JSON.stringify(content),
-          type: 5,
+          type: this.$enums.MESSAGE_TYPE.WORD_VOICE,
           receipt: this.isReceipt
         }
         // 填充对方id
@@ -704,8 +706,9 @@
             originUrl: data.url
           }
           let msgInfo = {
+            tmpId: this.generateId(),
             content: JSON.stringify(content),
-            type: 1,
+            type: this.$enums.MESSAGE_TYPE.IMAGE,
             receipt: this.isReceipt
           }
           // 填充对方id
@@ -729,8 +732,9 @@
       },
       onSendRecord(data) {
         let msgInfo = {
+          tmpId: this.generateId(),
           content: JSON.stringify(data),
-          type: 3,
+          type: this.$enums.MESSAGE_TYPE.AUDIO,
           receipt: this.isReceipt
         }
         // 填充对方id
@@ -812,8 +816,9 @@
             reject();
           }
           let msgInfo = {
+            tmpId: this.generateId(),
             content: sendText,
-            type: 0
+            type: this.$enums.MESSAGE_TYPE.TEXT
           }
           // 填充对方id
           this.fillTargetId(msgInfo, this.chat.targetId);
@@ -1109,7 +1114,13 @@
       },
       generateId(){
         // 生成临时id
-        return String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
+        const id = String(new Date().getTime()) + String(Math.floor(Math.random() * 1000));
+        // 必须保证id是递增
+        if (this.maxTmpId > id) {
+          return this.generateId();
+        }
+        this.maxTmpId = id;
+        return id;
       },
       scrollToTargetMsg(messageId) {
         const element = this.$refs[`message-${messageId}`][0];
@@ -1227,6 +1238,8 @@
             this.resetEditor();
             // 复位回执消息
             this.isReceipt = false;
+            // 清空消息临时id
+            this.maxTmpId = 0;
           }
         },
 				immediate: true
