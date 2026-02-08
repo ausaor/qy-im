@@ -46,9 +46,9 @@ public class FriendRequestServiceImpl extends ServiceImpl<FriendRequestMapper, F
         LambdaQueryWrapper<FriendRequest> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper
                 .eq(FriendRequest::getStatus, FriendRequestStatusEnum.APPLYING.getCode())
-                .and(qw -> qw.like(FriendRequest::getRecvId, userId)
+                .and(qw -> qw.eq(FriendRequest::getRecvId, userId)
                                 .or()
-                                .like(FriendRequest::getSendId, userId));
+                                .eq(FriendRequest::getSendId, userId));
         List<FriendRequest> friendRequests = this.list(queryWrapper);
         if (CollectionUtil.isEmpty(friendRequests)) {
             return Collections.emptyList();
