@@ -134,6 +134,7 @@ export default {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   text-align: left;
   border: 1px solid rgba(224, 224, 224, 0.8);
+  z-index: 10;
 
   .el-scrollbar ::v-deep .el-scrollbar__bar {
     display: none !important;

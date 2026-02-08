@@ -127,6 +127,7 @@
 
 <style scoped lang="scss">
 	.chat-record {
+    text-align: center;
 
 		.tip {
 			font-size: 18px;

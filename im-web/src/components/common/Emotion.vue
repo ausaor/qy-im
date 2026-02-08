@@ -79,6 +79,7 @@ export default {
   background-color: #ffffff;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
   border: 1px solid #f0f0f0;
+  z-index: 10;
 
   .el-scrollbar ::v-deep .el-scrollbar__bar {
     display: none !important;
