@@ -100,9 +100,6 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
 
         // 查询用户作为群主的群聊
         List<Long> groupIds = groupService.findByOwnerId(userId);
-        if (CollectionUtils.isEmpty(groupIds)) {
-            return Collections.emptyList();
-        }
 
         LambdaQueryWrapper<GroupRequest> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(GroupRequest::getDeleted, false);
