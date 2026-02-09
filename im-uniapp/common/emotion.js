@@ -1,3 +1,5 @@
+import UNI_APP from '@/.env.js'
+
 const emoTextList = ['emo憨笑', 'emo媚眼', 'emo开心', 'emo坏笑', 'emo可怜', 'emo爱心', 'emo笑哭', 'emo拍手',
 	'emo惊喜', 'emo打气', 'emo大哭', 'emo流泪', 'emo饥饿', 'emo难受', 'emo健身', 'emo示爱', 'emo色色', 'emo眨眼',
 	'emo暴怒', 'emo惊恐', 'emo思考', 'emo头晕', 'emo大吐', 'emo酷笑', 'emo翻滚', 'emo享受', 'emo鼻涕', 'emo快乐',
@@ -37,32 +39,50 @@ let transform = (content, extClass) => {
 	});
 }
 
+let transformOriginal = (content, extClass) => {
+	return content.replace(/\#[a-z\u4E00-\u9FA5]{1,6}\;/gi, (emoText)=>{
+		// 将匹配结果替换表情图片
+		let word = emoText.replace(/\#|\;/gi, '');
+		let idx = originalEmoTextList.indexOf(word);
+		if (idx >= 0) {
+			let path = textToPathOriginal(emoText);
+			let img = `<img src="${path}" class="${extClass}" alt="${word}"/>`;
+			return img;
+		}
+		if (idx == -1) {
+			return emoText;
+		}
+	});
+}
 
 
 let textToPath = (emoText) => {
 	let word = emoText.replace(/\#|\;/gi, '');
 	let idx = emoTextList.indexOf(word);
-	let baseUrl = "/"
-	// #ifdef H5
-		baseUrl = window.location.pathname;
-	// #endif
-	return `${baseUrl}static/emoji/emo2/${idx}.gif`;
+	return UNI_APP.EMO_URL2 + idx + ".gif";
+	// let baseUrl = "/"
+	// // #ifdef H5
+	// 	baseUrl = window.location.pathname;
+	// // #endif
+	// return `${baseUrl}static/emoji/emo2/${idx}.gif`;
 }
 
 let textToPathOriginal = (emoText) => {
 	let word = emoText.replace(/\#|\;/gi, '');
 	let idx = originalEmoTextList.indexOf(word);
-	let baseUrl = "/"
-	// #ifdef H5
-	baseUrl = window.location.pathname;
-	// #endif
-	return `${baseUrl}static/emoji/emo1/${idx}.gif`;
+	return UNI_APP.EMO_URL1 + idx + ".gif";
+	// let baseUrl = "/"
+	// // #ifdef H5
+	// baseUrl = window.location.pathname;
+	// // #endif
+	// return `${baseUrl}static/emoji/emo1/${idx}.gif`;
 }
 
 export default {
 	emoTextList,
 	originalEmoTextList,
 	transform,
+	transformOriginal,
 	textToPath,
 	textToPathOriginal,
 }

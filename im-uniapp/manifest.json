@@ -5,7 +5,6 @@
     "versionName" : "1.0.0",
     "versionCode" : 100,
     "transformPx" : false,
-    /* 5+App特有相关 */
     "app-plus" : {
         "usingComponents" : true,
         "nvueStyleCompiler" : "uni-app",
@@ -16,7 +15,6 @@
             "autoclose" : false,
             "delay" : 0
         },
-        /* 模块配置 */
         "modules" : {
             "Camera" : {},
             "Record" : {},
@@ -25,9 +23,7 @@
         "softinput" : {
             "mode" : "adjustResize"
         },
-        /* 应用发布信息 */
         "distribute" : {
-            /* android打包配置 */
             "android" : {
                 "permissions" : [
                     "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
@@ -54,7 +50,6 @@
                 "abiFilters" : [ "armeabi-v7a", "arm64-v8a", "x86" ],
                 "minSdkVersion" : 21
             },
-            /* ios打包配置 */
             "ios" : {
                 "dSYMs" : false,
                 "privacyDescription" : {
@@ -63,7 +58,6 @@
                 },
                 "idfa" : false
             },
-            /* SDK配置 */
             "sdkConfigs" : {
                 "ad" : {},
                 "speech" : {}
@@ -102,9 +96,7 @@
             }
         }
     },
-    /* 快应用特有相关 */
     "quickapp" : {},
-    /* 小程序特有相关 */
     "mp-weixin" : {
         "appid" : "wxda94f40bfad0262c",
         "libVersion" : "latest",
@@ -129,9 +121,8 @@
     "h5" : {
         "title" : "青語",
         "router" : {
+            "mode" : "history",
             "base" : "/h5/"
         }
     }
 }
-/* ios打包配置 *//* SDK配置 */
-

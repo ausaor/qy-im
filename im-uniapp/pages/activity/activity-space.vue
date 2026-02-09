@@ -49,7 +49,7 @@
 
           <view class="content">
             <view class="text">
-              <up-parse class="rich-text" :showImgMenu="false" :content="nodesText(item.content)"></up-parse>
+              <rich-text class="rich-text" :nodes="nodesText(item.content)"></rich-text>
             </view>
 
             <view class="image-grid" v-if="item.fileList && item.fileList.length">
@@ -116,7 +116,7 @@
                 </view>
                 <text>：</text>
                 <view class="comment-text" @click="doComment(comment, item)">
-                  <up-parse v-if="comment.type == $enums.MESSAGE_TYPE.TEXT" class="comment-rich-text" :showImgMenu="false" :content="nodesText(comment.content)"></up-parse>
+                  <rich-text v-if="comment.type == $enums.MESSAGE_TYPE.TEXT" class="comment-rich-text" :nodes="nodesText(comment.content)"></rich-text>
                   <view v-if="comment.type == $enums.MESSAGE_TYPE.IMAGE">
                     <image class="comment-img" :src="JSON.parse(comment.content).originUrl" mode="aspectFill"/>
                   </view>
@@ -417,7 +417,7 @@ export default {
     nodesText(content) {
       let color = '';
       let text = this.$url.replaceURLWithHTMLLinks(content, color)
-      return this.$emo.transform(text, 'emoji-small').replace(/\n/g, '<br>');
+      return this.$emo.transformOriginal(text, 'emoji-small').replace(/\n/g, '<br>');
     },
     showUserInfo(userId) {
       if (userId && userId > 0) {

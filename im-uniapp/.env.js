@@ -1,6 +1,9 @@
 //设置环境(打包前修改此变量)
 const ENV = "DEV";
 const UNI_APP = {}
+// 表情包路径
+UNI_APP.EMO_URL1 = "/static/emoji/emo1/";
+UNI_APP.EMO_URL2 = "/static/emoji/emo2/";
 // 高德地图key
 UNI_APP.AMAP_KEY = "xxxxxxxxxxxxxxxxxxx";
 if(ENV=="DEV"){
