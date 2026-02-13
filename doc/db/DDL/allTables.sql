@@ -622,8 +622,8 @@ create table im_user
     province         varchar(50)                               null comment '省份',
     city             varchar(50)                               null comment '城市',
     is_banned        smallint(1)   default 0                   not null comment '禁止发言（1：是；0：否）',
-    auto_play        tinyint(1)    default 0                   not null comment '语音自动播放（1：是；0：否）',
-    sound_play       tinyint(1)    default 0                   not null comment '消息提示音（1：开启；0：关闭）',
+    auto_play        tinyint(1)    default 1                   not null comment '语音自动播放（1：是；0：否）',
+    sound_play       tinyint(1)    default 1                   not null comment '消息提示音（1：开启；0：关闭）',
     friend_review    tinyint(1)    default 1                   not null comment '添加好友是否需要审核',
     group_review     tinyint(1)    default 1                   not null comment '邀请进群组是否需要审核',
     chat_bubble      tinyint(1)    default 0                   not null comment '聊天气泡',
@@ -730,6 +730,59 @@ create index idx_1
 
 create index idx_2
     on im_character_user (user_id);
+
+
+create table im_emo_album
+(
+    id          int                  not null comment '主键'
+        primary key,
+    name        varchar(10)          not null comment '相册名称',
+    logo_url    varchar(1000)        not null comment 'logo图片链接',
+    deleted     tinyint(1) default 0 not null comment '是否删除',
+    create_by   bigint               not null comment '创建者',
+    create_time datetime             not null comment '创建时间',
+    update_by   bigint               null comment '更新者',
+    update_time datetime             null comment '更新时间'
+)
+    comment '表情相册';
+
+create index idx_1
+    on im_emo_album (name);
+
+
+create table im_emo_favorite
+(
+    id          bigint   not null comment '主键'
+        primary key,
+    emo_id      int      not null comment '表情id',
+    album_id    int      not null comment '相册id',
+    user_id     int      not null comment '用户id',
+    create_time datetime not null comment '创建时间'
+);
+
+create index idx_1
+    on im_emo_favorite (user_id);
+
+
+create table im_emo_img
+(
+    id          int           not null comment '主键'
+        primary key,
+    album_id    int           not null comment '相册id',
+    name        varchar(20)   not null comment '表情名称',
+    img_url     varchar(1000) not null comment '图片链接',
+    width       int           null comment '图片宽度',
+    height      int           null comment '图片高度',
+    deleted     tinyint(1)    not null comment '是否删除',
+    create_by   bigint        null comment '创建者',
+    create_time datetime      not null comment '创建时间',
+    update_by   bigint        null comment '更新者',
+    update_time datetime      null comment '更新时间'
+)
+    comment '表情图片';
+
+create index idx_1
+    on im_emo_img (album_id);
 
 
 create table ai_chat_message
