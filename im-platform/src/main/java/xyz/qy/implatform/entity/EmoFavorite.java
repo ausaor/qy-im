@@ -25,7 +25,10 @@ public class EmoFavorite {
     private Integer albumId;
 
     @TableField("user_id")
-    private Integer userId;
+    private Long userId;
+
+    @TableField("img_url")
+    private String imgUrl;
 
     @TableField("create_time")
     private Date createTime;

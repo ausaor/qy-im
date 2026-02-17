@@ -752,12 +752,14 @@ create index idx_1
 
 create table im_emo_favorite
 (
-    id          bigint   not null comment '主键'
+    id          bigint     not null comment '主键'
         primary key,
-    emo_id      int      not null comment '表情id',
-    album_id    int      not null comment '相册id',
-    user_id     int      not null comment '用户id',
-    create_time datetime not null comment '创建时间'
+    emo_id      int        not null comment '表情id',
+    album_id    int        not null comment '相册id',
+    user_id     bigint     not null comment '用户id',
+    create_time datetime   not null comment '创建时间',
+    constraint idx_2
+        unique (emo_id, album_id, user_id)
 );
 
 create index idx_1
