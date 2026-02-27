@@ -36,7 +36,7 @@ public class IEmoImgServiceImpl extends ServiceImpl<EmoImgMapper, EmoImg> implem
             return Collections.emptyList();
         }
 
-        List<Long> albumIds = emoAlbumList.stream().map(EmoAlbum::getId).collect(Collectors.toList());
+        List<Integer> albumIds = emoAlbumList.stream().map(EmoAlbum::getId).collect(Collectors.toList());
         List<EmoImg> emoImgList = this.lambdaQuery().eq(EmoImg::getDeleted, false)
                 .in(EmoImg::getAlbumId, albumIds).list();
 

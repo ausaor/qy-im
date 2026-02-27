@@ -52,7 +52,9 @@ public class MsgTypeUtil {
                 // For video type, check if videoUrl exists and is a valid URL
                 String videoUrl = jsonObject.getStr("videoUrl");
                 return StrUtil.isNotBlank(videoUrl) && Validator.isUrl(videoUrl);
-                
+            case 7:
+                String imageUrl = jsonObject.getStr("imageUrl");
+                return StrUtil.isNotBlank(imageUrl) && Validator.isUrl(imageUrl);
             default:
                 // For other message types, return false
                 return false;

@@ -40,6 +40,16 @@
               <span title="发送失败" v-show="loadFail" @click.stop="onSendFail"
                     class="send-fail el-icon-warning"></span>
             </div>
+            <div class="chat-msg-emoji" v-if="msgInfo.type==$enums.MESSAGE_TYPE.EMOJI">
+              <div class="emoji-load-box" v-loading="loading" element-loading-text="上传中.."
+                   element-loading-background="rgba(0, 0, 0, 0.4)">
+                <img class="emoji-image" :src="JSON.parse(msgInfo.content).imageUrl" loading="lazy"
+                     :style="emoImageStyle" style="object-fit: cover;"
+                     @click.stop="showFullImageBox()" />
+              </div>
+              <span title="发送失败" v-show="loadFail" @click.stop="onSendFail"
+                    class="send-fail el-icon-warning"></span>
+            </div>
             <div class="chat-msg-video" v-if="msgInfo.type==$enums.MESSAGE_TYPE.VIDEO">
               <div class="video-load-box" v-loading="loading" element-loading-text="上传中.."
                    element-loading-background="rgba(0, 0, 0, 0.4)">
@@ -530,6 +540,13 @@ export default {
           return '';
         }
         return `color:${this.colors[index]};`
+      },
+      emoImageStyle() {
+        const content = JSON.parse(this.msgInfo.content);
+        return {
+          width: (content.width * 0.6) + 'px',
+          height: (content.height * 0.6) + 'px'
+        };
       }
 		},
 	}
@@ -797,6 +814,40 @@ export default {
                   text-shadow: 0 4px 15px rgba(0,0,0,0.4);
                 }
               }
+            }
+          }
+
+          .chat-msg-emoji {
+            display: flex;
+            flex-wrap: nowrap;
+            flex-direction: row;
+            align-items: center;
+
+            .emoji-load-box {
+              position: relative;
+              border: 2px solid transparent;
+              border-radius: 12px;
+              background: transparent;
+              padding: 3px;
+              transition: all 0.3s ease;
+              overflow: hidden;
+
+              .emoji-image {
+                background: transparent;
+                transform-origin: center;
+                border-radius: 8px;
+                cursor: pointer;
+                position: relative;
+                z-index: 3;
+                transition: all 0.3s ease;
+              }
+            }
+
+            .send-fail {
+              color: #e60c0c;
+              font-size: 30px;
+              cursor: pointer;
+              margin: 0 20px;
             }
           }
 

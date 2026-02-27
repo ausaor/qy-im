@@ -326,6 +326,7 @@
             this.pullFriendRequests();
             this.pullGroupRequests();
             this.pullOfflineTalkNotify();
+            this.queryEmoAlbumImgs();
           });
           this.$wsApi.onMessage((cmd, msgInfo) => {
             if (cmd == 2) {
@@ -448,6 +449,15 @@
           method: 'GET'
         }).then((data) => {
           this.$store.commit("setGroupRequests", data)
+        }).catch(() => {
+        })
+      },
+      queryEmoAlbumImgs() {
+        this.$http({
+          url: '/emoImg/getEmoAlbumImgList',
+          method: 'GET'
+        }).then((data) => {
+          this.$store.commit("setEmoAlbumImgs", data)
         }).catch(() => {
         })
       },
@@ -612,7 +622,7 @@
         // 插入消息
         this.$store.commit("insertMessage", msg);
         // 播放提示音
-        if (!msg.selfSend && msg.type <= this.$enums.MESSAGE_TYPE.WORD_VOICE &&
+        if (!msg.selfSend && msg.type <= 10 &&
             msg.status != this.$enums.MESSAGE_STATUS.READED) {
           this.playAudioTip();
         }
@@ -730,7 +740,7 @@
         // 插入消息
         this.$store.commit("insertMessage", msg);
         // 播放提示音
-        if (msg.type <= this.$enums.MESSAGE_TYPE.RICHTEXT &&
+        if (msg.type <= 10 &&
             msg.status != this.$enums.MESSAGE_STATUS.READED) {
           this.playAudioTip();
         }
@@ -747,7 +757,7 @@
         // 插入消息
         msg.isOwner = msg.sendId === regionGroup.ownerId;
         this.$store.commit("insertRegionMessage", msg);
-        if(!msg.selfSend && msg.type <= this.$enums.MESSAGE_TYPE.VIDEO
+        if(!msg.selfSend && msg.type <= 10
             && msg.status != this.$enums.MESSAGE_STATUS.READED){
           this.playAudioTip();
         }

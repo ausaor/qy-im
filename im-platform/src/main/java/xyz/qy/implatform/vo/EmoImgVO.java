@@ -10,7 +10,9 @@ public class EmoImgVO {
 
     private String name;
 
-    private String imgUrl;
+    private String imageUrl;
+
+    private String thumbUrl;
 
     private Integer width;
 

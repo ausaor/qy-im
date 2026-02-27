@@ -107,7 +107,8 @@ export default {
 				}
 			],
 			currentBubbleIndex: 0
-		}
+		},
+		emoAlbumImgs: []
 	},
 	mutations: {
 		showUserInfoBox(state,user){
@@ -139,6 +140,18 @@ export default {
 		},
 		setChatBubbleIndex(state, index) {
 			state.chatBubble.currentBubbleIndex = index;
+		},
+		setEmoAlbumImgs(state, imgs) {
+			state.emoAlbumImgs = imgs;
+		}
+	},
+	getters: {
+		getEmoAlbumImgs: (state)  => (albumId) => {
+			const matchedItems = state.emoAlbumImgs.filter(item => item.id === albumId);
+			return matchedItems.length > 0 ? matchedItems[0].emoImgList : [];
+		},
+		getEmoAlbums: (state) => () => {
+			return state.emoAlbumImgs;
 		}
 	}
 }

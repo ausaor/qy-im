@@ -114,7 +114,7 @@
           </el-aside>
         </el-container>
       </el-main>
-      <emotion ref="emoBox" @emotion="onEmotion"></emotion>
+      <emotion ref="emoBox" @emotion="onEmotion" @chooseEmoAlbumImg="chooseEmoAlbumImg"></emotion>
       <chat-record :visible="showRecord" @close="closeRecordBox" @send="onSendRecord"></chat-record>
       <region-chat-history :visible="showHistory" :chat="chat" :regionGroup="regionGroup" :groupMembers="regionGroupMembers" :myGroupMemberInfo="myGroupMemberInfo"
                            @close="closeHistoryBox"></region-chat-history>
@@ -461,6 +461,39 @@ export default {
     },
     onEmotion(emoText) {
       this.$refs.chatInputEditor.insertEmoji(emoText);
+    },
+    chooseEmoAlbumImg(albumImg) {
+      let content = {
+        id: albumImg.id,
+        albumId: albumImg.albumId,
+        name: albumImg.name,
+        imageUrl: albumImg.imageUrl,
+        width: albumImg.width,
+        height: albumImg.height
+      }
+      let msgInfo = {
+        tmpId: this.generateId(),
+        content: JSON.stringify(content),
+        type: this.$enums.MESSAGE_TYPE.EMOJI,
+        receipt: this.isReceipt,
+        joinType: this.regionGroup.joinType,
+      }
+      // 填充对方id
+      this.fillTargetId(msgInfo, this.chat.targetId);
+      this.sendMessageRequest(msgInfo).then((m) => {
+        m.selfSend = true;
+        m.chatType = this.chat.type;
+        this.$store.commit("insertRegionMessage", m);
+        // 会话置顶
+        this.moveChatToTop();
+        // 保持输入框焦点
+        this.$refs.chatInputEditor.focus();
+      }).finally(() => {
+        // 解除锁定
+        this.scrollToBottom();
+        this.isReceipt = false;
+        this.refreshPlaceHolder();
+      })
     },
     showRecordBox() {
       this.showRecord = true;

@@ -171,23 +171,25 @@ export default {
 				return;
 			}
 			// 插入新的数据
-			if (msgInfo.type == MESSAGE_TYPE.IMAGE) {
+			if (msgInfo.type === MESSAGE_TYPE.IMAGE) {
 				chat.lastContent = "[图片]";
-			} else if (msgInfo.type == MESSAGE_TYPE.FILE) {
+			} else if (msgInfo.type === MESSAGE_TYPE.FILE) {
 				chat.lastContent = "[文件]";
-			} else if (msgInfo.type == MESSAGE_TYPE.AUDIO) {
+			} else if (msgInfo.type === MESSAGE_TYPE.AUDIO) {
 				chat.lastContent = "[语音]";
-			} else if (msgInfo.type == MESSAGE_TYPE.VIDEO) {
+			} else if (msgInfo.type === MESSAGE_TYPE.VIDEO) {
 				chat.lastContent = "[视频]";
-			} else if (msgInfo.type == MESSAGE_TYPE.WORD_VOICE) {
+			} else if (msgInfo.type === MESSAGE_TYPE.WORD_VOICE) {
 				chat.lastContent = JSON.parse(msgInfo.content).word;
-			} else if (msgInfo.type == MESSAGE_TYPE.ACT_RT_VOICE) {
+			} else if (msgInfo.type === MESSAGE_TYPE.EMOJI) {
+				chat.lastContent = "[表情动画]" + JSON.parse(msgInfo.content).name;
+			} else if (msgInfo.type === MESSAGE_TYPE.ACT_RT_VOICE) {
 				chat.lastContent = "[语音通话]";
-			} else if (msgInfo.type == MESSAGE_TYPE.ACT_RT_VIDEO) {
+			} else if (msgInfo.type === MESSAGE_TYPE.ACT_RT_VIDEO) {
 				chat.lastContent = "[视频通话]";
-			} else if (msgInfo.type == MESSAGE_TYPE.TEXT ||
-				msgInfo.type == MESSAGE_TYPE.RECALL ||
-				msgInfo.type == MESSAGE_TYPE.TIP_TEXT) {
+			} else if (msgInfo.type === MESSAGE_TYPE.TEXT ||
+				msgInfo.type === MESSAGE_TYPE.RECALL ||
+				msgInfo.type === MESSAGE_TYPE.TIP_TEXT) {
 				if (msgInfo.atUserIds && msgInfo.atUserIds.length > 0) {
 					chat.lastContent = processAtUsers(msgInfo.content, msgInfo.atUserIds);
 				} else {

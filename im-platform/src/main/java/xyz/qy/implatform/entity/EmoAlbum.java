@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 @TableName("im_emo_album")
 public class EmoAlbum extends BaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private Integer id;
 
     @TableField("name")
     private String name;

@@ -8,9 +8,12 @@ import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IEmoImgService;
 
+import javax.annotation.Resource;
+
 @RestController
 @RequestMapping("/emoImg")
 public class EmoImgController {
+    @Resource
     private IEmoImgService emoImgService;
 
     @ApiOperation("获取表情包图片列表")

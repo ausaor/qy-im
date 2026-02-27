@@ -22,8 +22,11 @@ public class EmoImg extends BaseEntity {
     @TableField("name")
     private String name;
 
-    @TableField("img_url")
-    private String imgUrl;
+    @TableField("image_url")
+    private String imageUrl;
+
+    @TableField("thumb_url")
+    private String thumbUrl;
 
     @TableField("width")
     private Integer width;

@@ -3,6 +3,8 @@ package xyz.qy.implatform.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+
 /**
  * 0-9: 真正的消息，需要存储到数据库
  * 10-19: 状态类消息: 撤回、已读、回执
@@ -22,6 +24,7 @@ public enum MessageType {
     AUDIO(3, "语音消息"),
     VIDEO(4, "视频消息"),
     WORD_VOICE(5, "台词语音消息"),
+    EMOJI(7, "表情消息"),
     RECALL(10, "撤回"),
     READED(11, "已读"),
     RECEIPT(12, "消息已读回执"),
@@ -79,7 +82,7 @@ public enum MessageType {
      * @return true-是群聊消息类型, false-不是群聊消息类型
      */
     public static boolean checkGroupMsgType(Integer code) {
-        return code != null && code >= 0 && code <= 5;
+        return code != null && Arrays.asList(0, 1, 2, 3, 4, 5, 7).contains(code);
     }
 
     /**
@@ -89,7 +92,7 @@ public enum MessageType {
      * @return true-是通用类型消息, false-不是通用类型消息
      */
     public static boolean checkMsgType(Integer code) {
-        return code != null && code >= 0 && code <= 4;
+        return code != null && Arrays.asList(0, 1, 2, 3, 4, 7).contains(code);
     }
 
 
@@ -100,6 +103,6 @@ public enum MessageType {
      * @return true-是图片、文件、语音、视频消息, false-不是图片、文件、语音、视频消息
      */
     public static boolean checkMediaMsgType(Integer code) {
-        return code != null && code >= 1 && code <= 4;
+        return code != null && Arrays.asList(1, 2, 3, 4, 7).contains(code);
     }
 }

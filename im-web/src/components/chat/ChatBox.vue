@@ -139,7 +139,7 @@
           </el-aside>
         </el-container>
       </el-main>
-      <emotion ref="emoBox" @emotion="onEmotion"></Emotion>
+      <emotion ref="emoBox" @emotion="onEmotion" @chooseEmoAlbumImg="chooseEmoAlbumImg"></Emotion>
       <character-emotion ref="characterEmoBox" :emos="emos" @emotion="onCharacterEmotion"></character-emotion>
       <character-word ref="wordBox" :words="words" @send="sendWordVoice"></character-word>
       <chat-record :visible="showRecord" @close="closeRecordBox" @send="onSendRecord"></chat-record>
@@ -276,7 +276,7 @@
         this.$store.commit("moveTop", chatIdx);
       },
       closeRefBox() {
-        // this.$refs.emoBox.close();
+        //this.$refs.emoBox.close();
         // this.$refs.wordBox.close();
         // this.$refs.characterEmoBox.close();
       },
@@ -608,6 +608,38 @@
       },
       onEmotion(emoText) {
         this.$refs.chatInputEditor.insertEmoji(emoText);
+      },
+      chooseEmoAlbumImg(albumImg) {
+        let content = {
+          id: albumImg.id,
+          albumId: albumImg.albumId,
+          name: albumImg.name,
+          imageUrl: albumImg.imageUrl,
+          width: albumImg.width,
+          height: albumImg.height
+        }
+        let msgInfo = {
+          tmpId: this.generateId(),
+          content: JSON.stringify(content),
+          type: this.$enums.MESSAGE_TYPE.EMOJI,
+          receipt: this.isReceipt
+        }
+        // 填充对方id
+        this.fillTargetId(msgInfo, this.chat.targetId);
+        this.sendMessageRequest(msgInfo).then((m) => {
+          m.selfSend = true;
+          m.chatType = this.chat.type;
+          this.$store.commit("insertMessage", m);
+          // 会话置顶
+          this.moveChatToTop();
+          // 保持输入框焦点
+          this.$refs.chatInputEditor.focus();
+        }).finally(() => {
+          // 解除锁定
+          this.scrollToBottom();
+          this.isReceipt = false;
+          this.refreshPlaceHolder();
+        })
       },
       onCharacterEmotion(emo) {
         this.$refs.chatInputEditor.insertImage(emo);
