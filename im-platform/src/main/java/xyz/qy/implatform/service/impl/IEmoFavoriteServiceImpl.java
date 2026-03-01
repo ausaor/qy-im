@@ -52,15 +52,16 @@ public class IEmoFavoriteServiceImpl extends ServiceImpl<EmoFavoriteMapper, EmoF
         EmoFavorite emoFavorite = new EmoFavorite();
         if (ObjectUtil.isNotNull(dto.getEmoId())) {
             EmoImg emoImg = emoImgMapper.selectById(dto.getEmoId());
-            if (ObjectUtil.isNotNull(emoImg)) {
-                emoFavorite.setEmoId(emoImg.getId());
-                emoFavorite.setAlbumId(emoImg.getAlbumId());
-                emoFavorite.setImageUrl(emoImg.getImageUrl());
-                emoFavorite.setThumbUrl(emoImg.getThumbUrl());
-                emoFavorite.setName(emoImg.getName());
-                emoFavorite.setWidth(emoImg.getWidth());
-                emoFavorite.setHeight(emoImg.getHeight());
+            if (ObjectUtil.isNull(emoImg)) {
+                throw new GlobalException("表情不存在");
             }
+            emoFavorite.setEmoId(emoImg.getId());
+            emoFavorite.setAlbumId(emoImg.getAlbumId());
+            emoFavorite.setImageUrl(emoImg.getImageUrl());
+            emoFavorite.setThumbUrl(emoImg.getThumbUrl());
+            emoFavorite.setName(emoImg.getName());
+            emoFavorite.setWidth(emoImg.getWidth());
+            emoFavorite.setHeight(emoImg.getHeight());
         } else {
             emoFavorite.setImageUrl(dto.getImageUrl());
             emoFavorite.setThumbUrl(dto.getImageUrl());
@@ -73,7 +74,7 @@ public class IEmoFavoriteServiceImpl extends ServiceImpl<EmoFavoriteMapper, EmoF
     }
 
     @Override
-    public void deleteEmoFavorite(Long id) {
+    public void deleteEmoFavorite(String id) {
         if (id == null) {
             throw new GlobalException("参数错误");
         }

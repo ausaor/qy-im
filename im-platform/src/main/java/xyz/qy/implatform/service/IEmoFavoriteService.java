@@ -10,7 +10,7 @@ import java.util.List;
 public interface IEmoFavoriteService extends IService<EmoFavorite> {
     EmoFavoriteVO addEmoFavorite(EmoFavoriteDTO dto);
 
-    void deleteEmoFavorite(Long id);
+    void deleteEmoFavorite(String id);
 
     List<EmoFavoriteVO> listEmoFavorite();
 }

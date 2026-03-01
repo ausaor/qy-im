@@ -6,6 +6,8 @@ import javax.validation.constraints.NotBlank;
 
 @Data
 public class EmoFavoriteDTO {
+    private String id;
+
     private Integer emoId;
 
     private Integer albumId;

@@ -1,7 +1,6 @@
 package xyz.qy.implatform.controller;
 
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,7 +13,6 @@ import xyz.qy.implatform.service.IEmoFavoriteService;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 
 @RestController
 @RequestMapping("/emoFavorite")
@@ -31,9 +29,9 @@ public class EmoFavoriteController {
     }
 
     @ApiOperation("删除表情包收藏")
-    @DeleteMapping("/deleteEmoFavorite")
-    public Result deleteEmoFavorite(Long id) {
-        emoFavoriteService.deleteEmoFavorite(id);
+    @PostMapping("/delete")
+    public Result deleteEmoFavorite(@RequestBody EmoFavoriteDTO dto) {
+        emoFavoriteService.deleteEmoFavorite(dto.getId());
         return ResultUtils.success();
     }
 

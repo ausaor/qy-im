@@ -28,6 +28,7 @@
                         @delete="deleteMessage"
                         @recall="recallMessage"
                         @quote="quoteMessage"
+                        @collect="collectImage"
                         @playVideo="playVideo"
                         @scrollToMessage="scrollToTargetMsg"
                         @audioStateChange="onAudioStateChange">
@@ -693,6 +694,24 @@ export default {
     cancelQuote() {
       this.quoteMsgInfo.msgInfo = null;
       this.quoteMsgInfo.show = false;
+    },
+    collectImage(msgInfo) {
+      let imgInfo = JSON.parse(msgInfo.content)
+      console.log("收藏图片", imgInfo);
+      let imageUrl = imgInfo.imageUrl || imgInfo.originUrl;
+      let param = {
+        imageUrl: imageUrl,
+        emoId: imgInfo.albumId ? imgInfo.id : null,
+        albumId: imgInfo.albumId
+      }
+
+      this.$http({
+        url: `/emoFavorite/addEmoFavorite`,
+        method: 'post',
+        data: param
+      }).then((data) => {
+        this.$message.success("收藏成功");
+      });
     },
     readedMessage() {
       if (this.chat.unreadCount == 0) {

@@ -14,6 +14,8 @@
       >
         <img :src="previewImageUrl" alt="预览图片" />
       </div>
+      <right-menu v-show="rightMenu.show" :pos="rightMenu.pos" :items="rightMenu.items" @close="rightMenu.show=false"
+                  @select="onSelectMenu"></right-menu>
       <el-scrollbar style="height:250px;position: relative;">
         <div class="emotion-item-list" v-show="emoIndex === 1 && emoType === 'emo'">
           <div v-for="(emoText, i) in $emo.emoTextList" :key="i">
@@ -68,6 +70,7 @@
           </div>
           <div class="sticker-item" v-for="(item, index) in favoriteEmojiList" :key="index"
             @click="chooseCollectEmoImg(item)"
+            @contextmenu.prevent="showCollectRightMenu($event, item, index)"
             @mouseenter="showPreview($event, item.imageUrl)"
             @mouseleave="hidePreview()">
             <img :src="item.thumbUrl" :alt="item.name">
@@ -107,10 +110,11 @@
 
 <script>
 import FileUpload from "@components/common/FileUpload.vue";
+import RightMenu from "@components/common/RightMenu.vue";
 
 export default {
   name: "emotion",
-  components: {FileUpload},
+  components: {RightMenu, FileUpload},
   data() {
     return {
       show: false,
@@ -134,7 +138,24 @@ export default {
       previewImageUrl: '',
       previewVisible: false,
       previewPosition: { x: 0, y: 0 },
-      previewSide: 'right' // 'left' 或 'right'
+      previewSide: 'right', // 'left' 或 'right'
+      rightMenu: {
+        show: false,
+        pos: {
+          x: 0,
+          y: 0
+        },
+        items: [{
+          key: 'TOP',
+          name: '置顶',
+          icon: 'el-icon-top'
+        }, {
+          key: 'DELETE',
+          name: '删除',
+          icon: 'el-icon-delete'
+        }]
+      },
+      currentSelectedItem: null
     }
   },
   methods: {
@@ -216,6 +237,39 @@ export default {
         this.favoriteEmojiList = result;
       })
     },
+    topFavoriteEmoji(item, index) {
+      // 置顶收藏表情
+      // this.$http({
+      //   url: '/emoFavorite/top',
+      //   method: 'post',
+      //   data: {
+      //     emoId: item.emoId
+      //   }
+      // }).then(() => {
+      //   this.$message.success('置顶成功');
+      //   // 将该表情移动到列表最前面
+      //   this.favoriteEmojiList.splice(index, 1);
+      //   this.favoriteEmojiList.unshift(item);
+      // }).catch(() => {
+      //   this.$message.error('置顶失败');
+      // });
+    },
+    deleteFavoriteEmoji(item, index) {
+      // 删除收藏表情
+      this.$http({
+        url: `/emoFavorite/delete`,
+        method: 'post',
+        data: {
+          id: item.id
+        }
+      }).then(() => {
+        this.$message.success('删除成功');
+        // 从列表中移除该表情
+        this.favoriteEmojiList.splice(index, 1);
+      }).catch(() => {
+        this.$message.error('删除失败');
+      });
+    },
     searchEmoji() {
       if (!this.searchText) {
         return
@@ -291,6 +345,51 @@ export default {
       }
       
       this.previewPosition = { x, y };
+    },
+    showRightMenu(e) {
+      this.rightMenu.pos = {
+        x: e.x,
+        y: e.y
+      };
+      this.rightMenu.show = "true";
+    },
+    onSelectMenu(item) {
+      // 如果有当前选中的收藏表情项，则处理收藏表情的菜单操作
+      if (this.currentSelectedItem) {
+        const { item: selectedItem, index } = this.currentSelectedItem;
+        
+        switch(item.key) {
+          case 'TOP':
+            this.topFavoriteEmoji(selectedItem, index);
+            break;
+          case 'DELETE':
+            this.deleteFavoriteEmoji(selectedItem, index);
+            break;
+        }
+        
+        // 清空当前选中项
+        this.currentSelectedItem = null;
+      } else {
+        // 处理其他类型的菜单操作
+        this.$emit(item.key.toLowerCase());
+      }
+    },
+    showCollectRightMenu(e, item, index) {
+      // 关闭预览弹窗
+      this.hidePreview();
+      
+      // 显示右键菜单
+      this.rightMenu.pos = {
+        x: e.clientX,
+        y: e.clientY
+      };
+      this.rightMenu.show = true;
+      
+      // 传递当前选中的表情信息
+      this.currentSelectedItem = {
+        item: item,
+        index: index
+      };
     }
   },
   computed: {
@@ -735,12 +834,12 @@ export default {
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 10px;
           margin: 0 8px;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
           position: relative;
           cursor: pointer;
+          border-radius: 50%;
 
           img {
             width: 26px;
@@ -755,7 +854,6 @@ export default {
 
         .active {
           position: relative;
-          box-shadow: rgba(64, 158, 255, 0.2) 0px 0px 0px 2px;
           background: rgb(232, 243, 255);
           border-radius: 50%;
           /* 确保圆形背景完全显示 */
