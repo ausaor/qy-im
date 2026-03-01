@@ -113,6 +113,9 @@
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.IMAGE">
                   <img class="quote-image" :src="JSON.parse(msgInfo.quoteMsg.content).originUrl"/>
                 </div>
+                <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.EMOJI">
+                  <img class="quote-image" :src="JSON.parse(msgInfo.quoteMsg.content).imageUrl"/>
+                </div>
                 <div v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.VIDEO">
                   <img class="quote-video-image" :src="JSON.parse(msgInfo.quoteMsg.content).coverUrl"/>
                   <i class="quote-play-icon el-icon-video-play"></i>
