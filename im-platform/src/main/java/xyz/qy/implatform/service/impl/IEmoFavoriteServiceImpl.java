@@ -9,17 +9,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import xyz.qy.implatform.dto.EmoFavoriteDTO;
 import xyz.qy.implatform.entity.EmoFavorite;
+import xyz.qy.implatform.entity.EmoImg;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.EmoFavoriteMapper;
+import xyz.qy.implatform.mapper.EmoImgMapper;
 import xyz.qy.implatform.service.IEmoFavoriteService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
+import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.vo.EmoFavoriteVO;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 public class IEmoFavoriteServiceImpl extends ServiceImpl<EmoFavoriteMapper, EmoFavorite> implements IEmoFavoriteService {
+    @Resource
+    private EmoImgMapper emoImgMapper;
 
     @Override
-    public void addEmoFavorite(EmoFavoriteDTO dto) {
+    public EmoFavoriteVO addEmoFavorite(EmoFavoriteDTO dto) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
         
@@ -41,11 +50,26 @@ public class IEmoFavoriteServiceImpl extends ServiceImpl<EmoFavoriteMapper, EmoF
             throw new GlobalException("最多收藏100个表情");
         }
         EmoFavorite emoFavorite = new EmoFavorite();
+        if (ObjectUtil.isNotNull(dto.getEmoId())) {
+            EmoImg emoImg = emoImgMapper.selectById(dto.getEmoId());
+            if (ObjectUtil.isNotNull(emoImg)) {
+                emoFavorite.setEmoId(emoImg.getId());
+                emoFavorite.setAlbumId(emoImg.getAlbumId());
+                emoFavorite.setImageUrl(emoImg.getImageUrl());
+                emoFavorite.setThumbUrl(emoImg.getThumbUrl());
+                emoFavorite.setName(emoImg.getName());
+                emoFavorite.setWidth(emoImg.getWidth());
+                emoFavorite.setHeight(emoImg.getHeight());
+            }
+        } else {
+            emoFavorite.setImageUrl(dto.getImageUrl());
+            emoFavorite.setThumbUrl(dto.getImageUrl());
+        }
+
         emoFavorite.setUserId(userId);
-        emoFavorite.setEmoId(dto.getEmoId());
-        emoFavorite.setAlbumId(dto.getAlbumId());
-        emoFavorite.setImgUrl(dto.getImgUrl());
+
         this.save(emoFavorite);
+        return BeanUtils.copyProperties(emoFavorite, EmoFavoriteVO.class);
     }
 
     @Override
@@ -64,5 +88,17 @@ public class IEmoFavoriteServiceImpl extends ServiceImpl<EmoFavoriteMapper, EmoF
         if (!remove) {
             throw new GlobalException("删除失败");
         }
+    }
+
+    @Override
+    public List<EmoFavoriteVO> listEmoFavorite() {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        LambdaQueryWrapper<EmoFavorite> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EmoFavorite::getUserId, userId);
+        queryWrapper.orderByDesc(EmoFavorite::getCreateTime);
+        List<EmoFavorite> emoFavorites = this.list(queryWrapper);
+
+        return BeanUtils.copyProperties(emoFavorites, EmoFavoriteVO.class);
     }
 }

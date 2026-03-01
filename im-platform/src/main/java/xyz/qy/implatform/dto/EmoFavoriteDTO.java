@@ -11,5 +11,5 @@ public class EmoFavoriteDTO {
     private Integer albumId;
 
     @NotBlank(message = "图片地址不能为空")
-    private String imgUrl;
+    private String imageUrl;
 }

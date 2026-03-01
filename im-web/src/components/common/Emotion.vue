@@ -19,6 +19,31 @@
             <div class="sticker-name" :title="item.name">{{item.name}}</div>
           </div>
         </div>
+        <div class="search-emo-box" v-show="emoType === 'search'">
+          <div class="search-input">
+            <el-input class="search-text" size="small" placeholder="输入表情名称搜索" v-model="searchText" clearable @change="searchEmoji">
+              <i class="el-icon-search el-input__icon" slot="prefix"></i>
+            </el-input>
+          </div>
+          <div class="search-emo-list">
+            <div class="sticker-item" v-for="(item, index) in searchEmojiList" :key="index" @click="chooseEmoAlbumImg(item)">
+              <img :src="item.thumbUrl" :alt="item.name">
+              <div class="sticker-name" :title="item.name">{{item.name}}</div>
+            </div>
+          </div>
+        </div>
+        <div class="collect-emo-box" v-show="emoType === 'collect'">
+          <div class="sticker-item upload-item">
+            <file-upload class="image-uploader" :action="imageAction"
+                         :showLoading="true" :maxSize="maxSize" @success="onUploadImage"
+                         :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
+              <i class="el-icon-plus"></i>
+            </file-upload>
+          </div>
+          <div class="sticker-item" v-for="(item, index) in favoriteEmojiList" :key="index">
+            <img :src="item.thumbUrl" :alt="item.name">
+          </div>
+        </div>
       </el-scrollbar>
       <div class="emotion-bottom">
         <div class="emo-items">
@@ -30,6 +55,8 @@
           </div>
           <div class="emo-items-center-wrapper">
             <div class="emo-items-center" :style="transformStyle">
+              <div class="emo-item el-icon-search" :class="emoType === 'search' ? 'active' : ''"  @click="toSearchEmo"></div>
+              <div class="emo-item icon iconfont icon-hongxin1" :class="emoType === 'collect' ? 'active' : ''"  @click="toCollectEmo"></div>
               <div class="emo-item icon iconfont icon-biaoqing emo-item-1" :class="emoIndex === 1 && emoType === 'emo' ? 'active' : ''"  @click="chooseEmo(1)"></div>
               <div class="emo-item icon iconfont icon-biaoqing emo-item-2" :class="emoIndex === 2 && emoType === 'emo' ? 'active' : ''"  @click="chooseEmo(2)"></div>
               <div class="emo-item" v-for="(album, index) in emoAlbums" :key="index" :class="albumId === album.id ? 'active' : ''" @click="chooseEmoAlbum(album.id)">
@@ -50,8 +77,11 @@
 </template>
 
 <script>
+import FileUpload from "@components/common/FileUpload.vue";
+
 export default {
   name: "emotion",
+  components: {FileUpload},
   data() {
     return {
       show: false,
@@ -67,6 +97,10 @@ export default {
       itemWidth: 48, // 每个item的宽度(32px + 8px margin * 2)
       visibleItems: 8, // 可视区域内显示的item数量
       maxScroll: 0,
+      searchText: '',
+      maxSize: 2 * 1024 * 1024,
+      favoriteEmojiList: [],
+      searchEmojiList: [],
     }
   },
   methods: {
@@ -98,21 +132,65 @@ export default {
       this.albumId = albumId;
       this.emoAlbumImgs = this.$store.getters.getEmoAlbumImgs(albumId);
     },
+    toSearchEmo() {
+      this.albumId = null;
+      this.emoType = 'search';
+    },
+    toCollectEmo() {
+      this.albumId = null;
+      this.emoType = 'collect';
+      this.queryFavoriteEmoji();
+    },
     scrollLeft() {
-      const totalItems = 2 + this.emoAlbums.length; // 2个默认表情 + 相册数量
+      const totalItems = 4 + this.emoAlbums.length; // 2个默认表情 + 相册数量
       const maxPosition = Math.max(0, totalItems - this.visibleItems);
       this.scrollPosition = Math.max(0, this.scrollPosition - 5);
     },
     scrollRight() {
-      const totalItems = 2 + this.emoAlbums.length;
+      const totalItems = 4 + this.emoAlbums.length;
       const maxPosition = Math.max(0, totalItems - this.visibleItems);
       this.scrollPosition = Math.min(maxPosition, this.scrollPosition + 5);
     },
     updateMaxScroll() {
       this.$nextTick(() => {
-        const totalItems = 2 + this.emoAlbums.length;
+        const totalItems = 4 + this.emoAlbums.length;
         this.maxScroll = Math.max(0, totalItems - this.visibleItems);
       });
+    },
+    onUploadImage(data) {
+      let param = {
+        imageUrl: data.originUrl,
+      }
+      this.$http({
+        url: '/emoFavorite/addEmoFavorite',
+        method: 'post',
+        data: param
+      }).then(result => {
+        this.$message.success('上传成功');
+        this.favoriteEmojiList.unshift(result);
+      })
+    },
+    queryFavoriteEmoji() {
+      this.$http({
+        url: '/emoFavorite/list',
+        method: 'get',
+      }).then(result => {
+        this.favoriteEmojiList = result;
+      })
+    },
+    searchEmoji() {
+      if (!this.searchText) {
+        return
+      }
+      this.$http({
+        url: '/emoImg/search',
+        method: 'get',
+        params: {
+          name: this.searchText
+        }
+      }).then(result => {
+        this.searchEmojiList = result;
+      })
     }
   },
   computed: {
@@ -135,9 +213,12 @@ export default {
       return this.scrollPosition > 0;
     },
     canScrollRight() {
-      const totalItems = 2 + this.emoAlbums.length;
+      const totalItems = 4 + this.emoAlbums.length;
       return this.scrollPosition < Math.max(0, totalItems - this.visibleItems);
-    }
+    },
+    imageAction(){
+      return `/image/upload`;
+    },
   }
 }
 </script>
@@ -241,6 +322,197 @@ export default {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .search-emo-box {
+    padding: 12px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 12px;
+    margin: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+
+    .search-input {
+      margin-bottom: 12px;
+      
+      .search-text ::v-deep .el-input__inner {
+        border-radius: 24px;
+        border: 2px solid #e9ecef;
+        background: #ffffff;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding-left: 36px;
+        
+        &:focus {
+          border-color: #409eff;
+          box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.1);
+        }
+      }
+      
+      .el-icon-search {
+        color: #6c757d;
+      }
+    }
+
+    .search-emo-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 64px);
+      grid-auto-rows: minmax(80px, auto);
+      gap: 12px;
+      padding: 4px;
+      
+      .sticker-item {
+        width: 100%;
+        min-height: 80px;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 8px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        position: relative;
+        overflow: hidden;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #409eff, #667eea);
+          transform: scaleX(0);
+          transition: transform 0.3s ease;
+        }
+        
+        &:hover {
+          transform: translateY(-4px) scale(1.03);
+          box-shadow: 0 8px 24px rgba(64, 158, 255, 0.15);
+          border-color: rgba(64, 158, 255, 0.3);
+          background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 100%);
+          
+          &::before {
+            transform: scaleX(1);
+          }
+          
+          .sticker-name {
+            color: #409eff;
+            font-weight: 500;
+          }
+        }
+        
+        &:active {
+          transform: translateY(-2px) scale(0.98);
+        }
+
+        img {
+          width: 52px;
+          height: 52px;
+          border-radius: 8px;
+          object-fit: cover;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .sticker-name {
+          margin-top: 8px;
+          font-size: 13px;
+          color: #495057;
+          text-align: center;
+          width: 100%;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-weight: 400;
+          transition: all 0.3s ease;
+        }
+      }
+    }
+  }
+
+  .collect-emo-box {
+    padding: 12px;
+    background: linear-gradient(135deg, #fffaf0 0%, #ffffff 100%);
+    border-radius: 12px;
+    margin: 8px;
+    box-shadow: 0 2px 12px rgba(255, 165, 0, 0.08);
+    border: 1px solid rgba(255, 165, 0, 0.1);
+
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 64px);
+    grid-auto-rows: 64px;
+    gap: 12px;
+    padding: 4px;
+
+    .sticker-item {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 8px;
+      background: linear-gradient(135deg, #ffffff 0%, #fff8e1 100%);
+      border: 1px solid rgba(255, 165, 0, 0.15);
+      box-shadow: 0 2px 8px rgba(255, 165, 0, 0.08);
+      position: relative;
+      overflow: hidden;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #ffa500, #ffb74d);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+      }
+      
+      &:hover {
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 8px 24px rgba(255, 165, 0, 0.2);
+        border-color: rgba(255, 165, 0, 0.4);
+        background: linear-gradient(135deg, #ffffff 0%, #ffecb3 100%);
+        
+        &::before {
+          transform: scaleX(1);
+        }
+      }
+      
+      &:active {
+        transform: translateY(-2px) scale(0.98);
+      }
+    }
+
+    .upload-item {
+      .image-uploader {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        .el-icon-plus {
+          font-size: 24px;
+          color: #ffa500;
+          transition: all 0.3s ease;
+        }
+        
+        &:hover .el-icon-plus {
+          color: #ff8c00;
+          transform: scale(1.2);
+        }
       }
     }
   }
