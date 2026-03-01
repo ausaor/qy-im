@@ -2,6 +2,18 @@
   <div v-show="show">
     <div class="emotion-box" :style="{'left': x +'px','top':y+'px'}">
       <div class="close-btn" @click="close">×</div>
+      <!-- 悬停预览窗口 -->
+      <div 
+        v-show="previewVisible" 
+        class="preview-window" 
+        :class="'preview-' + previewSide"
+        :style="{
+          left: previewPosition.x + 'px',
+          top: previewPosition.y + 'px'
+        }"
+      >
+        <img :src="previewImageUrl" alt="预览图片" />
+      </div>
       <el-scrollbar style="height:250px;position: relative;">
         <div class="emotion-item-list" v-show="emoIndex === 1 && emoType === 'emo'">
           <div v-for="(emoText, i) in $emo.emoTextList" :key="i">
@@ -14,7 +26,14 @@
           </div>
         </div>
         <div class="sticker-items" v-show="emoType === 'album'">
-          <div class="sticker-item" v-for="(item, index) in emoAlbumImgs" :key="index" @click="chooseEmoAlbumImg(item)">
+          <div 
+            class="sticker-item" 
+            v-for="(item, index) in emoAlbumImgs" 
+            :key="index" 
+            @click="chooseEmoAlbumImg(item)"
+            @mouseenter="showPreview($event, item.imageUrl)"
+            @mouseleave="hidePreview()"
+          >
             <img :src="item.thumbUrl" :alt="item.name">
             <div class="sticker-name" :title="item.name">{{item.name}}</div>
           </div>
@@ -26,7 +45,14 @@
             </el-input>
           </div>
           <div class="search-emo-list">
-            <div class="sticker-item" v-for="(item, index) in searchEmojiList" :key="index" @click="chooseEmoAlbumImg(item)">
+            <div 
+              class="sticker-item" 
+              v-for="(item, index) in searchEmojiList" 
+              :key="index" 
+              @click="chooseEmoAlbumImg(item)"
+              @mouseenter="showPreview($event, item.imageUrl)"
+              @mouseleave="hidePreview()"
+            >
               <img :src="item.thumbUrl" :alt="item.name">
               <div class="sticker-name" :title="item.name">{{item.name}}</div>
             </div>
@@ -40,7 +66,9 @@
               <i class="el-icon-plus"></i>
             </file-upload>
           </div>
-          <div class="sticker-item" v-for="(item, index) in favoriteEmojiList" :key="index">
+          <div class="sticker-item" v-for="(item, index) in favoriteEmojiList" :key="index"
+            @mouseenter="showPreview($event, item.imageUrl)"
+            @mouseleave="hidePreview()">
             <img :src="item.thumbUrl" :alt="item.name">
           </div>
         </div>
@@ -101,6 +129,11 @@ export default {
       maxSize: 2 * 1024 * 1024,
       favoriteEmojiList: [],
       searchEmojiList: [],
+      // 悬停预览相关数据
+      previewImageUrl: '',
+      previewVisible: false,
+      previewPosition: { x: 0, y: 0 },
+      previewSide: 'right' // 'left' 或 'right'
     }
   },
   methods: {
@@ -191,6 +224,55 @@ export default {
       }).then(result => {
         this.searchEmojiList = result;
       })
+    },
+    // 悬停预览相关方法
+    showPreview(event, imageUrl) {
+      if (!imageUrl) return;
+      
+      this.previewImageUrl = imageUrl;
+      this.calculatePreviewPosition(event);
+      this.previewVisible = true;
+    },
+    hidePreview() {
+      this.previewVisible = false;
+      this.previewImageUrl = '';
+    },
+    calculatePreviewPosition(event) {
+      const containerRect = this.$el.getBoundingClientRect();
+      const mouseX = event.clientX - containerRect.left;
+      const mouseY = event.clientY - containerRect.top;
+      
+      // 判断应该在左侧还是右侧显示
+      const containerWidth = containerRect.width;
+      this.previewSide = mouseX < containerWidth / 2 ? 'right' : 'left';
+      
+      // 计算位置
+      const previewWidth = 200; // 预览窗口宽度
+      const previewHeight = 200; // 预览窗口高度
+      
+      let x, y;
+      
+      if (this.previewSide === 'right') {
+        x = mouseX + 15; // 右侧显示，偏移15px
+      } else {
+        x = mouseX - previewWidth - 15; // 左侧显示
+      }
+      
+      // 垂直居中对齐鼠标位置
+      y = mouseY - previewHeight / 2;
+      
+      // 边界检测
+      if (x < 10) x = 10;
+      if (x + previewWidth > containerWidth - 10) {
+        x = containerWidth - previewWidth - 10;
+      }
+      
+      if (y < 10) y = 10;
+      if (y + previewHeight > containerRect.height - 10) {
+        y = containerRect.height - previewHeight - 10;
+      }
+      
+      this.previewPosition = { x, y };
     }
   },
   computed: {
@@ -233,6 +315,7 @@ export default {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
   border: 1px solid #f0f0f0;
   z-index: 10;
+  overflow: visible; // 允许预览窗口超出容器
 
   .close-btn {
     position: absolute;
@@ -707,6 +790,60 @@ export default {
     .el-scrollbar ::v-deep .el-scrollbar__bar.is-horizontal {
       display: none !important;
     }
+  }
+}
+
+// 悬停预览窗口样式
+.preview-window {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background-color: rgba(0, 0, 0, 0.9); // 透明黑色背景
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px); // 背景模糊效果
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  // 右侧显示的箭头指示器
+  &.preview-right::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid rgba(0, 0, 0, 0.9);
+  }
+  
+  // 左侧显示的箭头指示器
+  &.preview-left::before {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 10px solid rgba(0, 0, 0, 0.9);
   }
 }
 </style>
