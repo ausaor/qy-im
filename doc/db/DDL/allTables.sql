@@ -734,15 +734,15 @@ create index idx_2
 
 create table im_emo_album
 (
-    id          int                  not null comment '主键'
+    id          int(20) auto_increment comment '主键ID'
         primary key,
-    name        varchar(10)          not null comment '相册名称',
-    logo_url    varchar(1000)        not null comment 'logo图片链接',
-    deleted     tinyint(1) default 0 not null comment '是否删除',
-    create_by   bigint               not null comment '创建者',
-    create_time datetime             not null comment '创建时间',
-    update_by   bigint               null comment '更新者',
-    update_time datetime             null comment '更新时间'
+    name        varchar(255)                           not null comment '相册名称',
+    logo_url    varchar(500)                           null comment '相册LOGO地址',
+    deleted     tinyint(1) default 0                   null comment '是否删除：0-否；1-是',
+    create_by   bigint                                 null comment '创建者',
+    create_time datetime   default current_timestamp() null comment '创建时间',
+    update_by   bigint                                 null comment '更新者',
+    update_time datetime   default current_timestamp() null on update current_timestamp() comment '更新时间'
 )
     comment '表情相册';
 
@@ -752,14 +752,17 @@ create index idx_1
 
 create table im_emo_favorite
 (
-    id          bigint     not null comment '主键'
+    id          varchar(20)  not null comment '主键ID'
         primary key,
-    emo_id      int        not null comment '表情id',
-    album_id    int        not null comment '相册id',
-    user_id     bigint     not null comment '用户id',
-    create_time datetime   not null comment '创建时间',
-    constraint idx_2
-        unique (emo_id, album_id, user_id)
+    emo_id      int          null comment '表情包ID',
+    album_id    int          null comment '表情包专辑ID',
+    user_id     bigint       not null comment '用户ID',
+    name        varchar(255) null comment '表情包名称',
+    image_url   varchar(512) not null comment '表情包图片地址',
+    thumb_url   varchar(512) not null comment '表情包缩略图地址',
+    width       int          null comment '图片宽度',
+    height      int          null comment '图片高度',
+    create_time datetime     not null comment '创建时间'
 );
 
 create index idx_1
@@ -768,18 +771,19 @@ create index idx_1
 
 create table im_emo_img
 (
-    id          int           not null comment '主键'
+    id          int auto_increment comment '主键ID'
         primary key,
-    album_id    int           not null comment '相册id',
-    name        varchar(20)   not null comment '表情名称',
-    img_url     varchar(1000) not null comment '图片链接',
-    width       int           null comment '图片宽度',
-    height      int           null comment '图片高度',
-    deleted     tinyint(1)    not null comment '是否删除',
-    create_by   bigint        null comment '创建者',
-    create_time datetime      not null comment '创建时间',
-    update_by   bigint        null comment '更新者',
-    update_time datetime      null comment '更新时间'
+    album_id    int                                    not null comment '相册ID',
+    name        varchar(255)                           not null comment '图片名称',
+    thumb_url   varchar(500)                           not null comment '缩略图片地址',
+    image_url   varchar(500)                           null comment '图片地址',
+    width       int                                    null comment '图片宽度',
+    height      int                                    null comment '图片高度',
+    deleted     tinyint(1) default 0                   null comment '是否删除：0-否；1-是',
+    create_by   bigint                                 null comment '创建者',
+    create_time datetime   default current_timestamp() null comment '创建时间',
+    update_by   bigint                                 null comment '更新者',
+    update_time datetime   default current_timestamp() null on update current_timestamp() comment '更新时间'
 )
     comment '表情图片';
 
