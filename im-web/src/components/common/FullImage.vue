@@ -45,7 +45,7 @@ export default {
     width: 100%;
     height: 100%;
     background: black;
-    opacity: 0.9;
+    opacity: 0.7;
   }
 
   .image-box {

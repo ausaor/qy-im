@@ -275,7 +275,7 @@ export default {
 				this.$message.error("该文件已发送失败，目前不支持自动重新发送，建议手动重新发送")
 			},
 			showFullImageBox() {
-				let imageUrl = JSON.parse(this.msgInfo.content).originUrl;
+				let imageUrl = JSON.parse(this.msgInfo.content).originUrl || JSON.parse(this.msgInfo.content).imageUrl;
 				if (imageUrl) {
 					this.$store.commit('showFullImageBox', imageUrl);
 				}
@@ -490,6 +490,13 @@ export default {
 						icon: 'el-icon-refresh-left'
 					});
 				}
+        if (this.$msgType.isImage(this.msgInfo.type)) {
+          items.push({
+            key: 'COLLECT',
+            name: '添加到表情',
+            icon: 'el-icon-refresh-left'
+          });
+        }
 				return items;
 			},
       menuItemsQuote() {
@@ -543,10 +550,20 @@ export default {
       },
       emoImageStyle() {
         const content = JSON.parse(this.msgInfo.content);
-        return {
-          width: (content.width * 0.6) + 'px',
-          height: (content.height * 0.6) + 'px'
+        const style = {
+          maxWidth: '180px',
+          maxHeight: '180px',
+          minWidth: '60px',
+          minHeight: '60px'
         };
+        
+        // 只有当content.width和content.height有值时才设置
+        if (content.width && content.height) {
+          style.width = (content.width * 0.6) + 'px';
+          style.height = (content.height * 0.6) + 'px';
+        }
+        
+        return style;
       }
 		},
 	}

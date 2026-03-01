@@ -67,6 +67,7 @@
             </file-upload>
           </div>
           <div class="sticker-item" v-for="(item, index) in favoriteEmojiList" :key="index"
+            @click="chooseCollectEmoImg(item)"
             @mouseenter="showPreview($event, item.imageUrl)"
             @mouseleave="hidePreview()">
             <img :src="item.thumbUrl" :alt="item.name">
@@ -142,6 +143,10 @@ export default {
       this.$emit('emotion', emotion)
     },
     chooseEmoAlbumImg(albumImg) {
+      this.$emit('chooseEmoAlbumImg', albumImg)
+    },
+    chooseCollectEmoImg(albumImg) {
+      albumImg.id = albumImg.emoId;
       this.$emit('chooseEmoAlbumImg', albumImg)
     },
     open(pos) {
@@ -238,38 +243,51 @@ export default {
       this.previewImageUrl = '';
     },
     calculatePreviewPosition(event) {
-      const containerRect = this.$el.getBoundingClientRect();
+      // 获取 emotion-box 容器的边界信息
+      const emotionBox = this.$el.querySelector('.emotion-box');
+      if (!emotionBox) return;
+      
+      const containerRect = emotionBox.getBoundingClientRect();
+      const scrollContainer = emotionBox.closest('.el-scrollbar__wrap');
+      const scrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+      
+      // 计算相对位置（相对于 emotion-box）
       const mouseX = event.clientX - containerRect.left;
-      const mouseY = event.clientY - containerRect.top;
+      const mouseY = event.clientY - containerRect.top + scrollTop;
       
       // 判断应该在左侧还是右侧显示
       const containerWidth = containerRect.width;
       this.previewSide = mouseX < containerWidth / 2 ? 'right' : 'left';
       
-      // 计算位置
-      const previewWidth = 200; // 预览窗口宽度
-      const previewHeight = 200; // 预览窗口高度
+      // 调整预览窗口尺寸
+      const previewWidth = 160;
+      const previewHeight = 160;
       
       let x, y;
       
       if (this.previewSide === 'right') {
-        x = mouseX + 15; // 右侧显示，偏移15px
+        x = mouseX + 20; // 右侧显示
       } else {
-        x = mouseX - previewWidth - 15; // 左侧显示
+        x = mouseX - previewWidth - 20; // 左侧显示
       }
       
       // 垂直居中对齐鼠标位置
       y = mouseY - previewHeight / 2;
       
-      // 边界检测
-      if (x < 10) x = 10;
-      if (x + previewWidth > containerWidth - 10) {
-        x = containerWidth - previewWidth - 10;
+      // 边界检测和修正
+      const margin = 15;
+      
+      // 水平边界
+      if (x < margin) x = margin;
+      if (x + previewWidth > containerWidth - margin) {
+        x = containerWidth - previewWidth - margin;
       }
       
-      if (y < 10) y = 10;
-      if (y + previewHeight > containerRect.height - 10) {
-        y = containerRect.height - previewHeight - 10;
+      // 垂直边界
+      const containerHeight = containerRect.height;
+      if (y < margin) y = margin;
+      if (y + previewHeight > containerHeight - margin) {
+        y = containerHeight - previewHeight - margin;
       }
       
       this.previewPosition = { x, y };
@@ -520,7 +538,6 @@ export default {
   }
 
   .collect-emo-box {
-    padding: 12px;
     background: linear-gradient(135deg, #fffaf0 0%, #ffffff 100%);
     border-radius: 12px;
     margin: 8px;
@@ -528,10 +545,11 @@ export default {
     border: 1px solid rgba(255, 165, 0, 0.1);
 
     display: grid;
-    grid-template-columns: repeat(auto-fill, 64px);
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
     grid-auto-rows: 64px;
     gap: 12px;
     padding: 4px;
+    justify-items: center;
 
     .sticker-item {
       width: 64px;
@@ -567,14 +585,20 @@ export default {
         box-shadow: 0 8px 24px rgba(255, 165, 0, 0.2);
         border-color: rgba(255, 165, 0, 0.4);
         background: linear-gradient(135deg, #ffffff 0%, #ffecb3 100%);
-        
+
         &::before {
           transform: scaleX(1);
         }
       }
-      
+
       &:active {
         transform: translateY(-2px) scale(0.98);
+      }
+
+      img {
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
       }
     }
 
@@ -796,26 +820,32 @@ export default {
 // 悬停预览窗口样式
 .preview-window {
   position: absolute;
-  width: 200px;
-  height: 200px;
-  background-color: rgba(0, 0, 0, 0.9); // 透明黑色背景
+  width: 160px;
+  height: 160px;
+  background-color: rgba(0, 0, 0, 0.7); // 更深的透明黑色背景
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
   z-index: 100;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px); // 背景模糊效果
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px); // 增强背景模糊效果
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); // 添加过渡效果
   
   img {
-    max-width: 90%;
-    max-height: 90%;
+    max-width: 95%;
+    max-height: 95%;
     object-fit: contain;
     border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
   }
   
   // 右侧显示的箭头指示器
@@ -829,7 +859,8 @@ export default {
     height: 0;
     border-top: 10px solid transparent;
     border-bottom: 10px solid transparent;
-    border-right: 10px solid rgba(0, 0, 0, 0.9);
+    border-right: 10px solid rgba(0, 0, 0, 0.92);
+    filter: drop-shadow(-2px 0 2px rgba(0, 0, 0, 0.2));
   }
   
   // 左侧显示的箭头指示器
@@ -843,7 +874,8 @@ export default {
     height: 0;
     border-top: 10px solid transparent;
     border-bottom: 10px solid transparent;
-    border-left: 10px solid rgba(0, 0, 0, 0.9);
+    border-left: 10px solid rgba(0, 0, 0, 0.92);
+    filter: drop-shadow(2px 0 2px rgba(0, 0, 0, 0.2));
   }
 }
 </style>

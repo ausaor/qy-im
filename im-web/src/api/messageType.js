@@ -4,6 +4,11 @@ let isNormal = function(type){
 	return type>=0 && type < 10;
 }
 
+// 是否图片消息
+let isImage = function(type){
+	return type===1 || type===7;
+}
+
 // 是否状态消息
 let isStatus = function(type){
 	return type>=10 && type < 20;
@@ -36,5 +41,6 @@ export {
 	isTip,
 	isAction,
 	isRtcPrivate,
-	isRtcGroup
+	isRtcGroup,
+	isImage
 }
