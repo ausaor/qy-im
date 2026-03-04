@@ -241,7 +241,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
                 aliasName = aliasName + member.getAliasNameSuffix();
             }
         }
-        String content = String.format("'%s'撤回了一条消息", aliasName);
+        String content = String.format("#{%s}撤回了一条消息", aliasName + ":" + session.getUserId());
         msgInfo.setContent(content);
         msgInfo.setSendTime(new Date());
 
@@ -254,7 +254,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         imClient.sendGroupMessage(sendMessage);
 
         // 推给自己其他终端
-        msgInfo.setContent("你撤回了一条消息");
+        msgInfo.setContent(String.format("#{%s}撤回了一条消息", "你" + ":" + session.getUserId()));
         sendMessage.setSendToSelf(true);
         sendMessage.setRecvIds(Collections.emptyList());
         sendMessage.setRecvTerminals(Collections.emptyList());

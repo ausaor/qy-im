@@ -462,7 +462,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         redisCache.setCacheObject(IMRedisKey.IM_REGION_GROUP_NUM_TEMP_USER
                 + regionGroup.getCode() + ":" + regionGroup.getNum() + ":" + userId, session, RegionGroupConst.TEMP_MEMBER_DURATION, TimeUnit.HOURS);
 
-        String content = "用户【" + session.getNickName() + "】加入了群聊";
+        String content = String.format("#{%s}加入了群聊", session.getNickName() + ":" + session.getUserId());
         messageSendUtil.sendRegionGroupTipMsg(regionGroup.getId(), userId, session.getNickName(), null, content, GroupChangeTypeEnum.NEW_USER_JOIN.getCode());
     }
 
@@ -586,7 +586,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         redisCache.setCacheObject(IMRedisKey.IM_REGION_GROUP_NUM_TEMP_USER
                 + regionGroup.getCode() + ":" + regionGroup.getNum() + ":" + userId, session, RegionGroupConst.TEMP_MEMBER_DURATION, TimeUnit.HOURS);
 
-        String content = "用户【" + session.getNickName() + "】加入了群聊";
+        String content = String.format("#{%s}加入了群聊", session.getNickName() + ":" + userId);
         messageSendUtil.sendRegionGroupTipMsg(regionGroup.getId(), userId, session.getNickName(), null, content, GroupChangeTypeEnum.NEW_USER_JOIN.getCode());
         return regionGroup;
     }
@@ -681,7 +681,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         redisCache.deleteObject(IMRedisKey.IM_REGION_GROUP_NUM_TEMP_USER
                 + regionGroup.getCode() + ":" + regionGroup.getNum() + ":" + session.getUserId());
 
-        String content = "用户【" + session.getNickName() + "】加入了群聊";
+        String content = String.format("#{%s}加入了群聊", session.getNickName() + ":" + session.getUserId());
         messageSendUtil.sendRegionGroupTipMsg(regionGroup.getId(), session.getUserId(), session.getNickName(), null, content, GroupChangeTypeEnum.NEW_USER_JOIN.getCode());
     }
 
@@ -841,15 +841,17 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             // 判断投票给自己还是其他成员
             String content = null;
             if (session.getUserId().equals(dto.getUserId())) {
-                content = "【群主投票】用户【" + myMemerInfo.getAliasName() + "】自荐申请群主身份。总计获得票数：" + count + "。距生效票数还差" + (voteEffectNum - count) + "票";
+                content = String.format("【群主投票】用户#{%s}申请群主身份。总计获得票数：%d。距生效票数还差%d票", myMemerInfo.getAliasName() + ":" + myMemerInfo.getUserId(), count, (voteEffectNum - count));
             } else {
-                content = "【群主投票】用户【" + myMemerInfo.getAliasName() + "】将票投给了【" + regionGroupMember.getAliasName() + "】。总计获得票数：" + count + "。距生效票数还差" + (voteEffectNum - count) + "票";
+                content = String.format("【群主投票】用户#{%s}将票投给#{%s}。总计获得票数：%d。距生效票数还差%d票", myMemerInfo.getAliasName() + ":" + myMemerInfo.getUserId(),
+                        regionGroupMember.getAliasName() + ":" + regionGroupMember.getUserId(), count, (voteEffectNum - count));
             }
             // 通知群成员
             messageSendUtil.sendRegionGroupTipMsg(dto.getRegionGroupId(), dto.getUserId(),
                     regionGroupMember.getAliasName(), Collections.emptyList(), content, null);
         } else {
-            String content = "【群主投票】用户【" + regionGroupMember.getAliasName() + "】当前总计获得票数：" + count+ "。距生效票数还差" + (voteEffectNum - count) + "票";
+            String content = String.format("【群主投票】用户#{%s}当前总计获得票数：%d。距生效票数还差%d票", regionGroupMember.getAliasName() + ":" + regionGroupMember.getUserId(),
+                    count, (voteEffectNum - count));
             // 通知群成员
             messageSendUtil.sendRegionGroupTipMsg(dto.getRegionGroupId(), dto.getUserId(),
                     regionGroupMember.getAliasName(), Collections.emptyList(), content, null);
@@ -867,14 +869,15 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 // 将所投票用户选为群主
                 regionGroup.setOwnerId(dto.getUserId());
                 regionGroup.setEffectiveTime(now);
-                // 有效期30天
+                // 有效期90天
                 DateTime expirationTime = DateUtil.offsetDay(now, RegionGroupConst.REGION_LEADER_PERIOD);
                 regionGroup.setExpirationTime(expirationTime);
 
                 // 更新群信息
                 this.updateById(regionGroup);
 
-                String content = "用户【" + regionGroupMember.getAliasName() + "】已被选为群主，有效期至"+ DateUtil.format(regionGroup.getExpirationTime(), DateFormat.DATE_FORMAT_01) + "，将开启群管理功能";
+                String content = String.format("用户#{%s}已成为群主，有效期至%s，获得群管理功能", regionGroupMember.getAliasName() + ":" + regionGroupMember.getUserId(),
+                        DateUtil.format(regionGroup.getExpirationTime(), DateFormat.DATE_FORMAT_01));
 
                 // 通知群成员
                 messageSendUtil.sendRegionGroupTipMsg(dto.getRegionGroupId(), dto.getUserId(),
@@ -962,7 +965,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
 
         // 投票操作是否通知群成员
         if (dto.getAnnounce()) {
-            String content = "【群主解除投票】用户【" + myMemerInfo.getAliasName() + "】投出了群主解除票。总计票数：" + count + "。距生效票数还差" + (voteEffectNum - count) + "票";
+            String content = String.format("【群主解除投票】用户#{%s}投出了群主解除票。总计票数：%d。距生效票数还差%d票", myMemerInfo.getAliasName() + ":" + myMemerInfo.getUserId(), count, voteEffectNum - count);
             // 通知群成员
             messageSendUtil.sendRegionGroupTipMsg(dto.getRegionGroupId(), dto.getUserId(),
                     regionGroupMember.getAliasName(), Collections.emptyList(), content, null);
@@ -1012,7 +1015,8 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 });
             }
 
-            String content = "用户【" + regionGroupMember.getAliasName() + "】已被解除群主身份。因无群主管理，每位群成员"+ RegionGroupConst.MSG_LIMIT_TIME +"小时内发言数量限制" + RegionGroupConst.MSG_LIMIT_COUNT + "条。";
+            String content = String.format("【群主解除】用户#{%s}已被解除群主身份。。因无群主管理，每位群成员%d小时内发言数量限制%d条。", myMemerInfo.getAliasName() + ":" + myMemerInfo.getUserId(),
+                    RegionGroupConst.MSG_LIMIT_TIME, RegionGroupConst.MSG_LIMIT_COUNT);
 
             // 通知群成员
             messageSendUtil.sendRegionGroupTipMsg(dto.getRegionGroupId(), dto.getUserId(),
@@ -1083,9 +1087,9 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
 
             String content = null;
             if (StringUtils.equals(dto.getBanType(), BanTypeEnum.SYS.getCode())) {
-                content = "群成员【"+ dto.getAliasName() + "】已被系统禁言，禁言时长" + dto.getBanDuration() + "小时";
+                content = String.format("【系统禁言】用户#{%s}已被系统禁言，禁言时长%d小时", dto.getAliasName() + ":" + dto.getUserId(), dto.getBanDuration());
             } else {
-                content = "群成员【"+ dto.getAliasName() + "】已被群主禁言，禁言时长" + dto.getBanDuration() + "小时";
+                content = String.format("【群主禁言】用户#{%s}已被群主禁言，禁言时长%d小时", dto.getAliasName() + ":" + dto.getUserId(), dto.getBanDuration());
             }
 
             messageSendUtil.sendRegionGroupTipMsg(regionGroup.getId(), session.getUserId(), session.getNickName(), null, content, null);
@@ -1161,7 +1165,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 redisCache.deleteObject(RedisKey.IM_REGION_GROUP_MEMBER_MSG_SWITCH + regionGroup.getId() + ":" + dto.getUserId());
             }
 
-            String content = "群成员【" + dto.getAliasName() + "】已解除禁言";
+            String content = String.format("群成员#{%s}已解除禁言", dto.getAliasName() + ":" + dto.getUserId());
             messageSendUtil.sendRegionGroupTipMsg(regionGroup.getId(), session.getUserId(), session.getNickName(), null, content, null);
         }
     }
@@ -1209,7 +1213,8 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             redisCache.setCacheObject(RedisKey.IM_REGION_GROUP_LEADER_TRANSFER + regionGroup.getCode() + "-" + regionGroup.getNum(),
                     session.getUserId(), RegionGroupConst.LEADER_TRANSFER_TIME, TimeUnit.DAYS);
 
-            String content = "群主已转移到群成员【" + regionGroupMember.getAliasName() + "】，有效期至：" + DateUtil.format(regionGroup.getExpirationTime(), DateFormat.DATE_FORMAT_01);
+            String content = String.format("【群主转移】本群群主已转移到群成员#{%s}，有效期至：%s", regionGroupMember.getAliasName() + ":" + regionGroupMember.getUserId(),
+                    DateUtil.format(regionGroup.getExpirationTime(), DateFormat.DATE_FORMAT_01));
             messageSendUtil.sendRegionGroupTipMsg(regionGroup.getId(), session.getUserId(), session.getNickName(),
                     null, content, GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
         } finally {
@@ -1294,7 +1299,8 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 });
             }
 
-            String content = "群主【" + regionGroupMember.getAliasName() + "】已退出群聊，因无群主管理，每位群成员"+ RegionGroupConst.MSG_LIMIT_TIME +"小时内发言数量限制" + RegionGroupConst.MSG_LIMIT_COUNT + "条。";
+            String content = String.format("群主#{%s}已退出群聊，因无群主管理，每位群成员%s小时内发言数量限制%s条。", regionGroupMember.getAliasName() + ":" + regionGroupMember.getUserId(),
+                    RegionGroupConst.MSG_LIMIT_TIME, RegionGroupConst.MSG_LIMIT_COUNT);
             messageSendUtil.sendRegionGroupTipMsg(regionGroup.getId(), userId, regionGroupMember.getAliasName(), null, content, GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
         }
     }

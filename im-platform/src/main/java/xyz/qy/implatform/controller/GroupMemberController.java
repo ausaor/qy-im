@@ -26,14 +26,14 @@ public class GroupMemberController {
     @Resource
     private IGroupMemberService groupMemberService;
 
-    @ApiOperation(value = "切换模板人物", notes = "切换模板人物")
+    @ApiOperation(value = "切换模板角色", notes = "切换模板角色")
     @PostMapping("/switchTemplateCharacter")
     public Result<GroupMemberVO> switchTemplateCharacter(@RequestBody GroupMemberVO groupMemberVO) {
         groupMemberService.switchTemplateCharacter(groupMemberVO);
         return ResultUtils.success();
     }
 
-    @ApiOperation(value = "切换模板人物头像", notes = "切换模板人物头像")
+    @ApiOperation(value = "切换模板角色头像", notes = "切换模板角色头像")
     @PostMapping("/switchCharacterAvatar")
     public Result switchCharacterAvatar(@Valid @RequestBody SwitchCharacterAvatarVO avatarVO) {
         groupMemberService.switchCharacterAvatar(avatarVO);

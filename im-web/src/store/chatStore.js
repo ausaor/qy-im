@@ -1,6 +1,6 @@
 import { MESSAGE_TYPE, MESSAGE_STATUS } from "../api/enums.js"
 import { generateShortId } from '../utils/id-generator.js'
-import { processAtUsers } from '../api/common.js'
+import { processAtUsers, processTipUsers } from '../api/common.js'
 
 import userStore from './userStore';
 import localForage from 'localforage';
@@ -164,7 +164,7 @@ export default {
 				Object.assign(message, msgInfo);
 				// 撤回消息需要显示
 				if (msgInfo.type == MESSAGE_TYPE.RECALL) {
-					chat.lastContent = msgInfo.content;
+					chat.lastContent = processTipUsers(msgInfo.content);
 				}
 				chat.stored = false;
 				this.commit("saveToStorage");
@@ -193,7 +193,11 @@ export default {
 				if (msgInfo.atUserIds && msgInfo.atUserIds.length > 0) {
 					chat.lastContent = processAtUsers(msgInfo.content, msgInfo.atUserIds);
 				} else {
-					chat.lastContent = msgInfo.content;
+					if (msgInfo.type === MESSAGE_TYPE.TIP_TEXT) {
+						chat.lastContent = processTipUsers(msgInfo.content);
+					} else {
+						chat.lastContent = msgInfo.content;
+					}
 				}
 			}
 			if (type === 'SYSTEM') {

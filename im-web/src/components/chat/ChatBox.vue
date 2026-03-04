@@ -906,7 +906,7 @@
             this.$message.success("消息已撤回");
             msgInfo = JSON.parse(JSON.stringify(msgInfo));
             msgInfo.type = 10;
-            msgInfo.content = '你撤回了一条消息';
+            msgInfo.content = '#{你:'+ this.mine.id +'}撤回了一条消息';
             msgInfo.status = this.$enums.MESSAGE_STATUS.RECALL;
             msgInfo.chatType = this.chat.type;
             this.$store.commit("insertMessage", msgInfo);

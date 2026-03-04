@@ -1,5 +1,6 @@
 package xyz.qy.implatform.util;
 
+import org.apache.commons.lang3.StringUtils;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.dto.GroupMessageDTO;
 import xyz.qy.implatform.dto.PrivateMessageDTO;
@@ -118,5 +119,19 @@ public class CommonUtils {
         } else {
             return "@" + user.getNickName() + " 欢迎加入群聊#emo拍手;";
         }
+    }
+
+    public static String getAliasName(GroupMember groupMember) {
+        if (!groupMember.getIsTemplate()) {
+            return groupMember.getAliasName();
+        }
+        String aliasName = groupMember.getAliasName();
+        if (StringUtils.isNotBlank(groupMember.getAliasNamePrefix())) {
+            aliasName = groupMember.getAliasNamePrefix() + aliasName;
+        }
+        if (StringUtils.isNotBlank(groupMember.getAliasNameSuffix())) {
+            aliasName = aliasName + groupMember.getAliasNameSuffix();
+        }
+        return aliasName;
     }
 }

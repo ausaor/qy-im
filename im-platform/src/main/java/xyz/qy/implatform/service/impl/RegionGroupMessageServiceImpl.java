@@ -439,7 +439,7 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         userIds = userIds.stream().filter(uid -> !session.getUserId().equals(uid)).collect(Collectors.toList());
         RegionGroupMessageVO msgInfo = BeanUtils.copyProperties(msg, RegionGroupMessageVO.class);
         msgInfo.setType(MessageType.RECALL.code());
-        String content = String.format("'%s'撤回了一条消息", member.getAliasName());
+        String content = String.format("#{%s}撤回了一条消息", member.getAliasName() + ":" + member.getUserId());
         msgInfo.setContent(content);
         msgInfo.setSendTime(new Date());
 
@@ -452,7 +452,7 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         imClient.sendRegionGroupMessage(sendMessage);
 
         // 推给自己其他终端
-        msgInfo.setContent("你撤回了一条消息");
+        msgInfo.setContent(String.format("#{%s}撤回了一条消息", "你" + ":" + session.getUserId()));
         sendMessage.setSendToSelf(true);
         sendMessage.setRecvIds(Collections.emptyList());
         sendMessage.setRecvTerminals(Collections.emptyList());

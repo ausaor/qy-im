@@ -18,9 +18,9 @@ public interface RegionGroupConst {
     int VOTE_EFFECT_NUM = 20;
 
     /**
-     * 地区群聊群主有效期（30天）
+     * 地区群聊群主有效期（90天）
      */
-    int REGION_LEADER_PERIOD = 30;
+    int REGION_LEADER_PERIOD = 90;
 
     /**
      * 地区群聊群主有效最短时长（2天）

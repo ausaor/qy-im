@@ -87,7 +87,7 @@ public class RegionGroupController {
         return ResultUtils.success();
     }
 
-    @ApiOperation(value = "投票选举地区群聊群主", notes = "投票选举地区群聊群主")
+    @ApiOperation(value = "地区群聊群主投票", notes = "地区群聊群主投票")
     @PostMapping("/vote")
     public Result vote(@RequestBody RegionGroupMemberDTO dto) {
         regionGroupService.voteRegionGroupLeader(dto);

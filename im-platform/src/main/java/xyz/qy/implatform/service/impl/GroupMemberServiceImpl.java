@@ -1,7 +1,5 @@
 package xyz.qy.implatform.service.impl;
 
-import cn.hutool.core.date.DateUnit;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -26,17 +24,14 @@ import xyz.qy.implatform.enums.GroupChangeTypeEnum;
 import xyz.qy.implatform.enums.GroupTypeEnum;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.exception.GlobalException;
-import xyz.qy.implatform.mapper.DictDataMapper;
 import xyz.qy.implatform.mapper.GroupMemberMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
-import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
-import xyz.qy.implatform.service.IGroupMessageService;
 import xyz.qy.implatform.service.IGroupService;
-import xyz.qy.implatform.service.IPrivateMessageService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
+import xyz.qy.implatform.util.CommonUtils;
 import xyz.qy.implatform.util.DateTimeUtils;
 import xyz.qy.implatform.util.IdGeneratorUtil;
 import xyz.qy.implatform.util.MessageSendUtil;
@@ -337,8 +332,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
 
         group.setVersion(idGeneratorUtil.nextIdStr());
         groupService.updateById(group);
-
-        String content = "用户【" + session.getNickName() + "】将模板角色切换成【" + groupMember.getAliasName() + "】";
+        String content = String.format("#{%s}将群聊角色切换成【%s】", CommonUtils.getAliasName(groupMember) + ":" + groupMember.getUserId(), groupMember.getAliasName());
         messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
                 Collections.emptyList(), content, GroupChangeTypeEnum.TEMPLATE_CHARACTER_CHANGE.getCode());
     }
@@ -425,7 +419,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         group.setVersion(idGeneratorUtil.nextIdStr());
         groupService.updateById(group);
 
-        String content = "用户【" + session.getNickName() + "】切换了模板角色头像";
+        String content = String.format("#{%s}切换了角色头像", CommonUtils.getAliasName(groupMember) + ":" + groupMember.getUserId());
         messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
                 Collections.emptyList(), content, GroupChangeTypeEnum.TEMPLATE_CHARACTER_CHANGE.getCode());
     }

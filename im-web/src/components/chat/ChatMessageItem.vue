@@ -1,8 +1,7 @@
 <template>
 	<div class="chat-msg-item">
-		<div class="chat-msg-tip" v-if="msgInfo.type==$enums.MESSAGE_TYPE.RECALL || msgInfo.type == $enums.MESSAGE_TYPE.TIP_TEXT">
-      {{msgInfo.content}}
-    </div>
+		<div class="chat-msg-tip" v-if="msgInfo.type==$enums.MESSAGE_TYPE.RECALL || msgInfo.type == $enums.MESSAGE_TYPE.TIP_TEXT"
+         v-html="formattedTipContent" @click="handleTipClick"></div>
     <div class="chat-msg-tip" v-if="msgInfo.type==$enums.MESSAGE_TYPE.TIP_TIME">
       {{$date.toTimeText(msgInfo.sendTime)}}
     </div>
@@ -437,6 +436,17 @@ export default {
       // 转义正则表达式特殊字符
       escapeRegExp(string) {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      },
+      handleTipClick(event) {
+        // 处理提示消息中的用户点击事件
+        if (event.target.classList.contains('tip-user-name')) {
+          const userId = parseInt(event.target.getAttribute('data-user-id'));
+          // 判断userId是否数字
+          if (isNaN(userId)) {
+            return;
+          }
+          this.showUserInfo(event, userId);
+        }
       }
 		},
     computed: {
@@ -567,6 +577,14 @@ export default {
         }
         
         return style;
+      },
+      formattedTipContent() {
+        if (!this.msgInfo.content) return '';
+        // 匹配 #{用户名:id} 格式的正则表达式
+        const regex = /#\{([^:}]+):(\d+)\}/g;
+        return this.msgInfo.content.replace(regex, (match, username, userId) => {
+          return `<span class="tip-user-name" data-user-id="${userId}" style="color: #1E90FF;cursor: pointer;padding: 2px 5px">${username}</span>`;
+        });
       }
 		},
 	}
@@ -579,6 +597,17 @@ export default {
 			line-height: 50px;
       font-size: 14px;
       text-align: center;
+      
+      .tip-user-name {
+        color: #1E90FF;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: underline;
+        
+        &:hover {
+          color: #4169E1;
+        }
+      }
 		}
 
 		.chat-msg-normal {
