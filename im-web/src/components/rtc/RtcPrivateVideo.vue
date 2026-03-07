@@ -1,13 +1,13 @@
 <template>
   <div>
-    <el-dialog v-dialogDrag :title="title" top="5vh" :close-on-click-modal="false" :close-on-press-escape="false"
-               :visible.sync="showRoom" width="50%" height="70%" :before-close="onQuit">
+    <el-dialog v-dialogDrag top="5vh" custom-class="rtc-private-video-dialog" :title="title" :width="width"
+               :visible.sync="showRoom" :close-on-click-modal="false" :close-on-press-escape="false" :before-close="onQuit">
       <div class="rtc-private-video">
         <div v-show="isVideo" class="rtc-video-box">
-          <div class="rtc-video-friend" v-loading="!isChating"  element-loading-text="等待对方接听..."
-               element-loading-background="rgba(0, 0, 0, 0.3)" >
+          <div class="rtc-video-friend" v-loading="!isChating" element-loading-text="等待对方接听..."
+               element-loading-background="rgba(0, 0, 0, 0.1)">
             <head-image class="friend-head-image" :id="friend.id" :size="80" :name="friend.nickName"
-                        :url="friend.headImage">
+                        :url="friend.headImage" :isShowUserInfo="false" radius="0">
             </head-image>
             <video ref="remoteVideo" autoplay=""></video>
           </div>
@@ -16,19 +16,18 @@
           </div>
         </div>
         <div v-show="!isVideo" class="rtc-voice-box" v-loading="!isChating" element-loading-text="等待对方接听..."
-             element-loading-background="rgba(0, 0, 0, 0.3)">
+             element-loading-background="rgba(0, 0, 0, 0.1)">
           <head-image class="friend-head-image" :id="friend.id" :size="200" :name="friend.nickName"
-                      :url="friend.headImage">
-            <div class="rtc-voice-name">{{friend.nickName}}</div>
+                      :url="friend.headImage" :isShowUserInfo="false">
+            <div class="rtc-voice-name">{{ friend.nickName }}</div>
           </head-image>
         </div>
         <div class="rtc-control-bar">
-          <div title="取消" class="icon iconfont icon-icon_phone_reject_nor reject"
-               style="color: red;" @click="onQuit()"></div>
+          <div title="取消" class="icon iconfont icon-icon_phone_reject_nor reject" style="color: red;" @click="onQuit()"></div>
         </div>
       </div>
     </el-dialog>
-    <rtc-private-acceptor v-if="!isHost&&isWaiting" ref="acceptor" :friend="friend" :mode="mode" @accept="onAccept"
+    <rtc-private-acceptor v-if="!isHost && isWaiting" ref="acceptor" :friend="friend" :mode="mode" @accept="onAccept"
                           @reject="onReject"></rtc-private-acceptor>
   </div>
 </template>
@@ -114,7 +113,7 @@ export default {
       // 启动心跳
       this.startHeartBeat();
       // 打开摄像头
-      this.openStream().finally(() => {
+      this.openStream().then(() => {
         this.webrtc.setStream(this.localStream);
         this.webrtc.createOffer().then((offer) => {
           // 发起呼叫
@@ -123,10 +122,13 @@ export default {
             this.state = "WAITING";
             // 播放呼叫铃声
             this.audio.play();
-          }).catch(()=>{
+          }).catch(() => {
             this.close();
           })
         })
+      }).catch(() => {
+        // 呼叫方必须能打开摄像头，否则无法正常建立连接
+        this.close();
       })
     },
     onAccept() {
@@ -220,7 +222,7 @@ export default {
         this.startHeartBeat();
         // 30s未接听自动挂掉
         this.waitTimer = setTimeout(() => {
-          this.API.failed(this.friend.id,"对方无应答");
+          this.API.failed(this.friend.id, "对方无应答");
           this.$message.error("您未接听");
           this.close();
         }, 30000)
@@ -297,6 +299,7 @@ export default {
           this.camera.openAudio().then((stream) => {
             this.localStream = stream;
             this.$refs.localVideo.srcObject = stream;
+            this.$refs.localVideo.muted = true;
             resolve(stream);
           }).catch((e) => {
             this.$message.error("打开麦克风失败")
@@ -359,6 +362,9 @@ export default {
     }
   },
   computed: {
+    width() {
+      return this.isVideo ? '960px' : '360px'
+    },
     title() {
       let strTitle = `${this.modeText}通话-${this.friend.nickName}`;
       if (this.isChating) {
@@ -416,7 +422,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .rtc-private-video {
   position: relative;
 
@@ -431,7 +437,6 @@ export default {
 
   .rtc-video-box {
     position: relative;
-    border: #4880b9 solid 1px;
     background-color: #eeeeee;
 
     .rtc-video-friend {
@@ -454,9 +459,7 @@ export default {
       z-index: 99999;
       width: 25vh;
       right: 0;
-      bottom: 0;
-      box-shadow: 0px 0px 5px #ccc;
-      background-color: #cccccc;
+      bottom: -1px;
 
       video {
         width: 100%;
@@ -470,15 +473,14 @@ export default {
     position: relative;
     display: flex;
     justify-content: center;
-    border: #4880b9 solid 1px;
+    align-items: center;
     width: 100%;
-    height: 50vh;
-    padding-top: 10vh;
+    height: 300px;
     background-color: aliceblue;
 
     .rtc-voice-name {
       text-align: center;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 600;
     }
   }
