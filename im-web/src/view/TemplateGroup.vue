@@ -960,7 +960,7 @@ export default {
       this.characterId = null;
       this.section = "groupTemplate-characters";
       this.groupTemplateId = groupTemplate.id;
-      this.showUploadMusic = groupTemplate.createBy == this.mine.id;
+      this.showUploadMusic = false;
       // 使用 $nextTick 确保所有 props 已更新到子组件
       this.$nextTick(() => {
         this.$refs.musicPlayRef.show();

@@ -1,11 +1,11 @@
 <template>
     <div class="group-member-item" :style="{'height':height+'px'}">
         <div class="member-avatar">
-            <head-image :size="headImageSize" :name="member.showNickName" 
+            <head-image :size="headImageSize" :name="member.aliasName"
 				:url="member.headImage" :online="member.online"> </head-image>
         </div>
         <div class="member-name" :style="{'line-height':height+'px'}">
-            <div>{{ member.showNickName }}</div>
+            <div>{{ member.aliasName }}</div>
         </div>
 		<slot></slot>
     </div>
