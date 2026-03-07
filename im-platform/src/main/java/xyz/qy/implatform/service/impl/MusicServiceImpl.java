@@ -19,6 +19,7 @@ import xyz.qy.implatform.entity.MusicStar;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.enums.RoleEnum;
+import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.MusicMapper;
@@ -118,11 +119,38 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             musics = this.list(wrapper);
         } else if (StringUtils.equals(dto.getCategory(), TalkCategoryEnum.CHARACTER.getCode())) {
             LambdaQueryWrapper<Music> wrapper = Wrappers.lambdaQuery();
-            wrapper.eq(Music::getDeleted, false)
-                    .eq(Music::getCategory, dto.getCategory())
-                    .eq(ObjectUtil.isNotNull(dto.getCharacterId()), Music::getCharacterId, dto.getCharacterId())
-                    .eq(ObjectUtil.isNotNull(dto.getGroupTemplateId()), Music::getGroupTemplateId, dto.getGroupTemplateId())
-                    .orderByDesc(Music::getCreateTime);
+            wrapper.eq(Music::getDeleted, false);
+            wrapper.eq(Music::getCategory, dto.getCategory());
+            if (SectionEnum.CHARACTER.getCode().equals(dto.getSection())) {
+                if (ObjectUtil.isNull(dto.getCharacterId())) {
+                    throw new GlobalException("角色Id不能为空");
+                }
+                wrapper.eq(Music::getCharacterId, dto.getCharacterId());
+            } else if (SectionEnum.GROUP_TEMPLATE.getCode().equals(dto.getSection())) {
+                if (ObjectUtil.isNull(dto.getGroupTemplateId())) {
+                    throw new GlobalException("群聊模板Id不能为空");
+                }
+                wrapper.eq(Music::getGroupTemplateId, dto.getGroupTemplateId());
+            } else if (SectionEnum.GROUP_TEMPLATE_CHARACTERS.getCode().equals(dto.getSection())) {
+                if (ObjectUtil.isNull(dto.getGroupTemplateId())) {
+                    throw new GlobalException("群聊模板Id不能为空");
+                }
+                List<Long> characterIds = characterService.findPublishedCharacterIdsByGroupId(dto.getGroupTemplateId());
+                wrapper.and(w -> w.in(CollectionUtils.isNotEmpty(characterIds), Music::getCharacterId, characterIds)
+                        .or()
+                        .eq(Music::getGroupTemplateId, dto.getGroupTemplateId()));
+            } else if (SectionEnum.CHARACTERS.getCode().equals(dto.getSection())) {
+                if (ObjectUtil.isNotNull(dto.getGroupId())) {
+                    dto.setCharacterIds(groupMemberService.getGroupCharacterIds(dto.getGroupId()));
+                }
+
+                if (CollectionUtils.isEmpty(dto.getCharacterIds())) {
+                    throw new GlobalException("参数异常");
+                }
+                dto.setCharacterIds(dto.getCharacterIds().stream().distinct().collect(Collectors.toList()));
+                wrapper.in(CollectionUtils.isNotEmpty(dto.getCharacterIds()), Music::getCharacterId, dto.getCharacterIds());
+            }
+            wrapper.orderByDesc(Music::getCreateTime);
             musics = this.list(wrapper);
         }
         

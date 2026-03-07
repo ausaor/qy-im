@@ -21,7 +21,7 @@
       <el-card shadow="always" class="box-card" v-for="(templateGroup,index) in templateGroups" :key="index">
         <div slot="header" class="header" style="display: flex;justify-content: space-between;">
           <div>{{ templateGroup.groupName }}</div>
-          <div style="display: flex;justify-content: right;">
+          <div class="operate-buttons">
             <el-button v-if="templateGroup.isOwner" class="operate-button"
                        type="primary" icon="el-icon-edit" circle size="mini"
                        @click="editTemplateGroup(templateGroup)"></el-button>
@@ -51,6 +51,9 @@
             </el-button>
             <el-button class="operate-button template-group-music" circle icon="icon iconfont icon-Music" size="mini"
                        @click="openGroupTemplateMusicDialog(templateGroup)">
+            </el-button>
+            <el-button class="operate-button template-group-characters-music" circle icon="icon iconfont icon-Music" size="mini"
+                       @click="openGroupTemplateCharactersMusicDialog(templateGroup)">
             </el-button>
           </div>
         </div>
@@ -102,7 +105,7 @@
             </svg>
           </div>
           <div class="content-item">
-            <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterMusicDialog(item.character)">
+            <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterMusicDialog(item.character, true)">
               <use xlink:href="#icon-Music"></use>
             </svg>
           </div>
@@ -442,7 +445,7 @@
                  :section="section"
                 :character-id="characterId"
                 :group-template-id="groupTemplateId"></talk-notify>
-    <music-play ref="musicPlayRef" :category="'character'" :section="section" :character-id="characterId" :group-template-id="groupTemplateId"></music-play>
+    <music-play ref="musicPlayRef" :category="'character'" :section="section" :character-id="characterId" :group-template-id="groupTemplateId" :show-upload="showUploadMusic"></music-play>
   </div>
 </template>
 
@@ -517,6 +520,7 @@ export default {
       userNameParam: '',
       characterUserTitle: '',
       myCharacters: [],
+      showUploadMusic: false,
     }
   },
   created() {
@@ -932,12 +936,13 @@ export default {
       this.characterId = null;
       this.section = "groupTemplate";
       this.groupTemplateId = groupTemplate.id;
+      this.showUploadMusic = groupTemplate.createBy == this.mine.id;
       // 使用 $nextTick 确保所有 props 已更新到子组件
       this.$nextTick(() => {
         this.$refs.musicPlayRef.show();
       })
     },
-    openCharacterMusicDialog(character) {
+    openCharacterMusicDialog(character, showUpload=false) {
       if (!character) {
         this.$message.warning('角色信息为空');
         return
@@ -945,6 +950,17 @@ export default {
       this.groupTemplateId = null;
       this.section = "character";
       this.characterId = character.id;
+      this.showUploadMusic = character.createBy == this.mine.id || showUpload;
+      // 使用 $nextTick 确保所有 props 已更新到子组件
+      this.$nextTick(() => {
+        this.$refs.musicPlayRef.show();
+      })
+    },
+    openGroupTemplateCharactersMusicDialog(groupTemplate) {
+      this.characterId = null;
+      this.section = "groupTemplate-characters";
+      this.groupTemplateId = groupTemplate.id;
+      this.showUploadMusic = groupTemplate.createBy == this.mine.id;
       // 使用 $nextTick 确保所有 props 已更新到子组件
       this.$nextTick(() => {
         this.$refs.musicPlayRef.show();
@@ -1267,6 +1283,9 @@ export default {
     totalCharacterNotifyCount() {
       return this.$store.getters.getTotalCharacterNotifyCount();
     },
+    mine() {
+      return this.$store.state.userStore.userInfo;
+    },
   }
 }
 </script>
@@ -1291,7 +1310,7 @@ export default {
 }
 
 .template-group-list {
-  /* grid布局 两端对齐,最后一行左对齐*/
+  /* grid 布局 两端对齐，最后一行左对齐*/
   display: grid;
   grid-template-columns: repeat(2,1fr);
   gap: 10px;
@@ -1299,39 +1318,53 @@ export default {
   .box-card {
 
     .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
 
-      .group-template-notify {
-        position: absolute;
-        top: -10px;
-        right: 0px;
-        background-color: #f56c6c;
-        color: #fff;
-        border-radius: 30px;
-        padding: 1px 5px;
-        font-size: 10px;
-        text-align: center;
-        white-space: nowrap;
-        border: 1px solid #f1e5e5;
-      }
+      .operate-buttons {
+        display: flex;
+        justify-content: right;
 
-      .operate-button {
-        margin: 0 5px;
-        float: right;
-        padding: 3px 0;
-        width: 32px;
-        height: 32px
-      }
+        .group-template-notify {
+          position: absolute;
+          top: -10px;
+          right: 0px;
+          background-color: #f56c6c;
+          color: #fff;
+          border-radius: 30px;
+          padding: 1px 5px;
+          font-size: 10px;
+          text-align: center;
+          white-space: nowrap;
+          border: 1px solid #f1e5e5;
+        }
 
-      .template-group-space {
-        color: orange;
-      }
+        .operate-button {
+          margin: 4px 4px;
+          padding: 3px 0;
+          width: 32px;
+          height: 32px;
+          flex-shrink: 0;
+        }
 
-      .template-group-characters-space {
-        color: #00f2fe;
-      }
+        .template-group-space {
+          color: orange;
+        }
 
-      .template-group-music {
-        color: #b7eb81;
+        .template-group-characters-space {
+          color: #00f2fe;
+        }
+
+        .template-group-music {
+          color: #b7eb81;
+        }
+
+        .template-group-characters-music {
+          color: #735cb9;
+        }
       }
     }
 

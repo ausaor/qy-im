@@ -239,7 +239,13 @@ export default {
     groupTemplateId: {
       type: Number,
       default: null
-    }
+    },
+    characterIds: {
+      type: Array,
+      default: () => {
+        return []
+      }
+    },
   },
   components: {
     MusicUpload
@@ -419,7 +425,8 @@ export default {
         groupId: this.groupId,
         regionCode: this.regionCode,
         characterId: this.characterId,
-        groupTemplateId: this.groupTemplateId
+        groupTemplateId: this.groupTemplateId,
+        characterIds: this.characterIds
       }
       this.$http({
         url: `/music/list`,

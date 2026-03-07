@@ -6,6 +6,8 @@ import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.ValidEnum;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+import java.util.List;
 
 @Data
 public class MusicQueryDTO {
@@ -23,6 +25,9 @@ public class MusicQueryDTO {
     private String regionCode;
 
     private Long characterId;
+
+    @Size(max = 500)
+    private List<Long> characterIds;
 
     private Long groupTemplateId;
 

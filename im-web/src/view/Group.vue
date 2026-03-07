@@ -263,6 +263,12 @@
 									</div>
 									<div class="function-text">群歌单</div>
 								</div>
+                <div class="group-function-item" v-if="activeGroup.groupType!==0" @click="openStarMusic">
+                  <div class="function-icon bg-purple">
+                    <span class="icon iconfont icon-Music"></span>
+                  </div>
+                  <div class="function-text">星曲</div>
+                </div>
 								<div class="group-function-item" @click="openGroupRequestPanel">
 									<div class="function-icon bg-blue">
 										<head-image :size="38" :name="'群通知'" :url="require('@/assets/image/join_group.png')"></head-image>
@@ -473,6 +479,7 @@
     <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="activeGroup.id"></talk-notify>
     <talk-notify ref="starTalkNotifyRef" :category="'character'" :section="section" :group-template-id="groupTemplateId" :character-ids="characterIdList"></talk-notify>
     <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="activeGroup.id"></music-play>
+    <music-play ref="starMusicPlayRef" :show-upload="false" :category="'character'" :section="section" :group-template-id="groupTemplateId" :character-ids="characterIdList"></music-play>
     <group-request-panel ref="groupRequestPanel" :is-owner="isOwner" :join-group-requests="joinGroupRequests" :invite-group-requests="inviteGroupRequests"></group-request-panel>
     <template-character-choose :visible="groupRequestChangeCharacterVisible" @close="groupRequestChangeCharacterVisible = false" @confirm="groupRequestChangeCharacterEvent"></template-character-choose>
     <BanGroupMember ref="banGroupMemberRef" :visible="banGroupMemberVisible" :operation="banOperation" :members="banMembers" @close="closeBanGroupMemberDialog" @confirm="doBanMembers"></BanGroupMember>
@@ -1131,6 +1138,21 @@
       openGroupMusic() {
         this.$refs.musicPlayRef.show();
       },
+      openStarMusic() {
+        if (this.activeGroup.groupType === 1 || this.activeGroup.groupType === 4) {
+          this.characterIdList = []
+          this.groupTemplateId = this.activeGroup.templateGroupId;
+          this.section = "groupTemplate-characters"
+        } else if (this.activeGroup.groupType === 2 || this.activeGroup.groupType === 3) {
+          this.groupTemplateId = null;
+          this.section = "characters"
+          this.characterIdList = this.groupMembers.map(item => !item.quit && item.templateCharacterId);
+        }
+        this.category = "character"
+        this.$nextTick(() => {
+          this.$refs.starMusicPlayRef.show();
+        })
+      },
       openGroupRequestPanel() {
         this.$refs.groupRequestPanel.show();
       },
@@ -1722,8 +1744,9 @@
           
           // 新增的群功能区域样式
           .group-functions {
-            display: flex;
-            justify-content: space-around;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
             padding: 20px;
             background: rgba(255, 255, 255, 0.7);
             border-top: 1px solid rgba(224, 224, 224, 0.5);
@@ -1738,8 +1761,6 @@
               transition: all 0.3s ease;
               position: relative;
               border: 1px solid rgba(224, 224, 224, 0.8);
-              flex: 1;
-              margin: 0 10px;
 
               &:hover {
                 background: rgba(255, 255, 255, 1);
@@ -1779,6 +1800,15 @@
                 .svg-icon {
                   width: 40px;
                   height: 40px;
+                }
+
+                .icon {
+                  display: block;
+                  width: 40px;
+                  height: 40px;
+                  line-height: 40px;
+                  font-size: 40px;
+                  color: #735cb9;
                 }
 
                 .head-image {
