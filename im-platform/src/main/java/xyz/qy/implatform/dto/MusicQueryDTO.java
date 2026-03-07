@@ -22,6 +22,10 @@ public class MusicQueryDTO {
 
     private String regionCode;
 
+    private Long characterId;
+
+    private Long groupTemplateId;
+
     private String name;
 
     private String singer;

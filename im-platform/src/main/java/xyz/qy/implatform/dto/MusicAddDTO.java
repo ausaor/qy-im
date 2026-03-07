@@ -27,4 +27,8 @@ public class MusicAddDTO {
     private Long groupId;
 
     private String regionCode;
+
+    private Long groupTemplateId;
+
+    private Long characterId;
 }

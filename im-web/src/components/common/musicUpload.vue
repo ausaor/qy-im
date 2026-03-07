@@ -7,6 +7,7 @@
       :modal="false"
       custom-class="music-dialog"
       :before-close="resetForm"
+      v-dialogDrag
   >
     <el-form :model="form" :rules="rules" ref="musicForm" label-width="100px">
       <!-- 歌曲名称 -->
@@ -84,6 +85,14 @@ export default {
     regionCode: {
       type: String,
       default: null
+    },
+    characterId: {
+      type: Number,
+      default: null
+    },
+    groupTemplateId: {
+      type: Number,
+      default: null
     }
   },
   data() {
@@ -101,7 +110,9 @@ export default {
         cover: '',
         duration: 0,
         groupId: null,
-        regionCode: null
+        regionCode: null,
+        characterId: null,
+        groupTemplateId: null
       },
       rules: {
         name: [
@@ -154,7 +165,7 @@ export default {
     // 处理音乐文件上传
     handleMusicChange(file) {
       const isAudio = file.raw.type.includes('audio');
-      const isLt100M = file.raw.size / 1024 / 1024 < 100;
+      const isLt100M = file.raw.size / 1024 / 1024 < 15;
 
       if (!isAudio) {
         this.$message.error('只能上传音频文件!');
@@ -162,7 +173,7 @@ export default {
       }
 
       if (!isLt100M) {
-        this.$message.error('音频文件大小不能超过 100MB!');
+        this.$message.error('音频文件大小不能超过 20MB!');
         return false;
       }
 
@@ -196,6 +207,8 @@ export default {
             if (musicFIle) {
               this.form.groupId = this.groupId
               this.form.regionCode = this.regionCode
+              this.form.characterId = this.characterId
+              this.form.groupTemplateId = this.groupTemplateId
               this.form.category = this.category
               this.form.url = musicFIle.url
               this.form.duration = musicFIle.duration
@@ -260,7 +273,9 @@ export default {
         cover: '',
         duration: 0,
         groupId: null,
-        regionCode: null
+        regionCode: null,
+        characterId: null,
+        groupTemplateId: null
       };
       this.coverPreview = '';
       this.fileList = [];

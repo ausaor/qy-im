@@ -198,7 +198,7 @@
           @loadedmetadata="updateDuration"
           @ended="onSongEnd"
       ></audio>
-      <music-upload ref="musicUploadRef" :category="category" :group-id="groupId" :region-code="regionCode" @add="addMusic"></music-upload>
+      <music-upload ref="musicUploadRef" :category="category" :group-id="groupId" :region-code="regionCode" :group-template-id="groupTemplateId" :character-id="characterId"  @add="addMusic"></music-upload>
     </el-drawer>
 </template>
 
@@ -230,6 +230,14 @@ export default {
     },
     regionCode: {
       type: String,
+      default: null
+    },
+    characterId: {
+      type: Number,
+      default: null
+    },
+    groupTemplateId: {
+      type: Number,
       default: null
     }
   },
@@ -397,16 +405,7 @@ export default {
         this.$message.warning('播放列表为空')
         return
       }
-      let musics = this.playlist.map(item => {
-        return {
-          id: item.id,
-          title: item.name,
-          artist: item.singer,
-          pic: item.cover,
-          src: item.url,
-        }
-      })
-      this.$store.commit("setMusicList", musics)
+      this.$store.commit("setMusicList", this.playlist)
       this.$store.commit("toggleFloatMusic")
     },
     addMusic(data) {
@@ -419,6 +418,8 @@ export default {
         friendId: this.friendId,
         groupId: this.groupId,
         regionCode: this.regionCode,
+        characterId: this.characterId,
+        groupTemplateId: this.groupTemplateId
       }
       this.$http({
         url: `/music/list`,

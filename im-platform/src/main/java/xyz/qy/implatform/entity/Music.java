@@ -35,6 +35,10 @@ public class Music extends Model<Music> {
 
     private String regionCode;
 
+    private Long groupTemplateId;
+
+    private Long characterId;
+
     private Boolean deleted;
 
     private LocalDateTime createTime;

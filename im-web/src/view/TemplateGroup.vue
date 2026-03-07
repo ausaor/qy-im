@@ -49,6 +49,9 @@
             <el-button class="operate-button template-group-characters-space" circle icon="icon iconfont icon-shejiaotubiao-40" size="mini"
                        @click="openGroupTemplateCharactersSpaceDialog(templateGroup)">
             </el-button>
+            <el-button class="operate-button template-group-music" circle icon="icon iconfont icon-Music" size="mini"
+                       @click="openGroupTemplateMusicDialog(templateGroup)">
+            </el-button>
           </div>
         </div>
         <div>
@@ -99,7 +102,7 @@
             </svg>
           </div>
           <div class="content-item">
-            <svg class="icon svg-icon" aria-hidden="true">
+            <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterMusicDialog(item.character)">
               <use xlink:href="#icon-Music"></use>
             </svg>
           </div>
@@ -146,7 +149,7 @@
     <el-dialog class="edit-template-character"
                :title="curTemplateGroup.groupName"
                :visible.sync="showEditTemplateCharacterDialog"
-               width="540px"
+               width="580px"
                v-dialogDrag
                :before-close="handleEditTemplateCharacterClose">
       <div class="template-group-avatar">
@@ -164,7 +167,7 @@
         </batch-file-upload>
       </div>
       <div class="template-character-box">
-        <el-scrollbar style="height:360px;">
+        <el-scrollbar style="height:380px;">
           <div class="template-character-item" v-for="(templateCharacter, index) in templateCharacters"
                :key="templateCharacter.id">
             <div class="avatar-box">
@@ -203,6 +206,7 @@
               <el-button class="edit-character-space"
                          icon="icon iconfont icon-shejiaotubiao-40" circle size="mini" @click="openCharacterSpaceDialog(templateCharacter)"></el-button>
             </div>
+            <el-button class="edit-character-music" icon="icon iconfont icon-Music" circle size="mini" @click="openCharacterMusicDialog(templateCharacter)"></el-button>
             <el-button class="edit-character-user" type="primary" icon="el-icon-user-solid" circle
                        @click="openCharacterUserDialog(templateCharacter)" size="mini"></el-button>
             <el-button v-if="curTemplateGroup.isOwner" class="delete-button"
@@ -438,6 +442,7 @@
                  :section="section"
                 :character-id="characterId"
                 :group-template-id="groupTemplateId"></talk-notify>
+    <music-play ref="musicPlayRef" :category="'character'" :section="section" :character-id="characterId" :group-template-id="groupTemplateId"></music-play>
   </div>
 </template>
 
@@ -450,10 +455,12 @@ import SpaceCover from "@components/common/SpaceCover.vue";
 import Drawer from "@components/common/Drawer.vue";
 import TalkList from "@components/talk/TalkList.vue";
 import TalkNotify from "@components/talk/TalkNotify.vue";
+import MusicPlay from "@components/common/musicPlay.vue";
 
 export default {
   name: "TemplateGroup",
   components: {
+    MusicPlay,
     HeadImage,
     FileUpload,
     TemplateCharacterItem,
@@ -921,6 +928,28 @@ export default {
       this.showCharacterUsersDialog = true;
       this.queryCharacterUsers(character.id);
     },
+    openGroupTemplateMusicDialog(groupTemplate) {
+      this.characterId = null;
+      this.section = "groupTemplate";
+      this.groupTemplateId = groupTemplate.id;
+      // 使用 $nextTick 确保所有 props 已更新到子组件
+      this.$nextTick(() => {
+        this.$refs.musicPlayRef.show();
+      })
+    },
+    openCharacterMusicDialog(character) {
+      if (!character) {
+        this.$message.warning('角色信息为空');
+        return
+      }
+      this.groupTemplateId = null;
+      this.section = "character";
+      this.characterId = character.id;
+      // 使用 $nextTick 确保所有 props 已更新到子组件
+      this.$nextTick(() => {
+        this.$refs.musicPlayRef.show();
+      })
+    },
     readedCharacterTalkNotify(characterId) {
       let params = {
         category: 'character',
@@ -1300,6 +1329,10 @@ export default {
       .template-group-characters-space {
         color: #00f2fe;
       }
+
+      .template-group-music {
+        color: #b7eb81;
+      }
     }
 
     .head-image {
@@ -1505,6 +1538,10 @@ export default {
 
       .edit-character-space {
         color: orange;
+      }
+
+      .edit-character-music {
+        color: #b7eb81;
       }
     }
 

@@ -28,6 +28,10 @@ public class MusicVO {
 
     private String regionCode;
 
+    private Long characterId;
+
+    private Long groupTemplateId;
+
     private Boolean deleted;
 
     private LocalDateTime createTime;

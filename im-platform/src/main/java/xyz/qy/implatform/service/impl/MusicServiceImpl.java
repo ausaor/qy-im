@@ -12,13 +12,17 @@ import xyz.qy.implatform.dto.MusicAddDTO;
 import xyz.qy.implatform.dto.MusicDelDTO;
 import xyz.qy.implatform.dto.MusicQueryDTO;
 import xyz.qy.implatform.dto.MusicUpdateDTO;
+import xyz.qy.implatform.entity.CharacterUser;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.Music;
 import xyz.qy.implatform.entity.MusicStar;
+import xyz.qy.implatform.entity.TemplateCharacter;
+import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.MusicMapper;
+import xyz.qy.implatform.service.ICharacterUserService;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IGroupService;
@@ -27,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import xyz.qy.implatform.service.IMusicStarService;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
+import xyz.qy.implatform.service.ITemplateCharacterService;
+import xyz.qy.implatform.service.ITemplateGroupService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
@@ -42,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -65,6 +72,15 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
 
     @Resource
     private RedisCache redisCache;
+
+    @Resource
+    private ITemplateGroupService templateGroupService;
+
+    @Resource
+    private ITemplateCharacterService characterService;
+
+    @Resource
+    private ICharacterUserService characterUserService;
 
     @Override
     public List<MusicVO> listMusic(MusicQueryDTO dto) {
@@ -99,6 +115,14 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
                     .eq(Music::getUserId, queryUserId)
                     .orderByDesc(Music::getCreateTime)
                     .last("limit 100");
+            musics = this.list(wrapper);
+        } else if (StringUtils.equals(dto.getCategory(), TalkCategoryEnum.CHARACTER.getCode())) {
+            LambdaQueryWrapper<Music> wrapper = Wrappers.lambdaQuery();
+            wrapper.eq(Music::getDeleted, false)
+                    .eq(Music::getCategory, dto.getCategory())
+                    .eq(ObjectUtil.isNotNull(dto.getCharacterId()), Music::getCharacterId, dto.getCharacterId())
+                    .eq(ObjectUtil.isNotNull(dto.getGroupTemplateId()), Music::getGroupTemplateId, dto.getGroupTemplateId())
+                    .orderByDesc(Music::getCreateTime);
             musics = this.list(wrapper);
         }
         
@@ -278,6 +302,46 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             // 判断用户是否超级管理员
             if (!StringUtils.equals(RoleEnum.SUPER_ADMIN.getCode(), session.getRole())) {
                 throw new GlobalException("无操作权限");
+            }
+        } else if (StringUtils.equals(dto.getCategory(), TalkCategoryEnum.CHARACTER.getCode())) {
+            // 判断用户一个月内上传数量是否超过20
+            LambdaQueryWrapper<Music> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Music::getCategory, dto.getCategory())
+                    .eq(Music::getUserId, userId)
+                    .ge(Music::getCreateTime, LocalDateTime.now().minusDays(30));
+            List<Music> musics = this.list(wrapper);
+            if (musics.size() >= 20) {
+                throw new GlobalException("您在一个月内上传数量超过20，无法继续上传");
+            }
+            if (ObjectUtil.isNotNull(dto.getCharacterId())) {
+                TemplateCharacter character = characterService.getById(dto.getCharacterId());
+                if (Objects.isNull(character)) {
+                    throw new GlobalException("角色不存在");
+                }
+
+                // 角色的创建者可以上传歌曲
+                if (TalkCategoryEnum.CHARACTER.getCode().equals(dto.getCategory())
+                        && character.getCreateBy().equals(String.valueOf(userId))) {
+                    return;
+                }
+
+                CharacterUser characterUser = characterUserService.lambdaQuery()
+                        .eq(CharacterUser::getCharacterId, dto.getCharacterId())
+                        .eq(CharacterUser::getUserId, userId)
+                        .eq(CharacterUser::getDeleted, false).one();
+                if (Objects.isNull(characterUser)) {
+                    throw new GlobalException("您没有权限上传该角色空间歌曲");
+                }
+            } else if (ObjectUtil.isNotNull(dto.getGroupTemplateId())) {
+                TemplateGroup templateGroup = templateGroupService.getById(dto.getGroupTemplateId());
+                if (Objects.isNull(templateGroup)) {
+                    throw new GlobalException("群聊模板不存在");
+                }
+
+                // 群聊模板的创建者可以发布群聊模板动态
+                if (!templateGroup.getCreateBy().equals(String.valueOf(userId))) {
+                    throw new GlobalException("您没有权限发布该群聊模板空间歌曲");
+                }
             }
         }
     }

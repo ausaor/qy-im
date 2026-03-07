@@ -323,7 +323,8 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         QueryWrapper<Friend> wrapper = new QueryWrapper<>();
         wrapper.lambda()
                 .eq(Friend::getUserId, session.getUserId())
-                .eq(Friend::getFriendId, friendId);
+                .eq(Friend::getFriendId, friendId)
+                .eq(Friend::getDeleted, false);
         Friend friend = this.getOne(wrapper);
         if (friend == null) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "对方不是您的好友");
