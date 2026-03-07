@@ -225,21 +225,23 @@ create index idx1
 
 create table im_music
 (
-    id          bigint auto_increment comment '主键'
+    id                bigint auto_increment comment '主键'
         primary key,
-    user_id     bigint                                 not null comment '用户id',
-    singer      varchar(100)                           null comment '歌手',
-    name        varchar(100)                           not null comment '歌曲名称',
-    url         varchar(255)                           not null comment '歌曲链接',
-    cover       varchar(1000)                          null comment '封面图片',
-    duration    int                                    null comment '歌曲时长',
-    play_count  int        default 0                   not null comment '播放次数',
-    category    varchar(10)                            not null comment '分类（private：个人，group：群聊，region：地区）',
-    group_id    bigint                                 null comment '群id',
-    region_code varchar(50)                            null comment '地区编码',
-    deleted     tinyint(1) default 0                   not null comment '是否删除（0：否；1：是）',
-    create_time datetime   default current_timestamp() not null comment '创建时间',
-    update_time datetime   default current_timestamp() null on update current_timestamp() comment '更新时间'
+    user_id           bigint                                 not null comment '用户id',
+    singer            varchar(100)                           null comment '歌手',
+    name              varchar(100)                           not null comment '歌曲名称',
+    url               varchar(255)                           not null comment '歌曲链接',
+    cover             varchar(1000)                          null comment '封面图片',
+    duration          int                                    null comment '歌曲时长',
+    play_count        int        default 0                   not null comment '播放次数',
+    category          varchar(10)                            not null comment '分类（private：个人，group：群聊，region：地区）',
+    group_id          bigint                                 null comment '群id',
+    region_code       varchar(50)                            null comment '地区编码',
+    group_template_id bigint                                 null comment '群聊模板id',
+    character_id      bigint                                 null comment '角色id',
+    deleted           tinyint(1) default 0                   not null comment '是否删除（0：否；1：是）',
+    create_time       datetime   default current_timestamp() not null comment '创建时间',
+    update_time       datetime   default current_timestamp() null on update current_timestamp() comment '更新时间'
 )
     comment '音乐表';
 
