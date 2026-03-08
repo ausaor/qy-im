@@ -164,6 +164,57 @@
 				const iceServers = this.$store.state.configStore.webrtc.iceServers;
 				this.webrtc.init({ iceServers });
 			},
+					
+			// 创建与对方的 peerConnection
+			createPeerConnection(userId) {
+				if (this.peerConnections.has(userId)) {
+					return this.peerConnections.get(userId);
+				}
+						
+				const peerConnection = new RTCPeerConnection(this.webrtc.configuration);
+				this.peerConnections.set(userId, peerConnection);
+						
+				// 添加本地流
+				if (this.localStream) {
+					this.localStream.getTracks().forEach(track => {
+						peerConnection.addTrack(track, this.localStream);
+					});
+				}
+						
+				// 监听候选者
+				peerConnection.onicecandidate = (event) => {
+					if (event.candidate) {
+						// 发送 candidate 给对方
+						this.API.candidate(this.groupId, userId, JSON.stringify(event.candidate)).catch((e) => {
+							console.error("发送 candidate 失败", e);
+						});
+					}
+				};
+						
+				// 监听连接状态
+				peerConnection.oniceconnectionstatechange = () => {
+					console.log(`peerConnection 状态 [${userId}]:`, peerConnection.iceConnectionState);
+				};
+						
+				// 接收远端流
+				peerConnection.ontrack = (e) => {
+					console.log("收到远端流", userId, e.streams[0]);
+					// 找到对应用户的视频元素
+					let user = this.userInfos.find(u => u.id === userId);
+					if (user && this.$refs.remoteVideos) {
+						// 查找对应的 video 元素
+						for (let i = 0; i < this.$refs.remoteVideos.length; i++) {
+							let videoEl = this.$refs.remoteVideos[i];
+							if (videoEl && !videoEl.srcObject) {
+								videoEl.srcObject = e.streams[0];
+								break;
+							}
+						}
+					}
+				};
+						
+				return peerConnection;
+			},
 			
 			// 发起呼叫 (主持人)
 			onCall() {
@@ -171,11 +222,15 @@
 				this.openStream().then(() => {
 					// 更新自己的状态
 					this.updateMyUserInfo();
-					
+							
 					// 向服务器发起 setup 请求
 					//let userInfos = this.userInfos.filter(u => u.id !== this.mine.id);
 					this.API.setup(this.groupId, this.userInfos).then(() => {
 						console.log("发起群聊通话成功");
+						// 为每个用户创建 peerConnection
+						this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
+							this.createPeerConnection(user.id);
+						});
 					}).catch((e) => {
 						console.error("发起群聊通话失败", e);
 						this.$message.error("发起通话失败");
@@ -193,10 +248,25 @@
 				this.openStream().then(() => {
 					// 更新自己的状态
 					this.updateMyUserInfo();
-					
+							
 					// 向服务器发送 accept 请求
 					this.API.accept(this.groupId).then(() => {
 						console.log("接受群聊通话成功");
+						// 为每个用户创建 peerConnection
+						this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
+							const peerConnection = this.createPeerConnection(user.id);
+							// 创建 offer 并发送
+							peerConnection.createOffer().then((offer) => {
+								return peerConnection.setLocalDescription(offer);
+							}).then(() => {
+								// 发送 offer 给对方
+								this.API.offer(this.groupId, user.id, JSON.stringify(peerConnection.localDescription)).catch((e) => {
+									console.error("发送 offer 失败", e);
+								});
+							}).catch((e) => {
+								console.error("创建 offer 失败", e);
+							});
+						});
 					}).catch((e) => {
 						console.error("接受群聊通话失败", e);
 						this.close();
@@ -401,12 +471,35 @@
 				let userInfos = JSON.parse(msg.content);
 				this.userInfos = userInfos;
 				this.host = userInfos.find(u => u.id === msg.sendId);
+        this.groupId = msg.groupId;
 				
 				// 显示加入通话对话框
 				this.$refs.rtcJoin.open({
 					host: this.host,
 					userInfos: userInfos.filter(u => u.id !== msg.sendId),
           groupId: msg.groupId
+				});
+				
+				// 打开通话设备并创建 peerConnection
+				this.openStream().then(() => {
+					this.updateMyUserInfo();
+					// 为每个用户创建 peerConnection
+					this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
+						const peerConnection = this.createPeerConnection(user.id);
+						// 创建 offer 并发送
+						peerConnection.createOffer().then((offer) => {
+							return peerConnection.setLocalDescription(offer);
+						}).then(() => {
+							// 发送 offer 给对方
+							this.API.offer(this.groupId, user.id, JSON.stringify(peerConnection.localDescription)).catch((e) => {
+								console.error("发送 offer 失败", e);
+							});
+						}).catch((e) => {
+							console.error("创建 offer 失败", e);
+						});
+					});
+				}).catch(() => {
+					this.$message.error("打开设备失败");
 				});
 			},
 			
@@ -475,19 +568,54 @@
 			// 收到 offer 消息
 			onRTCOffer(msg) {
 				console.log("收到 offer", msg);
-				// TODO: 处理 WebRTC offer
+				let data = JSON.parse(msg.content);
+				// 如果还没有创建 peerConnection，则创建
+				if (!this.peerConnections.has(msg.sendId)) {
+					this.createPeerConnection(msg.sendId);
+				}
+								
+				const peerConnection = this.peerConnections.get(msg.sendId);
+				// 设置远端 SDP (offer)
+				peerConnection.setRemoteDescription(new RTCSessionDescription(data)).then(() => {
+					// 创建 answer
+					return peerConnection.createAnswer();
+				}).then((answer) => {
+					// 设置本地 SDP (answer)
+					return peerConnection.setLocalDescription(answer);
+				}).then(() => {
+					// 发送 answer 给对方
+					this.API.answer(this.groupId, msg.sendId, JSON.stringify(peerConnection.localDescription)).catch((e) => {
+						console.error("发送 answer 失败", e);
+					});
+				}).catch((e) => {
+					console.error("处理 offer 失败", e);
+				});
 			},
-			
+					
 			// 收到 answer 消息
 			onRTCAnswer(msg) {
 				console.log("收到 answer", msg);
-				// TODO: 处理 WebRTC answer
+				let data = JSON.parse(msg.content);
+				const peerConnection = this.peerConnections.get(msg.sendId);
+				if (peerConnection) {
+					// 设置远端 SDP (answer)
+					peerConnection.setRemoteDescription(new RTCSessionDescription(data)).catch((e) => {
+						console.error("设置 answer 失败", e);
+					});
+				}
 			},
-			
+					
 			// 收到 candidate 消息
 			onRTCCandidate(msg) {
 				console.log("收到 candidate", msg);
-				// TODO: 处理 WebRTC candidate
+				let data = JSON.parse(msg.content);
+				const peerConnection = this.peerConnections.get(msg.sendId);
+				if (peerConnection && data.candidate) {
+					// 添加候选者
+					peerConnection.addIceCandidate(new RTCIceCandidate(data)).catch((e) => {
+						console.error("添加 candidate 失败", e);
+					});
+				}
 			},
 			
 			// 收到 device 消息
