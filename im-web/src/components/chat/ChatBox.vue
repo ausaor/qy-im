@@ -675,7 +675,7 @@
         members.forEach(m => {
           userInfos.push({
             id: m.userId,
-            nickName: m.showNickName,
+            aliasName: m.aliasName,
             headImage: m.headImage,
             isCamera: false,
             isMicroPhone: true

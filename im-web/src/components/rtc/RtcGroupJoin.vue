@@ -2,14 +2,14 @@
 	<el-dialog title="是否加入通话?" :visible.sync="isShow"  width="400px">
 	  <div class="rtc-group-join">
 	  	<div class="host-info">
-	  		<head-image :name="rtcInfo.host.nickName" :url="rtcInfo.host.headImage" :size="80"></head-image>
-			<div class="host-text">{{'发起人:'+rtcInfo.host.nickName}}</div>
+	  		<head-image :name="rtcInfo.host.aliasName" :url="rtcInfo.host.headImage" :size="80"></head-image>
+			<div class="host-text">{{'发起人:'+rtcInfo.host.aliasName}}</div>
 		</div>
 	  	<div class="users-info">
 	  		<div>{{rtcInfo.userInfos.length+'人正在通话中'}}</div>
 	  		<div class="user-list">
 	  			<div class="user-item" v-for="user in rtcInfo.userInfos" :key="user.id">
-	  				<head-image :url="user.headImage" :name="user.nickName" :size="40">	
+	  				<head-image :url="user.headImage" :name="user.aliasName" :size="40">
 					</head-image>
 	  			</div>
 	  		</div>
