@@ -4,39 +4,44 @@
 				   :visible.sync="isShow" width="80%" :before-close="onQuit">
 			<div class='rtc-group-video'>
 				<!-- 视频网格布局 -->
-				<div class="video-grid" :class="{'voice-mode': !hasVideo}">
+				<div class="video-grid" :class="{'voice-mode': mode === 'voice' || !hasVideo}">
 					<!-- 每个用户的视频窗口 -->
 					<div class="video-item" v-for="user in userInfos" :key="user.id">
 						<div class="video-box" :class="{'mine': user.id === mine.id}">
 							<!-- 头像 (未开启视频时显示) -->
-							<head-image v-if="!user.isCamera" :name="user.aliasName || user.nickName" 
-									   :url="user.headImage" :size="100" :isShowUserInfo="false">
-								<div class="user-name">{{ user.aliasName || user.nickName }}</div>
+							<head-image v-if="!user.isCamera" 
+									  :name="user.aliasName || user.nickName" 
+									  :url="user.headImage" 
+									  :size="mode === 'voice' ? 80 : 100" 
+									  :isShowUserInfo="false">
+								<div class="user-name" :style="{fontSize: mode === 'voice' ? '12px' : '14px'}">
+									{{ user.aliasName || user.nickName }}
+								</div>
 							</head-image>
-							
+										
 							<!-- 远端视频 (开启视频时显示) -->
 							<video v-if="user.isCamera && user.id !== mine.id" 
 								   ref="remoteVideos" 
 								   autoplay 
 								   playsinline></video>
-							
+										
 							<!-- 本地视频 (自己的摄像头) -->
 							<video v-if="user.isCamera && user.id === mine.id" 
 								   ref="localVideo" 
 								   autoplay 
 								   playsinline 
 								   muted></video>
-							
+										
 							<!-- 用户信息标签 -->
 							<div class="user-info-tag">
 								<span>{{ user.aliasName || user.nickName }}</span>
 								<span v-if="user.id === host?.id" class="host-tag">主持人</span>
 							</div>
-							
+										
 							<!-- 设备状态图标 -->
 							<div class="device-status">
-								<i v-if="!user.isMicroPhone" class="el-icon-microphone-off"></i>
-								<i v-if="!user.isCamera" class="el-icon-video-camera"></i>
+								<i v-if="!user.isMicroPhone" class="el-icon-microphone-off" title="静音"></i>
+								<i v-if="!user.isCamera && mode === 'video'" class="el-icon-video-camera" title="未开启视频"></i>
 							</div>
 						</div>
 					</div>
@@ -48,23 +53,23 @@
 						<i :class="isMicroPhone ? 'el-icon-microphone' : 'el-icon-microphone-off'"></i>
 						<span>{{ isMicroPhone ? '麦克风' : '静音' }}</span>
 					</div>
-					
+								
 					<div class="control-btn" @click="toggleSpeaker()" :title="isSpeaker ? '关闭扬声器' : '开启扬声器'">
 						<i :class="isSpeaker ? 'el-icon-headset' : 'el-icon-ringing'"></i>
 						<span>{{ isSpeaker ? '扬声器' : '听筒' }}</span>
 					</div>
-					
+								
 					<div class="control-btn" @click="toggleCamera()" :title="isCamera ? '关闭摄像头' : '开启摄像头'"
 					     v-if="mode === 'video'">
 						<i :class="isCamera ? 'el-icon-video-camera' : 'el-icon-video-play'"></i>
 						<span>{{ isCamera ? '摄像头' : '视频' }}</span>
 					</div>
-					
+								
 					<div class="control-btn" @click="showInviteBox()" title="邀请成员">
 						<i class="el-icon-circle-plus-outline"></i>
 						<span>邀请</span>
 					</div>
-					
+								
 					<div class="control-btn quit-btn" @click="onQuit()" title="退出通话">
 						<i class="el-icon-switch-button"></i>
 						<span>退出</span>
@@ -143,6 +148,16 @@
 				this.inviterId = rtcInfo.inviterId;
 				this.host = rtcInfo.host;
 				this.userInfos = rtcInfo.userInfos || [];
+				
+				// 初始化设备状态
+				if (this.mode === 'video') {
+					// 视频模式：默认关闭摄像头
+					this.isCamera = false;
+				} else {
+					// 语音模式：关闭摄像头
+					this.isCamera = false;
+				}
+				this.isMicroPhone = true;
 				
 				// 初始化 WebRTC
 				this.initRtc();
@@ -341,7 +356,7 @@
 			toggleMicroPhone() {
 				this.isMicroPhone = !this.isMicroPhone;
 				this.updateDeviceToServer();
-				
+						
 				// 控制本地流的音轨
 				if (this.localStream) {
 					this.localStream.getAudioTracks().forEach(track => {
@@ -349,20 +364,21 @@
 					});
 				}
 			},
-			
+					
 			// 切换扬声器
 			toggleSpeaker() {
 				this.isSpeaker = !this.isSpeaker;
 				// TODO: 切换音频输出设备
 			},
-			
+					
 			// 切换摄像头
 			toggleCamera() {
 				if (this.mode !== 'video') return;
-				
+										
 				this.isCamera = !this.isCamera;
 				this.updateDeviceToServer();
-				
+				this.updateMyUserInfo();
+										
 				if (this.isCamera) {
 					// 开启摄像头
 					this.openStream().then(() => {
@@ -370,7 +386,14 @@
 							if (this.$refs.localVideo && this.$refs.localVideo[0]) {
 								this.$refs.localVideo[0].srcObject = this.localStream;
 							}
+							// 重新创建 peerConnection 以添加视频轨道
+							this.recreatePeerConnections();
 						});
+					}).catch((e) => {
+						console.error("开启摄像头失败", e);
+						this.isCamera = false;
+						this.updateMyUserInfo();
+						this.updateDeviceToServer();
 					});
 				} else {
 					// 关闭摄像头，保留麦克风
@@ -378,6 +401,8 @@
 						this.localStream.getVideoTracks().forEach(track => {
 							track.stop();
 						});
+						// 重新创建 peerConnection 以移除视频轨道
+						this.recreatePeerConnections();
 					}
 				}
 			},
@@ -386,6 +411,33 @@
 			updateDeviceToServer() {
 				this.API.device(this.groupId, this.isCamera, this.isMicroPhone).catch((e) => {
 					console.error("更新设备状态失败", e);
+				});
+			},
+					
+			// 重新创建所有 peerConnection (用于添加/移除视频轨道)
+			recreatePeerConnections() {
+				// 关闭所有现有的 peerConnection
+				this.peerConnections.forEach(pc => pc.close());
+				this.peerConnections.clear();
+						
+				// 为每个用户重新创建 peerConnection
+				this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
+					const peerConnection = this.createPeerConnection(user.id);
+					// 如果已经创建了 offer，需要重新创建
+					if (this.isHost) {
+						// 主持人等待接收 offer
+					} else {
+						// 非主持人需要重新创建 offer
+						peerConnection.createOffer().then((offer) => {
+							return peerConnection.setLocalDescription(offer);
+						}).then(() => {
+							this.API.offer(this.groupId, user.id, JSON.stringify(peerConnection.localDescription)).catch((e) => {
+								console.error("重新发送 offer 失败", e);
+							});
+						}).catch((e) => {
+							console.error("重新创建 offer 失败", e);
+						});
+					}
 				});
 			},
 			
@@ -472,6 +524,14 @@
 				this.userInfos = userInfos;
 				this.host = userInfos.find(u => u.id === msg.sendId);
         this.groupId = msg.groupId;
+				
+				// 从用户信息中推断通话模式
+				const hasVideoEnabled = userInfos.some(u => u.isCamera);
+				if (hasVideoEnabled) {
+					this.mode = 'video';
+				} else {
+					this.mode = 'voice';
+				}
 				
 				// 显示加入通话对话框
 				this.$refs.rtcJoin.open({
@@ -689,7 +749,19 @@
 				background-color: #1a1a2e;
 				
 				&.voice-mode {
-					grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+					grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+					gap: 8px;
+					padding: 15px;
+					
+					.video-item {
+						.video-box {
+							height: 140px;
+							
+							.user-name {
+								bottom: 8px;
+							}
+						}
+					}
 				}
 				
 				.video-item {

@@ -600,7 +600,6 @@
         msg.selfSend = msg.sendId === this.$store.state.userStore.userInfo.id;
         // 群视频信令
         if (this.$msgType.isRtcGroup(msg.type)) {
-          console.log("webrtc 群视频信令......", msg)
           this.$nextTick(() => {
             this.$refs.rtcGroupVideo.onRTCMessage(msg);
           })

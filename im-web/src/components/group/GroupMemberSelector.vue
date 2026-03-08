@@ -47,7 +47,8 @@
 				isShow: false,
 				searchText: "",
 				maxSize: 5,
-				members: []
+				members: [],
+				callMode: 'voice' // 通话模式：voice-语音，video-视频
 			}
 		},
 		props: {
@@ -56,8 +57,9 @@
 			}	
 		},
 		methods: {
-			open(maxSize, checkedIds, lockedIds) {
+			open(maxSize, checkedIds, lockedIds, mode = 'voice') {
 				this.maxSize = maxSize;
+				this.callMode = mode;
 				this.isShow = true;
 				this.loadGroupMembers(checkedIds, lockedIds);
 			},
@@ -90,7 +92,7 @@
 				}
 			},
 			ok() {
-				this.$emit("complete", this.checkedMembers);
+				this.$emit("complete", this.checkedMembers, this.callMode);
 				this.isShow = false;
 			},
 			close() {

@@ -683,7 +683,38 @@
           this.$refs.rtcSel.open(maxChannel, ids, ids);
         });
       },
-      onInviteOk(members) {
+      // 发起语音通话
+      onGroupVoice() {
+        this.startGroupCall('voice');
+      },
+      // 发起视频通话
+      onGroupVideoCall() {
+        this.startGroupCall('video');
+      },
+      // 发起群聊通话通用方法
+      startGroupCall(mode) {
+        // 先查询群聊通话信息
+        this.$http({
+          url: `/webrtc/group/info?groupId=${this.group.id}`,
+          method: 'get'
+        }).then((rtcInfo) => {
+          if (rtcInfo.isChating) {
+            // 已有通话中，显示加入对话框
+            this.$refs.rtcJoin.open(rtcInfo);
+          } else {
+            // 发起新通话，邀请成员
+            let ids = [this.mine.id];
+            let maxChannel = this.$store.state.configStore.webrtc.maxChannel;
+            this.$refs.rtcSel.open(maxChannel, ids, ids, mode);
+          }
+        }).catch(() => {
+          // 查询失败，直接发起邀请
+          let ids = [this.mine.id];
+          let maxChannel = this.$store.state.configStore.webrtc.maxChannel;
+          this.$refs.rtcSel.open(maxChannel, ids, ids, mode);
+        });
+      },
+      onInviteOk(members, mode = 'voice') {
         if (members.length < 2) {
           this.$message.warning("至少需要 2 人才能发起通话");
           return;
@@ -695,13 +726,10 @@
             aliasName: m.aliasName,
             nickName: m.nickName,
             headImage: m.headImage,
-            isCamera: false,
+            isCamera: mode === 'video' ? false : false, // 视频模式下默认关闭摄像头
             isMicroPhone: true
           })
         })
-              
-        // 确定通话模式 (默认语音)
-        let mode = 'voice';
               
         let rtcInfo = {
           isHost: true,
