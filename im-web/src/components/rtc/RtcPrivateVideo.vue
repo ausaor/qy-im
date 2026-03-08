@@ -319,12 +319,12 @@ export default {
     checkDevEnable() {
       // 检测摄像头
       if (!this.camera.isEnable()) {
-        this.message.error("访问摄像头失败");
+        this.$message.error("访问摄像头失败");
         return false;
       }
       // 检测webrtc
       if (!this.webrtc.isEnable()) {
-        this.message.error("初始化RTC失败，原因可能是: 1.服务器缺少ssl证书 2.您的设备不支持WebRTC");
+        this.$message.error("初始化RTC失败，原因可能是: 1.服务器缺少ssl证书 2.您的设备不支持WebRTC");
         return false;
       }
       return true;

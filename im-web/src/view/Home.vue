@@ -134,7 +134,6 @@
     <full-image :visible="uiStore.fullImage.show" :url="uiStore.fullImage.url"
                 @close="$store.commit('closeFullImageBox')"></full-image>
     <rtc-private-video ref="rtcPrivateVideo"></rtc-private-video>
-    <rtc-private-acceptor ref="rtcPrivateAcceptor"></rtc-private-acceptor>
     <rtc-group-video ref="rtcGroupVideo" ></rtc-group-video>
     <music-player v-show="showFloatMusic" :show-float-music="showFloatMusic" :musics="musics"></music-player>
 <!--    <aplayer v-if="showFloatMusic"
@@ -160,7 +159,6 @@
   import UserDetail from "@components/user/UserDetail.vue";
 	import FullImage from '../components/common/FullImage.vue';
 	import RtcPrivateVideo from '../components/rtc/RtcPrivateVideo.vue';
-	import RtcPrivateAcceptor from '../components/rtc/RtcPrivateAcceptor.vue';
 	import Operation from "@/components/operation/Operation";
   import RtcGroupVideo from '../components/rtc/RtcGroupVideo.vue';
   import Aplayer from 'vue-aplayer'
@@ -175,7 +173,6 @@
       UserDetail,
 			FullImage,
       RtcPrivateVideo,
-      RtcPrivateAcceptor,
       RtcGroupVideo,
       Operation,
       Aplayer
@@ -512,6 +509,7 @@
         msg.selfSend = msg.sendId === this.$store.state.userStore.userInfo.id;
         // 单人webrtc 信令
         if (this.$msgType.isRtcPrivate(msg.type)) {
+          console.log("webrtc 单人webrtc 信令......", msg)
           this.$refs.rtcPrivateVideo.onRTCMessage(msg)
           return;
         }
