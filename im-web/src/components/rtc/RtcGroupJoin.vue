@@ -35,13 +35,9 @@
 				isShow: false,
 				rtcInfo: {
 					host:{},
-					userInfos:[]
-				}
-			}
-		},
-		props: {
-			groupId: {
-				type: Number
+					userInfos:[],
+          groupId: null,
+				},
 			}
 		},
 		methods: {
@@ -57,7 +53,7 @@
 					// 加入自己的信息
 					userInfos.push({
 						id: mine.id,
-						nickName: mine.nickName,
+						aliasName: mine.nickName,
 						headImage: mine.headImage,
 						isCamera: false,
 						isMicroPhone: true
@@ -65,13 +61,15 @@
 				}
 				let rtcInfo = {
 					isHost: false,
-					groupId: this.groupId,
-					inviterId: mine.id,
+					groupId: this.rtcInfo.groupId,
+					inviterId: this.rtcInfo.host?.id || mine.id,
+					host: this.rtcInfo.host,
+					mode: 'voice', // 默认语音模式
 					userInfos: userInfos
 				}
-				// 通过home.vue打开多人视频窗口
+				// 通过 home.vue 打开多人视频窗口
 				this.$eventBus.$emit("openGroupVideo", rtcInfo);
-				
+							
 			},
 			onCancel(){
 				this.isShow = false;

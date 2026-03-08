@@ -125,7 +125,7 @@ public class WebrtcGroupServiceImpl implements IWebrtcGroupService {
         sendRtcMessage1(MessageType.RTC_GROUP_SETUP, dto.getGroupId(), recvIds, JSON.toJSONString(userInfos),false);
         // 发送文字提示信息
         WebrtcUserInfo mineInfo = findUserInfo(webrtcSession,userSession.getUserId());
-        String content = mineInfo.getNickName() + " 发起了语音通话";
+        String content = mineInfo.getAliasName() + " 发起了语音通话";
         sendTipMessage(dto.getGroupId(),content);
         log.info("发起群通话,userId:{},groupId:{}", userSession.getUserId(), dto.getGroupId());
     }
@@ -231,6 +231,7 @@ public class WebrtcGroupServiceImpl implements IWebrtcGroupService {
         }
         WebrtcUserInfo userInfo = new WebrtcUserInfo();
         userInfo.setId(userSession.getUserId());
+        userInfo.setAliasName(member.getAliasName());
         userInfo.setNickName(member.getAliasName());
         userInfo.setHeadImage(member.getHeadImage());
         // 默认是开启麦克风，关闭摄像头
@@ -471,7 +472,8 @@ public class WebrtcGroupServiceImpl implements IWebrtcGroupService {
                 GroupMember member = groupMemberService.findByGroupAndUserId(groupId, hostId);
                 host = new WebrtcUserInfo();
                 host.setId(hostId);
-                host.setNickName(member.getAliasName());
+                host.setAliasName(member.getAliasName());
+                host.setNickName(member.getNickname());
                 host.setHeadImage(member.getHeadImage());
             }
             vo.setHost(host);

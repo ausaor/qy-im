@@ -662,13 +662,30 @@
         this.$eventBus.$emit("openPrivateVideo", rtcInfo);
       },
       onGroupVideo() {
-        // 邀请成员发起通话
-        let ids = [this.mine.id];
-        let maxChannel = this.$store.state.configStore.webrtc.maxChannel;
-        this.$refs.rtcSel.open(maxChannel, ids, ids);
+        // 先查询群聊通话信息
+        this.$http({
+          url: `/webrtc/group/info?groupId=${this.group.id}`,
+          method: 'get'
+        }).then((rtcInfo) => {
+          if (rtcInfo.isChating) {
+            // 已有通话中，显示加入对话框
+            this.$refs.rtcJoin.open(rtcInfo);
+          } else {
+            // 发起新通话，邀请成员
+            let ids = [this.mine.id];
+            let maxChannel = this.$store.state.configStore.webrtc.maxChannel;
+            this.$refs.rtcSel.open(maxChannel, ids, ids);
+          }
+        }).catch(() => {
+          // 查询失败，直接发起邀请
+          let ids = [this.mine.id];
+          let maxChannel = this.$store.state.configStore.webrtc.maxChannel;
+          this.$refs.rtcSel.open(maxChannel, ids, ids);
+        });
       },
       onInviteOk(members) {
         if (members.length < 2) {
+          this.$message.warning("至少需要 2 人才能发起通话");
           return;
         }
         let userInfos = [];
@@ -676,18 +693,30 @@
           userInfos.push({
             id: m.userId,
             aliasName: m.aliasName,
+            nickName: m.nickName,
             headImage: m.headImage,
             isCamera: false,
             isMicroPhone: true
           })
         })
+              
+        // 确定通话模式 (默认语音)
+        let mode = 'voice';
+              
         let rtcInfo = {
           isHost: true,
           groupId: this.group.id,
           inviterId: this.mine.id,
+          host: {
+            id: this.mine.id,
+            aliasName: this.myGroupMemberInfo.aliasName || this.mine.nickName,
+            headImage: this.myGroupMemberInfo.headImage || this.mine.headImage,
+            nickName: this.myGroupMemberInfo.nickName || this.mine.nickName
+          },
+          mode: mode,
           userInfos: userInfos
         }
-        // 通过home.vue打开多人视频窗口
+        // 通过 home.vue 打开多人视频窗口
         this.$eventBus.$emit("openGroupVideo", rtcInfo);
       },
 			showHistoryBox() {

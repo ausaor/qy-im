@@ -10,6 +10,9 @@ public class WebrtcUserInfo {
     @ApiModelProperty(value = "用户id")
     private Long id;
 
+    @ApiModelProperty(value = "群聊昵称")
+    private String aliasName;
+
     @ApiModelProperty(value = "用户昵称")
     private String nickName;
 

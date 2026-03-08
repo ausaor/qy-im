@@ -161,8 +161,9 @@
 	import RtcPrivateVideo from '../components/rtc/RtcPrivateVideo.vue';
 	import Operation from "@/components/operation/Operation";
   import RtcGroupVideo from '../components/rtc/RtcGroupVideo.vue';
+  import RtcGroupJoin from '../components/rtc/RtcGroupJoin.vue';
   import Aplayer from 'vue-aplayer'
-  import MusicPlayer from "@components/music/MusicPlayer.vue";
+  import MusicPlayer from "@/components/music/MusicPlayer.vue";
 
 	export default {
 		components: {
@@ -174,6 +175,7 @@
 			FullImage,
       RtcPrivateVideo,
       RtcGroupVideo,
+      RtcGroupJoin,
       Operation,
       Aplayer
 		},
@@ -598,6 +600,7 @@
         msg.selfSend = msg.sendId === this.$store.state.userStore.userInfo.id;
         // 群视频信令
         if (this.$msgType.isRtcGroup(msg.type)) {
+          console.log("webrtc 群视频信令......", msg)
           this.$nextTick(() => {
             this.$refs.rtcGroupVideo.onRTCMessage(msg);
           })
