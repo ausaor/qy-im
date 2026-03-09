@@ -1097,9 +1097,9 @@
           if (friend) {
             if (friend.friendRemark) {
               showInfoObj.nickName = friend.friendRemark;
-            } else if (member) {
-              showInfoObj.nickName = member.nickName;
             }
+          } else if (member) {
+            showInfoObj.nickName = member.nickName;
           }
 
           if (!msgInfo.isTemplate) { // 不是作为模板角色发送的消息
