@@ -1098,6 +1098,9 @@
             if (friend.friendRemark) {
               showInfoObj.nickName = friend.friendRemark;
             }
+            if (!showInfoObj.nickName && member) {
+              showInfoObj.nickName = member.nickName;
+            }
           } else if (member) {
             showInfoObj.nickName = member.nickName;
           }
