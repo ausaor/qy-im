@@ -829,6 +829,12 @@
 				this.isMicroPhone = true;
 			}
 		},
+    created() {
+      // 监听页面刷新事件
+      window.addEventListener('beforeunload', () => {
+        this.onQuit();
+      });
+    },
 		beforeUnmount() {
 			this.onQuit();
 		}
