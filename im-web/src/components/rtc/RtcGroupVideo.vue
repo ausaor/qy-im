@@ -9,7 +9,7 @@
 					<div class="video-item" v-for="user in userInfos" :key="user.id">
 						<div class="video-box" :class="{'mine': user.id === mine.id}">
 							<!-- 头像 (未开启视频时显示) -->
-							<head-image v-if="!user.isCamera" 
+							<head-image v-show="!user.isCamera"
 									  :name="user.aliasName || user.nickName" 
 									  :url="user.headImage" 
 									  :size="mode === 'voice' ? 80 : 100" 
@@ -20,13 +20,14 @@
 							</head-image>
 										
 							<!-- 远端视频 (开启视频时显示) -->
-							<video v-if="user.isCamera && user.id !== mine.id" 
-								   ref="remoteVideos" 
+							<video v-show="user.isCamera && user.id !== mine.id"
+								   :id="`remote-video-${user.id}`"
+								   :data-user-id="user.id"
 								   autoplay 
 								   playsinline></video>
 										
 							<!-- 本地视频 (自己的摄像头) -->
-							<video v-if="user.isCamera && user.id === mine.id" 
+							<video v-show="user.isCamera && user.id === mine.id"
 								   ref="localVideo" 
 								   autoplay 
 								   playsinline 
@@ -249,15 +250,13 @@
 					console.log("收到远端流", userId, e.streams[0]);
 					// 找到对应用户的信息
 					let user = this.userInfos.find(u => u.id === userId);
-					if (user && this.$refs.remoteVideos && this.$refs.remoteVideos.length > 0) {
-						// 查找该用户对应的 video 元素
-						const videoEls = this.$refs.remoteVideos;
-						for (let i = 0; i < videoEls.length; i++) {
-							let videoEl = videoEls[i];
-							if (videoEl && !videoEl.srcObject) {
-								videoEl.srcObject = e.streams[0];
-								break;
-							}
+					if (user) {
+						// 通过 userId 查找对应的 video 元素
+						const videoEl = document.getElementById(`remote-video-${userId}`);
+						if (videoEl) {
+							videoEl.srcObject = e.streams[0];
+						} else {
+							console.warn(`未找到用户 ${userId} 的视频元素`);
 						}
 					}
 				};
@@ -376,17 +375,32 @@
 			// 切换扬声器
 			toggleSpeaker() {
 				this.isSpeaker = !this.isSpeaker;
-				// TODO: 切换音频输出设备
+				// 切换所有远端视频的音频输出设备
+				this.userInfos.filter(u => u.isCamera && u.id !== this.mine.id).forEach(user => {
+					const videoEl = document.getElementById(`remote-video-${user.id}`);
+					if (videoEl && videoEl.srcObject) {
+						// 检查浏览器是否支持 setSinkId
+						if (typeof videoEl.setSinkId === 'function') {
+							// 使用默认设备（空字符串），实际项目中可以根据需求设置具体的 deviceId
+							// 这里主要通过 muted 属性来控制是否静音
+							videoEl.muted = !this.isSpeaker;
+						} else {
+							// 不支持 setSinkId 的浏览器，给出提示
+							console.warn('浏览器不支持 setSinkId API');
+						}
+					}
+				});
+				this.$message.success(this.isSpeaker ? '已开启扬声器' : '已关闭扬声器');
 			},
 					
 			// 切换摄像头
 			toggleCamera() {
 				if (this.mode !== 'video') return;
-									
+											
 				this.isCamera = !this.isCamera;
 				this.updateMyUserInfo();
 				this.updateDeviceToServer();
-									
+											
 				if (this.isCamera) {
 					// 开启摄像头：重新打开包含视频的流
 					this.openStream().then(() => {
@@ -415,6 +429,10 @@
 						if (videoTrack) {
 							this.localStream.removeTrack(videoTrack);
 						}
+						// 清除本地视频显示
+						if (this.$refs.localVideo && this.$refs.localVideo.length > 0) {
+							this.$refs.localVideo[0].srcObject = null;
+						}
 						// 重新创建 peerConnection
 						this.recreatePeerConnections();
 					}
@@ -438,20 +456,21 @@
 				this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
 					const peerConnection = this.createPeerConnection(user.id);
 					// 如果已经创建了 offer，需要重新创建
-					if (this.isHost) {
-						// 主持人等待接收 offer
-					} else {
-						// 非主持人需要重新创建 offer
-						peerConnection.createOffer().then((offer) => {
-							return peerConnection.setLocalDescription(offer);
-						}).then(() => {
-							this.API.offer(this.groupId, user.id, JSON.stringify(peerConnection.localDescription)).catch((e) => {
-								console.error("重新发送 offer 失败", e);
-							});
-						}).catch((e) => {
-							console.error("重新创建 offer 失败", e);
-						});
-					}
+					// if (this.isHost) {
+					// 	// 主持人等待接收 offer
+					// } else {
+					//
+					// }
+          // 非主持人需要重新创建 offer
+          peerConnection.createOffer().then((offer) => {
+            return peerConnection.setLocalDescription(offer);
+          }).then(() => {
+            this.API.offer(this.groupId, user.id, JSON.stringify(peerConnection.localDescription)).catch((e) => {
+              console.error("重新发送 offer 失败", e);
+            });
+          }).catch((e) => {
+            console.error("重新创建 offer 失败", e);
+          });
 				});
 			},
 			
@@ -568,7 +587,7 @@
 				}
 						
 				// 如果是主持人，需要为这个新接受的用户创建 offer
-				if (this.isHost) {
+				//if (this.isHost) {
           console.log("this.peerConnections.has(msg.sendId)", this.peerConnections.has(msg.sendId));
 					// 如果还没有创建 peerConnection，则创建
 					if (!this.peerConnections.has(msg.sendId)) {
@@ -587,7 +606,7 @@
 							console.error("创建 offer 失败", e);
 						});
 					}
-				}
+				//}
 			},
 			
 			// 收到 reject 消息
