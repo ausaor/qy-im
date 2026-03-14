@@ -529,23 +529,27 @@
 					user.inChat = true;
 				}
 						
-        // 如果还没有创建 peerConnection，则创建
-        if (!this.peerConnections.has(msg.sendId)) {
-          const peerConnection = this.createPeerConnection(msg.sendId);
-          // 创建并发送 offer
-          const offerParam = {};
-          offerParam.offerToRecieveAudio = 1;
-          offerParam.offerToRecieveVideo = 1;
-          peerConnection.createOffer(offerParam).then((offer) => {
-            return peerConnection.setLocalDescription(offer);
-          }).then(() => {
-            this.API.offer(this.groupId, msg.sendId, JSON.stringify(peerConnection.localDescription)).catch((e) => {
-              console.error("发送 offer 失败", e);
-            });
-          }).catch((e) => {
-            console.error("创建 offer 失败", e);
-          });
-        }
+				// 如果还没有创建 peerConnection，则创建
+				if (!this.peerConnections.has(msg.sendId)) {
+					const peerConnection = this.createPeerConnection(msg.sendId);
+					// 创建并发送 offer
+					const offerParam = {};
+					offerParam.offerToRecieveAudio = 1;
+					offerParam.offerToRecieveVideo = 1;
+					peerConnection.createOffer(offerParam).then((offer) => {
+						return peerConnection.setLocalDescription(offer);
+					}).then(() => {
+						this.API.offer(this.groupId, msg.sendId, JSON.stringify(peerConnection.localDescription)).catch((e) => {
+							console.error("发送 offer 失败", e);
+						});
+					}).catch((e) => {
+						console.error("创建 offer 失败", e);
+					});
+				} else {
+					// 如果已经存在 peerConnection（可能是被邀请的用户），重新发送 offer
+					console.log(`用户 ${msg.sendId} 已存在 peerConnection，重新发送 offer`);
+					this.sendOfferToUser(msg.sendId);
+				}
 			},
 			
 			// 收到 reject 消息
@@ -553,6 +557,16 @@
 				console.log("用户拒绝通话", msg.sendId);
 				// 从用户列表中移除
 				this.userInfos = this.userInfos.filter(u => u.id !== msg.sendId);
+				
+				// 关闭对应的 peerConnection
+				const peerConnection = this.peerConnections.get(msg.sendId);
+				if (peerConnection) {
+					peerConnection.close();
+					this.peerConnections.delete(msg.sendId);
+				}
+				
+				// 清理 candidate 缓存
+				this.candidates.delete(msg.sendId);
 			},
 			
 			// 收到 failed 消息
@@ -561,7 +575,20 @@
 				this.$message.error(data.reason || "通话失败");
 				// 从用户列表中移除失败的用户
 				if (data.userIds) {
-					this.userInfos = this.userInfos.filter(u => !data.userIds.includes(u.id));
+					data.userIds.forEach(userId => {
+						// 从用户列表中移除
+						this.userInfos = this.userInfos.filter(u => u.id !== userId);
+						
+						// 关闭对应的 peerConnection
+						const peerConnection = this.peerConnections.get(userId);
+						if (peerConnection) {
+							peerConnection.close();
+							this.peerConnections.delete(userId);
+						}
+						
+						// 清理 candidate 缓存
+						this.candidates.delete(userId);
+					});
 				}
 			},
 			
@@ -576,6 +603,16 @@
 				console.log("用户退出通话", msg.sendId);
 				// 从用户列表中移除
 				this.userInfos = this.userInfos.filter(u => u.id !== msg.sendId);
+						
+				// 关闭与该用户的 peerConnection
+				const peerConnection = this.peerConnections.get(msg.sendId);
+				if (peerConnection) {
+					peerConnection.close();
+					this.peerConnections.delete(msg.sendId);
+				}
+						
+				// 清理该用户的 candidate 缓存
+				this.candidates.delete(msg.sendId);
 			},
 			
 			// 收到 invite 消息
@@ -588,6 +625,17 @@
 					}
 				});
 				this.$message.success("有新用户加入通话");
+						
+				// 新邀请的用户创建 peerConnection
+        newUserInfos.forEach(u => {
+          if (u.id !== this.mine.id && !this.peerConnections.has(u.id)) {
+            this.createPeerConnection(u.id);
+            // 创建 offer 并发送
+            setTimeout(() => {
+              this.sendOfferToUser(u.id);
+            }, 100);
+          }
+        });
 			},
 			
 			// 收到 join 消息
@@ -598,6 +646,37 @@
 					this.userInfos.push(userInfo);
 				}
 				this.$message.success(`${userInfo.aliasName} 加入通话`);
+						
+				// 为加入的用户创建 peerConnection
+				if (userInfo.id !== this.mine.id) {
+					setTimeout(() => {
+						this.createPeerConnection(userInfo.id);
+						this.sendOfferToUser(userInfo.id);
+					}, 100);
+				}
+			},
+					
+			// 向指定用户发送 offer
+			sendOfferToUser(userId) {
+				const peerConnection = this.peerConnections.get(userId);
+				if (!peerConnection) {
+					console.warn(`peerConnection 不存在 [${userId}]`);
+					return;
+				}
+						
+				const offerParam = {};
+				offerParam.offerToRecieveAudio = 1;
+				offerParam.offerToRecieveVideo = 1;
+						
+				peerConnection.createOffer(offerParam).then((offer) => {
+					return peerConnection.setLocalDescription(offer);
+				}).then(() => {
+					this.API.offer(this.groupId, userId, JSON.stringify(peerConnection.localDescription)).catch((e) => {
+						console.error(`发送 offer 给 ${userId} 失败`, e);
+					});
+				}).catch((e) => {
+					console.error(`创建 offer 给 ${userId} 失败`, e);
+				});
 			},
 			
 			// 收到 offer 消息

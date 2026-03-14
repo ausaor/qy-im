@@ -67,7 +67,6 @@
 					groupId: this.rtcInfo.groupId,
 					inviterId: this.rtcInfo.host?.id || mine.id,
 					host: this.rtcInfo.host,
-					mode: 'video', // 默认语音模式
 					userInfos: userInfos
 				}
 				// 通过 home.vue 打开多人视频窗口

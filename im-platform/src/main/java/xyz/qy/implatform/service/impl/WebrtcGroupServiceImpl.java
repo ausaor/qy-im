@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import xyz.qy.imclient.IMClient;
@@ -269,7 +270,7 @@ public class WebrtcGroupServiceImpl implements IWebrtcGroupService {
         // 过滤掉已经在通话中的用户
         List<WebrtcUserInfo> userInfos = webrtcSession.getUserInfos();
         // 原用户id
-        List<Long> userIds = getRecvIds(userInfos);
+        List<Long> userIds = getAllRecvIds(userInfos);
         // 离线用户id
         List<Long> offlineUserIds = new LinkedList<>();
         // 忙线用户
@@ -533,6 +534,10 @@ public class WebrtcGroupServiceImpl implements IWebrtcGroupService {
                 .collect(Collectors.toList());
     }
 
+    private List<Long> getAllRecvIds(List<WebrtcUserInfo> userInfos) {
+        return userInfos.stream().map(WebrtcUserInfo::getId).collect(Collectors.toList());
+    }
+
     private Boolean isInchat(WebrtcGroupSession webrtcSession, Long userId) {
         return webrtcSession.getInChatUsers().stream().anyMatch(user -> user.getId().equals(userId));
     }
@@ -542,6 +547,10 @@ public class WebrtcGroupServiceImpl implements IWebrtcGroupService {
     }
 
     private void sendRtcMessage1(MessageType messageType, Long groupId, List<Long> recvIds, String content,Boolean sendSelf) {
+        if (CollectionUtils.isEmpty(recvIds)) {
+            return;
+        }
+
         UserSession userSession = SessionContext.getSession();
         GroupMessageVO messageInfo = new GroupMessageVO();
         messageInfo.setType(messageType.code());
