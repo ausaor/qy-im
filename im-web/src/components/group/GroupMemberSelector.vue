@@ -57,7 +57,7 @@
 			}	
 		},
 		methods: {
-			open(maxSize, checkedIds, lockedIds, mode = 'voice') {
+			open(maxSize, checkedIds, lockedIds, mode = 'video') {
 				this.maxSize = maxSize;
 				this.callMode = mode;
 				this.isShow = true;

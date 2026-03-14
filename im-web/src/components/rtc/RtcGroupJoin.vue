@@ -16,14 +16,15 @@
 	  	</div>
 	  </div>
 	  <span slot="footer" class="dialog-footer">
-	    <el-button @click="onCancel()">取 消</el-button>
-	    <el-button type="primary" @click="onOk()">确 定</el-button>
+	    <el-button @click="onReject()">拒绝</el-button>
+	    <el-button type="primary" @click="onOk()">接受</el-button>
 	  </span>
 	</el-dialog>
 </template>
 
 <script>
 	import HeadImage from '@/components/common/HeadImage'
+  import RtcGroupApi from "@/api/rtcGroupApi";
 	
 	export default{
 		name: "rtcGroupJoin",
@@ -38,6 +39,7 @@
 					userInfos:[],
           groupId: null,
 				},
+        API: new RtcGroupApi(), // API
 			}
 		},
 		methods: {
@@ -55,24 +57,27 @@
 						id: mine.id,
 						aliasName: mine.nickName,
 						headImage: mine.headImage,
-						isCamera: false,
+						isCamera: true,
 						isMicroPhone: true
 					})
 				}
+        userInfos.push(this.rtcInfo.host);
 				let rtcInfo = {
 					isHost: false,
 					groupId: this.rtcInfo.groupId,
 					inviterId: this.rtcInfo.host?.id || mine.id,
 					host: this.rtcInfo.host,
-					mode: 'voice', // 默认语音模式
+					mode: 'video', // 默认语音模式
 					userInfos: userInfos
 				}
 				// 通过 home.vue 打开多人视频窗口
 				this.$eventBus.$emit("openGroupVideo", rtcInfo);
 							
 			},
-			onCancel(){
-				this.isShow = false;
+			onReject(){
+        this.API.reject(this.rtcInfo.groupId).then(() => {
+          this.isShow = false;
+        })
 			}
 		}
 	}

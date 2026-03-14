@@ -714,7 +714,7 @@
           this.$refs.rtcSel.open(maxChannel, ids, ids, mode);
         });
       },
-      onInviteOk(members, mode = 'voice') {
+      onInviteOk(members, mode = 'video') {
         if (members.length < 2) {
           this.$message.warning("至少需要 2 人才能发起通话");
           return;
@@ -726,7 +726,7 @@
             aliasName: m.aliasName,
             nickName: m.nickName,
             headImage: m.headImage,
-            isCamera: mode === 'video' ? false : false, // 视频模式下默认关闭摄像头
+            isCamera: mode === 'video' ? true : false, // 视频模式下默认关闭摄像头
             isMicroPhone: true
           })
         })

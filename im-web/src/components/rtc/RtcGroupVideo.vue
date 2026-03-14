@@ -1,10 +1,10 @@
 <template>
 	<div class="rtc-group-video-container">
 		<el-dialog v-dialogDrag top="5vh" title="群聊通话" :close-on-click-modal="false" :close-on-press-escape="false"
-				   :visible.sync="isShow" width="80%" :before-close="onQuit">
+				   :visible.sync="isShow" width="fit-content" :before-close="onQuit">
 			<div class='rtc-group-video'>
 				<!-- 视频网格布局 -->
-				<div class="video-grid" :class="{'voice-mode': mode === 'voice' || !hasVideo}">
+				<div class="video-grid" :class="[{...gridStyle, 'voice-mode': mode === 'voice' || !hasVideo}]">
 					<!-- 每个用户的视频窗口 -->
 					<div class="video-item" v-for="user in userInfos" :key="user.id">
 						<div class="video-box" :class="{'mine': user.id === mine.id}">
@@ -40,42 +40,36 @@
 										
 							<!-- 设备状态图标 -->
 							<div class="device-status">
-								<i v-if="!user.isMicroPhone" class="el-icon-microphone-off" title="静音"></i>
+								<i v-if="!user.isMicroPhone" class="el-icon-turn-off-microphone" title="静音"></i>
 								<i v-if="!user.isCamera && mode === 'video'" class="el-icon-video-camera" title="未开启视频"></i>
 							</div>
 						</div>
 					</div>
 				</div>
-				
-				<!-- 底部控制栏 -->
-				<div class="control-bar">
-					<div class="control-btn" @click="toggleMicroPhone()" :title="isMicroPhone ? '关闭麦克风' : '开启麦克风'">
-						<i :class="isMicroPhone ? 'el-icon-microphone' : 'el-icon-microphone-off'"></i>
-						<span>{{ isMicroPhone ? '麦克风' : '静音' }}</span>
-					</div>
-								
-					<div class="control-btn" @click="toggleSpeaker()" :title="isSpeaker ? '关闭扬声器' : '开启扬声器'">
-						<i :class="isSpeaker ? 'el-icon-headset' : 'el-icon-ringing'"></i>
-						<span>{{ isSpeaker ? '扬声器' : '听筒' }}</span>
-					</div>
-								
-					<div class="control-btn" @click="toggleCamera()" :title="isCamera ? '关闭摄像头' : '开启摄像头'"
-					     v-if="mode === 'video'">
-						<i :class="isCamera ? 'el-icon-video-camera' : 'el-icon-video-play'"></i>
-						<span>{{ isCamera ? '摄像头' : '视频' }}</span>
-					</div>
-								
-					<div class="control-btn" @click="showInviteBox()" title="邀请成员">
-						<i class="el-icon-circle-plus-outline"></i>
-						<span>邀请</span>
-					</div>
-								
-					<div class="control-btn quit-btn" @click="onQuit()" title="退出通话">
-						<i class="el-icon-switch-button"></i>
-						<span>退出</span>
-					</div>
-				</div>
 			</div>
+      <!-- 底部控制栏 -->
+      <div class="control-bar" slot="footer">
+        <div class="control-btn" @click="toggleMicroPhone()" :title="isMicroPhone ? '关闭麦克风' : '开启麦克风'">
+          <i :class="isMicroPhone ? 'el-icon-microphone' : 'el-icon-turn-off-microphone'"></i>
+        </div>
+
+        <div class="control-btn" @click="toggleSpeaker()" :title="isSpeaker ? '关闭扬声器' : '开启扬声器'">
+          <i class="icon iconfont" :class="isSpeaker ? 'icon-yangshengqi' : 'icon-guanbiyangshengqi'"></i>
+        </div>
+
+        <div class="control-btn" @click="toggleCamera()" :title="isCamera ? '关闭摄像头' : '开启摄像头'"
+             v-if="mode === 'video'">
+          <i :class="isCamera ? 'el-icon-video-camera-solid' : 'el-icon-video-camera'"></i>
+        </div>
+
+        <div class="control-btn" @click="showInviteBox()" title="邀请成员">
+          <i class="el-icon-circle-plus-outline"></i>
+        </div>
+
+        <div class="control-btn quit-btn" @click="onQuit()" title="退出通话">
+          <i class="el-icon-switch-button"></i>
+        </div>
+      </div>
 		</el-dialog>
 		
 		<!-- 邀请成员对话框 -->
@@ -108,7 +102,7 @@
 				
 				isShow: false,
 				groupId: null, // 群聊 ID
-				mode: 'voice', // voice:语音 video:视频
+				mode: 'video', // voice:语音 video:视频
 				isHost: false, // 是否发起人
 				inviterId: null, // 邀请人 ID
 				host: null, // 主持人信息
@@ -135,29 +129,50 @@
 			hasVideo() {
 				// 是否有人开启了视频
 				return this.userInfos.some(u => u.isCamera);
-			}
+			},
+			gridStyle() {
+				// 根据用户数量返回不同的 class
+				const count = this.userInfos.length;
+				if (count === 2) {
+					return {'two-users-mode': true};
+				} else if (count === 4) {
+					return {'four-users-mode': true};
+				}
+				return {};
+			},
+			configuration() {
+				const iceServers = this.$store.state.configStore.webrtc.iceServers;
+				return {
+					iceServers: iceServers
+				}
+			},
 		},
 		methods: {
 			// 打开多人视频通话
 			open(rtcInfo) {
 				console.log("打开多人视频通话", rtcInfo);
+        if (!this.checkDevEnable()) {
+          this.close();
+          return;
+        }
 				this.isShow = true;
 				this.groupId = rtcInfo.groupId;
-				this.mode = rtcInfo.mode || 'voice';
+				this.mode = rtcInfo.mode || 'video';
 				this.isHost = rtcInfo.isHost;
 				this.inviterId = rtcInfo.inviterId;
 				this.host = rtcInfo.host;
 				this.userInfos = rtcInfo.userInfos || [];
 				
 				// 初始化设备状态
-				if (this.mode === 'video') {
-					// 视频模式：默认关闭摄像头
-					this.isCamera = false;
-				} else {
-					// 语音模式：关闭摄像头
-					this.isCamera = false;
-				}
-				this.isMicroPhone = true;
+				// if (this.mode === 'video') {
+				// 	// 视频模式：默认关闭摄像头
+				// 	this.isCamera = false;
+				// } else {
+				// 	// 语音模式：关闭摄像头
+        //this.isCamera = false;
+				// }
+        this.isCamera = true;
+        this.isMicroPhone = true;
 				
 				// 初始化 WebRTC
 				this.initRtc();
@@ -176,26 +191,39 @@
 			
 			// 初始化 WebRTC
 			initRtc() {
-				const iceServers = this.$store.state.configStore.webrtc.iceServers;
-				this.webrtc.init({ iceServers });
+        this.webrtc.init(this.configuration)
 			},
+
+      checkDevEnable() {
+        // 检测摄像头
+        if (!this.camera.isEnable()) {
+          this.$message.error("访问摄像头失败");
+          return false;
+        }
+        // 检测webrtc
+        if (!this.webrtc.isEnable()) {
+          this.$message.error("初始化RTC失败，原因可能是: 1.服务器缺少ssl证书 2.您的设备不支持WebRTC");
+          return false;
+        }
+        return true;
+      },
 					
 			// 创建与对方的 peerConnection
 			createPeerConnection(userId) {
 				if (this.peerConnections.has(userId)) {
 					return this.peerConnections.get(userId);
 				}
-						
+							
 				const peerConnection = new RTCPeerConnection(this.webrtc.configuration);
 				this.peerConnections.set(userId, peerConnection);
-						
-				// 添加本地流
+							
+				// 添加本地流到 peerConnection
 				if (this.localStream) {
 					this.localStream.getTracks().forEach(track => {
 						peerConnection.addTrack(track, this.localStream);
 					});
 				}
-						
+							
 				// 监听候选者
 				peerConnection.onicecandidate = (event) => {
 					if (event.candidate) {
@@ -205,21 +233,22 @@
 						});
 					}
 				};
-						
+							
 				// 监听连接状态
 				peerConnection.oniceconnectionstatechange = () => {
 					console.log(`peerConnection 状态 [${userId}]:`, peerConnection.iceConnectionState);
 				};
-						
+							
 				// 接收远端流
 				peerConnection.ontrack = (e) => {
 					console.log("收到远端流", userId, e.streams[0]);
-					// 找到对应用户的视频元素
+					// 找到对应用户的信息
 					let user = this.userInfos.find(u => u.id === userId);
-					if (user && this.$refs.remoteVideos) {
-						// 查找对应的 video 元素
-						for (let i = 0; i < this.$refs.remoteVideos.length; i++) {
-							let videoEl = this.$refs.remoteVideos[i];
+					if (user && this.$refs.remoteVideos && this.$refs.remoteVideos.length > 0) {
+						// 查找该用户对应的 video 元素
+						const videoEls = this.$refs.remoteVideos;
+						for (let i = 0; i < videoEls.length; i++) {
+							let videoEl = videoEls[i];
 							if (videoEl && !videoEl.srcObject) {
 								videoEl.srcObject = e.streams[0];
 								break;
@@ -227,7 +256,7 @@
 						}
 					}
 				};
-						
+							
 				return peerConnection;
 			},
 			
@@ -263,24 +292,13 @@
 				this.openStream().then(() => {
 					// 更新自己的状态
 					this.updateMyUserInfo();
-							
+								
 					// 向服务器发送 accept 请求
 					this.API.accept(this.groupId).then(() => {
 						console.log("接受群聊通话成功");
-						// 为每个用户创建 peerConnection
+						// 为每个用户创建 peerConnection，等待接收 offer
 						this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
-							const peerConnection = this.createPeerConnection(user.id);
-							// 创建 offer 并发送
-							peerConnection.createOffer().then((offer) => {
-								return peerConnection.setLocalDescription(offer);
-							}).then(() => {
-								// 发送 offer 给对方
-								this.API.offer(this.groupId, user.id, JSON.stringify(peerConnection.localDescription)).catch((e) => {
-									console.error("发送 offer 失败", e);
-								});
-							}).catch((e) => {
-								console.error("创建 offer 失败", e);
-							});
+							this.createPeerConnection(user.id);
 						});
 					}).catch((e) => {
 						console.error("接受群聊通话失败", e);
@@ -295,33 +313,23 @@
 			// 打开摄像头/麦克风
 			openStream() {
 				return new Promise((resolve, reject) => {
-					if (this.mode === 'video') {
-						// 视频模式：默认不开启摄像头，点击按钮才开启
-						if (this.isCamera) {
-							this.camera.openVideo().then((stream) => {
-								this.localStream = stream;
-								this.$nextTick(() => {
-									if (this.$refs.localVideo && this.$refs.localVideo[0]) {
-										this.$refs.localVideo[0].srcObject = stream;
-									}
-								});
-								resolve(stream);
-							}).catch((e) => {
-								console.error("打开摄像头失败", e);
-								reject(e);
+					if (this.mode === 'video' && this.isCamera) {
+						// 视频模式且开启了摄像头：打开视频和音频
+						this.camera.openVideo().then((stream) => {
+							this.localStream = stream;
+							this.$nextTick(() => {
+                console.log("this.$refs.localVideo", this.$refs.localVideo);
+								if (this.$refs.localVideo) {
+									this.$refs.localVideo[0].srcObject = stream;
+								}
 							});
-						} else {
-							// 只打开麦克风
-							this.camera.openAudio().then((stream) => {
-								this.localStream = stream;
-								resolve(stream);
-							}).catch((e) => {
-								console.error("打开麦克风失败", e);
-								reject(e);
-							});
-						}
+							resolve(stream);
+						}).catch((e) => {
+							console.error("打开摄像头失败", e);
+							reject(e);
+						});
 					} else {
-						// 语音模式：只打开麦克风
+						// 语音模式或关闭摄像头：只打开麦克风
 						this.camera.openAudio().then((stream) => {
 							this.localStream = stream;
 							resolve(stream);
@@ -374,16 +382,16 @@
 			// 切换摄像头
 			toggleCamera() {
 				if (this.mode !== 'video') return;
-										
+									
 				this.isCamera = !this.isCamera;
-				this.updateDeviceToServer();
 				this.updateMyUserInfo();
-										
+				this.updateDeviceToServer();
+									
 				if (this.isCamera) {
-					// 开启摄像头
+					// 开启摄像头：重新打开包含视频的流
 					this.openStream().then(() => {
 						this.$nextTick(() => {
-							if (this.$refs.localVideo && this.$refs.localVideo[0]) {
+							if (this.$refs.localVideo && this.$refs.localVideo.length > 0) {
 								this.$refs.localVideo[0].srcObject = this.localStream;
 							}
 							// 重新创建 peerConnection 以添加视频轨道
@@ -396,12 +404,18 @@
 						this.updateDeviceToServer();
 					});
 				} else {
-					// 关闭摄像头，保留麦克风
+					// 关闭摄像头，保留麦克风：需要重新获取只有音频的流
 					if (this.localStream) {
+						// 停止所有视频轨道
 						this.localStream.getVideoTracks().forEach(track => {
 							track.stop();
 						});
-						// 重新创建 peerConnection 以移除视频轨道
+						// 从本地流中移除视频轨道
+						const videoTrack = this.localStream.getVideoTracks()[0];
+						if (videoTrack) {
+							this.localStream.removeTrack(videoTrack);
+						}
+						// 重新创建 peerConnection
 						this.recreatePeerConnections();
 					}
 				}
@@ -523,15 +537,16 @@
 				let userInfos = JSON.parse(msg.content);
 				this.userInfos = userInfos;
 				this.host = userInfos.find(u => u.id === msg.sendId);
-        this.groupId = msg.groupId;
+        this.groupId= msg.groupId;
 				
 				// 从用户信息中推断通话模式
-				const hasVideoEnabled = userInfos.some(u => u.isCamera);
-				if (hasVideoEnabled) {
-					this.mode = 'video';
-				} else {
-					this.mode = 'voice';
-				}
+				// const hasVideoEnabled = userInfos.some(u => u.isCamera);
+				// if (hasVideoEnabled) {
+				// 	this.mode = 'video';
+				// } else {
+				// 	this.mode = 'voice';
+				// }
+        this.mode = 'video';
 				
 				// 显示加入通话对话框
 				this.$refs.rtcJoin.open({
@@ -539,28 +554,8 @@
 					userInfos: userInfos.filter(u => u.id !== msg.sendId),
           groupId: msg.groupId
 				});
-				
-				// 打开通话设备并创建 peerConnection
-				this.openStream().then(() => {
-					this.updateMyUserInfo();
-					// 为每个用户创建 peerConnection
-					this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
-						const peerConnection = this.createPeerConnection(user.id);
-						// 创建 offer 并发送
-						peerConnection.createOffer().then((offer) => {
-							return peerConnection.setLocalDescription(offer);
-						}).then(() => {
-							// 发送 offer 给对方
-							this.API.offer(this.groupId, user.id, JSON.stringify(peerConnection.localDescription)).catch((e) => {
-								console.error("发送 offer 失败", e);
-							});
-						}).catch((e) => {
-							console.error("创建 offer 失败", e);
-						});
-					});
-				}).catch(() => {
-					this.$message.error("打开设备失败");
-				});
+				// 注意：不在这里打开设备和创建 peerConnection
+				// 等待用户点击确定后，在 onAccept 中处理
 			},
 			
 			// 收到 accept 消息
@@ -736,58 +731,73 @@
 <style scoped lang="scss">
 	.rtc-group-video-container {
 		.rtc-group-video {
-			min-height: 500px;
 			display: flex;
 			flex-direction: column;
-			
+
 			.video-grid {
-				flex: 1;
 				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-				gap: 10px;
-				padding: 10px;
+				grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+				gap: 15px;
+				padding: 15px;
 				background-color: #1a1a2e;
-				
+				height: fit-content;
+
+				// 2 个用户时：2 列 1 行
+				&.two-users-mode {
+					grid-template-columns: repeat(2, 1fr);
+				}
+
+				// 4 个用户时：2 列 2 行
+				&.four-users-mode {
+					grid-template-columns: repeat(2, 1fr);
+				}
+
+				// 语音模式
 				&.voice-mode {
-					grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-					gap: 8px;
+					grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+					gap: 10px;
 					padding: 15px;
-					
+					max-height: none;
+
 					.video-item {
 						.video-box {
-							height: 140px;
-							
+							height: 150px;
+
 							.user-name {
 								bottom: 8px;
 							}
 						}
 					}
 				}
-				
+
 				.video-item {
 					position: relative;
 					background-color: #16213e;
 					border-radius: 8px;
 					overflow: hidden;
-					
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					aspect-ratio: 1 / 1;
+
 					.video-box {
 						position: relative;
 						width: 100%;
-						height: 200px;
+						height: 100%;
 						display: flex;
 						align-items: center;
 						justify-content: center;
-						
+
 						&.mine {
 							border: 2px solid #4facfe;
 						}
-						
+
 						video {
 							width: 100%;
 							height: 100%;
 							object-fit: cover;
 						}
-						
+
 						.user-name {
 							position: absolute;
 							bottom: 10px;
@@ -797,7 +807,7 @@
 							font-size: 14px;
 							text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 						}
-						
+
 						.user-info-tag {
 							position: absolute;
 							top: 10px;
@@ -807,7 +817,7 @@
 							background: rgba(0,0,0,0.5);
 							padding: 4px 8px;
 							border-radius: 4px;
-							
+
 							.host-tag {
 								margin-left: 5px;
 								background: #ff6b6b;
@@ -816,14 +826,14 @@
 								font-size: 10px;
 							}
 						}
-						
+
 						.device-status {
 							position: absolute;
 							top: 10px;
 							right: 10px;
 							color: white;
 							font-size: 16px;
-							
+
 							i {
 								margin-left: 5px;
 							}
@@ -831,46 +841,46 @@
 					}
 				}
 			}
-			
-			.control-bar {
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				gap: 20px;
-				padding: 20px;
-				background-color: #f5f5f5;
-				
-				.control-btn {
-					display: flex;
-					flex-direction: column;
-					align-items: center;
-					cursor: pointer;
-					padding: 10px;
-					border-radius: 8px;
-					transition: all 0.3s;
-					
-					&:hover {
-						background-color: #e0e0e0;
-					}
-					
-					i {
-						font-size: 24px;
-						margin-bottom: 5px;
-					}
-					
-					span {
-						font-size: 12px;
-					}
-					
-					&.quit-btn {
-						color: #ff6b6b;
-						
-						&:hover {
-							background-color: #ffeaea;
-						}
-					}
-				}
-			}
 		}
+
+    .control-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      background-color: #f5f5f5;
+
+      .control-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 8px;
+        transition: all 0.3s;
+
+        &:hover {
+          background-color: #e0e0e0;
+        }
+
+        i {
+          font-size: 24px;
+          margin-bottom: 5px;
+        }
+
+        span {
+          font-size: 12px;
+        }
+
+        &.quit-btn {
+          color: #ff6b6b;
+
+          &:hover {
+            background-color: #ffeaea;
+          }
+        }
+      }
+    }
 	}
 </style>

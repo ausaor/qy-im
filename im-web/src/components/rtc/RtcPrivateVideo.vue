@@ -236,6 +236,7 @@ export default {
       } else {
         // 对方接受了的通话
         let offer = JSON.parse(msg.content);
+        console.log("onRTCAccept", offer)
         this.webrtc.setRemoteDescription(offer);
         // 状态为聊天中
         this.state = 'CHATING'
@@ -275,6 +276,7 @@ export default {
     },
     onRTCCandidate(msg) {
       let candidate = JSON.parse(msg.content);
+      console.log("onRTCCandidate", candidate)
       this.webrtc.addIceCandidate(candidate);
     },
 
