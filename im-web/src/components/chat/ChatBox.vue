@@ -714,7 +714,7 @@
           this.$refs.rtcSel.open(maxChannel, ids, ids, mode);
         });
       },
-      onInviteOk(members, mode = 'video') {
+      onInviteOk(members) {
         if (members.length < 2) {
           this.$message.warning("至少需要 2 人才能发起通话");
           return;
@@ -726,7 +726,7 @@
             aliasName: m.aliasName,
             nickName: m.nickName,
             headImage: m.headImage,
-            isCamera: mode === 'video' ? true : false, // 视频模式下默认关闭摄像头
+            isCamera: false, // 默认关闭摄像头
             isMicroPhone: true
           })
         })
@@ -741,7 +741,6 @@
             headImage: this.myGroupMemberInfo.headImage || this.mine.headImage,
             nickName: this.myGroupMemberInfo.nickName || this.mine.nickName
           },
-          mode: mode,
           userInfos: userInfos
         }
         // 通过 home.vue 打开多人视频窗口

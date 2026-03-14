@@ -4,17 +4,17 @@
 				   :visible.sync="isShow" width="fit-content" :before-close="onQuit">
 			<div class='rtc-group-video'>
 				<!-- 视频网格布局 -->
-				<div class="video-grid" :class="[{...gridStyle, 'voice-mode': mode === 'voice' || !hasVideo}]">
+				<div class="video-grid" :class="[{...gridStyle}]">
 					<!-- 每个用户的视频窗口 -->
 					<div class="video-item" v-for="user in userInfos" :key="user.id">
 						<div class="video-box" :class="{'mine': user.id === mine.id}">
 							<!-- 头像 (未开启视频时显示) -->
-							<head-image v-show="!user.isCamera"
+							<head-image v-if="!user.isCamera"
 									  :name="user.aliasName || user.nickName" 
 									  :url="user.headImage" 
-									  :size="mode === 'voice' ? 80 : 100" 
+									  :size="100"
 									  :isShowUserInfo="false">
-								<div class="user-name" :style="{fontSize: mode === 'voice' ? '12px' : '14px'}">
+								<div class="user-name" :style="{fontSize: '14px'}">
 									{{ user.aliasName || user.nickName }}
 								</div>
 							</head-image>
@@ -42,7 +42,6 @@
 							<!-- 设备状态图标 -->
 							<div class="device-status">
 								<i v-if="!user.isMicroPhone" class="el-icon-turn-off-microphone" title="静音"></i>
-								<i v-if="!user.isCamera && mode === 'video'" class="el-icon-video-camera" title="未开启视频"></i>
 							</div>
 						</div>
 					</div>
@@ -58,8 +57,7 @@
           <i class="icon iconfont" :class="isSpeaker ? 'icon-yangshengqi' : 'icon-guanbiyangshengqi'"></i>
         </div>
 
-        <div class="control-btn" @click="toggleCamera()" :title="isCamera ? '关闭摄像头' : '开启摄像头'"
-             v-if="mode === 'video'">
+        <div class="control-btn" @click="toggleCamera()" :title="isCamera ? '关闭摄像头' : '开启摄像头'">
           <i :class="isCamera ? 'el-icon-video-camera-solid' : 'el-icon-video-camera'"></i>
         </div>
 
@@ -103,7 +101,6 @@
 				
 				isShow: false,
 				groupId: null, // 群聊 ID
-				mode: 'video', // voice:语音 video:视频
 				isHost: false, // 是否发起人
 				inviterId: null, // 邀请人 ID
 				host: null, // 主持人信息
@@ -126,10 +123,6 @@
 		computed: {
 			mine() {
 				return this.$store.state.userStore.userInfo;
-			},
-			hasVideo() {
-				// 是否有人开启了视频
-				return this.userInfos.some(u => u.isCamera);
 			},
 			gridStyle() {
 				// 根据用户数量返回不同的 class
@@ -158,21 +151,11 @@
         }
 				this.isShow = true;
 				this.groupId = rtcInfo.groupId;
-				this.mode = rtcInfo.mode || 'video';
 				this.isHost = rtcInfo.isHost;
 				this.inviterId = rtcInfo.inviterId;
 				this.host = rtcInfo.host;
 				this.userInfos = rtcInfo.userInfos || [];
-				
-				// 初始化设备状态
-				// if (this.mode === 'video') {
-				// 	// 视频模式：默认关闭摄像头
-				// 	this.isCamera = false;
-				// } else {
-				// 	// 语音模式：关闭摄像头
-        //this.isCamera = false;
-				// }
-        this.isCamera = true;
+        this.isCamera = false;
         this.isMicroPhone = true;
 				
 				// 初始化 WebRTC
@@ -312,14 +295,14 @@
 			// 打开摄像头/麦克风
 			openStream() {
 				return new Promise((resolve, reject) => {
-					if (this.mode === 'video' && this.isCamera) {
+					if (this.isCamera) {
 						// 视频模式且开启了摄像头：打开视频和音频
 						this.camera.openVideo().then((stream) => {
 							this.localStream = stream;
 							this.$nextTick(() => {
-                console.log("this.$refs.localVideo", this.$refs.localVideo);
-								if (this.$refs.localVideo) {
+								if (this.$refs.localVideo && this.$refs.localVideo.length > 0) {
 									this.$refs.localVideo[0].srcObject = stream;
+                  this.$refs.localVideo.muted = true;
 								}
 							});
 							resolve(stream);
@@ -331,6 +314,11 @@
 						// 语音模式或关闭摄像头：只打开麦克风
 						this.camera.openAudio().then((stream) => {
 							this.localStream = stream;
+							// 清除本地视频显示
+							if (this.$refs.localVideo && this.$refs.localVideo.length > 0) {
+								this.$refs.localVideo[0].srcObject = stream;
+                this.$refs.localVideo.muted = true;
+							}
 							resolve(stream);
 						}).catch((e) => {
 							console.error("打开麦克风失败", e);
@@ -392,51 +380,27 @@
 				});
 				this.$message.success(this.isSpeaker ? '已开启扬声器' : '已关闭扬声器');
 			},
-					
+								
 			// 切换摄像头
 			toggleCamera() {
-				if (this.mode !== 'video') return;
-											
 				this.isCamera = !this.isCamera;
+				// 立即更新 UI 状态
 				this.updateMyUserInfo();
+				// 立即通知服务器和其他用户
 				this.updateDeviceToServer();
-											
-				if (this.isCamera) {
-					// 开启摄像头：重新打开包含视频的流
-					this.openStream().then(() => {
-						this.$nextTick(() => {
-							if (this.$refs.localVideo && this.$refs.localVideo.length > 0) {
-								this.$refs.localVideo[0].srcObject = this.localStream;
-							}
-							// 重新创建 peerConnection 以添加视频轨道
-							this.recreatePeerConnections();
-						});
-					}).catch((e) => {
-						console.error("开启摄像头失败", e);
-						this.isCamera = false;
-						this.updateMyUserInfo();
-						this.updateDeviceToServer();
-					});
-				} else {
-					// 关闭摄像头，保留麦克风：需要重新获取只有音频的流
-					if (this.localStream) {
-						// 停止所有视频轨道
-						this.localStream.getVideoTracks().forEach(track => {
-							track.stop();
-						});
-						// 从本地流中移除视频轨道
-						const videoTrack = this.localStream.getVideoTracks()[0];
-						if (videoTrack) {
-							this.localStream.removeTrack(videoTrack);
-						}
-						// 清除本地视频显示
-						if (this.$refs.localVideo && this.$refs.localVideo.length > 0) {
-							this.$refs.localVideo[0].srcObject = null;
-						}
-						// 重新创建 peerConnection
-						this.recreatePeerConnections();
-					}
-				}
+
+        // 开启摄像头：重新打开包含视频的流
+        this.openStream().then(() => {
+          this.$nextTick(() => {
+            if (this.$refs.localVideo && this.$refs.localVideo.length > 0) {
+              this.$refs.localVideo[0].srcObject = this.localStream;
+            }
+            // 重新创建 peerConnection 以添加视频轨道
+            this.recreatePeerConnections();
+          });
+        }).catch((e) => {
+          console.error("开启摄像头失败", e);
+        });
 			},
 			
 			// 更新设备状态到服务器
@@ -455,13 +419,6 @@
 				// 为每个用户重新创建 peerConnection
 				this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
 					const peerConnection = this.createPeerConnection(user.id);
-					// 如果已经创建了 offer，需要重新创建
-					// if (this.isHost) {
-					// 	// 主持人等待接收 offer
-					// } else {
-					//
-					// }
-          // 非主持人需要重新创建 offer
           peerConnection.createOffer().then((offer) => {
             return peerConnection.setLocalDescription(offer);
           }).then(() => {
@@ -558,23 +515,12 @@
 				this.host = userInfos.find(u => u.id === msg.sendId);
         this.groupId= msg.groupId;
 				
-				// 从用户信息中推断通话模式
-				// const hasVideoEnabled = userInfos.some(u => u.isCamera);
-				// if (hasVideoEnabled) {
-				// 	this.mode = 'video';
-				// } else {
-				// 	this.mode = 'voice';
-				// }
-        this.mode = 'video';
-				
 				// 显示加入通话对话框
 				this.$refs.rtcJoin.open({
 					host: this.host,
 					userInfos: userInfos.filter(u => u.id !== msg.sendId),
           groupId: msg.groupId
 				});
-				// 注意：不在这里打开设备和创建 peerConnection
-				// 等待用户点击确定后，在 onAccept 中处理
 			},
 			
 			// 收到 accept 消息
@@ -586,27 +532,23 @@
 					user.inChat = true;
 				}
 						
-				// 如果是主持人，需要为这个新接受的用户创建 offer
-				//if (this.isHost) {
-          console.log("this.peerConnections.has(msg.sendId)", this.peerConnections.has(msg.sendId));
-					// 如果还没有创建 peerConnection，则创建
-					if (!this.peerConnections.has(msg.sendId)) {
-						const peerConnection = this.createPeerConnection(msg.sendId);
-						// 创建并发送 offer
-            const offerParam = {};
-            offerParam.offerToRecieveAudio = 1;
-            offerParam.offerToRecieveVideo = 1;
-						peerConnection.createOffer(offerParam).then((offer) => {
-							return peerConnection.setLocalDescription(offer);
-						}).then(() => {
-							this.API.offer(this.groupId, msg.sendId, JSON.stringify(peerConnection.localDescription)).catch((e) => {
-								console.error("发送 offer 失败", e);
-							});
-						}).catch((e) => {
-							console.error("创建 offer 失败", e);
-						});
-					}
-				//}
+        // 如果还没有创建 peerConnection，则创建
+        if (!this.peerConnections.has(msg.sendId)) {
+          const peerConnection = this.createPeerConnection(msg.sendId);
+          // 创建并发送 offer
+          const offerParam = {};
+          offerParam.offerToRecieveAudio = 1;
+          offerParam.offerToRecieveVideo = 1;
+          peerConnection.createOffer(offerParam).then((offer) => {
+            return peerConnection.setLocalDescription(offer);
+          }).then(() => {
+            this.API.offer(this.groupId, msg.sendId, JSON.stringify(peerConnection.localDescription)).catch((e) => {
+              console.error("发送 offer 失败", e);
+            });
+          }).catch((e) => {
+            console.error("创建 offer 失败", e);
+          });
+        }
 			},
 			
 			// 收到 reject 消息
