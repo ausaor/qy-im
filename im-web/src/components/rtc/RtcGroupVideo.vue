@@ -14,9 +14,6 @@
 									  :url="user.headImage" 
 									  :size="100"
 									  :isShowUserInfo="false">
-								<div class="user-name" :style="{fontSize: '14px'}">
-									{{ user.aliasName || user.nickName }}
-								</div>
 							</head-image>
 										
 							<!-- 远端视频 (开启视频时显示) -->
@@ -28,7 +25,7 @@
 										
 							<!-- 本地视频 (自己的摄像头) -->
 							<video v-show="user.isCamera && user.id === mine.id"
-								   ref="localVideo" 
+								   ref="localVideo"
 								   autoplay 
 								   playsinline 
 								   muted></video>
@@ -783,24 +780,6 @@
 					grid-template-columns: repeat(2, 1fr);
 				}
 
-				// 语音模式
-				&.voice-mode {
-					grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-					gap: 10px;
-					padding: 15px;
-					max-height: none;
-
-					.video-item {
-						.video-box {
-							height: 150px;
-
-							.user-name {
-								bottom: 8px;
-							}
-						}
-					}
-				}
-
 				.video-item {
 					position: relative;
 					background-color: #16213e;
@@ -813,8 +792,8 @@
 
 					.video-box {
 						position: relative;
-						width: 100%;
-						height: 100%;
+						width: 300px;
+						height: 300px;
 						display: flex;
 						align-items: center;
 						justify-content: center;
