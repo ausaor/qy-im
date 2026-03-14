@@ -116,7 +116,7 @@
 				// WebRTC 相关
 				localStream: null, // 本地流
 				peerConnections: new Map(), // 与每个用户的 peerConnection
-				candidates: [], // 候选者队列
+				candidates: new Map(), // 候选者队列
 				
 				// 定时器
 				heartbeatTimer: null,
@@ -216,6 +216,11 @@
 							
 				const peerConnection = new RTCPeerConnection(this.webrtc.configuration);
 				this.peerConnections.set(userId, peerConnection);
+				
+				// 初始化该用户的 candidate 缓存队列
+				if (!this.candidates.has(userId)) {
+					this.candidates.set(userId, []);
+				}
 							
 				// 添加本地流到 peerConnection
 				if (this.localStream) {
@@ -266,15 +271,10 @@
 				this.openStream().then(() => {
 					// 更新自己的状态
 					this.updateMyUserInfo();
-							
+										
 					// 向服务器发起 setup 请求
-					//let userInfos = this.userInfos.filter(u => u.id !== this.mine.id);
 					this.API.setup(this.groupId, this.userInfos).then(() => {
 						console.log("发起群聊通话成功");
-						// 为每个用户创建 peerConnection
-						this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
-							this.createPeerConnection(user.id);
-						});
 					}).catch((e) => {
 						console.error("发起群聊通话失败", e);
 						this.$message.error("发起通话失败");
@@ -292,11 +292,11 @@
 				this.openStream().then(() => {
 					// 更新自己的状态
 					this.updateMyUserInfo();
-								
+											
 					// 向服务器发送 accept 请求
 					this.API.accept(this.groupId).then(() => {
 						console.log("接受群聊通话成功");
-						// 为每个用户创建 peerConnection，等待接收 offer
+						// 为每个用户创建 peerConnection，等待接收主持人的 offer
 						this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
 							this.createPeerConnection(user.id);
 						});
@@ -566,6 +566,28 @@
 				if (user) {
 					user.inChat = true;
 				}
+						
+				// 如果是主持人，需要为这个新接受的用户创建 offer
+				if (this.isHost) {
+          console.log("this.peerConnections.has(msg.sendId)", this.peerConnections.has(msg.sendId));
+					// 如果还没有创建 peerConnection，则创建
+					if (!this.peerConnections.has(msg.sendId)) {
+						const peerConnection = this.createPeerConnection(msg.sendId);
+						// 创建并发送 offer
+            const offerParam = {};
+            offerParam.offerToRecieveAudio = 1;
+            offerParam.offerToRecieveVideo = 1;
+						peerConnection.createOffer(offerParam).then((offer) => {
+							return peerConnection.setLocalDescription(offer);
+						}).then(() => {
+							this.API.offer(this.groupId, msg.sendId, JSON.stringify(peerConnection.localDescription)).catch((e) => {
+								console.error("发送 offer 失败", e);
+							});
+						}).catch((e) => {
+							console.error("创建 offer 失败", e);
+						});
+					}
+				}
 			},
 			
 			// 收到 reject 消息
@@ -628,11 +650,17 @@
 				if (!this.peerConnections.has(msg.sendId)) {
 					this.createPeerConnection(msg.sendId);
 				}
-								
+									
 				const peerConnection = this.peerConnections.get(msg.sendId);
 				// 设置远端 SDP (offer)
 				peerConnection.setRemoteDescription(new RTCSessionDescription(data)).then(() => {
+					console.log("设置远端描述成功", msg.sendId);
+					// 处理缓存的 candidate
+					this.processCachedCandidates(msg.sendId);
 					// 创建 answer
+          const offerParam = {};
+          offerParam.offerToRecieveAudio = 1;
+          offerParam.offerToRecieveVideo = 1;
 					return peerConnection.createAnswer();
 				}).then((answer) => {
 					// 设置本地 SDP (answer)
@@ -654,7 +682,11 @@
 				const peerConnection = this.peerConnections.get(msg.sendId);
 				if (peerConnection) {
 					// 设置远端 SDP (answer)
-					peerConnection.setRemoteDescription(new RTCSessionDescription(data)).catch((e) => {
+					peerConnection.setRemoteDescription(new RTCSessionDescription(data)).then(() => {
+						console.log("设置远端描述成功", msg.sendId);
+						// 处理缓存的 candidate
+						this.processCachedCandidates(msg.sendId);
+					}).catch((e) => {
 						console.error("设置 answer 失败", e);
 					});
 				}
@@ -665,14 +697,52 @@
 				console.log("收到 candidate", msg);
 				let data = JSON.parse(msg.content);
 				const peerConnection = this.peerConnections.get(msg.sendId);
-				if (peerConnection && data.candidate) {
-					// 添加候选者
-					peerConnection.addIceCandidate(new RTCIceCandidate(data)).catch((e) => {
+						
+				if (!peerConnection) {
+					console.warn(`peerConnection 不存在 [${msg.sendId}]`);
+					return;
+				}
+						
+				// 如果还没有设置远端描述，先缓存 candidate
+				if (!peerConnection.remoteDescription) {
+					console.log(`远端描述未设置，缓存 candidate [${msg.sendId}]`);
+					if (!this.candidates.has(msg.sendId)) {
+						this.candidates.set(msg.sendId, []);
+					}
+					this.candidates.get(msg.sendId).push(data);
+					return;
+				}
+						
+				// 已设置远端描述，直接添加 candidate
+				if (data) {
+					peerConnection.addIceCandidate(new RTCIceCandidate(data)).then(() => {
+						console.log("添加 candidate 成功", msg.sendId);
+					}).catch((e) => {
 						console.error("添加 candidate 失败", e);
 					});
 				}
 			},
 			
+			// 处理缓存的 candidate
+			processCachedCandidates(userId) {
+				const cached = this.candidates.get(userId);
+				if (cached && cached.length > 0) {
+					console.log(`处理缓存的 candidate [${userId}], 数量：${cached.length}`);
+					const peerConnection = this.peerConnections.get(userId);
+					if (!peerConnection) return;
+							
+					// 逐个添加缓存的 candidate
+					cached.forEach(candidateData => {
+						peerConnection.addIceCandidate(new RTCIceCandidate(candidateData)).catch((e) => {
+							console.error(`添加缓存的 candidate 失败 [${userId}]`, e);
+						});
+					});
+							
+					// 清空缓存
+					this.candidates.set(userId, []);
+				}
+			},
+						
 			// 收到 device 消息
 			onRTCDevice(msg) {
 				let deviceInfo = JSON.parse(msg.content);
