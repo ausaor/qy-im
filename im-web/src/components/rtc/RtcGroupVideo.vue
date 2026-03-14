@@ -70,7 +70,7 @@
 		
 		<!-- 邀请成员对话框 -->
 		<group-member-selector ref="inviteSel" :groupId="groupId" @complete="onInviteComplete"></group-member-selector>
-    <rtc-group-join ref="rtcJoin"></rtc-group-join>
+    <rtc-group-join ref="rtcJoin" v-if="showJoinDialog" :groupId="groupId" :userInfos="userInfos" :host="host" @accept="onJoinAccept" @reject="onJoinReject"></rtc-group-join>
 	</div>
 </template>
 
@@ -102,6 +102,7 @@
 				inviterId: null, // 邀请人 ID
 				host: null, // 主持人信息
 				userInfos: [], // 所有用户信息
+				showJoinDialog: false, // 是否显示加入通话对话框
 				
 				// 设备状态
 				isCamera: false, // 是否开启摄像头
@@ -513,11 +514,7 @@
         this.groupId= msg.groupId;
 				
 				// 显示加入通话对话框
-				this.$refs.rtcJoin.open({
-					host: this.host,
-					userInfos: userInfos.filter(u => u.id !== msg.sendId),
-          groupId: msg.groupId
-				});
+				this.showJoinDialog = true;
 			},
 			
 			// 收到 accept 消息
@@ -809,7 +806,8 @@
 			
 			// 关闭
 			close() {
-				this.isShow = false;
+        this.showJoinDialog = false;
+        this.isShow = false;
 				this.camera.close();
 				
 				// 关闭所有 peerConnection
@@ -827,7 +825,17 @@
 				this.userInfos = [];
 				this.isCamera = false;
 				this.isMicroPhone = true;
-			}
+			},
+      onJoinAccept(rtcInfo) {
+        this.showJoinDialog = false;
+        this.open(rtcInfo)
+      },
+      onJoinReject(groupId) {
+        this.API.reject(groupId).then(() => {
+          console.log(`拒绝加入群组通话 [${groupId}]`)
+        })
+        this.close();
+      },
 		},
     created() {
       // 监听页面刷新事件

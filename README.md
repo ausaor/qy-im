@@ -61,6 +61,8 @@ GitHub：https://github.com/ausaor/qy-im
 
 10、音乐播放
 
+11、支持一对一和群聊多人音视频通话
+
 
 
 ### 技术栈

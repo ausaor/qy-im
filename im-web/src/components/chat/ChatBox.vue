@@ -145,7 +145,6 @@
       <character-word ref="wordBox" :words="words" @send="sendWordVoice"></character-word>
       <chat-record :visible="showRecord" @close="closeRecordBox" @send="onSendRecord"></chat-record>
       <group-member-selector ref="rtcSel" :groupId="group.id" @complete="onInviteOk"></group-member-selector>
-      <rtc-group-join ref="rtcJoin" :groupId="group.id"></rtc-group-join>
       <chat-history :visible="showHistory" :chat="chat" :friend="friend" :group="group" :groupMembers="groupMembers" @close="closeHistoryBox"></chat-history>
       <video-play ref="videoPlay" :videoUrl="videoUrl" :posterUrl="posterUrl" @close="closeVideoPlay"></video-play>
     </el-container>
@@ -162,7 +161,6 @@
   import ChatAtBox from "./ChatAtBox.vue"
   import ChatInput from "./ChatInput";
   import GroupMemberSelector from "../group/GroupMemberSelector.vue"
-  import RtcGroupJoin from "../rtc/RtcGroupJoin.vue"
   import CharacterWord from "@/components/common/CharacterWord";
   import CharacterEmotion from "@/components/common/CharacterEmotion";
   import VideoPlay  from "../common/VideoPlay.vue";
@@ -179,7 +177,6 @@
       ChatAtBox,
       ChatInput,
       GroupMemberSelector,
-      RtcGroupJoin,
       CharacterWord,
       CharacterEmotion,
       VideoPlay,
@@ -669,7 +666,7 @@
         }).then((rtcInfo) => {
           if (rtcInfo.isChating) {
             // 已有通话中，显示加入对话框
-            this.$refs.rtcJoin.open(rtcInfo);
+            //this.$refs.rtcJoin.open(rtcInfo);
           } else {
             // 发起新通话，邀请成员
             let ids = [this.mine.id];
