@@ -486,28 +486,64 @@
 			// 更新所有 peerConnection 中的本地轨道
 			updateLocalTracksInPeerConnections() {
 				console.log('开始更新所有 peerConnection 中的本地轨道');
-				
+						
 				this.peerConnections.forEach((pc, userId) => {
 					console.log(`为用户 [${userId}] 更新本地轨道`);
-					
+							
 					// 获取当前连接的发送器
 					const senders = pc.getSenders();
-					
-					// 移除所有现有的发送轨道
-					senders.forEach(sender => {
-						if (sender.track) {
-							pc.removeTrack(sender);
-						}
-					});
-					
-					// 添加新的本地流轨道
+							
+					// 策略 1: 优先使用 replaceTrack 方式 (不会改变 m-section)
 					if (this.localStream) {
-						this.localStream.getTracks().forEach(track => {
-							pc.addTrack(track, this.localStream);
-							console.log(`添加轨道 [${track.kind}] 给用户 [${userId}]`);
+						const videoTrack = this.localStream.getVideoTracks()[0];
+						const audioTrack = this.localStream.getAudioTracks()[0];
+								
+						senders.forEach(sender => {
+							if (sender.track) {
+								if (sender.track.kind === 'video') {
+									// 替换视频轨道
+									if (videoTrack) {
+										sender.replaceTrack(videoTrack).then(() => {
+											console.log(`成功替换视频轨道给用户 [${userId}]`);
+										}).catch((e) => {
+											console.error(`替换视频轨道失败 [${userId}]`, e);
+										});
+									} else {
+										// 关闭摄像头时，用静音轨道替换
+										const silentVideoTrack = this.createSilentVideoTrack();
+										sender.replaceTrack(silentVideoTrack).then(() => {
+											console.log(`替换为静音视频轨道给用户 [${userId}]`);
+										}).catch((e) => {
+											console.error(`替换静音视频轨道失败 [${userId}]`, e);
+										});
+									}
+								} else if (sender.track.kind === 'audio') {
+									// 替换音频轨道
+									if (audioTrack) {
+										sender.replaceTrack(audioTrack).then(() => {
+											console.log(`成功替换音频轨道给用户 [${userId}]`);
+										}).catch((e) => {
+											console.error(`替换音频轨道失败 [${userId}]`, e);
+										});
+									}
+								}
+							}
 						});
+								
+						// 检查是否有遗漏的轨道类型，如果有则添加
+						const hasVideoSender = senders.some(s => s.track && s.track.kind === 'video');
+						const hasAudioSender = senders.some(s => s.track && s.track.kind === 'audio');
+								
+						if (!hasVideoSender && videoTrack) {
+							pc.addTrack(videoTrack, this.localStream);
+							console.log(`添加新的视频轨道给用户 [${userId}]`);
+						}
+						if (!hasAudioSender && audioTrack) {
+							pc.addTrack(audioTrack, this.localStream);
+							console.log(`添加新的音频轨道给用户 [${userId}]`);
+						}
 					}
-					
+							
 					// 重新创建 offer 并发送
 					pc.createOffer().then((offer) => {
 						return pc.setLocalDescription(offer);
@@ -518,8 +554,28 @@
 						});
 					}).catch((e) => {
 						console.error(`创建 offer 失败 [${userId}]`, e);
+						// 如果 createOffer 失败，尝试重启 ICE 或重建连接
+						if (e.name === 'OperationError') {
+							console.warn(`[${userId}] SDP 协商失败，尝试重启 ICE`);
+							pc.restartIce();
+						}
 					});
 				});
+			},
+					
+			// 创建静音视频轨道 (黑屏)
+			createSilentVideoTrack() {
+				const canvas = document.createElement('canvas');
+				canvas.width = 640;
+				canvas.height = 480;
+				const ctx = canvas.getContext('2d');
+				// 填充黑色背景
+				ctx.fillStyle = '#000000';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+						
+				// 从 canvas 捕获视频流
+				const stream = canvas.captureStream(30); // 30 FPS
+				return stream.getVideoTracks()[0];
 			},
 			
 			// 显示邀请框
