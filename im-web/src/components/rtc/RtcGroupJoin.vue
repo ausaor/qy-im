@@ -82,7 +82,8 @@
 					groupId: this.groupId,
 					inviterId: this.host?.id || mine.id,
 					host: this.host,
-					userInfos: userInfos
+					userInfos: userInfos,
+          joinMidway: false,
 				}
         this.$emit("accept", rtcInfo)
 			},

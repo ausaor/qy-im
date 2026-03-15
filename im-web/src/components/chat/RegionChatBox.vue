@@ -89,11 +89,11 @@
                     <use xlink:href="#icon-yuyin"></use>
                   </svg>
                 </div>
-                <div title="语音通话" v-show="regionGroup.joinType===1" @click="onGroupVideo()">
+<!--                <div title="语音通话" v-show="regionGroup.joinType===1" @click="onGroupVideo()">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-yuyintonghua"></use>
                   </svg>
-                </div>
+                </div>-->
                 <div title="聊天记录" v-show="regionGroup.joinType===1" @click="showHistoryBox()">
                   <svg class="icon svg-icon" aria-hidden="true">
                     <use xlink:href="#icon-lishijilu"></use>

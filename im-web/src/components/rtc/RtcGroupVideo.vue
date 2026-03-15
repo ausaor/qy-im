@@ -117,6 +117,7 @@
 				// 定时器
 				heartbeatTimer: null,
         waitTimer:  null, // 呼叫等待计时
+        joinMidway: false, // 是否中途加入(用户主动进入)
 			}
 		},
 		computed: {
@@ -159,9 +160,10 @@
 				this.inviterId = rtcInfo.inviterId;
 				this.host = rtcInfo.host;
 				this.userInfos = rtcInfo.userInfos || [];
+        this.joinMidway = rtcInfo.joinMidway;
         this.isCamera = false;
         this.isMicroPhone = true;
-				
+
 				// 初始化 WebRTC
 				this.initRtc();
 				
@@ -171,10 +173,13 @@
 				// 如果是主持人，发起呼叫
 				if (this.isHost) {
 					this.onCall();
+				} else if (this.joinMidway) {
+          // 中途加入
+          this.onJoin();
 				} else {
-					// 被邀请者，接受通话
-					this.onAccept();
-				}
+          // 被邀请者，接受通话
+          this.onAccept();
+        }
 			},
 			
 			// 初始化 WebRTC
@@ -329,6 +334,23 @@
 					this.close();
 				});
 			},
+
+      onJoin() {
+        // 打开通话设备
+        this.openStream().then(() => {
+          // 更新自己的状态
+          this.updateMyUserInfo();
+
+          // 为每个用户创建 peerConnection，等待接收主持人的 offer
+          this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
+            this.createPeerConnection(user.id);
+            this.sendOfferToUser(user.id);
+          });
+        }).catch(() => {
+          this.$message.error("打开设备失败");
+          this.close();
+        });
+      },
 			
 			// 打开摄像头/麦克风
 			openStream() {
@@ -691,10 +713,6 @@
         newUserInfos.forEach(u => {
           if (u.id !== this.mine.id && !this.peerConnections.has(u.id)) {
             this.createPeerConnection(u.id);
-            // 创建 offer 并发送
-            setTimeout(() => {
-              this.sendOfferToUser(u.id);
-            }, 100);
           }
         });
 			},
@@ -710,10 +728,7 @@
 						
 				// 为加入的用户创建 peerConnection
 				if (userInfo.id !== this.mine.id) {
-					setTimeout(() => {
-						this.createPeerConnection(userInfo.id);
-						this.sendOfferToUser(userInfo.id);
-					}, 100);
+          this.createPeerConnection(userInfo.id);
 				}
 			},
 					

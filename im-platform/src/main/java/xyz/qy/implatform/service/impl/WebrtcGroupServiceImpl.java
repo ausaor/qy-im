@@ -126,7 +126,7 @@ public class WebrtcGroupServiceImpl implements IWebrtcGroupService {
         sendRtcMessage1(MessageType.RTC_GROUP_SETUP, dto.getGroupId(), recvIds, JSON.toJSONString(userInfos),false);
         // 发送文字提示信息
         WebrtcUserInfo mineInfo = findUserInfo(webrtcSession,userSession.getUserId());
-        String content = mineInfo.getAliasName() + " 发起了语音通话";
+        String content = String.format("#{%s} 发起了语音通话", mineInfo.getAliasName() + ":" + mineInfo.getId());
         sendTipMessage(dto.getGroupId(),content);
         log.info("发起群通话,userId:{},groupId:{}", userSession.getUserId(), dto.getGroupId());
     }

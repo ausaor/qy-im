@@ -147,6 +147,7 @@
       <group-member-selector ref="rtcSel" :groupId="group.id" @complete="onInviteOk"></group-member-selector>
       <chat-history :visible="showHistory" :chat="chat" :friend="friend" :group="group" :groupMembers="groupMembers" @close="closeHistoryBox"></chat-history>
       <video-play ref="videoPlay" :videoUrl="videoUrl" :posterUrl="posterUrl" @close="closeVideoPlay"></video-play>
+      <rtc-group-enter ref="rtcEnter"></rtc-group-enter>
     </el-container>
   </div>
 </template>
@@ -164,6 +165,7 @@
   import CharacterWord from "@/components/common/CharacterWord";
   import CharacterEmotion from "@/components/common/CharacterEmotion";
   import VideoPlay  from "../common/VideoPlay.vue";
+  import RtcGroupEnter from "@components/rtc/RtcGroupEnter.vue";
 
 	export default {
 		name: "chatBox",
@@ -180,6 +182,7 @@
       CharacterWord,
       CharacterEmotion,
       VideoPlay,
+      RtcGroupEnter,
 		},
 		props: {
 			chat: {
@@ -666,7 +669,9 @@
         }).then((rtcInfo) => {
           if (rtcInfo.isChating) {
             // 已有通话中，显示加入对话框
-            //this.$refs.rtcJoin.open(rtcInfo);
+            rtcInfo.myMemberInfo = this.myGroupMemberInfo;
+            rtcInfo.groupId = this.group.id;
+            this.$refs.rtcEnter.open(rtcInfo);
           } else {
             // 发起新通话，邀请成员
             let ids = [this.mine.id];
@@ -678,37 +683,6 @@
           let ids = [this.mine.id];
           let maxChannel = this.$store.state.configStore.webrtc.maxChannel;
           this.$refs.rtcSel.open(maxChannel, ids, ids);
-        });
-      },
-      // 发起语音通话
-      onGroupVoice() {
-        this.startGroupCall('voice');
-      },
-      // 发起视频通话
-      onGroupVideoCall() {
-        this.startGroupCall('video');
-      },
-      // 发起群聊通话通用方法
-      startGroupCall(mode) {
-        // 先查询群聊通话信息
-        this.$http({
-          url: `/webrtc/group/info?groupId=${this.group.id}`,
-          method: 'get'
-        }).then((rtcInfo) => {
-          if (rtcInfo.isChating) {
-            // 已有通话中，显示加入对话框
-            this.$refs.rtcJoin.open(rtcInfo);
-          } else {
-            // 发起新通话，邀请成员
-            let ids = [this.mine.id];
-            let maxChannel = this.$store.state.configStore.webrtc.maxChannel;
-            this.$refs.rtcSel.open(maxChannel, ids, ids, mode);
-          }
-        }).catch(() => {
-          // 查询失败，直接发起邀请
-          let ids = [this.mine.id];
-          let maxChannel = this.$store.state.configStore.webrtc.maxChannel;
-          this.$refs.rtcSel.open(maxChannel, ids, ids, mode);
         });
       },
       onInviteOk(members) {
