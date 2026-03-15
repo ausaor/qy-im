@@ -438,18 +438,17 @@
 		toggleCamera() {
 			const newCameraState = !this.isCamera;
 			
-			// 先停止当前的本地流
-			if (this.localStream) {
-				this.localStream.getTracks().forEach(track => track.stop());
-				this.localStream = null;
-			}
-
-			// 重新打开流 (根据新的 isCamera 状态)
-			this.isCamera = newCameraState;
 			// 立即更新 UI 状态
+			this.isCamera = newCameraState;
 			this.updateMyUserInfo();
 			// 立即通知服务器和其他用户
 			this.updateDeviceToServer();
+
+			// 根据新的摄像头状态更新本地流
+			if (this.localStream) {
+				// 停止所有现有轨道
+				this.localStream.getTracks().forEach(track => track.stop());
+			}
 
 			this.openStream().then(() => {
 				// 等待 DOM 更新完成后绑定视频流
@@ -459,14 +458,14 @@
 						videoEl.srcObject = this.localStream;
 						videoEl.muted = true;
 						console.log("已设置本地视频流到 video 元素");
-					} else if (!this.isCamera) {
-						// 语音模式，清除视频显示
+					} else {
+						// 语音模式，只保留音频流
             const videoEl = document.getElementById(`video${this.mine.id}`)
             videoEl.srcObject = this.localStream;
             videoEl.muted = true;
 					}
-					// 重新创建 peerConnection 以更新轨道
-					this.recreatePeerConnections();
+					// 更新所有 peerConnection 的发送轨道
+					this.updateLocalTracksInPeerConnections();
 				});
 			}).catch((e) => {
 				console.error("切换摄像头失败", e);
@@ -484,31 +483,42 @@
 				});
 			},
 					
-			// 重新创建所有 peerConnection (用于添加/移除视频轨道)
-			recreatePeerConnections() {
-				console.log('开始重新创建所有 peerConnection');
-				// 关闭所有现有的 peerConnection
+			// 更新所有 peerConnection 中的本地轨道
+			updateLocalTracksInPeerConnections() {
+				console.log('开始更新所有 peerConnection 中的本地轨道');
+				
 				this.peerConnections.forEach((pc, userId) => {
-					console.log(`关闭旧的 peerConnection [${userId}]`);
-					pc.close();
-				});
-				this.peerConnections.clear();
-				this.candidates.clear();
-						
-				// 为每个用户重新创建 peerConnection
-				this.userInfos.filter(u => u.id != this.mine.id).forEach(user => {
-					console.log(`为用户 [${user.id}] 创建新的 peerConnection`);
-					const peerConnection = this.createPeerConnection(user.id);
-          peerConnection.createOffer().then((offer) => {
-            return peerConnection.setLocalDescription(offer);
-          }).then(() => {
-            console.log(`发送新的 offer 给用户 [${user.id}]`);
-            this.API.offer(this.groupId, user.id, JSON.stringify(peerConnection.localDescription)).catch((e) => {
-              console.error(`重新发送 offer 失败 [${user.id}]`, e);
-            });
-          }).catch((e) => {
-            console.error(`重新创建 offer 失败 [${user.id}]`, e);
-          });
+					console.log(`为用户 [${userId}] 更新本地轨道`);
+					
+					// 获取当前连接的发送器
+					const senders = pc.getSenders();
+					
+					// 移除所有现有的发送轨道
+					senders.forEach(sender => {
+						if (sender.track) {
+							pc.removeTrack(sender);
+						}
+					});
+					
+					// 添加新的本地流轨道
+					if (this.localStream) {
+						this.localStream.getTracks().forEach(track => {
+							pc.addTrack(track, this.localStream);
+							console.log(`添加轨道 [${track.kind}] 给用户 [${userId}]`);
+						});
+					}
+					
+					// 重新创建 offer 并发送
+					pc.createOffer().then((offer) => {
+						return pc.setLocalDescription(offer);
+					}).then(() => {
+						console.log(`发送新的 offer 给用户 [${userId}] (轨道已更新)`);
+						this.API.offer(this.groupId, userId, JSON.stringify(pc.localDescription)).catch((e) => {
+							console.error(`发送 offer 失败 [${userId}]`, e);
+						});
+					}).catch((e) => {
+						console.error(`创建 offer 失败 [${userId}]`, e);
+					});
 				});
 			},
 			
@@ -546,7 +556,7 @@
 			
 			// 处理 RTC 消息
 			onRTCMessage(msg) {
-				console.log("收到群聊 RTC 消息", msg);
+				//console.log("收到群聊 RTC 消息", msg);
 				
 				// RTC 信令处理
 				switch (msg.type) {
@@ -591,6 +601,7 @@
 			
 			// 收到 setup 消息 (被邀请者)
 			onRTCSetup(msg) {
+        console.log("收到 setup 邀请消息", msg);
 				let userInfos = JSON.parse(msg.content);
 				this.userInfos = userInfos;
 				this.host = userInfos.find(u => u.id == msg.sendId);
@@ -604,12 +615,12 @@
 			
 			// 收到 accept 消息
 			onRTCAccept(msg) {
+        console.log("用户接受通话", msg.sendId);
         // 清理定时器
         this.waitTimer && clearTimeout(this.waitTimer);
         this.waitTimer = null;
-        this.audio.pause();
 
-				console.log("用户接受通话", msg.sendId);
+        this.audio.pause();
 				// 更新用户状态
 				let user = this.userInfos.find(u => u.id == msg.sendId);
 				if (user) {
@@ -859,7 +870,7 @@
 					
 			// 收到 candidate 消息
 			onRTCCandidate(msg) {
-				console.log("收到 candidate", msg);
+				//console.log("收到 candidate", msg);
 				let data = JSON.parse(msg.content);
 				const peerConnection = this.peerConnections.get(msg.sendId);
 						
