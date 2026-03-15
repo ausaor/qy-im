@@ -7,7 +7,7 @@
 				<div class="video-grid" :class="[{...gridStyle}]">
 					<!-- 每个用户的视频窗口 -->
 					<div class="video-item" v-for="user in userInfos" :key="user.id">
-						<div class="video-box" :class="{'mine': user.id === mine.id}">
+						<div class="video-box" :class="{'mine': user.id == mine.id}">
 							<!-- 头像 (未开启视频时显示) -->
 							<head-image v-if="!user.isCamera"
 									  :name="user.aliasName || user.nickName" 
@@ -16,24 +16,16 @@
 									  :isShowUserInfo="false">
 							</head-image>
 										
-							<!-- 远端视频 (开启视频时显示) -->
-							<video v-show="user.isCamera && user.id !== mine.id"
-								   :id="`remote-video-${user.id}`"
+							<!-- 用户视频 (开启视频时显示) -->
+							<video v-show="user.isCamera"
+								   :id="`video${user.id}`"
 								   :data-user-id="user.id"
 								   autoplay 
 								   playsinline></video>
-										
-							<!-- 本地视频 (自己的摄像头) -->
-							<video v-show="user.isCamera && user.id === mine.id"
-								   ref="localVideo"
-								   autoplay 
-								   playsinline 
-								   muted></video>
-										
 							<!-- 用户信息标签 -->
 							<div class="user-info-tag">
 								<span>{{ user.aliasName || user.nickName }}</span>
-								<span v-if="user.id === host?.id" class="host-tag">主持人</span>
+								<span v-if="user.id == host?.id" class="host-tag">主持人</span>
 							</div>
 										
 							<!-- 设备状态图标 -->
@@ -160,6 +152,7 @@
 				this.inviterId = rtcInfo.inviterId;
 				this.host = rtcInfo.host;
 				this.userInfos = rtcInfo.userInfos || [];
+        console.log("用户信息", this.userInfos);
         this.joinMidway = rtcInfo.joinMidway;
         this.isCamera = false;
         this.isMicroPhone = true;
@@ -267,10 +260,10 @@
 				peerConnection.ontrack = (e) => {
 					console.log("收到远端流", userId, e.streams[0]);
 					// 找到对应用户的信息
-					let user = this.userInfos.find(u => u.id === userId);
+					let user = this.userInfos.find(u => u.id == userId);
 					if (user) {
 						// 通过 userId 查找对应的 video 元素
-						const videoEl = document.getElementById(`remote-video-${userId}`);
+						const videoEl = document.getElementById(`video${userId}`);
 						if (videoEl) {
 							videoEl.srcObject = e.streams[0];
 						} else {
@@ -322,7 +315,7 @@
 					this.API.accept(this.groupId).then(() => {
 						console.log("接受群聊通话成功");
 						// 为每个用户创建 peerConnection，等待接收主持人的 offer
-						this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
+						this.userInfos.filter(u => u.id != this.mine.id).forEach(user => {
 							this.createPeerConnection(user.id);
 						});
 					}).catch((e) => {
@@ -342,7 +335,7 @@
           this.updateMyUserInfo();
 
           // 为每个用户创建 peerConnection，等待接收主持人的 offer
-          this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
+          this.userInfos.filter(u => u.id != this.mine.id).forEach(user => {
             this.createPeerConnection(user.id);
             this.sendOfferToUser(user.id);
           });
@@ -360,10 +353,9 @@
 						this.camera.openVideo().then((stream) => {
 							this.localStream = stream;
 							this.$nextTick(() => {
-								if (this.$refs.localVideo && this.$refs.localVideo.length > 0) {
-									this.$refs.localVideo[0].srcObject = stream;
-                  this.$refs.localVideo.muted = true;
-								}
+                const videoEl = document.getElementById(`video${this.mine.id}`)
+                videoEl.srcObject = stream;
+                videoEl.muted = true;
 							});
 							resolve(stream);
 						}).catch((e) => {
@@ -374,11 +366,12 @@
 						// 语音模式或关闭摄像头：只打开麦克风
 						this.camera.openAudio().then((stream) => {
 							this.localStream = stream;
-							// 清除本地视频显示
-							if (this.$refs.localVideo && this.$refs.localVideo.length > 0) {
-								this.$refs.localVideo[0].srcObject = stream;
-                this.$refs.localVideo.muted = true;
-							}
+							// 语音模式下不需要绑定到 video 元素
+              this.$nextTick(() => {
+                const videoEl = document.getElementById(`video${this.mine.id}`)
+                videoEl.srcObject = stream;
+                videoEl.muted = true;
+              });
 							resolve(stream);
 						}).catch((e) => {
 							console.error("打开麦克风失败", e);
@@ -390,7 +383,7 @@
 			
 			// 更新自己的用户信息
 			updateMyUserInfo() {
-				let myInfo = this.userInfos.find(u => u.id === this.mine.id);
+				let myInfo = this.userInfos.find(u => u.id == this.mine.id);
 				if (!myInfo) {
 					myInfo = {
 						id: this.mine.id,
@@ -424,8 +417,8 @@
 			toggleSpeaker() {
 				this.isSpeaker = !this.isSpeaker;
 				// 切换所有远端视频的音频输出设备
-				this.userInfos.filter(u => u.isCamera && u.id !== this.mine.id).forEach(user => {
-					const videoEl = document.getElementById(`remote-video-${user.id}`);
+				this.userInfos.filter(u => u.isCamera && u.id != this.mine.id).forEach(user => {
+					const videoEl = document.getElementById(`video${user.id}`);
 					if (videoEl && videoEl.srcObject) {
 						// 检查浏览器是否支持 setSinkId
 						if (typeof videoEl.setSinkId === 'function') {
@@ -441,37 +434,48 @@
 				this.$message.success(this.isSpeaker ? '已开启扬声器' : '已关闭扬声器');
 			},
 								
-			// 切换摄像头
-			toggleCamera() {
-				this.isCamera = !this.isCamera;
-				// 立即更新 UI 状态
+		// 切换摄像头
+		toggleCamera() {
+			const newCameraState = !this.isCamera;
+			
+			// 先停止当前的本地流
+			if (this.localStream) {
+				this.localStream.getTracks().forEach(track => track.stop());
+				this.localStream = null;
+			}
+
+			// 重新打开流 (根据新的 isCamera 状态)
+			this.isCamera = newCameraState;
+			// 立即更新 UI 状态
+			this.updateMyUserInfo();
+			// 立即通知服务器和其他用户
+			this.updateDeviceToServer();
+
+			this.openStream().then(() => {
+				// 等待 DOM 更新完成后绑定视频流
+				this.$nextTick(() => {
+					if (this.isCamera) {
+            const videoEl = document.getElementById(`video${this.mine.id}`)
+						videoEl.srcObject = this.localStream;
+						videoEl.muted = true;
+						console.log("已设置本地视频流到 video 元素");
+					} else if (!this.isCamera) {
+						// 语音模式，清除视频显示
+            const videoEl = document.getElementById(`video${this.mine.id}`)
+            videoEl.srcObject = this.localStream;
+            videoEl.muted = true;
+					}
+					// 重新创建 peerConnection 以更新轨道
+					this.recreatePeerConnections();
+				});
+			}).catch((e) => {
+				console.error("切换摄像头失败", e);
+				// 回滚状态
+				this.isCamera = !newCameraState;
 				this.updateMyUserInfo();
-				// 立即通知服务器和其他用户
 				this.updateDeviceToServer();
-
-        // 先停止当前的本地流
-        if (this.localStream) {
-          this.localStream.getTracks().forEach(track => track.stop());
-          this.localStream = null;
-        }
-
-        // 重新打开流 (根据新的 isCamera 状态)
-        this.openStream().then(() => {
-          this.$nextTick(() => {
-            if (this.$refs.localVideo && this.$refs.localVideo.length > 0) {
-              this.$refs.localVideo[0].srcObject = this.localStream;
-            }
-            // 重新创建 peerConnection 以更新轨道
-            this.recreatePeerConnections();
-          });
-        }).catch((e) => {
-          console.error("切换摄像头失败", e);
-          // 回滚状态
-          this.isCamera = !this.isCamera;
-          this.updateMyUserInfo();
-          this.updateDeviceToServer();
-        });
-			},
+			});
+		},
 			
 			// 更新设备状态到服务器
 			updateDeviceToServer() {
@@ -492,7 +496,7 @@
 				this.candidates.clear();
 						
 				// 为每个用户重新创建 peerConnection
-				this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
+				this.userInfos.filter(u => u.id != this.mine.id).forEach(user => {
 					console.log(`为用户 [${user.id}] 创建新的 peerConnection`);
 					const peerConnection = this.createPeerConnection(user.id);
           peerConnection.createOffer().then((offer) => {
@@ -589,7 +593,7 @@
 			onRTCSetup(msg) {
 				let userInfos = JSON.parse(msg.content);
 				this.userInfos = userInfos;
-				this.host = userInfos.find(u => u.id === msg.sendId);
+				this.host = userInfos.find(u => u.id == msg.sendId);
         this.groupId= msg.groupId;
 				
 				// 显示加入通话对话框
@@ -607,7 +611,7 @@
 
 				console.log("用户接受通话", msg.sendId);
 				// 更新用户状态
-				let user = this.userInfos.find(u => u.id === msg.sendId);
+				let user = this.userInfos.find(u => u.id == msg.sendId);
 				if (user) {
 					user.inChat = true;
 				}
@@ -639,7 +643,7 @@
 			onRTCReject(msg) {
 				console.log("用户拒绝通话", msg.sendId);
 				// 从用户列表中移除
-				this.userInfos = this.userInfos.filter(u => u.id !== msg.sendId);
+				this.userInfos = this.userInfos.filter(u => u.id != msg.sendId);
 				
 				// 关闭对应的 peerConnection
 				const peerConnection = this.peerConnections.get(msg.sendId);
@@ -660,7 +664,7 @@
 				if (data.userIds) {
 					data.userIds.forEach(userId => {
 						// 从用户列表中移除
-						this.userInfos = this.userInfos.filter(u => u.id !== userId);
+						this.userInfos = this.userInfos.filter(u => u.id != userId);
 						
 						// 关闭对应的 peerConnection
 						const peerConnection = this.peerConnections.get(userId);
@@ -685,7 +689,7 @@
 			onRTCQuit(msg) {
 				console.log("用户退出通话", msg.sendId);
 				// 从用户列表中移除
-				this.userInfos = this.userInfos.filter(u => u.id !== msg.sendId);
+				this.userInfos = this.userInfos.filter(u => u.id != msg.sendId);
 						
 				// 关闭与该用户的 peerConnection
 				const peerConnection = this.peerConnections.get(msg.sendId);
@@ -703,7 +707,7 @@
 				let newUserInfos = JSON.parse(msg.content);
 				// 添加新用户到列表
 				newUserInfos.forEach(u => {
-					if (!this.userInfos.find(existing => existing.id === u.id)) {
+					if (!this.userInfos.find(existing => existing.id == u.id)) {
 						this.userInfos.push(u);
 					}
 				});
@@ -711,7 +715,7 @@
 						
 				// 新邀请的用户创建 peerConnection
         newUserInfos.forEach(u => {
-          if (u.id !== this.mine.id && !this.peerConnections.has(u.id)) {
+          if (u.id != this.mine.id && !this.peerConnections.has(u.id)) {
             this.createPeerConnection(u.id);
           }
         });
@@ -721,13 +725,13 @@
 			onRTCJoin(msg) {
 				let userInfo = JSON.parse(msg.content);
 				// 添加用户到列表
-				if (!this.userInfos.find(u => u.id === userInfo.id)) {
+				if (!this.userInfos.find(u => u.id == userInfo.id)) {
 					this.userInfos.push(userInfo);
 				}
 				this.$message.success(`${userInfo.aliasName} 加入通话`);
 						
 				// 为加入的用户创建 peerConnection
-				if (userInfo.id !== this.mine.id) {
+				if (userInfo.id != this.mine.id) {
           this.createPeerConnection(userInfo.id);
 				}
 			},
@@ -907,7 +911,7 @@
 			// 收到 device 消息
 			onRTCDevice(msg) {
 				let deviceInfo = JSON.parse(msg.content);
-				let user = this.userInfos.find(u => u.id === msg.sendId);
+				let user = this.userInfos.find(u => u.id == msg.sendId);
 				if (user) {
 					user.isCamera = deviceInfo.isCamera;
 					user.isMicroPhone = deviceInfo.isMicroPhone;
