@@ -40,6 +40,9 @@ ImCamera.prototype.openVideo = function() {
 
 ImCamera.prototype.openAudio = function() {
 	return new Promise((resolve, reject) => {
+		if(this.stream){
+			this.close()
+		}
 		let constraints = {
 			video: false,
 			audio: {

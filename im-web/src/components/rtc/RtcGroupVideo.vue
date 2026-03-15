@@ -24,7 +24,7 @@
 								   playsinline></video>
 										
 							<!-- 本地视频 (自己的摄像头) -->
-							<video v-show="user.isCamera && user.id === mine.id"
+							<video v-if="user.isCamera && user.id === mine.id"
 								   ref="localVideo"
 								   autoplay 
 								   playsinline 
@@ -95,7 +95,7 @@
 				camera: new ImCamera(), // 摄像头和麦克风
 				webrtc: new ImWebRtc(), // webrtc相关
 				API: new RtcGroupApi(), // API
-				
+        audio: new Audio(), // 呼叫音频
 				isShow: false,
 				groupId: null, // 群聊 ID
 				isHost: false, // 是否发起人
@@ -116,6 +116,7 @@
 				
 				// 定时器
 				heartbeatTimer: null,
+        waitTimer:  null, // 呼叫等待计时
 			}
 		},
 		computed: {
@@ -140,6 +141,11 @@
 			},
 		},
 		methods: {
+      initAudio() {
+        let url = require(`@/assets/audio/call.wav`);
+        this.audio.src = url;
+        this.audio.loop = true;
+      },
 			// 打开多人视频通话
 			open(rtcInfo) {
 				console.log("打开多人视频通话", rtcInfo);
@@ -254,7 +260,15 @@
 										
 					// 向服务器发起 setup 请求
 					this.API.setup(this.groupId, this.userInfos).then(() => {
-						console.log("发起群聊通话成功");
+            console.log("发起群聊通话成功");
+            this.audio.play();
+            // 30s没有人进入自动取消
+            this.waitTimer = setTimeout(() => {
+              this.API.cancel(this.groupId).then(() => {
+                this.$message.success("已取消呼叫,通话结束")
+                this.close();
+              });
+            }, 30000)
 					}).catch((e) => {
 						console.error("发起群聊通话失败", e);
 						this.$message.error("发起通话失败");
@@ -515,10 +529,17 @@
 				
 				// 显示加入通话对话框
 				this.showJoinDialog = true;
+        this.startHeartBeat();
+        this.audio.play();
 			},
 			
 			// 收到 accept 消息
 			onRTCAccept(msg) {
+        // 清理定时器
+        this.waitTimer && clearTimeout(this.waitTimer);
+        this.waitTimer = null;
+        this.audio.pause();
+
 				console.log("用户接受通话", msg.sendId);
 				// 更新用户状态
 				let user = this.userInfos.find(u => u.id === msg.sendId);
@@ -809,17 +830,21 @@
         this.showJoinDialog = false;
         this.isShow = false;
 				this.camera.close();
-				
+        this.audio.pause();
+
 				// 关闭所有 peerConnection
 				this.peerConnections.forEach(pc => pc.close());
 				this.peerConnections.clear();
+        this.candidates.clear();
 				
 				if (this.localStream) {
 					this.localStream.getTracks().forEach(track => track.stop());
 				}
 				
 				this.heartbeatTimer && clearInterval(this.heartbeatTimer);
+        this.waitTimer && clearTimeout(this.waitTimer);
 				this.heartbeatTimer = null;
+        this.waitTimer = null;
 				
 				// 重置数据
 				this.userInfos = [];
@@ -828,6 +853,9 @@
 			},
       onJoinAccept(rtcInfo) {
         this.showJoinDialog = false;
+        this.waitTimer && clearTimeout(this.waitTimer);
+        this.waitTimer = null;
+        this.audio.pause();
         this.open(rtcInfo)
       },
       onJoinReject(groupId) {
@@ -842,6 +870,10 @@
       window.addEventListener('beforeunload', () => {
         this.onQuit();
       });
+    },
+    mounted() {
+      // 初始化音频文件
+      this.initAudio();
     },
 		beforeUnmount() {
 			this.onQuit();
