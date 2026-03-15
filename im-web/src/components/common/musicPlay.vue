@@ -46,14 +46,13 @@
             <div class="song-name">
               <h3>{{ currentSong.name }}</h3>
               <div class="like-overlay" v-if="currentSong.id">
-                <el-button
-                    type="text"
+                <span
                     @click="toggleLike(currentSong)"
                     class="like-btn"
                     :class="{ liked: currentSong.liked }"
                 >
-                  <i class="el-icon-star-on"></i>
-                </el-button>
+                  <i class="icon iconfont" :class="currentSong.liked ? 'icon-aixin' : 'icon-hongxin1'"></i>
+                </span>
               </div>
             </div>
             <p>{{ currentSong.singer }}</p>
@@ -166,15 +165,14 @@
                   <i class="el-icon-video-play"></i>
                   <span>{{ song.playCount }}</span>
                 </span>
-                <el-button
-                    type="text"
+                <span
                     @click.stop="toggleLike(song)"
                     class="like-btn-small"
                     :class="{ liked: song.liked }"
                 >
-                  <i class="el-icon-star-on"></i>
+                  <i class="icon iconfont" :class="song.liked ? 'icon-aixin' : 'icon-hongxin1'"></i>
                   <span v-if="song.likeCount > 0">{{ song.likeCount }}</span>
-                </el-button>
+                </span>
                 <el-popconfirm
                     v-if="song.isOwner"
                     confirm-button-text='确认'
@@ -593,6 +591,7 @@ export default {
 .like-btn {
   color: white;
   font-size: 18px;
+  cursor: pointer;
 }
 
 .like-btn.liked {
