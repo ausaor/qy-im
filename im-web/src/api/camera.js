@@ -70,6 +70,7 @@ ImCamera.prototype.close = function() {
 		this.stream.getTracks().forEach((track) => {
 			track.stop();
 		});
+		this.stream = null;
 	}
 }
 

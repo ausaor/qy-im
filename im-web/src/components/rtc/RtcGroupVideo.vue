@@ -24,7 +24,7 @@
 								   playsinline></video>
 										
 							<!-- 本地视频 (自己的摄像头) -->
-							<video v-if="user.isCamera && user.id === mine.id"
+							<video v-show="user.isCamera && user.id === mine.id"
 								   ref="localVideo"
 								   autoplay 
 								   playsinline 
@@ -229,7 +229,33 @@
 							
 				// 监听连接状态
 				peerConnection.oniceconnectionstatechange = () => {
-					console.log(`peerConnection 状态 [${userId}]:`, peerConnection.iceConnectionState);
+					const state = peerConnection.iceConnectionState;
+					console.log(`peerConnection 状态 [${userId}]:`, state);
+								
+					// 处理不同的连接状态
+					switch (state) {
+						case 'connected':
+							console.log(`[${userId}] 连接成功`);
+							break;
+						case 'disconnected':
+							console.warn(`[${userId}] 连接断开，尝试恢复...`);
+							// 可以尝试重新建立连接
+							setTimeout(() => {
+								if (peerConnection.iceConnectionState === 'disconnected') {
+									console.log(`[${userId}] 仍然断开，创建新的 offer`);
+									this.sendOfferToUser(userId);
+								}
+							}, 2000);
+							break;
+						case 'failed':
+							console.error(`[${userId}] 连接失败，将发送 candidate`);
+							// 连接失败，尝试重启 ICE
+							peerConnection.restartIce();
+							break;
+						case 'closed':
+							console.log(`[${userId}] 连接已关闭`);
+							break;
+					}
 				};
 							
 				// 接收远端流
@@ -401,17 +427,27 @@
 				// 立即通知服务器和其他用户
 				this.updateDeviceToServer();
 
-        // 开启摄像头：重新打开包含视频的流
+        // 先停止当前的本地流
+        if (this.localStream) {
+          this.localStream.getTracks().forEach(track => track.stop());
+          this.localStream = null;
+        }
+
+        // 重新打开流 (根据新的 isCamera 状态)
         this.openStream().then(() => {
           this.$nextTick(() => {
             if (this.$refs.localVideo && this.$refs.localVideo.length > 0) {
               this.$refs.localVideo[0].srcObject = this.localStream;
             }
-            // 重新创建 peerConnection 以添加视频轨道
+            // 重新创建 peerConnection 以更新轨道
             this.recreatePeerConnections();
           });
         }).catch((e) => {
-          console.error("开启摄像头失败", e);
+          console.error("切换摄像头失败", e);
+          // 回滚状态
+          this.isCamera = !this.isCamera;
+          this.updateMyUserInfo();
+          this.updateDeviceToServer();
         });
 			},
 			
@@ -424,21 +460,28 @@
 					
 			// 重新创建所有 peerConnection (用于添加/移除视频轨道)
 			recreatePeerConnections() {
+				console.log('开始重新创建所有 peerConnection');
 				// 关闭所有现有的 peerConnection
-				this.peerConnections.forEach(pc => pc.close());
+				this.peerConnections.forEach((pc, userId) => {
+					console.log(`关闭旧的 peerConnection [${userId}]`);
+					pc.close();
+				});
 				this.peerConnections.clear();
+				this.candidates.clear();
 						
 				// 为每个用户重新创建 peerConnection
 				this.userInfos.filter(u => u.id !== this.mine.id).forEach(user => {
+					console.log(`为用户 [${user.id}] 创建新的 peerConnection`);
 					const peerConnection = this.createPeerConnection(user.id);
           peerConnection.createOffer().then((offer) => {
             return peerConnection.setLocalDescription(offer);
           }).then(() => {
+            console.log(`发送新的 offer 给用户 [${user.id}]`);
             this.API.offer(this.groupId, user.id, JSON.stringify(peerConnection.localDescription)).catch((e) => {
-              console.error("重新发送 offer 失败", e);
+              console.error(`重新发送 offer 失败 [${user.id}]`, e);
             });
           }).catch((e) => {
-            console.error("重新创建 offer 失败", e);
+            console.error(`重新创建 offer 失败 [${user.id}]`, e);
           });
 				});
 			},
@@ -707,27 +750,59 @@
 				}
 									
 				const peerConnection = this.peerConnections.get(msg.sendId);
-				// 设置远端 SDP (offer)
-				peerConnection.setRemoteDescription(new RTCSessionDescription(data)).then(() => {
-					console.log("设置远端描述成功", msg.sendId);
-					// 处理缓存的 candidate
-					this.processCachedCandidates(msg.sendId);
-					// 创建 answer
+				
+				// 检查是否已经设置了 remoteDescription
+				if (peerConnection.remoteDescription) {
+					console.log(`remoteDescription 已存在 [${msg.sendId}],需要重新创建 peerConnection`);
+					// 关闭旧的连接并创建新的
+					peerConnection.close();
+					this.peerConnections.delete(msg.sendId);
+					// 创建新的 peerConnection
+					const newPeerConnection = this.createPeerConnection(msg.sendId);
+					// 设置新的 remoteDescription
+					newPeerConnection.setRemoteDescription(new RTCSessionDescription(data)).then(() => {
+						console.log("设置远端描述成功", msg.sendId);
+						// 处理缓存的 candidate
+						this.processCachedCandidates(msg.sendId);
+						// 创建 answer
           const offerParam = {};
           offerParam.offerToRecieveAudio = 1;
           offerParam.offerToRecieveVideo = 1;
-					return peerConnection.createAnswer();
-				}).then((answer) => {
-					// 设置本地 SDP (answer)
-					return peerConnection.setLocalDescription(answer);
-				}).then(() => {
-					// 发送 answer 给对方
-					this.API.answer(this.groupId, msg.sendId, JSON.stringify(peerConnection.localDescription)).catch((e) => {
-						console.error("发送 answer 失败", e);
+						return newPeerConnection.createAnswer();
+					}).then((answer) => {
+						// 设置本地 SDP (answer)
+						return newPeerConnection.setLocalDescription(answer);
+					}).then(() => {
+						// 发送 answer 给对方
+						this.API.answer(this.groupId, msg.sendId, JSON.stringify(newPeerConnection.localDescription)).catch((e) => {
+							console.error("发送 answer 失败", e);
+						});
+					}).catch((e) => {
+						console.error("处理 offer 失败", e);
 					});
-				}).catch((e) => {
-					console.error("处理 offer 失败", e);
-				});
+				} else {
+					// 第一次设置 remoteDescription
+					peerConnection.setRemoteDescription(new RTCSessionDescription(data)).then(() => {
+						console.log("设置远端描述成功", msg.sendId);
+						// 处理缓存的 candidate
+						this.processCachedCandidates(msg.sendId);
+						// 创建 answer
+          const offerParam = {};
+          offerParam.offerToRecieveAudio = 1;
+          offerParam.offerToRecieveVideo = 1;
+						return peerConnection.createAnswer();
+					}).then((answer) => {
+						// 设置本地 SDP (answer)
+						return peerConnection.setLocalDescription(answer);
+					}).then(() => {
+						// 发送 answer 给对方
+						this.API.answer(this.groupId, msg.sendId, JSON.stringify(peerConnection.localDescription)).catch((e) => {
+							console.error("发送 answer 失败", e);
+						});
+					}).catch((e) => {
+						console.error("处理 offer 失败", e);
+					});
+				}
 			},
 					
 			// 收到 answer 消息
@@ -736,6 +811,13 @@
 				let data = JSON.parse(msg.content);
 				const peerConnection = this.peerConnections.get(msg.sendId);
 				if (peerConnection) {
+					// 检查当前连接状态
+					if (peerConnection.connectionState === 'closed' || 
+					    peerConnection.iceConnectionState === 'closed') {
+						console.warn(`[${msg.sendId}] 连接已关闭，忽略 answer`);
+						return;
+					}
+					
 					// 设置远端 SDP (answer)
 					peerConnection.setRemoteDescription(new RTCSessionDescription(data)).then(() => {
 						console.log("设置远端描述成功", msg.sendId);
@@ -743,6 +825,15 @@
 						this.processCachedCandidates(msg.sendId);
 					}).catch((e) => {
 						console.error("设置 answer 失败", e);
+						// 如果是 m-line 不匹配错误，重新创建 peerConnection
+						if (e.message.includes('m-lines') || e.message.includes('order')) {
+							console.log(`[${msg.sendId}] m-line 不匹配，重新创建连接`);
+							peerConnection.close();
+							this.peerConnections.delete(msg.sendId);
+							const newPeerConnection = this.createPeerConnection(msg.sendId);
+							// 重新发送 offer
+							this.sendOfferToUser(msg.sendId);
+						}
 					});
 				}
 			},
