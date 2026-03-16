@@ -35,7 +35,7 @@ spring:
         url-pattern: /druid/*       # 监控页面访问路径（默认/druid/*）
         login-username: admin       # 监控页面登录用户名（自定义）
         login-password: admin       # 监控页面登录密码（自定义）
-        allow: 127.0.0.1,192.168.1.0/24  # 允许访问的IP（*表示所有）
+        allow: "*"  # 允许访问的IP（*表示所有）
         deny: 192.168.1.100         # 禁止访问的IP（优先级高于allow）
         reset-enable: false         # 是否允许重置统计数据（建议false，防止误操作）
 
@@ -174,10 +174,17 @@ tianditu:
 
 image:
   detect:
-    mode: baidu #
+    enable: false # 是否开启图片检测 true:开启 false:关闭
+    mode: aliYun # 检测平台 可选 aliYun、baidu
 
+    # 百度内容审核，地址：https://ai.baidu.com/ai-doc/ANTIPORN/jk42xep4e
     baidu:
       ak:
       sk:
       detect-url: https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined?access_token=
       access-token-url: https://aip.baidubce.com/oauth/2.0/token?client_id=${image.detect.baidu.ak}&client_secret=${image.detect.baidu.sk}&grant_type=client_credentials
+
+    # 阿里云内容审核，地址：https://vision.console.aliyun.com/cn-shanghai/detail/imageaudit
+    aliyun:
+      ak:
+      sk:

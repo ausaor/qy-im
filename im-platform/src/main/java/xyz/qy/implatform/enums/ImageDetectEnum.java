@@ -14,6 +14,8 @@ import lombok.Getter;
 public enum ImageDetectEnum {
     BAIDU("baidu", "baiduImageDetectStrategyImpl"),
 
+    ALI_YUN("aliYun", "aliYunContentDetectStrategyImpl"),
+
     TENSOR_FLOW("tensorFlow", "tensorFlowImageDetectStrategyImpl");
 
     /**

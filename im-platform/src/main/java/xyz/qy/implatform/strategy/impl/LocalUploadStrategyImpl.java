@@ -48,11 +48,11 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
     @Value("${upload.local.url}")
     private String localUrl;
 
-    @Resource
-    private ImageDetectStrategyContext imageDetectStrategyContext;
+    @Value("${image.detect.enable}")
+    private Boolean imageDetectEnable;
 
     @Resource
-    private DictDataMapper dictDataMapper;
+    private ImageDetectStrategyContext imageDetectStrategyContext;
 
     @Override
     public Boolean exists(String filePath) {
@@ -67,7 +67,7 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
         File targetFile = new File(localPath + path, fileName);
         if (targetFile.createNewFile()) {
             FileUtils.writeByteArrayToFile(targetFile, file.getBytes());
-            if (isOpenImageDetect() && !imageDetectStrategyContext.executeImageDetectStrategy(localPath + path + fileName)) {
+            if (imageDetectEnable && imageDetectStrategyContext.executeImageDetectStrategy(localPath + path + fileName)) {
                 targetFile.delete();
                 throw new GlobalException("图片存在违禁内容，禁止上传");
             }
@@ -161,16 +161,6 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
                 throw new GlobalException("创建目录失败");
             }
         }
-    }
-
-    private boolean isOpenImageDetect() {
-        LambdaQueryWrapper<DictData> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(DictData::getDictType, "open_image_detect");
-        DictData dictData1 = dictDataMapper.selectOne(lambdaQueryWrapper);
-        if (ObjectUtil.isNotNull(dictData1) && "YES".equals(dictData1.getDictValue())) {
-            return true;
-        }
-        return false;
     }
 
     /**
