@@ -30,7 +30,7 @@
 										
 							<!-- 设备状态图标 -->
 							<div class="device-status">
-								<i v-if="!user.isMicroPhone" class="el-icon-turn-off-microphone" title="静音"></i>
+								<i :class="user.isMicroPhone ? 'el-icon-microphone' : 'el-icon-turn-off-microphone turn-off'"></i>
 							</div>
 						</div>
 					</div>
@@ -403,6 +403,7 @@
 			// 切换麦克风
 			toggleMicroPhone() {
 				this.isMicroPhone = !this.isMicroPhone;
+        this.userInfos.find(u => u.id == this.mine.id).isMicroPhone = this.isMicroPhone;
 				this.updateDeviceToServer();
 						
 				// 控制本地流的音轨
@@ -1150,6 +1151,10 @@
 								margin-left: 5px;
 							}
 						}
+
+            .turn-off {
+              color: red;
+            }
 					}
 				}
 			}
