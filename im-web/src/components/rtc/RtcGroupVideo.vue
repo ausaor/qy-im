@@ -368,9 +368,10 @@
 							this.localStream = stream;
 							// 语音模式下不需要绑定到 video 元素
               this.$nextTick(() => {
-                const videoEl = document.getElementById(`video${this.mine.id}`)
-                videoEl.srcObject = stream;
-                videoEl.muted = true;
+                const videoEl = document.getElementById(`video${this.mine.id}`);
+                if (videoEl) {
+                  videoEl.srcObject = null;
+                }
               });
 							resolve(stream);
 						}).catch((e) => {
@@ -418,9 +419,10 @@
 			toggleSpeaker() {
 				this.isSpeaker = !this.isSpeaker;
 				// 切换所有远端视频的音频输出设备
-				this.userInfos.filter(u => u.isCamera && u.id != this.mine.id).forEach(user => {
+				this.userInfos.forEach(user => {
 					const videoEl = document.getElementById(`video${user.id}`);
 					if (videoEl && videoEl.srcObject) {
+            console.log("切换用户音频输出设备", user.id, videoEl.srcObject);
 						// 检查浏览器是否支持 setSinkId
 						if (typeof videoEl.setSinkId === 'function') {
 							// 使用默认设备（空字符串），实际项目中可以根据需求设置具体的 deviceId
@@ -432,6 +434,11 @@
 						}
 					}
 				});
+				// // 切换本地视频的音频输出
+				// const localVideoEl = document.getElementById(`video${this.mine.id}`);
+				// if (localVideoEl && localVideoEl.srcObject) {
+				// 	localVideoEl.muted = !this.isSpeaker;
+				// }
 				this.$message.success(this.isSpeaker ? '已开启扬声器' : '已关闭扬声器');
 			},
 								
@@ -456,14 +463,16 @@
 				this.$nextTick(() => {
 					if (this.isCamera) {
             const videoEl = document.getElementById(`video${this.mine.id}`)
-						videoEl.srcObject = this.localStream;
+						// 不直接绑定流，而是让 updateLocalTracksInPeerConnections 处理轨道更新
+						// videoEl.srcObject = this.localStream; 无需设置，因为音频会通过 peerConnection 正确传输
 						videoEl.muted = true;
 						console.log("已设置本地视频流到 video 元素");
 					} else {
 						// 语音模式，只保留音频流
-            const videoEl = document.getElementById(`video${this.mine.id}`)
-            videoEl.srcObject = this.localStream;
-            videoEl.muted = true;
+            const videoEl = document.getElementById(`video${this.mine.id}`);
+            if (videoEl) {
+              videoEl.srcObject = null;
+            }
 					}
 					// 更新所有 peerConnection 的发送轨道
 					this.updateLocalTracksInPeerConnections();
