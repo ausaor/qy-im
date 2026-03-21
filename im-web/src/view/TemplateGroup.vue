@@ -123,6 +123,7 @@
     <el-dialog class="edit-template-group"
                :title="title"
                :visible.sync="showEditTemplateGroupDialog"
+               v-dialogDrag
                width="500px" :before-close="handleClose">
       <el-form :model="curTemplateGroup" label-width="110px" label-position="right" :rules="rules"
                ref="templateGroupForm">
@@ -232,6 +233,7 @@
                :title="curTemplateCharacter.name"
                :visible.sync="showEditCharacterAvatarDialog"
                width="500px"
+               v-dialogDrag
                :before-close="handleEditCharacterAvatarClose">
       <div class="template-character-avatar">
         <head-image class="head-image" :url="curTemplateCharacter.avatar" :size="80"></head-image>
@@ -307,6 +309,7 @@
                :title="wordTitle"
                :visible.sync="showEditWordDialog"
                width="600px"
+               v-dialogDrag
                :before-close="handleWordDialogClose">
       <el-scrollbar style="height:500px;">
         <el-form :model="dynamicValidateForm" ref="dynamicValidateForm" label-width="70px" class="character-word">
@@ -348,6 +351,7 @@
                :title="wordTitle"
                :visible.sync="showEditEmoDialog"
                width="600px"
+               v-dialogDrag
                :before-close="handleEmoDialogClose">
       <div style="height:500px;" class="character-emo-box">
         <div v-if="curTemplateGroup.isOwner || curTemplateCharacter.isOwner" class="upload-emo">
@@ -374,6 +378,7 @@
                :title="characterUserTitle"
                :visible.sync="showCharacterUsersDialog"
                width="600px"
+               v-dialogDrag
                :before-close="closeCharacterUsersDialog">
       <div class="character-users-content">
         <!-- 已绑定用户列表 -->

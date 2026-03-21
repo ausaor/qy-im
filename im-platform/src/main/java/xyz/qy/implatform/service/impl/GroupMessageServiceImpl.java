@@ -45,6 +45,7 @@ import xyz.qy.implatform.service.IGroupService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.CommonUtils;
 import xyz.qy.implatform.util.MsgTypeUtil;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.GroupMessageVO;
@@ -152,7 +153,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         GroupMessage msg = BeanUtils.copyProperties(dto, GroupMessage.class);
         msg.setSendId(session.getUserId());
         msg.setSendTime(new Date());
-        msg.setSendNickName(member.getAliasName());
+        msg.setSendNickName(CommonUtils.getAliasName(member));
         msg.setSendUserAvatar(member.getHeadImage());
         msg.setIsTemplate(member.getIsTemplate());
         if (MessageType.TEXT.code().equals(msg.getType())) {
