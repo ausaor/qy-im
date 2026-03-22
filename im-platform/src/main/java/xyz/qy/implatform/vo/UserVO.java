@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -31,6 +33,9 @@ public class UserVO {
     @ApiModelProperty(value = "角色")
     private String role;
 
+    @Min(value = 0, message = "性别类型错误")
+    @Max(value = 2, message = "性别类型错误")
+    @NotNull(message = "性别不能为空")
     @ApiModelProperty(value = "性别")
     private Integer sex;
 

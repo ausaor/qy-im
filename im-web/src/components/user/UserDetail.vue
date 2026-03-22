@@ -29,7 +29,7 @@
         <div class="detail-item">
           <i class="el-icon-user"></i>
           <span class="label">性别</span>
-          <span class="value">{{userInfo.sex===0 ? "男":"女"}}</span>
+          <span class="value">{{userInfo.sex===0 ? "男": userInfo.sex===1 ? "女" : "保密"}}</span>
         </div>
 
         <div class="detail-item">

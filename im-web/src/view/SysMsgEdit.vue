@@ -158,6 +158,7 @@
               action="/api/video/upload"
               :headers="uploadHeaders"
               :file-list="videoList"
+              :on-error="handleVideoError"
               :on-success="handleVideoSuccess"
               :on-remove="handleVideoRemove"
               :before-upload="beforeVideoUpload"
@@ -177,7 +178,6 @@
                 controls
                 :poster="videoList[0].coverUrl"
                 :src="videoList[0].url"
-                style="width: 100%; max-width: 600px; margin-top: 10px;"
             ></video>
           </div>
         </div>
@@ -507,16 +507,24 @@ export default {
       this.$message.warning('最多只能上传1个音频文件')
     },
 
+    handleVideoError(err, file, fileList) {
+      console.error('视频上传错误:', err)
+    },
+
     handleVideoSuccess(response, file, fileList) {
-      const videoItem = {
-        url: response.data.videoUrl,
-        coverUrl: response.data.coverUrl,
-        name: file.name,
-        type: 'video',
-        size: file.size
+      if (response.code === 200) {
+        const videoItem = {
+          url: response.data.videoUrl,
+          coverUrl: response.data.coverUrl,
+          name: file.name,
+          type: 'video',
+          size: file.size
+        }
+        this.videoList.push(videoItem)
+        this.updateContentFromList('video')
+      } else {
+        this.$message.error(response.message || '视频上传失败')
       }
-      this.videoList.push(videoItem)
-      this.updateContentFromList('video')
     },
 
     handleVideoRemove(file, fileList) {
@@ -686,6 +694,7 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   max-width: 1000px;
   margin: 0 auto;
+  min-height: auto;
 }
 
 .form-header {
@@ -773,6 +782,16 @@ export default {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid #e8e8e8;
+  max-width: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.video-player video {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  background-color: #000;
 }
 
 .form-actions {

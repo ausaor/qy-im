@@ -50,20 +50,23 @@
             <h3>个人资料</h3>
           </div>
 
-          <div style="text-align: center; margin: 20px 0;">
-            <file-upload  class="avatar-uploader"
-                          :action="imageAction"
-                          :showLoading="true"
-                          :maxSize="maxSize"
-                          @success="onUploadSuccess"
-                          :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
-              <div class="avatar-container">
-                <head-image :url="localUserInfo.headImage" :name="localUserInfo.nickName" :size="60"></head-image>
-                <div class="camera-overlay">
-                  <i class="el-icon-camera"></i>
+          <div class="user-basic-info">
+            <div class="avatar-edit">
+              <file-upload  class="avatar-uploader"
+                            :action="imageAction"
+                            :showLoading="true"
+                            :maxSize="maxSize"
+                            @success="onUploadSuccess"
+                            :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
+                <div class="avatar-container">
+                  <head-image :url="localUserInfo.headImage" :name="localUserInfo.nickName" :size="60"></head-image>
+                  <div class="camera-overlay">
+                    <i class="el-icon-camera"></i>
+                  </div>
                 </div>
-              </div>
-            </file-upload>
+              </file-upload>
+              <i class="el-icon-refresh reset-icon" title="重置头像" @click="resetAvatar"></i>
+            </div>
             <div style="margin-top: 10px; font-size: 18px; font-weight: bold;">{{ localUserInfo.nickName }}</div>
             <div style="color: #666;">ID: {{localUserInfo.userName}}</div>
           </div>
@@ -77,6 +80,7 @@
               <el-radio-group v-model="localUserInfo.sex">
                 <el-radio :label="0">男</el-radio>
                 <el-radio :label="1">女</el-radio>
+                <el-radio :label="2">保密</el-radio>
               </el-radio-group>
             </el-form-item>
 
@@ -492,6 +496,9 @@ export default {
     }
   },
   methods: {
+    resetAvatar() {
+      this.localUserInfo.headImage = '';
+    },
     onUploadSuccess(data, file) {
       this.localUserInfo.headImage = data.originUrl;
     },
@@ -692,69 +699,110 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.avatar-uploader {
+.user-basic-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 
-  .el-upload {
-    border: 1px dashed #d9d9d9 !important;
-    border-radius: 6px;
-    cursor: pointer;
+  .avatar-edit {
     position: relative;
-    overflow: hidden;
-  }
+    text-align: center;
 
-  .el-upload:hover {
-    border-color: #409EFF;
-  }
-  
-  .avatar-container {
-    position: relative;
-    display: inline-block;
-    
-    .camera-overlay {
+    .avatar-uploader {
+
+      .el-upload {
+        border: 1px dashed #d9d9d9 !important;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .el-upload:hover {
+        border-color: #409EFF;
+      }
+
+      .avatar-container {
+        position: relative;
+        display: inline-block;
+
+        .camera-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          border-radius: 50%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+
+          .el-icon-camera {
+            font-size: 24px;
+            color: white;
+            margin-bottom: 4px;
+          }
+
+          .upload-text {
+            font-size: 12px;
+            color: white;
+          }
+        }
+
+        &:hover .camera-overlay {
+          opacity: 1;
+        }
+      }
+
+      .avatar-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
+        width: 178px;
+        height: 178px;
+        line-height: 178px;
+        text-align: center;
+      }
+
+      .avatar {
+        width: 178px;
+        height: 178px;
+        display: block;
+      }
+    }
+
+    .reset-icon {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
+      right: -24px;
+      bottom: -5px;
+      background-color: #ffffff;
+      border: 2px solid #f5f7fa;
       border-radius: 50%;
+      width: 28px;
+      height: 28px;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      
-      .el-icon-camera {
-        font-size: 24px;
-        color: white;
-        margin-bottom: 4px;
-      }
-      
-      .upload-text {
-        font-size: 12px;
-        color: white;
-      }
+      font-size: 14px;
+      color: #999;
+      cursor: pointer;
+      z-index: 10;
+      opacity: 0.7;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
-    
-    &:hover .camera-overlay {
+
+    .reset-icon:hover {
+      background-color: #f5f7fa;
+      color: #666;
+      transform: scale(1.1);
       opacity: 1;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
-  }
-
-  .avatar-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 178px;
-    height: 178px;
-    line-height: 178px;
-    text-align: center;
-  }
-
-  .avatar {
-    width: 178px;
-    height: 178px;
-    display: block;
   }
 }
 

@@ -1,13 +1,14 @@
 <template>
-	<div class="group-item" :class="active ? 'active' : ''" @contextmenu.prevent="showRightMenu($event)">
-		<div class="group-avatar">
-			<head-image :size="45" :name="regionGroup.remark" :url="regionGroup.headImage"> </head-image>
+  <div class="group-item" :class="active ? 'active' : ''" @contextmenu.prevent="showRightMenu($event)">
+    <div class="group-avatar">
+      <head-image :size="45" :name="regionGroup.remark" :url="regionGroup.headImage"> </head-image>
       <div v-show="unreadCount>0" class="unread-text">{{unreadCount}}</div>
       <div class="group-activity" v-show="unreadTalkCount > 0 || unreadNotifyCount > 0"></div>
-		</div>
-		<div class="group-info">
-			<div class="group-name">{{regionGroup.remark}}
-        <span style="margin-left: 10px">
+    </div>
+    <div class="group-info">
+      <div class="group-name">
+        <span class="group-name-text" :title="regionGroup.remark">{{regionGroup.remark}}</span>
+        <span class="join-type">
           <el-tag size="mini" type="success" v-if="regionGroup.joinType===1">常驻</el-tag>
           <el-tag size="mini" type="warning" v-if="regionGroup.joinType===0">临时</el-tag>
         </span>
@@ -17,25 +18,25 @@
         <div class="chat-send-name" v-show="isShowSendName">{{chat.sendNickName+':&nbsp;'}}</div>
         <div class="chat-content-text" v-if="chat.lastContent" v-html="$emo.transform(chat.lastContent)"></div>
       </div>
-		</div>
+    </div>
     <right-menu v-show="menu && rightMenu.show" :pos="rightMenu.pos" :items="rightMenu.items"
                 @close="rightMenu.show=false" @select="onSelectMenu"></right-menu>
     <slot></slot>
-	</div>
+  </div>
 </template>
 
 <script>
-	import HeadImage from '../common/HeadImage.vue';
+  import HeadImage from '../common/HeadImage.vue';
   import RightMenu from "../common/RightMenu.vue";
 
-	export default {
-		name: "regionGroupItem",
-		components: {
-			HeadImage,
+  export default {
+    name: "regionGroupItem",
+    components: {
+      HeadImage,
       RightMenu,
-		},
-		data() {
-			return {
+    },
+    data() {
+      return {
         rightMenu: {
           show: false,
           pos: {
@@ -53,19 +54,19 @@
           }]
         }
       }
-		},
-		props: {
+    },
+    props: {
       regionGroup: {
-				type: Object
-			},
-			active: {
-				type: Boolean
-			},
+        type: Object
+      },
+      active: {
+        type: Boolean
+      },
       menu:{
         type: Boolean,
         default: true
       },
-		},
+    },
     methods: {
       showRightMenu(e) {
         this.rightMenu.pos = {
@@ -128,7 +129,7 @@
         return 0;
       },
     }
-	}
+  }
 </script>
 
 <style scoped lang="scss" >
@@ -193,9 +194,24 @@
 
       .group-name {
         display: flex;
+        align-items: center;
         line-height: 25px;
         height: 25px;
         font-weight: bold;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        .group-name-text {
+          max-width: 150px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .join-type {
+          margin-left: 10px;
+          flex: 1;
+        }
       }
 
       .chat-content {

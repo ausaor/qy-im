@@ -225,10 +225,10 @@ export default {
             object-fit: cover;
 
             img {
-              max-width: 100%;  /* 图片宽度不超过父元素宽度 */
-              max-height: 100%; /* 图片高度不超过父元素高度 */
-              display: block;   /* 去除图片底部的空白间隙 */
-              margin: 0 auto;   /* 可选：让图片水平居中 */
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              display: block;
             }
 
             .play-icon {
