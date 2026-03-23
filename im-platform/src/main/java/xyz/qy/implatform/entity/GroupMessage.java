@@ -67,7 +67,7 @@ public class GroupMessage extends Model<GroupMessage> {
     private Boolean isTemplate;
 
     /**
-     * 接受用户id,为空表示全体发送
+     * 接受用户id,使用英文逗号(,)分割,为空表示全体发送
      */
     @TableField("recv_ids")
     private String recvIds;

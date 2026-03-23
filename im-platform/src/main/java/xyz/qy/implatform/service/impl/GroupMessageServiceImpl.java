@@ -1,7 +1,6 @@
 package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.collection.CollStreamUtil;
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -21,7 +20,6 @@ import xyz.qy.imcommon.enums.IMTerminalType;
 import xyz.qy.imcommon.model.IMGroupMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.imcommon.util.CommaTextUtils;
-import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.GroupMessageDTO;
 import xyz.qy.implatform.entity.CharacterWord;
@@ -488,6 +486,7 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         // 查询聊天记录，只查询加入群聊时间之后的消息
         QueryWrapper<GroupMessage> wrapper = new QueryWrapper<>();
         wrapper.lambda().eq(GroupMessage::getGroupId, groupId)
+                .eq(GroupMessage::getRecvIds, StrUtil.EMPTY)
                 .ge(GroupMessage::getSendTime, member.getCreatedTime())
                 .ne(GroupMessage::getStatus, MessageStatus.RECALL.code())
                 .orderByDesc(GroupMessage::getId)
