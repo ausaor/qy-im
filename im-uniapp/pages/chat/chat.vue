@@ -2,14 +2,10 @@
 	<view class="tab-page">
 		<nav-bar search @search="onSearch()" :theme-index="0">消息</nav-bar>
 		<view v-if="loading" class="chat-loading">
-			<loading :size="50" :mask="false">
-				<view>消息接收中...</view>
-			</loading>
+			<uni-load-more :content="'消息接收中...'" :icon-size='50'></uni-load-more>
 		</view>
 		<view v-if="initializing" class="chat-loading">
-			<loading :size="50" :mask="false">
-				<view>正在初始化...</view>
-			</loading>
+			<uni-load-more :content="'正在初始化...'" :icon-size='50'></uni-load-more>
 		</view>
 		<view class="nav-bar" v-if="showSearch">
 			<view class="nav-search">

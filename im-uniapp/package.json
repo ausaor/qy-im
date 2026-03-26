@@ -7,9 +7,11 @@
 		"mp-html": "^2.5.1",
 		"pinyin-pro": "^3.23.1",
 		"uuid": "^11.1.0",
-		"vconsole": "^3.15.1"
+		"vconsole": "^3.15.1",
+		"vite": "^4.5.3"
 	},
 	"devDependencies": {
+		"@dcloudio/vite-plugin-uni": "^3.0.0-alpha-5000520260323001",
 		"vite-plugin-svg-icons": "^2.0.1"
 	}
 }

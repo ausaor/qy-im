@@ -2,14 +2,10 @@
   <view class="tab-page region-group">
     <nav-bar search add @add="toSelectRegion" @search="onSearch()" :theme-index="1">地区群聊</nav-bar>
     <view v-if="loading" class="chat-loading">
-      <loading :size="50" :mask="false">
-        <view>消息接收中...</view>
-      </loading>
+      <uni-load-more :content="'消息接收中...'" :icon-size='50'></uni-load-more>
     </view>
     <view v-if="initializing" class="chat-loading">
-      <loading :size="50" :mask="false">
-        <view>正在初始化...</view>
-      </loading>
+      <uni-load-more :content="'正在初始化...'" :icon-size='50'></uni-load-more>
     </view>
     <view class="nav-bar" v-if="showSearch">
       <view class="nav-search">

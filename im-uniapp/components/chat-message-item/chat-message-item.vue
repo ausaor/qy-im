@@ -41,7 +41,7 @@
 								<image class="send-image" mode="heightFix" :src="JSON.parse(msgInfo.content).originUrl"
 									lazy-load="true" @click.stop="onShowFullImage()">
 								</image>
-								<loading v-if="loading"></loading>
+								<uni-icons v-if="loading" type="spinner-cycle" size="20" color="#999"></uni-icons>
 							</view>
 						</long-press-menu>
 						<text title="发送失败" v-if="loadFail" @click="onSendFail"
@@ -56,7 +56,7 @@
 									<view class="chat-file-size">{{ fileSize }}</view>
 								</view>
 								<view class="chat-file-icon iconfont icon-file"></view>
-								<loading v-if="loading"></loading>
+								<uni-icons v-if="loading" type="spinner-cycle" size="20" color="#999"></uni-icons>
 							</view>
 						</long-press-menu>
 						<text title="发送失败" v-if="loadFail" @click="onSendFail"
@@ -67,7 +67,7 @@
               <view class="video-msg-box">
                 <image class="video-cover-image" mode="heightFix" :src="JSON.parse(msgInfo.content).coverUrl" lazy-load="true"></image>
                 <text class="play-icon iconfont icon-play" @click.stop="onPlayVideo(JSON.parse(msgInfo.content).videoUrl, JSON.parse(msgInfo.content).coverUrl)"></text>
-                <loading v-if="loading"></loading>
+                <uni-icons v-if="loading" type="spinner-cycle" size="20" color="#999"></uni-icons>
               </view>
             </long-press-menu>
             <text title="发送失败" v-if="loadFail" @click="onSendFail"
