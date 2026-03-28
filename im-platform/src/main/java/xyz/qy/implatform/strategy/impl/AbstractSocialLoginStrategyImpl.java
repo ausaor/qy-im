@@ -2,11 +2,11 @@ package xyz.qy.implatform.strategy.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import org.apache.commons.lang3.StringUtils;
 import xyz.qy.implatform.dto.SocialTokenDTO;
 import xyz.qy.implatform.dto.SocialUserInfoDTO;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.LoginTypeEnum;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.UserMapper;
 import xyz.qy.implatform.service.IGroupMemberService;
@@ -112,6 +112,7 @@ public abstract class AbstractSocialLoginStrategyImpl implements SocialLoginStra
         user.setIpAddress(ipAddress);
         user.setIpSource(ipSource);
         user.setLoginType(socialToken.getLoginType());
+        user.setRole(RoleEnum.USER.getCode());
         if (LoginTypeEnum.QQ.getType().equals(socialToken.getLoginType())) {
             user.setQqOpenId(socialToken.getOpenId());
             user.setQqAccessToken(socialToken.getAccessToken());
