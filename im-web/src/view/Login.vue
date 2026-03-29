@@ -1,6 +1,7 @@
 <template>
 	<div class="login-view" ref="loginView" :style="backImgStyle">
-    <el-form :model="loginForm"  status-icon :rules="rules" ref="loginForm"  label-width="60px" class="web-ruleForm" @keyup.enter.native="submitForm('loginForm')">
+    <div class="login-container">
+      <el-form :model="loginForm"  status-icon :rules="rules" ref="loginForm"  label-width="60px" class="web-ruleForm" @keyup.enter.native="submitForm('loginForm')">
       <div class="login-brand">{{websiteName}}</div>
       <el-form-item label="用户名" prop="username" v-if="loginForm.loginType===0">
         <el-input type="username" v-model="loginForm.userName" autocomplete="off"></el-input>
@@ -36,26 +37,27 @@
         <el-button type="primary" @click="submitForm('loginForm')">登陆</el-button>
         <el-button @click="resetForm('loginForm')">清空</el-button>
       </el-form-item>
-      <div class="register-box">
-        <div class="register" @click="toRegister()">立即注册</div>
-        <div class="forget-pwd" @click="toForgetPwd()">忘记密码</div>
-        <p style="clear:both;"></p>
-      </div>
-      <div class="social-login">
-        <div class="social-login-title">社交账号登录</div>
-        <div class="social-login-wrapper">
-          <svg class="icon svg-icon" aria-hidden="true" @click="qqLogin">
-            <use xlink:href="#icon-QQ"></use>
-          </svg>
-          <svg class="icon svg-icon" aria-hidden="true" @click="toggleLoginType" v-if="loginForm.loginType===0">
-            <use xlink:href="#icon-email"></use>
-          </svg>
-          <svg class="icon svg-icon" aria-hidden="true" @click="toggleLoginType" v-if="loginForm.loginType===1">
-            <use xlink:href="#icon-diannao"></use>
-          </svg>
-        </div>
-      </div>
     </el-form>
+    <div class="register-box">
+      <div class="register" @click="toRegister()">立即注册</div>
+      <div class="forget-pwd" @click="toForgetPwd()">忘记密码</div>
+      <p style="clear:both;"></p>
+    </div>
+    <div class="social-login">
+      <div class="social-login-title">社交账号登录</div>
+      <div class="social-login-wrapper">
+        <svg class="icon svg-icon" aria-hidden="true" @click="qqLogin">
+          <use xlink:href="#icon-QQ"></use>
+        </svg>
+        <svg class="icon svg-icon" aria-hidden="true" @click="toggleLoginType" v-if="loginForm.loginType===0">
+          <use xlink:href="#icon-email"></use>
+        </svg>
+        <svg class="icon svg-icon" aria-hidden="true" @click="toggleLoginType" v-if="loginForm.loginType===1">
+          <use xlink:href="#icon-diannao"></use>
+        </svg>
+      </div>
+    </div>
+    </div>
     <div class="footer-wrap">
       <a href="https://beian.miit.gov.cn/" target="_blank">桂ICP备2026005181号-1</a>
     </div>
@@ -253,9 +255,11 @@ import BIRDS from "vanta/src/vanta.birds";
         this.loginForm.loginType = this.loginForm.loginType === 0 ? 1 : 0;
       },
       toRegister() {
+        console.log("toRegister");
         this.$router.push("/register");
       },
       toForgetPwd() {
+        console.log("toForgetPwd");
         this.$router.push("/forgetPwd");
       },
       sendVerificationCode() {
@@ -331,6 +335,12 @@ import BIRDS from "vanta/src/vanta.birds";
     justify-content: center;
     align-items: center;
 
+    .login-container {
+      position: relative;
+      width: 350px;
+      height: 446px;
+    }
+
 		.web-ruleForm {
       width: 350px;
 			height: 446px;
@@ -338,9 +348,11 @@ import BIRDS from "vanta/src/vanta.birds";
 			background: rgba(255,255,255,.75);
 			box-shadow: 0px 0px  1px #ccc;
 			border-radius: 5px;
-			overflow: hidden;
-	    z-index: 100;
-			
+			z-index: 10;
+			position: absolute;
+			top: 0;
+			left: 0;
+      
 			.login-brand {
 				line-height: 30px;
 				margin: 10px 0 20px 0;
@@ -379,61 +391,6 @@ import BIRDS from "vanta/src/vanta.birds";
           filter: hue-rotate(360deg);
         }
       }
-			
-			.register-box {
-				line-height: 40px;
-
-        .register {
-          float: left;
-          cursor:pointer;
-        }
-
-        .forget-pwd {
-          float: right;
-          cursor:pointer;
-        }
-			}
-
-      .social-login {
-        .social-login-title {
-          margin-top: 5px;
-          color: #b5b5b5;
-          font-size: 0.75rem;
-          text-align: center;
-        }
-        .social-login-title::before {
-          content: "";
-          display: inline-block;
-          background-color: #d8d8d8;
-          width: 60px;
-          height: 1px;
-          margin: 0 12px;
-          vertical-align: middle;
-        }
-        .social-login-title::after {
-          content: "";
-          display: inline-block;
-          background-color: #d8d8d8;
-          width: 60px;
-          height: 1px;
-          margin: 0 12px;
-          vertical-align: middle;
-        }
-
-        .social-login-wrapper {
-          margin-top: 1rem;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 10px;
-
-          .icon {
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-          }
-        }
-      }
 		}
 
     .footer-wrap {
@@ -446,6 +403,84 @@ import BIRDS from "vanta/src/vanta.birds";
       a, a:visited, a:link, a:hover{
         text-decoration: none;
         color:white;
+      }
+    }
+
+    .register-box {
+      line-height: 40px;
+      position: absolute;
+      bottom: 80px;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      pointer-events: none;
+      padding-left: 10px;
+      padding-right: 10px;
+
+      .register {
+        float: left;
+        cursor:pointer;
+        user-select: none;
+        pointer-events: auto;
+      }
+
+      .forget-pwd {
+        float: right;
+        cursor:pointer;
+        user-select: none;
+        pointer-events: auto;
+      }
+    }
+
+    .social-login {
+      position: absolute;
+      bottom: 5px;
+      left: 0;
+      right: 0;
+      padding: 0 20px;
+      z-index: 20;
+      pointer-events: none;
+      
+      .social-login-title {
+        margin-top: 5px;
+        color: #b5b5b5;
+        font-size: 0.75rem;
+        text-align: center;
+        user-select: none;
+        pointer-events: none;
+      }
+      .social-login-title::before {
+        content: "";
+        display: inline-block;
+        background-color: #d8d8d8;
+        width: 60px;
+        height: 1px;
+        margin: 0 12px;
+        vertical-align: middle;
+      }
+      .social-login-title::after {
+        content: "";
+        display: inline-block;
+        background-color: #d8d8d8;
+        width: 60px;
+        height: 1px;
+        margin: 0 12px;
+        vertical-align: middle;
+      }
+
+      .social-login-wrapper {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        pointer-events: auto;
+
+        .icon {
+          width: 30px;
+          height: 30px;
+          cursor: pointer;
+        }
       }
     }
   }
