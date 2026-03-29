@@ -713,7 +713,7 @@ create table im_group_request
 
 create table im_character_user
 (
-    id           bigint               not null
+    id           bigint auto_increment
         primary key,
     character_id bigint               not null comment '角色id',
     user_id      bigint               not null comment '用户id',

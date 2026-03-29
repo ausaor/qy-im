@@ -287,24 +287,42 @@ export default {
       this.queryTalkNotify();
     },
     playVoice(word) {
-      if (!this.audio) {
-        this.audio = new Audio();
-        this.audioSrc = word.voice;
-        this.audio.src = word.voice;
-        this.audio.play();
-      } else {
-        if (word.voice === this.audioSrc) {
-          this.audioSrc = '';
+      // 如果当前有正在播放的 audio，先清理
+      if (this.audio) {
+        this.audio.pause();
+        this.audio = null;
+        this.audioSrc = '';
+      }
+      
+      this.audio = new Audio();
+      this.audioSrc = word.voice;
+      this.audio.src = word.voice;
+      
+      // 监听播放完成事件
+      const handleEnded = () => {
+        if (this.audio) {
           this.audio.pause();
           this.audio = null;
-        } else {
-          this.audio.pause();
-          this.audio = new Audio();
-          this.audioSrc = word.voice;
-          this.audio.src = word.voice;
-          this.audio.play();
+          this.audioSrc = '';
         }
-      }
+        // 移除事件监听器
+        if (this.audio) {
+          this.audio.removeEventListener('ended', handleEnded);
+        }
+      };
+      
+      // 添加 ended 事件监听
+      this.audio.addEventListener('ended', handleEnded);
+      
+      // 开始播放
+      this.audio.play().catch(err => {
+        console.error('音频播放失败:', err);
+        // 播放失败时清理
+        if (this.audio) {
+          this.audio = null;
+          this.audioSrc = '';
+        }
+      });
     },
     showUserInfo(e, userId) {
       if (userId && userId > 0) {
@@ -326,6 +344,15 @@ export default {
         this.messages = [];
         this.queryTalkNotify();
       }
+    }
+  },
+  beforeDestroy() {
+    // 组件销毁时清理 audio 资源
+    if (this.audio) {
+      this.audio.pause();
+      this.audio = null;
+      this.audioSrc = '';
+      console.log("TalkNotify audio cleared");
     }
   }
 }
