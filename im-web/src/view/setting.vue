@@ -411,6 +411,7 @@ export default {
       },
       validateBtn: '获取验证码',
       disabled: false,
+      mailTimer: null, // 保存绑定邮箱定时器引用
       mailRules: {
         email: [{
           required: true,
@@ -456,6 +457,7 @@ export default {
       },
       resetValidateBtn: '获取验证码',
       resetDisabled: false,
+      resetPwdTimer: null, // 保存重置密码定时器引用
       resetPwdRules: {
         emailCode: [{
           required: true,
@@ -563,10 +565,17 @@ export default {
         return;
       }
       
+      // 先清理之前的定时器
+      if (this.mailTimer) {
+        clearInterval(this.mailTimer);
+        this.mailTimer = null;
+      }
+      
       let time = 60;
-      let timer = setInterval(() => {
+      this.mailTimer = setInterval(() => {
         if(time === 0){
-          clearInterval(timer);
+          clearInterval(this.mailTimer);
+          this.mailTimer = null;
           this.validateBtn = '获取验证码';
           this.disabled = false;
         }else{
@@ -616,10 +625,17 @@ export default {
     
     // 重置密码相关方法
     getUserEmailCode() {
+      // 先清理之前的定时器
+      if (this.resetPwdTimer) {
+        clearInterval(this.resetPwdTimer);
+        this.resetPwdTimer = null;
+      }
+
       let time = 60;
-      let timer = setInterval(() => {
+      this.resetPwdTimer = setInterval(() => {
         if(time === 0){
-          clearInterval(timer);
+          clearInterval(this.resetPwdTimer);
+          this.resetPwdTimer = null;
           this.resetValidateBtn = '获取验证码';
           this.resetDisabled = false;
         }else{
@@ -695,6 +711,18 @@ export default {
       this.$store.commit("setChatBubbleIndex", index);
       this.localUserInfo.chatBubble = index;
       this.updateUserInfo();
+    }
+  },
+  beforeDestroy() {
+    // 清理绑定邮箱定时器
+    if (this.mailTimer) {
+      clearInterval(this.mailTimer);
+      this.mailTimer = null;
+    }
+    // 清理重置密码定时器
+    if (this.resetPwdTimer) {
+      clearInterval(this.resetPwdTimer);
+      this.resetPwdTimer = null;
     }
   }
 };

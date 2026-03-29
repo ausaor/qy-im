@@ -174,6 +174,7 @@ export default {
       codeDisabled: false,
       codeBtnText: '获取验证码',
       codeLoading: false,
+      codeTimer: null, // 保存定时器引用
       
       // 提交按钮状态
       submitLoading: false
@@ -212,12 +213,19 @@ export default {
 
     // 倒计时
     startCountdown() {
+      // 先清理之前的定时器
+      if (this.codeTimer) {
+        clearInterval(this.codeTimer);
+        this.codeTimer = null;
+      }
+
       let time = 60;
       this.codeDisabled = true;
       
-      const timer = setInterval(() => {
+      this.codeTimer = setInterval(() => {
         if (time === 0) {
-          clearInterval(timer);
+          clearInterval(this.codeTimer);
+          this.codeTimer = null;
           this.codeBtnText = '获取验证码';
           this.codeDisabled = false;
         } else {
@@ -262,6 +270,13 @@ export default {
     // 返回登录页
     goBack() {
       this.$router.push('/login');
+    }
+  },
+  beforeDestroy() {
+    // 清理验证码定时器
+    if (this.codeTimer) {
+      clearInterval(this.codeTimer);
+      this.codeTimer = null;
     }
   }
 }

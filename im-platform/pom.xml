@@ -191,15 +191,15 @@
             <groupId>org.bytedeco</groupId>
             <artifactId>opencv</artifactId>
             <version>4.7.0-1.5.9</version>
-            <classifier>windows-x86_64</classifier>
-            <!--<classifier>linux-x86_64</classifier>-->
+            <!--<classifier>windows-x86_64</classifier>-->
+            <classifier>linux-x86_64</classifier>
         </dependency>
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>ffmpeg</artifactId>
             <version>6.0-1.5.9</version>
-            <classifier>windows-x86_64</classifier>
-            <!--<classifier>linux-x86_64</classifier>-->
+            <!--<classifier>windows-x86_64</classifier>-->
+            <classifier>linux-x86_64</classifier>
         </dependency>
 
         <!-- IP定位 -->
@@ -236,6 +236,12 @@
             <artifactId>sensitive-word</artifactId>
             <version>0.29.2</version>
         </dependency>-->
+
+        <!-- Thymeleaf 模板引擎 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

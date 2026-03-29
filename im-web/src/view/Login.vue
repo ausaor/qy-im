@@ -113,6 +113,7 @@ import BIRDS from "vanta/src/vanta.birds";
         codeUrl: '',
         validateBtn: '获取验证码',
         disabled: false,
+        emailTimer: null, // 保存定时器引用
 				loginForm: {
           terminal: this.$enums.TERMINAL_TYPE.WEB,
           userName: '',
@@ -272,20 +273,6 @@ import BIRDS from "vanta/src/vanta.birds";
           this.$message.warning('邮箱格式错误');
           return;
         }
-
-        let time = 90;
-        let timer = setInterval(() => {
-          if(time === 0){
-            clearInterval(timer);
-            this.validateBtn = '获取验证码';
-            this.disabled = false;
-          }else{
-            this.disabled = true;
-            this.validateBtn = time + '秒后重试';
-            time--;
-          }
-        }, 1000);
-
         this.getEmailCode();
       },
       getEmailCode() {
@@ -298,7 +285,25 @@ import BIRDS from "vanta/src/vanta.birds";
           method: "post",
           data: params
         }).then(()=>{
-
+          // 先清理之前的定时器
+          if (this.emailTimer) {
+            clearInterval(this.emailTimer);
+            this.emailTimer = null;
+          }
+          
+          let time = 90;
+          this.emailTimer = setInterval(() => {
+            if(time === 0){
+              clearInterval(this.emailTimer);
+              this.emailTimer = null;
+              this.validateBtn = '获取验证码';
+              this.disabled = false;
+            }else{
+              this.disabled = true;
+              this.validateBtn = time + '秒后重试';
+              time--;
+            }
+          }, 1000);
         })
       },
 		},
@@ -320,7 +325,13 @@ import BIRDS from "vanta/src/vanta.birds";
         color2: 0xf6f7f7
       })
 		},
-    beforeDestroy() {
+	beforeDestroy() {
+      // 清理邮箱验证码定时器
+      if (this.emailTimer) {
+        clearInterval(this.emailTimer);
+        this.emailTimer = null;
+      }
+      
       if (this.vantaEffect) {
         console.log("beforeDestroy")
         this.vantaEffect.destroy();

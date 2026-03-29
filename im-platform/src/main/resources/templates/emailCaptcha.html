@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邮箱验证码 - 青语</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            height: 100%;
+            margin: 0;
+            padding: 15px;
+            position: relative;
+            overflow-x: hidden;
+            /* 使用传统居中方式，兼容邮件客户端 */
+            text-align: center;
+        }
+
+        /* 邮件客户端兼容的居中容器 */
+        .body-table {
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: #ffffff;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            /* 邮件客户端居中 */
+            margin: 0 auto;
+            display: inline-block;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .site-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .site-url {
+            color: #888;
+            font-size: 13px;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+
+        .verification-section {
+            margin: 30px 0;
+        }
+
+        .verification-label {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .verification-code {
+            display: inline-block;
+            font-size: 42px;
+            font-weight: bold;
+            letter-spacing: 12px;
+            padding: 25px 40px;
+            color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            border-radius: 50px;
+            border: 3px solid #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            margin-bottom: 25px;
+            max-width: 100%;
+            word-break: break-all;
+        }
+
+        .info-section {
+            background: #f5f7fa;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .info-item {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .info-item strong {
+            color: #667eea;
+            min-width: 80px;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #667eea, transparent);
+            margin: 20px 0;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #999;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* 移动端适配 */
+        @media screen and (max-width: 480px) {
+            .body-table {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 30px 20px;
+                border-radius: 15px;
+            }
+
+            .site-name {
+                font-size: 24px;
+            }
+
+            .verification-code {
+                font-size: 36px;
+                letter-spacing: 8px;
+                padding: 20px 30px;
+            }
+
+            .info-item {
+                font-size: 13px;
+            }
+
+            .info-item strong {
+                min-width: 70px;
+            }
+        }
+
+        @media screen and (max-width: 375px) {
+            .site-name {
+                font-size: 22px;
+            }
+
+            .verification-code {
+                font-size: 32px;
+                letter-spacing: 6px;
+                padding: 18px 25px;
+            }
+
+            .verification-label {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 邮件客户端兼容的居中表格 -->
+    <table class="body-table" role="presentation" cellspacing="0" cellpadding="0">
+        <tr>
+            <td align="center">
+                <div class="container">
+                    <div class="header">
+                        <h1 class="site-name">青语</h1>
+                        <p class="site-url">im.timemory.xyz</p>
+                    </div>
+
+                    <div class="verification-section">
+                        <p class="verification-label">您的验证码如下：</p>
+                        <div class="verification-code" th:text="${code}">8A3K9M</div>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="info-item">
+                            <strong>发件人：</strong>
+                            <span th:text="${senderName}">聼夏</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>发件邮箱：</strong>
+                            <span th:text="${senderEmail}">qingyu017@qq.com</span>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="footer">
+                        <p>如果这不是您本人操作，请忽略此邮件。</p>
+                        <p>验证码有效期为 5 分钟，请勿泄露给他人。</p>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

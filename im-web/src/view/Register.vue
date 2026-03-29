@@ -3,7 +3,7 @@
 		<div class="register-container">
 			<div class="register-header">
 				<div class="register-logo">
-					<img src="@/assets/logo.png" alt="Logo" />
+					<span class="logo-text">QY</span>
 				</div>
 				<h2 class="register-title">欢迎注册</h2>
 				<p class="register-subtitle">创建您的专属账号</p>
@@ -149,6 +149,7 @@
 				},
         validateBtn: '获取验证码',
         disabled: false,
+        emailTimer: null, // 保存定时器引用
 				rules: {
 					userName: [{
             required: true,
@@ -232,10 +233,17 @@
           return;
         }
 
+        // 先清理之前的定时器
+        if (this.emailTimer) {
+          clearInterval(this.emailTimer);
+          this.emailTimer = null;
+        }
+
         let time = 90;
-        let timer = setInterval(() => {
+        this.emailTimer = setInterval(() => {
           if(time === 0){
-            clearInterval(timer);
+            clearInterval(this.emailTimer);
+            this.emailTimer = null;
             this.validateBtn = '获取验证码';
             this.disabled = false;
           }else{
@@ -322,13 +330,15 @@
 					padding: 3px;
 					border-radius: 50%;
 					box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+					display: flex;
+					align-items: center;
+					justify-content: center;
 					
-					img {
-						width: 100%;
-						height: 100%;
-						object-fit: contain;
-						border-radius: 50%;
-						background: white;
+					.logo-text {
+						font-size: 42px;
+						font-weight: 700;
+						color: white;
+						text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 					}
 				}
 				

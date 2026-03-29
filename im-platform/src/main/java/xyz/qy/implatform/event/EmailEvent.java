@@ -17,7 +17,7 @@ public class EmailEvent extends ApplicationEvent {
     private String subject;
 
     // 内容
-    private String content;
+    private String code;
 
     // 收件人
     private String receiver;
@@ -26,10 +26,10 @@ public class EmailEvent extends ApplicationEvent {
         super(source);
     }
 
-    public EmailEvent(Object source, String subject, String content, String receiver) {
+    public EmailEvent(Object source, String subject, String code, String receiver) {
         super(source);
         this.subject = subject;
-        this.content = content;
+        this.code = code;
         this.receiver = receiver;
     }
 }

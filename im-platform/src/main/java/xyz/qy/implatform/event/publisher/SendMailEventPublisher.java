@@ -17,7 +17,7 @@ public class SendMailEventPublisher {
     @Resource
     private ApplicationEventPublisher publisher;
 
-    public void sendMailAsync(String subject, String content, String receiver) {
-        publisher.publishEvent(new EmailEvent(this, subject, content, receiver));
+    public void sendMailAsync(String subject, String code, String receiver) {
+        publisher.publishEvent(new EmailEvent(this, subject, code, receiver));
     }
 }
