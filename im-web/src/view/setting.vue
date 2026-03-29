@@ -450,6 +450,7 @@ export default {
       
       // 重置密码相关数据
       resetPwdForm: {
+        email: '',
         emailCode: '',
         newPassword: ''
       },
@@ -641,6 +642,7 @@ export default {
     resetPwd(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          this.resetPwdForm.email = this.localUserInfo.email;
           this.$http({
             url: "/user/resetPwd",
             method: 'post',

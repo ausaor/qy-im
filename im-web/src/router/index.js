@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '../view/Login'
 import Register from '../view/Register'
+import ForgetPwd from "@/view/ForgetPwd.vue";
 import Home from '../view/Home'
 // 安装路由
 Vue.use(VueRouter);
@@ -23,6 +24,11 @@ export default new VueRouter({
       name: "Register",
       path: '/register',
       component: Register
+    },
+    {
+      name: "ForgetPwd",
+      path: '/forgetPwd',
+      component: ForgetPwd
     },
     {
       name: "Home",

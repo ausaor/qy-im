@@ -38,7 +38,7 @@
       </el-form-item>
       <div class="register-box">
         <div class="register" @click="toRegister()">立即注册</div>
-        <div class="forget-pwd">忘记密码</div>
+        <div class="forget-pwd" @click="toForgetPwd()">忘记密码</div>
         <p style="clear:both;"></p>
       </div>
       <div class="social-login">
@@ -255,6 +255,9 @@ import BIRDS from "vanta/src/vanta.birds";
       toRegister() {
         this.$router.push("/register");
       },
+      toForgetPwd() {
+        this.$router.push("/forgetPwd");
+      },
       sendVerificationCode() {
         if (!this.loginForm.email) {
           this.$message.warning('请输入邮箱');
@@ -427,6 +430,7 @@ import BIRDS from "vanta/src/vanta.birds";
           .icon {
             width: 30px;
             height: 30px;
+            cursor: pointer;
           }
         }
       }

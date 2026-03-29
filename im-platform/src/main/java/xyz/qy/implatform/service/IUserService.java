@@ -61,6 +61,8 @@ public interface IUserService extends IService<User> {
 
     void resetPassword(ResetPwdDTO dto);
 
+    void resetPwdByEmail(ResetPwdDTO dto);
+
     List<UserVO> findUserByName(String name);
 
     List<OnlineTerminalVO> getOnlineTerminals(String userIds);

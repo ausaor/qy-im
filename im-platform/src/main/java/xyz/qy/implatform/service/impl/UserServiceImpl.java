@@ -543,6 +543,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         this.updateById(user);
     }
 
+    @Override
+    public void resetPwdByEmail(ResetPwdDTO dto) {
+        User user = this.lambdaQuery()
+                .eq(User::getEmail, dto.getEmail())
+                .eq(User::getIsDisable, false)
+                .one();
+        if (user == null) {
+            throw new GlobalException("用户不存在");
+        }
+        validateEmailCode(user.getEmail(), EmailCategoryEnum.RESET_PASSWORD.name(), dto.getEmailCode());
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        this.updateById(user);
+    }
+
     /**
      * 根据用户昵称查询用户，最多返回20条数据
      *

@@ -26,7 +26,7 @@ public class MvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns("/website/**", "/home/**", "/captchaImage", "/social/login/*" ,
-                        "/login","/logout","/register","/refreshToken", "/openApi/**", "/email/getCode",
+                        "/login","/logout","/register","/refreshToken", "/openApi/**", "/email/getCode","/email/resetPwd",
                         "/swagger-resources/**", "/webjars/**", "/v2/**", "/swagger-ui.html/**");
         //分页拦截器
         registry.addInterceptor(new PageableInterceptor());

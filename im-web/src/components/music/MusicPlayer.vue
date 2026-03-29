@@ -594,6 +594,7 @@ export default {
   color: #2a3b4c;
   transition: all 0.2s ease;
   font-size: 24px;
+  cursor: pointer;
 }
 
 .control-btn:hover {

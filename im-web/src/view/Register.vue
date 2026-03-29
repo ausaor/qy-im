@@ -1,6 +1,6 @@
 <template>
 	<el-container class="register-view">
-		<div>
+		<div class="register-container">>
 			<el-form :model="registerForm" status-icon :rules="rules" ref="registerForm" label-width="80px" class="web-ruleForm">
 				<div class="register-brand">欢迎注册</div>
 				<el-form-item label="用户名" prop="userName">
@@ -236,14 +236,12 @@
 
 <style scoped lang="scss">
 	.register-view {
-		position: fixed;
-		display: flex;
-		justify-content: space-around;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 		width: 100%;
 		height: 100%;
 		background-image: url("../assets/image/background-image.jpg");
-		background-size: cover;
-		-webkit-user-select: none;
 		background-size: cover;
 		
 		
@@ -251,7 +249,6 @@
 			width: 500px;
 			min-height: 500px;
 			padding: 20px;
-			margin-top: 100px ;
 			background: rgba(255,255,255,.75);
 			box-shadow: 0px 0px  1px #ccc;
 			border-radius: 3px;

@@ -96,7 +96,7 @@
       <el-table-column prop="likeCount" label="点赞次数" min-width="120">
         <template slot-scope="scope">
           <div class="count-info">
-            <i class="el-icon-star-on" style="color: #e6a23c;"></i>
+            <i class="icon iconfont icon-aixin" style="color: #ff4d4f;"></i>
             {{ scope.row.likeCount }}
           </div>
         </template>
