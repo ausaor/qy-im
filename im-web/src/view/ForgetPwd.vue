@@ -296,13 +296,15 @@ export default {
 
 .forget-pwd-card {
   width: 100%;
-  max-width: 520px;
+  max-width: 460px;
   background: rgba(255, 255, 255, 0.98);
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  padding: 50px 40px;
+  padding: 35px 35px;
   backdrop-filter: blur(10px);
   animation: slideIn 0.5s ease-out;
+  max-height: 90vh;
+  overflow-y: auto;
 
   @keyframes slideIn {
     from {
@@ -318,12 +320,12 @@ export default {
 
 .card-header {
   text-align: center;
-  margin-bottom: 35px;
+  margin-bottom: 20px;
 
   .header-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 15px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 50%;
     display: flex;
@@ -332,28 +334,28 @@ export default {
     box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 
     i {
-      font-size: 36px;
+      font-size: 32px;
       color: white;
     }
   }
 
   .title {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 600;
     color: #2d3748;
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
     letter-spacing: 1px;
   }
 
   .subtitle {
-    font-size: 14px;
+    font-size: 13px;
     color: #718096;
     margin: 0;
   }
 }
 
 .tip-alert {
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   border-radius: 10px;
   background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
   border: none;
@@ -367,7 +369,7 @@ export default {
 }
 
 .reset-form {
-  margin-top: 30px;
+  margin-top: 20px;
 
   .input-wrapper {
     display: flex;
@@ -379,7 +381,7 @@ export default {
       left: 15px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 18px;
+      font-size: 16px;
       color: #a0aec0;
       z-index: 1;
     }
@@ -389,10 +391,10 @@ export default {
 
       ::v-deep .el-input__inner {
         padding-left: 45px;
-        height: 48px;
+        height: 42px;
         border-radius: 10px;
         border: 2px solid #e2e8f0;
-        font-size: 14px;
+        font-size: 13px;
         transition: all 0.3s;
         background-color: #f8f9fa;
 
@@ -409,11 +411,11 @@ export default {
     }
 
     .code-btn {
-      margin-left: 12px;
-      height: 48px;
-      padding: 0 20px;
+      margin-left: 10px;
+      height: 42px;
+      padding: 0 15px;
       border-radius: 10px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       border: none;
@@ -434,21 +436,21 @@ export default {
   }
 
   ::v-deep .el-form-item {
-    margin-bottom: 25px;
+    margin-bottom: 18px;
 
     .el-form-item__label {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 500;
       color: #4a5568;
-      line-height: 48px;
+      line-height: 42px;
     }
   }
 }
 
 .submit-btn {
   width: 100%;
-  height: 50px;
-  font-size: 16px;
+  height: 44px;
+  font-size: 15px;
   font-weight: 600;
   border-radius: 10px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -469,12 +471,12 @@ export default {
 
 .back-login {
   text-align: center;
-  margin-top: 25px;
-  padding-top: 25px;
+  margin-top: 18px;
+  padding-top: 18px;
   border-top: 1px solid #e2e8f0;
 
   ::v-deep .el-link {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
 
     i {
@@ -486,7 +488,7 @@ export default {
 // 响应式设计
 @media screen and (max-width: 600px) {
   .forget-pwd-card {
-    padding: 35px 25px;
+    padding: 30px 25px;
   }
 
   .card-header {
@@ -500,17 +502,30 @@ export default {
     }
 
     .title {
-      font-size: 24px;
+      font-size: 22px;
+    }
+
+    .subtitle {
+      font-size: 12px;
     }
   }
 
   .reset-form {
     .input-wrapper {
       .code-btn {
-        padding: 0 15px;
-        font-size: 13px;
+        padding: 0 12px;
+        font-size: 12px;
       }
     }
+
+    ::v-deep .el-form-item__label {
+      font-size: 13px;
+    }
+  }
+
+  .submit-btn {
+    font-size: 14px;
+    height: 42px;
   }
 }
 </style>

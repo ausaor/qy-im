@@ -298,14 +298,16 @@
 		.register-container {
 			position: relative;
 			z-index: 1;
-			width: 480px;
-			padding: 40px;
+			width: 420px;
+			padding: 30px 35px;
 			background: rgba(255, 255, 255, 0.95);
 			border-radius: 20px;
 			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
 						0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 			backdrop-filter: blur(10px);
 			animation: slideUp 0.6s ease-out;
+			max-height: 90vh;
+			overflow-y: auto;
 			
 			@keyframes slideUp {
 				from {
@@ -320,12 +322,12 @@
 			
 			.register-header {
 				text-align: center;
-				margin-bottom: 35px;
+				margin-bottom: 20px;
 				
 				.register-logo {
-					width: 80px;
-					height: 80px;
-					margin: 0 auto 15px;
+					width: 70px;
+					height: 70px;
+					margin: 0 auto 12px;
 					background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 					padding: 3px;
 					border-radius: 50%;
@@ -335,7 +337,7 @@
 					justify-content: center;
 					
 					.logo-text {
-						font-size: 42px;
+						font-size: 36px;
 						font-weight: 700;
 						color: white;
 						text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -343,10 +345,10 @@
 				}
 				
 				.register-title {
-					font-size: 28px;
+					font-size: 24px;
 					font-weight: 700;
 					color: #2d3748;
-					margin: 0 0 8px 0;
+					margin: 0 0 6px 0;
 					background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 					-webkit-background-clip: text;
 					-webkit-text-fill-color: transparent;
@@ -354,7 +356,7 @@
 				}
 				
 				.register-subtitle {
-					font-size: 14px;
+					font-size: 13px;
 					color: #718096;
 					margin: 0;
 					font-weight: 400;
@@ -365,10 +367,10 @@
 				width: 100%;
 				
 				.el-form-item {
-					margin-bottom: 20px;
+					margin-bottom: 14px;
 					
 					&:last-of-type {
-						margin-bottom: 10px;
+						margin-bottom: 8px;
 					}
 				}
 				
@@ -376,15 +378,15 @@
 					display: flex;
 					align-items: center;
 					width: 100%;
-					gap: 12px;
+					gap: 10px;
 					
 					.input-icon {
 						flex-shrink: 0;
 						color: #a0aec0;
-						font-size: 18px;
+						font-size: 16px;
 						transition: color 0.3s ease;
-						width: 20px;
-						height: 20px;
+						width: 18px;
+						height: 18px;
 						display: flex;
 						align-items: center;
 						justify-content: center;
@@ -394,11 +396,11 @@
 						flex: 1;
 						
 						.el-input__inner {
-							height: 48px;
-							padding: 0 15px;
+							height: 42px;
+							padding: 0 12px;
 							border: 2px solid #e2e8f0;
-							border-radius: 12px;
-							font-size: 14px;
+							border-radius: 10px;
+							font-size: 13px;
 							transition: all 0.3s ease;
 							background: #f7fafc;
 							
@@ -416,7 +418,7 @@
 					
 					&.code-wrapper {
 						position: relative;
-						
+												
 						.login-code {
 							position: absolute;
 							right: 0;
@@ -425,35 +427,35 @@
 							z-index: 2;
 							display: flex;
 							align-items: center;
-							
+													
 							.login-code-img {
-								height: 38px;
-								width: 90px;
+								height: 32px;
+								width: 80px;
 								border-radius: 6px;
 								cursor: pointer;
 								border: 2px solid #e2e8f0;
 								transition: border-color 0.3s ease;
 								display: block;
-								
+														
 								&:hover {
 									border-color: #667eea;
 								}
 							}
 						}
-						
+												
 						.email-code-btn {
 							position: absolute;
 							right: 0;
 							top: 50%;
 							transform: translateY(-50%);
 							z-index: 2;
-							height: 36px;
-							padding: 0 15px;
+							height: 32px;
+							padding: 0 12px;
 							border: none;
 							border-radius: 8px;
 							background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 							color: white;
-							font-size: 13px;
+							font-size: 12px;
 							font-weight: 600;
 							cursor: pointer;
 							transition: box-shadow 0.3s ease, opacity 0.3s ease;
@@ -473,16 +475,16 @@
 				}
 				
 				.submit-wrapper {
-					margin-top: 30px;
-					margin-bottom: 20px !important;
+					margin-top: 20px;
+					margin-bottom: 15px !important;
 					
 					.submit-btn {
 						width: 100%;
-						height: 50px;
+						height: 44px;
 						border: none;
-						border-radius: 12px;
+						border-radius: 10px;
 						background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-						font-size: 16px;
+						font-size: 15px;
 						font-weight: 600;
 						letter-spacing: 1px;
 						cursor: pointer;
@@ -502,9 +504,9 @@
 				
 				.action-links {
 					text-align: center;
-					padding-top: 20px;
+					padding-top: 15px;
 					border-top: 1px solid #e2e8f0;
-					font-size: 14px;
+					font-size: 13px;
 					color: #718096;
 					
 					.to-login {
