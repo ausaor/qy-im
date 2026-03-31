@@ -1,8 +1,6 @@
 package xyz.qy.implatform.strategy.impl;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -11,10 +9,9 @@ import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import xyz.qy.implatform.entity.DictData;
+
 import xyz.qy.implatform.enums.FilePathEnum;
 import xyz.qy.implatform.exception.GlobalException;
-import xyz.qy.implatform.mapper.DictDataMapper;
 import xyz.qy.implatform.strategy.context.ImageDetectStrategyContext;
 import xyz.qy.implatform.vo.UploadImageVO;
 import xyz.qy.implatform.vo.UploadVideoVO;
@@ -88,7 +85,7 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
             FileUtils.writeByteArrayToFile(targetFile, file.getBytes());
             String url = localUrl + path + fileName;
             // 获取封面图片
-            String coverUrl = randomGrabberFFmpegImage(targetFile, fileName);
+            String coverUrl = randomGrabberFFmpegImage(targetFile, fileName, path);
             uploadVideoVO.setVideoUrl(url);
             uploadVideoVO.setCoverUrl(coverUrl);
         }
@@ -135,7 +132,7 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
     public UploadVideoVO getVideoInfo(String path, String fileName) {
         UploadVideoVO uploadVideoVO = new UploadVideoVO();
         String url = localUrl + path + fileName;
-        String coverUrl = localUrl + FilePathEnum.IMAGE.getPath() + fileName + ".jpg";
+        String coverUrl = localUrl + FilePathEnum.IMAGE.getPath() + path.substring(path.indexOf("/") + 1) + fileName + ".jpg";
         uploadVideoVO.setVideoUrl(url);
         uploadVideoVO.setCoverUrl(coverUrl);
         return uploadVideoVO;
@@ -167,16 +164,18 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
      * 随机获取视频截图
      *
      * @param videFile 视频文件
+     * @param fileName 文件名
+     * @param path 路径（包含日期）
      * @return 截图列表
      * */
-    public String randomGrabberFFmpegImage(File videFile, String fileName) {
+    public String randomGrabberFFmpegImage(File videFile, String fileName, String path) {
         FFmpegFrameGrabber grabber = null;
         try (ByteArrayOutputStream outStream =new ByteArrayOutputStream();) {
             grabber = new FFmpegFrameGrabber(videFile);
             grabber.start();
             // 获取视频总帧数
             // int lengthInVideoFrames = grabber.getLengthInVideoFrames();
-            // 获取视频时长， / 1000000 将单位转换为秒
+            // 获取视频时长，/ 1000000 将单位转换为秒
             long delayedTime = grabber.getLengthInTime() / 1000000;
 
             Random random = new Random();
@@ -188,10 +187,17 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
 
             ImageIO.write(bi, "jpg", outStream);
 
-            File targetFile = new File(localPath + FilePathEnum.IMAGE.getPath(), fileName + ".jpg");
+            // 从 path 中提取日期部分（去掉前面的 "video/"）
+            String datePath = path.substring(path.indexOf("/") + 1);
+            String coverPath = FilePathEnum.IMAGE.getPath() + datePath;
+            
+            // 创建封面图片目录
+            createDirectory(localPath + coverPath);
+            
+            File targetFile = new File(localPath + coverPath, fileName + ".jpg");
             if (targetFile.createNewFile()) {
                 FileUtils.writeByteArrayToFile(targetFile, outStream.toByteArray());
-                return localUrl + FilePathEnum.IMAGE.getPath() + fileName + ".jpg";
+                return localUrl + coverPath + fileName + ".jpg";
             }
         } catch (Exception e) {
             log.error("getVideoInfo grabber.release failed 获取文件信息失败：{}", e.getMessage());

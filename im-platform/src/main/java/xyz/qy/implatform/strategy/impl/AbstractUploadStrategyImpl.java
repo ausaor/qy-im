@@ -15,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 import xyz.qy.implatform.vo.UploadVideoVO;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * 图片检测模板
@@ -32,14 +34,14 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
         try {
             // 大小校验
             if (file.getSize() > Constant.MAX_IMAGE_SIZE) {
-                throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片大小不能超过4M");
+                throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片大小不能超过 4M");
             }
             // 图片格式校验
             if (!FileUtil.isImage(file.getOriginalFilename())) {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "图片格式不合法");
             }
-
-            // 获取文件md5值
+    
+            // 获取文件 md5 值
             String md5 = FileUtils.getMd5(file.getInputStream());
             // 获取文件扩展名
             String extName = FileUtils.getExtName(file.getOriginalFilename());
@@ -47,12 +49,15 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             String originalName = FileUtils.getFileName(file.getOriginalFilename());
             // 重新生成文件名
             String fileName = md5 + extName;
+            // 添加日期路径
+            String datePath = getDatePath();
+            String fullPath = path + datePath;
             // 判断文件是否已存在
-            if (!exists(path + fileName)) {
+            if (!exists(fullPath + fileName)) {
                 // 不存在则继续上传
-                uploadImageVO = uploadImage(path, fileName, file);
+                uploadImageVO = uploadImage(fullPath, fileName, file);
             } else {
-                uploadImageVO = getImageInfo(path, fileName);
+                uploadImageVO = getImageInfo(fullPath, fileName);
             }
             uploadImageVO.setName(originalName);
             uploadImageVO.setOriginName(originalName + extName);
@@ -70,14 +75,14 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
         try {
             // 大小校验
             if (file.getSize() > Constant.MAX_FILE_SIZE) {
-                throw new GlobalException(ResultCode.PROGRAM_ERROR, "视频大小不能超过10M");
+                throw new GlobalException(ResultCode.PROGRAM_ERROR, "视频大小不能超过 10M");
             }
             // 图片格式校验
             if (!FileUtil.isVideo(file.getOriginalFilename())) {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "视频格式不合法");
             }
-
-            // 获取文件md5值
+    
+            // 获取文件 md5 值
             String md5 = FileUtils.getMd5(file.getInputStream());
             // 获取文件扩展名
             String extName = FileUtils.getExtName(file.getOriginalFilename());
@@ -85,12 +90,15 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             String originalName = FileUtils.getFileName(file.getOriginalFilename());
             // 重新生成文件名
             String fileName = md5 + extName;
+            // 添加日期路径
+            String datePath = getDatePath();
+            String fullPath = path + datePath;
             // 判断文件是否已存在
-            if (!exists(path + fileName)) {
+            if (!exists(fullPath + fileName)) {
                 // 不存在则继续上传
-                uploadVideoVO = uploadVideo(path, fileName, file);
+                uploadVideoVO = uploadVideo(fullPath, fileName, file);
             } else {
-                uploadVideoVO = getVideoInfo(path, fileName);
+                uploadVideoVO = getVideoInfo(fullPath, fileName);
             }
             // 返回文件访问路径
             return uploadVideoVO;
@@ -106,14 +114,14 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
         try {
             // 大小校验
             if (file.getSize() > Constant.MAX_FILE_SIZE) {
-                throw new GlobalException(ResultCode.PROGRAM_ERROR, "音频大小不能超过10M");
+                throw new GlobalException(ResultCode.PROGRAM_ERROR, "音频大小不能超过 10M");
             }
             // 音频格式校验
             if (!FileUtil.isAudio(file.getOriginalFilename())) {
                 throw new GlobalException(ResultCode.PROGRAM_ERROR, "音频格式不合法");
             }
-
-            // 获取文件md5值
+    
+            // 获取文件 md5 值
             String md5 = FileUtils.getMd5(file.getInputStream());
             // 获取文件扩展名
             String extName = FileUtils.getExtName(file.getOriginalFilename());
@@ -121,15 +129,18 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             String originalName = FileUtils.getFileName(file.getOriginalFilename());
             // 重新生成文件名
             String fileName = md5 + extName;
-
+            // 添加日期路径
+            String datePath = getDatePath();
+            String fullPath = path + datePath;
+    
             int duration = AudioDurationUtil.getAudioDuration(file);
-
+    
             // 判断文件是否已存在
-            if (!exists(path + fileName)) {
+            if (!exists(fullPath + fileName)) {
                 // 不存在则继续上传
-                jsonObject = uploadAudio(path, fileName, file);
+                jsonObject = uploadAudio(fullPath, fileName, file);
             } else {
-                jsonObject = getAudioInfo(path, fileName);
+                jsonObject = getAudioInfo(fullPath, fileName);
             }
             jsonObject.put("originalName", originalName);
             jsonObject.put("duration", duration);
@@ -146,26 +157,40 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
         try {
             // 大小校验
             if(file.getSize() > Constant.MAX_FILE_SIZE){
-                throw new GlobalException(ResultCode.PROGRAM_ERROR,"文件大小不能超过10M");
+                throw new GlobalException(ResultCode.PROGRAM_ERROR,"文件大小不能超过 10M");
             }
-            // 获取文件md5值
+            // 获取文件 md5 值
             String md5 = FileUtils.getMd5(file.getInputStream());
             // 获取文件扩展名
             String extName = FileUtils.getExtName(file.getOriginalFilename());
             // 重新生成文件名
             String fileName = md5 + extName;
+            // 添加日期路径
+            String datePath = getDatePath();
+            String fullPath = path + datePath;
             // 判断文件是否已存在
-            if (!exists(path + fileName)) {
+            if (!exists(fullPath + fileName)) {
                 // 不存在则继续上传
-                url = uploadFile(path, fileName, file);
+                url = uploadFile(fullPath, fileName, file);
             } else {
-                url = getFileUrl(path, fileName);
+                url = getFileUrl(fullPath, fileName);
             }
         } catch (Exception e) {
             log.error("上传文件异常:{}", e.getMessage());
             throw new GlobalException("文件上传失败");
         }
         return url;
+    }
+    
+    /**
+     * 获取日期路径
+     *
+     * @return 日期路径，格式：yyyy/MM/dd/
+     */
+    private String getDatePath() {
+        LocalDate now = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd/");
+        return now.format(formatter);
     }
 
     /**
