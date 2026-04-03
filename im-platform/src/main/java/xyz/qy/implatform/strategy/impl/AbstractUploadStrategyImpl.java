@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.exception.GlobalException;
+import xyz.qy.implatform.service.IFileInfoService;
+import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.strategy.UploadStrategy;
 import xyz.qy.implatform.util.AudioDurationUtil;
 import xyz.qy.implatform.util.FileUtil;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import xyz.qy.implatform.vo.UploadVideoVO;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -27,6 +30,16 @@ import java.time.format.DateTimeFormatter;
 @Slf4j
 @Service
 public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
+    
+    @Resource
+    protected IFileInfoService fileInfoService;
+    
+    /**
+     * 获取存储类型
+     *
+     * @return 存储类型
+     */
+    protected abstract String getStorageType();
 
     @Override
     public UploadImageVO uploadImageCommon(MultipartFile file, String path) {
@@ -56,6 +69,9 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             if (!exists(fullPath + fileName)) {
                 // 不存在则继续上传
                 uploadImageVO = uploadImage(fullPath, fileName, file);
+                // 保存文件信息到数据库
+                saveFileRecord(originalName + extName, "IMAGE", file.getSize(),
+                        uploadImageVO.getOriginUrl(), fullPath + fileName, getStorageType());
             } else {
                 uploadImageVO = getImageInfo(fullPath, fileName);
             }
@@ -97,6 +113,10 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             if (!exists(fullPath + fileName)) {
                 // 不存在则继续上传
                 uploadVideoVO = uploadVideo(fullPath, fileName, file);
+
+                // 保存文件信息到数据库
+                saveFileRecord(originalName + extName, "VIDEO", file.getSize(),
+                        uploadVideoVO.getVideoUrl(), fullPath + fileName, getStorageType());
             } else {
                 uploadVideoVO = getVideoInfo(fullPath, fileName);
             }
@@ -139,6 +159,10 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             if (!exists(fullPath + fileName)) {
                 // 不存在则继续上传
                 jsonObject = uploadAudio(fullPath, fileName, file);
+
+                // 保存文件信息到数据库
+                saveFileRecord(originalName + extName, "AUDIO", file.getSize(),
+                        jsonObject.getString("url"), fullPath + fileName, getStorageType());
             } else {
                 jsonObject = getAudioInfo(fullPath, fileName);
             }
@@ -172,6 +196,9 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             if (!exists(fullPath + fileName)) {
                 // 不存在则继续上传
                 url = uploadFile(fullPath, fileName, file);
+
+                // 保存文件信息到数据库
+                saveFileRecord(fileName, "FILE", file.getSize(), url, fullPath + fileName, getStorageType());
             } else {
                 url = getFileUrl(fullPath, fileName);
             }
@@ -276,4 +303,25 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
      * @return 文件路径
      */
     public abstract String getFileUrl(String path, String fileName);
+    
+    /**
+     * 保存文件记录到数据库
+     *
+     * @param fileName 文件名称
+     * @param fileType 文件类型
+     * @param fileSize 文件大小
+     * @param url 文件链接
+     * @param path 文件位置
+     * @param storageType 文件存储类型
+     */
+    private void saveFileRecord(String fileName, String fileType, Long fileSize, 
+                                String url, String path, String storageType) {
+        try {
+            Long userId = SessionContext.getSession().getUserId();
+            fileInfoService.saveFileInfo(fileName, fileType, fileSize, url, path, storageType, userId);
+        } catch (Exception e) {
+            log.error("保存文件信息失败:{}", e.getMessage());
+            // 不抛出异常，避免影响上传流程
+        }
+    }
 }
