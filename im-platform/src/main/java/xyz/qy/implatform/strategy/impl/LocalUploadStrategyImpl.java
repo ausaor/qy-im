@@ -57,6 +57,11 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
     }
 
     @Override
+    protected String getStorageType() {
+        return "disk";
+    }
+
+    @Override
     public UploadImageVO uploadImage(String path, String fileName, MultipartFile file) throws IOException {
         // 判断目录是否存在
         createDirectory(localPath + path);
