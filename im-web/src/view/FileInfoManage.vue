@@ -62,19 +62,18 @@
       style="width: 100%"
       class="file-table"
       header-cell-class-name="table-header-gray"
-      max-height="600"
     >
-      <el-table-column type="index" label="序号" width="70" align="center" fixed></el-table-column>
+      <el-table-column type="index" label="序号" width="70" align="center"></el-table-column>
       
-      <el-table-column prop="fileName" label="文件名称" width="180" show-overflow-tooltip></el-table-column>
+      <el-table-column prop="fileName" label="文件名称" min-width="180" show-overflow-tooltip></el-table-column>
       
-      <el-table-column prop="extension" label="文件后缀" width="100" align="center">
+      <el-table-column prop="extension" label="文件后缀" min-width="100" align="center">
         <template slot-scope="scope">
           <el-tag size="mini" effect="plain">{{ scope.row.extension }}</el-tag>
         </template>
       </el-table-column>
       
-      <el-table-column prop="fileType" label="文件类型" width="100" align="center">
+      <el-table-column prop="fileType" label="文件类型" min-width="100" align="center">
         <template slot-scope="scope">
           <el-tag 
             size="mini" 
@@ -85,15 +84,15 @@
         </template>
       </el-table-column>
       
-      <el-table-column prop="fileSize" label="文件大小 (KB)" width="120" align="right">
+      <el-table-column prop="fileSize" label="文件大小 (KB)" min-width="120" align="right">
         <template slot-scope="scope">
           <span class="file-size">{{ formatFileSize(scope.row.fileSize) }}</span>
         </template>
       </el-table-column>
       
-      <el-table-column prop="path" label="文件路径" min-width="150" show-overflow-tooltip></el-table-column>
+      <el-table-column prop="path" label="文件路径" min-width="200" show-overflow-tooltip></el-table-column>
       
-      <el-table-column prop="storageType" label="存储类型" width="120" align="center">
+      <el-table-column prop="storageType" label="存储类型" min-width="120" align="center">
         <template slot-scope="scope">
           <el-tag 
             size="mini" 
@@ -104,21 +103,17 @@
         </template>
       </el-table-column>
       
-      <el-table-column prop="createByName" label="上传人" width="120" align="center" show-overflow-tooltip>
+      <el-table-column prop="createByName" label="上传人" min-width="120" align="center" show-overflow-tooltip>
         <template slot-scope="scope">
           <span>{{ scope.row.createByName || '-' }}</span>
         </template>
       </el-table-column>
       
-      <el-table-column prop="createTime" label="上传时间" min-width="160" align="center">
-        <template slot-scope="scope">
-          <span>{{ formatDateTime(scope.row.createTime) }}</span>
-        </template>
-      </el-table-column>
+      <el-table-column prop="createTime" label="上传时间" min-width="160" align="center"></el-table-column>
       
       <el-table-column 
         label="操作" 
-        width="200" 
+        min-width="200"
         fixed="right" 
         align="center"
         class-name="operation-column">
@@ -517,7 +512,8 @@ export default {
 
 <style scoped lang="scss">
 .file-management-container {
-  height: 100%;
+  max-width: 78vw;
+  margin: 0 auto;
   padding: 20px;
   background: white;
   border-radius: 12px;
@@ -587,22 +583,21 @@ export default {
   gap: 10px;
 }
 
+// 表格基础样式
 .file-table {
   width: 100%;
   border-radius: 8px;
-  overflow: hidden;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  table-layout: auto;
-}
-
-// 确保表格可以水平滚动
-::v-deep .el-table__body-wrapper {
-  overflow-x: auto !important;
-  -webkit-overflow-scrolling: touch;
-}
-
-::v-deep .el-table__header-wrapper {
-  overflow-x: hidden;
+  
+  // 确保表格可以水平滚动
+  ::v-deep .el-table__body-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  ::v-deep .el-table__header-wrapper {
+    overflow-x: auto !important;
+  }
 }
 
 // 表格滚动条样式
@@ -619,26 +614,24 @@ export default {
   background-color: #f0f0f0;
 }
 
-// 操作列固定样式 - 确保右侧固定列可见
+// 固定列样式增强 - 确保右侧固定列可见
+::v-deep .el-table__fixed, 
 ::v-deep .el-table__fixed-right {
   z-index: 100 !important;
-  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.15) !important;
   background-color: #fff !important;
+}
+
+::v-deep .el-table__fixed-right {
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1) !important;
   border-left: 1px solid #ebeef5 !important;
 }
 
-::v-deep .el-table__fixed-right-patch {
-  background-color: #fff !important;
-}
-
-// 左侧固定列样式
 ::v-deep .el-table__fixed-left {
-  z-index: 100 !important;
-  background-color: #fff !important;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1) !important;
   border-right: 1px solid #ebeef5 !important;
 }
 
-// 操作列按钮容器
+// 操作列按钮样式
 ::v-deep .operation-column {
   .cell {
     padding: 0 8px;
