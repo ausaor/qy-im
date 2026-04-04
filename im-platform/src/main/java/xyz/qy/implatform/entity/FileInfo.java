@@ -38,6 +38,12 @@ public class FileInfo extends Model<FileInfo> {
     private String fileName;
 
     /**
+     * 文件后缀
+     */
+    @TableField("extension")
+    private String extension;
+
+    /**
      * 文件类型
      */
     @TableField("file_type")

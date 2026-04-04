@@ -16,6 +16,7 @@ public interface IFileInfoService extends IService<FileInfo> {
      *
      * @param fileName 文件名称
      * @param fileType 文件类型
+     * @param extension 文件后缀
      * @param fileSize 文件大小
      * @param url 文件链接
      * @param path 文件位置
@@ -23,6 +24,6 @@ public interface IFileInfoService extends IService<FileInfo> {
      * @param createBy 创建者
      * @return 文件信息
      */
-    FileInfo saveFileInfo(String fileName, String fileType, Long fileSize, 
+    void saveFileInfo(String fileName, String fileType, String extension, Long fileSize,
                           String url, String path, String storageType, Long createBy);
 }

@@ -793,6 +793,30 @@ create index idx_1
     on im_emo_img (album_id);
 
 
+create table im_file_info
+(
+    id           bigint auto_increment comment '主键'
+        primary key,
+    file_name    varchar(100)             not null comment '文件名称',
+    file_type    varchar(10)              not null comment '文件类型',
+    extension    varchar(20)   default '' not null comment '文件后缀',
+    file_size    double(20, 2)        default 0.00  not null comment '文件大小',
+    url          varchar(1000) default '' not null comment '文件链接',
+    path         varchar(200)  default '' not null comment '文件位置',
+    storage_type varchar(20)   default '' not null comment '文件存储类型：disk-本地磁盘，minio-MinIO，qiniu-七牛云',
+    create_time  datetime                 not null comment '创建时间',
+    create_by    bigint                   not null comment '创建人',
+    deleted      tinyint(1)    default 0  not null comment '是否删除'
+)
+    comment '上传文件信息表';
+
+create index file_name
+    on im_file_info (file_name);
+
+create index storage_type
+    on im_file_info (storage_type);
+
+
 create table ai_chat_message
 (
     id          bigint auto_increment comment '主键'

@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import xyz.qy.implatform.enums.FilePathEnum;
 import xyz.qy.implatform.exception.GlobalException;
+import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.strategy.context.ImageDetectStrategyContext;
 import xyz.qy.implatform.vo.UploadImageVO;
 import xyz.qy.implatform.vo.UploadVideoVO;
@@ -202,7 +203,15 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
             File targetFile = new File(localPath + coverPath, fileName + ".jpg");
             if (targetFile.createNewFile()) {
                 FileUtils.writeByteArrayToFile(targetFile, outStream.toByteArray());
-                return localUrl + coverPath + fileName + ".jpg";
+                String coverUrl = localUrl + coverPath + fileName + ".jpg";
+                
+                // 保存封面图片信息到数据库
+                Long userId = SessionContext.getSession().getUserId();
+                fileInfoService.saveFileInfo(fileName + ".jpg", "IMAGE", ".jpg",
+                        (long) outStream.size(), coverUrl, coverPath + fileName + ".jpg",
+                        getStorageType(), userId);
+                
+                return coverUrl;
             }
         } catch (Exception e) {
             log.error("getVideoInfo grabber.release failed 获取文件信息失败：{}", e.getMessage());

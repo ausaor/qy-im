@@ -207,8 +207,16 @@ public class QiNiuUploadStrategyImpl extends AbstractUploadStrategyImpl {
             DefaultPutRet putRet = JSON.parseObject(response.bodyString(), DefaultPutRet.class);
             log.info("cover putRet{}", putRet);
             
+            String coverUrl = qiNiuConfigProperties.getDomain() + path + coverFileName;
+            
+            // 保存封面图片信息到数据库
+            Long userId = SessionContext.getSession().getUserId();
+            fileInfoService.saveFileInfo(coverFileName, "IMAGE", ".jpg",
+                    multipartFile.getSize(), coverUrl, 
+                    path + coverFileName, getStorageType(), userId);
+            
             targetFile.delete();
-            return qiNiuConfigProperties.getDomain() + path + coverFileName;
+            return coverUrl;
         } catch (Exception e) {
             log.error("randomGrabberFFmpegImage error", e);
         } finally {

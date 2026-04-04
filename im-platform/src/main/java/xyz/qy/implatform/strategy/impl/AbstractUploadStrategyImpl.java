@@ -70,7 +70,7 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
                 // 不存在则继续上传
                 uploadImageVO = uploadImage(fullPath, fileName, file);
                 // 保存文件信息到数据库
-                saveFileRecord(originalName + extName, "IMAGE", file.getSize(),
+                saveFileRecord(originalName + extName, "IMAGE", extName, file.getSize(),
                         uploadImageVO.getOriginUrl(), fullPath + fileName, getStorageType());
             } else {
                 uploadImageVO = getImageInfo(fullPath, fileName);
@@ -115,7 +115,7 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
                 uploadVideoVO = uploadVideo(fullPath, fileName, file);
 
                 // 保存文件信息到数据库
-                saveFileRecord(originalName + extName, "VIDEO", file.getSize(),
+                saveFileRecord(originalName + extName, "VIDEO", extName, file.getSize(),
                         uploadVideoVO.getVideoUrl(), fullPath + fileName, getStorageType());
             } else {
                 uploadVideoVO = getVideoInfo(fullPath, fileName);
@@ -161,7 +161,7 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
                 jsonObject = uploadAudio(fullPath, fileName, file);
 
                 // 保存文件信息到数据库
-                saveFileRecord(originalName + extName, "AUDIO", file.getSize(),
+                saveFileRecord(originalName + extName, "AUDIO", extName, file.getSize(),
                         jsonObject.getString("url"), fullPath + fileName, getStorageType());
             } else {
                 jsonObject = getAudioInfo(fullPath, fileName);
@@ -198,7 +198,7 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
                 url = uploadFile(fullPath, fileName, file);
 
                 // 保存文件信息到数据库
-                saveFileRecord(fileName, "FILE", file.getSize(), url, fullPath + fileName, getStorageType());
+                saveFileRecord(fileName, "FILE",  extName, file.getSize(), url, fullPath + fileName, getStorageType());
             } else {
                 url = getFileUrl(fullPath, fileName);
             }
@@ -309,16 +309,17 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
      *
      * @param fileName 文件名称
      * @param fileType 文件类型
+     * @param extension 文件扩展名
      * @param fileSize 文件大小
      * @param url 文件链接
      * @param path 文件位置
      * @param storageType 文件存储类型
      */
-    private void saveFileRecord(String fileName, String fileType, Long fileSize, 
+    private void saveFileRecord(String fileName, String fileType, String extension, Long fileSize,
                                 String url, String path, String storageType) {
         try {
             Long userId = SessionContext.getSession().getUserId();
-            fileInfoService.saveFileInfo(fileName, fileType, fileSize, url, path, storageType, userId);
+            fileInfoService.saveFileInfo(fileName, fileType, extension, fileSize, url, path, storageType, userId);
         } catch (Exception e) {
             log.error("保存文件信息失败:{}", e.getMessage());
             // 不抛出异常，避免影响上传流程

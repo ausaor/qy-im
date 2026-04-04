@@ -198,22 +198,33 @@ public class MinioUploadStrategyImpl extends AbstractUploadStrategyImpl {
             grabber.start();
             // 获取视频总帧数
             // int lengthInVideoFrames = grabber.getLengthInVideoFrames();
-            // 获取视频时长， / 1000000 将单位转换为秒
+            // 获取视频时长，/ 1000000 将单位转换为秒
             long delayedTime = grabber.getLengthInTime() / 1000000;
-
+    
             Random random = new Random();
             // 跳转到响应时间
             grabber.setTimestamp((random.nextInt((int)delayedTime - 1) + 1) * 1000000L);
             Frame f = grabber.grabImage();
             Java2DFrameConverter converter = new Java2DFrameConverter();
             BufferedImage bi = converter.getBufferedImage(f);
-
+    
             ImageIO.write(bi, "jpg", outStream);
 
-            MultipartFile multipartFile = convertOutputStreamToMultipartFile(outStream, UUID.randomUUID().toString(false) + ".jpg");
+            String fileName = UUID.randomUUID().toString(false) + ".jpg";
+    
+            MultipartFile multipartFile = convertOutputStreamToMultipartFile(outStream, fileName);
             String miniofileName = minioUtil.upload(minioProps.getBucketName(), minioProps.getImagePath(), multipartFile);
             if (StringUtils.isNotBlank(miniofileName)) {
-                return generUrl(FileType.IMAGE, miniofileName);
+                String coverUrl = generUrl(FileType.IMAGE, miniofileName);
+                    
+                // 保存封面图片信息到数据库
+                Long userId = SessionContext.getSession().getUserId();
+                fileInfoService.saveFileInfo(fileName, "IMAGE", ".jpg",
+                        multipartFile.getSize(), coverUrl, 
+                        minioProps.getImagePath() + "/" + miniofileName, 
+                        getStorageType(), userId);
+                    
+                return coverUrl;
             }
         } catch (Exception e) {
             log.error("getVideoInfo grabber.release failed 获取文件信息失败。", e);
