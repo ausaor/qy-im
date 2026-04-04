@@ -187,6 +187,9 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             String md5 = FileUtils.getMd5(file.getInputStream());
             // 获取文件扩展名
             String extName = FileUtils.getExtName(file.getOriginalFilename());
+            // 获取文件名称
+            String originalName = FileUtils.getFileName(file.getOriginalFilename());
+
             // 重新生成文件名
             String fileName = md5 + extName;
             // 添加日期路径
@@ -198,7 +201,7 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
                 url = uploadFile(fullPath, fileName, file);
 
                 // 保存文件信息到数据库
-                saveFileRecord(fileName, "FILE",  extName, file.getSize(), url, fullPath + fileName, getStorageType());
+                saveFileRecord(originalName + extName, "FILE",  extName, file.getSize(), url, fullPath + fileName, getStorageType());
             } else {
                 url = getFileUrl(fullPath, fileName);
             }

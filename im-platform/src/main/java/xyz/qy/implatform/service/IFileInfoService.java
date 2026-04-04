@@ -1,7 +1,9 @@
 package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import xyz.qy.implatform.dto.FileInfoDTO;
 import xyz.qy.implatform.entity.FileInfo;
+import xyz.qy.implatform.vo.PageResultVO;
 
 /**
  * 上传文件信息表 Service 接口
@@ -26,4 +28,19 @@ public interface IFileInfoService extends IService<FileInfo> {
      */
     void saveFileInfo(String fileName, String fileType, String extension, Long fileSize,
                           String url, String path, String storageType, Long createBy);
+
+    /**
+     * 分页查询文件信息
+     *
+     * @param fileInfoDTO 文件信息
+     * @return 文件信息
+     */
+    PageResultVO pageFileInfo(FileInfoDTO fileInfoDTO);
+
+    /**
+     * 删除文件信息
+     *
+     * @param fileInfoDTO 文件信息
+     */
+    void deleteFileInfo(FileInfoDTO fileInfoDTO);
 }

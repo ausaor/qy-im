@@ -114,6 +114,11 @@ export default new VueRouter({
                   name: "Musics",
                   path: "/home/square/musics",
                   component: () => import("../view/MusicManagement.vue"),
+              },
+              {
+                  name: "FileInfo",
+                  path: "/home/square/fileInfo",
+                  component: () => import("../view/FileInfoManage.vue"),
               }
           ]
         },
