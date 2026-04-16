@@ -59,7 +59,16 @@
     </div>
     </div>
     <div class="footer-wrap">
-      <a href="https://beian.miit.gov.cn/" target="_blank">桂ICP备2026005181号-1</a>
+      <div class="beian-info">
+        <div class="beian-item">
+          <img src="https://beian.mps.gov.cn/img/logo01.dd7ff50e.png" alt="公安备案图标" class="beian-icon" />
+          <a href="https://beian.mps.gov.cn/#/query/webSearch?code=45033202000063" rel="noreferrer" target="_blank">桂公网安备45033202000063号</a>
+        </div>
+        <div class="beian-divider">|</div>
+        <div class="beian-item">
+          <a href="https://beian.miit.gov.cn/" target="_blank">桂ICP备2026005181号-1</a>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -407,13 +416,53 @@ import BIRDS from "vanta/src/vanta.birds";
     .footer-wrap {
       z-index: 999;
       color: #cccccc;
-      font-size: 14px;
+      font-size: 13px;
       position: absolute;
-      bottom: 5px;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
 
-      a, a:visited, a:link, a:hover{
-        text-decoration: none;
-        color:white;
+      .beian-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        border-radius: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+        .beian-item {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+
+          .beian-icon {
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+          }
+
+          a, a:visited, a:link {
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+            font-size: 12px;
+            line-height: 1.5;
+
+            &:hover {
+              color: #ffffff;
+              text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+            }
+          }
+        }
+
+        .beian-divider {
+          color: rgba(255, 255, 255, 0.4);
+          font-size: 14px;
+          user-select: none;
+        }
       }
     }
 
