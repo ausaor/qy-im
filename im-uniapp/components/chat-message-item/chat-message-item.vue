@@ -2,7 +2,15 @@
 	<view class="chat-msg-item">
 		<view class="chat-msg-tip"
 			v-if="msgInfo.type == $enums.MESSAGE_TYPE.RECALL || msgInfo.type == $enums.MESSAGE_TYPE.TIP_TEXT">
-			{{ msgInfo.content }}
+			<!-- #ifdef APP-PLUS || MP-WEIXIN || MP-QQ -->
+			<rich-text :nodes="tipNodes" @itemclick="onTipLinkClick"></rich-text>
+			<!-- #endif -->
+			<!-- #ifdef H5 -->
+			<view v-html="tipNodes" @click="onTipLinkClickH5"></view>
+			<!-- #endif -->
+			<!-- #ifdef MP-ALIPAY || MP-BAIDU || MP-TOUTIAO -->
+			<rich-text :nodes="tipNodes"></rich-text>
+			<!-- #endif -->
 		</view>
 		<view class="chat-msg-tip" v-if="msgInfo.type == $enums.MESSAGE_TYPE.TIP_TIME">
 			{{ $date.toTimeText(msgInfo.sendTime) }}
@@ -330,6 +338,36 @@ export default {
         return '';
       }
       return `color:${this.colors[index]};`
+    },
+    tipNodes() {
+      // 将#{用户名:id}格式转换为可点击的span标签
+      const content = this.msgInfo.content;
+      const regex = /#\{([^:]+):(\d+)\}/g;
+      let result = content;
+      let match;
+      
+      // 用于存储已处理的匹配项，避免重复处理
+      const processedMatches = [];
+      
+      // 迭代所有匹配项
+      while ((match = regex.exec(content)) !== null) {
+        const fullMatch = match[0];
+        const username = match[1];
+        const userId = match[2];
+        
+        // 检查这个匹配是否已经处理过（避免重复处理）
+        if (processedMatches.includes(fullMatch)) {
+          continue;
+        }
+        
+        processedMatches.push(fullMatch);
+        
+        // 转换为可点击元素,使用蓝色字体样式,并添加左右间距
+        const replacement = `<span class="tip-user-link" data-userid="${userId}" style="color: #3498db; cursor: pointer; margin: 0 8rpx;">${username}</span>`;
+        result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), replacement);
+      }
+      
+      return result;
     }
 	},
 	methods: {
@@ -508,6 +546,39 @@ export default {
             url: "/pages/common/user-info?id=" + userId
           })
         }
+      }
+    },
+    onTipLinkClick(event) {
+      console.log('点击了提示消息中的用户链接')
+      const { node } = event.detail;
+      if (node.attrs && node.attrs.class === 'tip-user-link') {
+        const userId = node.attrs['data-userid'];
+        console.log('点击了提示消息用户:', userId)
+        if (userId && userId > 0) {
+          uni.navigateTo({
+            url: "/pages/common/user-info?id=" + userId
+          })
+        }
+      }
+    },
+    onTipLinkClickH5(event) {
+      console.log('H5点击了提示消息中的用户链接', event)
+      // 在H5中，通过event.target获取点击的元素
+      let target = event.target;
+      
+      // 向上查找直到找到带有 tip-user-link 类的元素
+      while (target && target !== event.currentTarget) {
+        if (target.classList && target.classList.contains('tip-user-link')) {
+          const userId = target.getAttribute('data-userid');
+          console.log('H5点击了提示消息用户:', userId);
+          if (userId && userId > 0) {
+            uni.navigateTo({
+              url: "/pages/common/user-info?id=" + userId
+            });
+          }
+          break;
+        }
+        target = target.parentNode;
       }
     }
 	}

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import http from '@/common/request';
 import { MESSAGE_TYPE, MESSAGE_STATUS } from '@/common/enums.js';
-import {processAtUsers} from "../common/common.js";
+import {processAtUsers, processTipUsers} from "../common/common.js";
 import useUserStore from './userStore';
 import { v4 as uuidv4 } from 'uuid'
 
@@ -256,7 +256,7 @@ export default defineStore('regionStore', {
                 Object.assign(message, msgInfo);
                 // 撤回消息需要显示
                 if (msgInfo.type == MESSAGE_TYPE.RECALL) {
-                    chat.lastContent = msgInfo.content;
+                    chat.lastContent = processTipUsers(msgInfo.content);
                 }
                 chat.stored = false;
                 this.regionSaveToStorage();
@@ -281,7 +281,11 @@ export default defineStore('regionStore', {
                 if (msgInfo.atUserIds && msgInfo.atUserIds.length > 0) {
                     chat.lastContent = processAtUsers(msgInfo.content, msgInfo.atUserIds);
                 } else {
-                    chat.lastContent = msgInfo.content;
+                    if (msgInfo.type === MESSAGE_TYPE.TIP_TEXT) {
+                        chat.lastContent = processTipUsers(msgInfo.content);
+                    } else {
+                        chat.lastContent = msgInfo.content;
+                    }
                 }
             }
             chat.lastSendTime = msgInfo.sendTime;

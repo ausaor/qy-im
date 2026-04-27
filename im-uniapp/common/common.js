@@ -21,3 +21,19 @@ export let processAtUsers = (content, atUserIds)  => {
         return match;
     });
 }
+
+/**
+ * 处理提示消息用户
+ *
+ * @param {String} content 输入内容
+ * @returns string 处理后的内容
+ */
+export let processTipUsers = (content) => {
+    // 匹配 #{用户名:id} 的模式
+    const tipPattern = /#\{([^:}]+):(\d+)\}/g;
+
+    return content.replace(tipPattern, (match, username, userId) => {
+        // 只返回用户名部分，去除#{和:id}
+        return username;
+    });
+}

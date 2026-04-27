@@ -779,7 +779,7 @@ export default {
 						}).then(() => {
 							msgInfo = JSON.parse(JSON.stringify(msgInfo));
 							msgInfo.type = this.$enums.MESSAGE_TYPE.RECALL;
-							msgInfo.content = '你撤回了一条消息';
+							msgInfo.content = '#{你:'+ this.mine.id +'}撤回了一条消息';
 							msgInfo.status = this.$enums.MESSAGE_STATUS.RECALL;
 							this.chatStore.insertMessage(msgInfo, this.chat);
 						})
