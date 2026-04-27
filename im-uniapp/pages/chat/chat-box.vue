@@ -840,10 +840,7 @@ export default {
           this.scrollDirection = 'up'
           // 判断滚动距离是否超过阈值
           if (scrollDistance > scrollThreshold) {
-            // 使用 $nextTick 延迟更新 isInBottom，避免无限循环
-            this.$nextTick(() => {
               this.isInBottom = false;
-            });
             console.log('向上快速滚动，滚动距离:', scrollDistance)
             // 这里可以添加向上快速滚动的自定义逻辑
           } else {
@@ -891,9 +888,7 @@ export default {
       }
       // 清除底部标识
       if (this.showMinIdx > 0) {
-        this.$nextTick(() => {
-          this.isInBottom = false;
-        });
+        this.isInBottom = false;
       }
     },
     onScrollToBottom(e) {
@@ -984,21 +979,17 @@ export default {
 				url: `/group/find/${groupId}`,
 				method: 'GET'
 			}).then((group) => {
-				this.$nextTick(() => {
-				  this.group = group;
-				  this.chatStore.updateChatFromGroup(group);
-				  this.groupStore.updateGroup(group);
-				});
+        this.group = group;
+        this.chatStore.updateChatFromGroup(group);
+        this.groupStore.updateGroup(group);
 			});
 
 			this.$http({
 				url: `/group/members/${groupId}`,
 				method: 'GET'
 			}).then((groupMembers) => {
-        this.$nextTick(() => {
-          this.groupMembers = groupMembers;
-          this.myGroupMemberInfo = this.groupMembersMap.get(this.mine.id);
-        });
+        this.groupMembers = groupMembers;
+        this.myGroupMemberInfo = this.groupMembersMap.get(this.mine.id);
 			});
 		},
 		loadFriend(friendId) {
@@ -1035,11 +1026,9 @@ export default {
         }
         if (this.quoteMsgInfo.msgInfo) {
           reqData.msgInfo.quoteId = this.quoteMsgInfo.msgInfo.id;
-          this.$nextTick(() => {
-            this.quoteMsgInfo.msgInfo = null;
-            this.quoteMsgInfo.quoteContent = '';
-            this.quoteMsgInfo.show = false;
-          });
+          this.quoteMsgInfo.msgInfo = null;
+          this.quoteMsgInfo.quoteContent = '';
+          this.quoteMsgInfo.show = false;
         }
 				this.$http({
 					url: this.messageAction,
@@ -1277,31 +1266,27 @@ export default {
       console.log("引用消息", msgInfo);
 
       this.quoteMsgInfo.msgInfo =  msgInfo;
-      this.$nextTick(() => {
-        this.quoteMsgInfo.quoteContent += (msgInfo.showName + "：");
-        if (msgInfo.type === this.$enums.MESSAGE_TYPE.TEXT) {
-          this.quoteMsgInfo.quoteContent += msgInfo.content;
-        } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.IMAGE) {
-          this.quoteMsgInfo.quoteContent += "[图片]";
-        } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.VIDEO) {
-          this.quoteMsgInfo.quoteContent += "[视频]";
-        } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.FILE) {
-          this.quoteMsgInfo.quoteContent += "[文件]";
-        } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.AUDIO) {
-          this.quoteMsgInfo.quoteContent += "[音频]" + (JSON.parse(msgInfo.content).duration ? JSON.parse(msgInfo.content).duration + '"' : JSON.parse(msgInfo.content).originalName);
-        } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.WORD_VOICE) {
-          //this.quoteMsgInfo.quoteContent += "[语音台词]";
-          this.quoteMsgInfo.quoteContent += JSON.parse(msgInfo.content).word;
-        }
-        this.quoteMsgInfo.show = true;
-      });
+      this.quoteMsgInfo.quoteContent += (msgInfo.showName + "：");
+      if (msgInfo.type === this.$enums.MESSAGE_TYPE.TEXT) {
+        this.quoteMsgInfo.quoteContent += msgInfo.content;
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.IMAGE) {
+        this.quoteMsgInfo.quoteContent += "[图片]";
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.VIDEO) {
+        this.quoteMsgInfo.quoteContent += "[视频]";
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.FILE) {
+        this.quoteMsgInfo.quoteContent += "[文件]";
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.AUDIO) {
+        this.quoteMsgInfo.quoteContent += "[音频]" + (JSON.parse(msgInfo.content).duration ? JSON.parse(msgInfo.content).duration + '"' : JSON.parse(msgInfo.content).originalName);
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.WORD_VOICE) {
+        //this.quoteMsgInfo.quoteContent += "[语音台词]";
+        this.quoteMsgInfo.quoteContent += JSON.parse(msgInfo.content).word;
+      }
+      this.quoteMsgInfo.show = true;
     },
     cancelQuote() {
-      this.$nextTick(() => {
-        this.quoteMsgInfo.msgInfo = null;
-        this.quoteMsgInfo.quoteContent = "";
-        this.quoteMsgInfo.show = false;
-      });
+      this.quoteMsgInfo.msgInfo = null;
+      this.quoteMsgInfo.quoteContent = "";
+      this.quoteMsgInfo.show = false;
     },
     scrollToTargetMsg(messageId) {
       this.scrollMsgIdx = this.findIdxByMessageId(messageId);
@@ -1462,9 +1447,7 @@ export default {
             this.scrollToBottom();
           } else {
             // 若滚动条不在底部，说明用户正在翻历史消息，此时滚动条不能动，同时增加新消息提示
-            this.$nextTick(() => {
-              this.newMessageSize++;
-            });
+            this.newMessageSize++;
           }
         }
       }
