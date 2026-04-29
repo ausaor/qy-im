@@ -28,10 +28,12 @@
 
 <script>
 import RegionItem from "../../components/region-item/region-item.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import LongPressMenu from "../../components/long-press-menu/long-press-menu.vue";
 
 export default {
   name: "region-group",
-  components: {RegionItem},
+  components: {LongPressMenu, NavBar, RegionItem},
   data() {
     return {
       showSearch: false,

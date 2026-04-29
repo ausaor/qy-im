@@ -25,8 +25,11 @@
 </template>
 
 <script>
+import HeadImage from "../head-image/head-image.vue";
+
 export default {
 	name: "chatItem",
+  components: {HeadImage},
 	data() {
 		return {}
 	},

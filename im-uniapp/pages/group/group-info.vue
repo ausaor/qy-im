@@ -149,9 +149,18 @@ import GroupMemberList from "../../components/group-member-list/group-member-lis
 import CharacterList from "../../components/character-list/character-list.vue";
 import CharacterAvatarList from "../../components/character-avatar-list/character-avatar-list.vue";
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
+import ImageUpload from "../../components/image-upload/image-upload.vue";
+import BarGroup from "../../components/bar/bar-group.vue";
+import BtnBar from "../../components/bar/btn-bar.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
 
 export default {
-  components: {SvgIcon, CharacterAvatarList, CharacterList, GroupMemberList, GroupTemplateList},
+  components: {
+    NavBar,
+    BtnBar,
+    BarGroup,
+    ImageUpload, HeadImage, SvgIcon, CharacterAvatarList, CharacterList, GroupMemberList, GroupTemplateList},
 	data() {
 		return {
 			groupId: null,

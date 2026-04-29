@@ -39,8 +39,11 @@
 </template>
 
 <script>
+import HeadImage from "../head-image/head-image.vue";
+
 export default {
 	name: "chat-at-box",
+  components: {HeadImage},
 	props: {
 		ownerId: {
 			type: Number,

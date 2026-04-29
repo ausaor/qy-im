@@ -75,9 +75,12 @@
 <script>
 import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
 import CharacterList from "../../components/character-list/character-list.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import ImageUpload from "../../components/image-upload/image-upload.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
 
 export default {
-  components: {CharacterList, GroupTemplateList},
+  components: {HeadImage, ImageUpload, NavBar, CharacterList, GroupTemplateList},
 	data() {
 		return {
 			group: {

@@ -9,9 +9,11 @@
 
 <script>
 import UNI_APP from '@/.env.js';
+import LsjUpload from "../../uni_modules/lsj-upload/components/lsj-upload/lsj-upload.vue";
 
 export default {
 	name: "file-upload",
+  components: {LsjUpload},
 	data() {
 		return {
 			fileMap: new Map(),

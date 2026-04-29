@@ -35,7 +35,11 @@
 </template>
 
 <script>
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import ImageUpload from "../../components/image-upload/image-upload.vue";
+
 export default {
+  components: {ImageUpload, NavBar},
 	data() {
 		return {
 			signTextAlign: 'right',

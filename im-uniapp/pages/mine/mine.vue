@@ -47,7 +47,14 @@
 </template>
 
 <script>
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
+import BarGroup from "../../components/bar/bar-group.vue";
+import ArrowBar from "../../components/bar/arrow-bar.vue";
+import BtnBar from "../../components/bar/btn-bar.vue";
+
 export default {
+  components: {BtnBar, ArrowBar, BarGroup, HeadImage, NavBar},
 	data() {
 		return {}
 	},

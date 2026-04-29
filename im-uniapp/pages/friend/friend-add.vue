@@ -45,7 +45,11 @@
 </template>
 
 <script>
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
+
 export default {
+  components: {HeadImage, NavBar},
 	data() {
 		return {
 			searchText: "",

@@ -84,10 +84,12 @@
 <script>
 import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
 import CharacterList from "../../components/character-list/character-list.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
 
 export default {
   name: "group-request-detail",
-  components: {CharacterList, GroupTemplateList},
+  components: {HeadImage, NavBar, CharacterList, GroupTemplateList},
   data() {
     return {
       request: {},

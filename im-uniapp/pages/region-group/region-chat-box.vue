@@ -119,10 +119,19 @@
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 import VideoUpload from "../../components/video-upload/video-upload.vue";
 import VideoPlay from "../../components/video-play/video-play.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import ChatMessageItem from "../../components/chat-message-item/chat-message-item.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
+import ChatRecord from "../../components/chat-record/chat-record.vue";
+import FileUpload from "../../components/file-upload/file-upload.vue";
+import ImageUpload from "../../components/image-upload/image-upload.vue";
+import ChatAtBox from "../../components/chat-at-box/chat-at-box.vue";
 
 export default {
   name: "region-chat-box",
-  components: {VideoPlay, VideoUpload, SvgIcon},
+  components: {
+    ChatAtBox,
+    ImageUpload, FileUpload, ChatRecord, HeadImage, ChatMessageItem, NavBar, VideoPlay, VideoUpload, SvgIcon},
   data() {
     return {
       chat: {},
@@ -926,6 +935,8 @@ export default {
         this.quoteMsgInfo.quoteContent += msgInfo.content;
       } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.IMAGE) {
         this.quoteMsgInfo.quoteContent += "[图片]";
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.EMOJI) {
+        this.quoteMsgInfo.quoteContent += "[表情]";
       } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.VIDEO) {
         this.quoteMsgInfo.quoteContent += "[视频]";
       } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.FILE) {

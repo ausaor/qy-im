@@ -38,9 +38,11 @@
 import CharacterAvatar from "../../components/character-avatar/character-avatar.vue";
 import CharacterList from "../../components/character-list/character-list.vue";
 import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
 
 export default {
-  components: {GroupTemplateList, CharacterList, CharacterAvatar},
+  components: {HeadImage, NavBar, GroupTemplateList, CharacterList, CharacterAvatar},
 	data() {
 		return {
 			groupId: null,

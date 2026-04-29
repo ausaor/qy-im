@@ -23,8 +23,11 @@
 </template>
 
 <script>
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+
 export default {
   name: "mine-msg-notice",
+  components: {NavBar},
   computed: {
     userInfo() {
       return this.userStore.userInfo;

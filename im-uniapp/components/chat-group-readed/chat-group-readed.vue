@@ -34,8 +34,11 @@
 </template>
 
 <script>
+import HeadImage from "../head-image/head-image.vue";
+
 export default {
 	name: "chat-group-readed",
+  components: {HeadImage},
 	data() {
 		return {
 			items: ['已读', '未读'],

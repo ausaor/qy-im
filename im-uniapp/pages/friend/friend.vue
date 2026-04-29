@@ -85,9 +85,11 @@
 <script>
 import { pinyin } from 'pinyin-pro';
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
 
 export default {
-  components: {SvgIcon},
+  components: {HeadImage, NavBar, SvgIcon},
 	data() {
 		return {
 			showSearch: false,

@@ -107,9 +107,13 @@
 
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 import UNI_APP from '@/.env.js'
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import TreeNode from "../../components/tree-node/tree-node.vue";
 
 export default {
   components: {
+    TreeNode,
+    NavBar,
     SvgIcon
   },
   data() {

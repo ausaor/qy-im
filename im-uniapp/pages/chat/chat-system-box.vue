@@ -58,10 +58,11 @@
 <script>
 import VideoPlay from "../../components/video-play/video-play.vue";
 import MusicPlayer  from "../../components/music-player/music-player.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
 
 export default {
   name: "chat-system-box",
-  components: {VideoPlay, MusicPlayer},
+  components: {NavBar, VideoPlay, MusicPlayer},
   data() {
     return {
       chatIdx: 0,

@@ -37,8 +37,11 @@
 
 
 <script>
+import HeadImage from "../head-image/head-image.vue";
+
 export default {
 	name: "chat-group-member-choose",
+  components: {HeadImage},
 	props: {
 		members: {
 			type: Array

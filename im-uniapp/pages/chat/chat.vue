@@ -28,7 +28,12 @@
 
 <script>
 
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import LongPressMenu from "../../components/long-press-menu/long-press-menu.vue";
+import ChatItem from "../../components/chat-item/chat-item.vue";
+
 export default {
+  components: {ChatItem, LongPressMenu, NavBar},
 	data() {
 		return {
 			showSearch: false,

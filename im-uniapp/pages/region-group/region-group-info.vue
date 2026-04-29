@@ -84,10 +84,13 @@
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 import HeadImage from "../../components/head-image/head-image.vue";
 import RegionGroupMembers from "../../components/region-group-members/region-group-members.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import BarGroup from "../../components/bar/bar-group.vue";
+import BtnBar from "../../components/bar/btn-bar.vue";
 
 export default {
   name: "region-group-info",
-  components: {RegionGroupMembers, HeadImage, SvgIcon},
+  components: {BtnBar, BarGroup, NavBar, RegionGroupMembers, HeadImage, SvgIcon},
   data() {
     return {
       regionGroupId: null,

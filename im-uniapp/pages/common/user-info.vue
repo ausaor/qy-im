@@ -79,9 +79,13 @@
 
 <script>
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
+import BarGroup from "../../components/bar/bar-group.vue";
+import BtnBar from "../../components/bar/btn-bar.vue";
 
 export default {
-  components: {SvgIcon},
+  components: {BtnBar, BarGroup, HeadImage, NavBar, SvgIcon},
 	data() {
 		return {
 			userInfo: {},

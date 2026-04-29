@@ -47,10 +47,11 @@
 import SvgIcon from "../svg-icon/svg-icon.vue";
 import characterWordList from "../character-word-list/character-word-list.vue";
 import characterEmoList from "../character-emo-list/character-emo-list.vue";
+import ImageUpload from "../image-upload/image-upload.vue";
 
 export default {
   name: "comment-box",
-  components: {characterEmoList, characterWordList, SvgIcon},
+  components: {ImageUpload, characterEmoList, characterWordList, SvgIcon},
   props: {
     commentPlaceholder: {
       type: String,

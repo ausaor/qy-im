@@ -19,7 +19,10 @@
 </template>
 
 <script>
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+
 export default {
+  components: {NavBar},
 	data() {
 		return {
 			formData: {

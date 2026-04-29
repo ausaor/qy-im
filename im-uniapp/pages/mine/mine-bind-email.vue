@@ -37,8 +37,11 @@
 </template>
 
 <script>
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+
 export default {
   name: "mind-bind-email",
+  components: {NavBar},
   data() {
     return {
       formData: {

@@ -55,8 +55,12 @@
 </template>
 
 <script>
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
+
 export default {
   name: "group-request",
+  components: {HeadImage, NavBar},
   data() {
     return {
       curTab: 1,

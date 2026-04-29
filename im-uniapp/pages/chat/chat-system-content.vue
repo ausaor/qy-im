@@ -16,10 +16,12 @@
 
 <script>
 import mpHtml from 'mp-html/dist/uni-app/components/mp-html/mp-html.vue'
+import NavBar from "../../components/nav-bar/nav-bar.vue";
 
 export default {
   name: "chat-system-content",
   components: {
+    NavBar,
     mpHtml
   },
   data() {

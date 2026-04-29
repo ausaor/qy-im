@@ -147,12 +147,6 @@
         @close="handleVideoClose"
         @error="handleVideoError"
     ></video-play>
-		<!-- 群语音通话时选择成员 -->
-		<!-- #ifndef MP-WEIXIN -->
-		<group-member-selector ref="selBox" :members="groupMembers" :maxSize="configStore.webrtc.maxChannel"
-			@complete="onInviteOk"></group-member-selector>
-		<group-rtc-join ref="rtcJoin" :groupId="group.id"></group-rtc-join>
-		<!-- #endif -->
 	</view>
 </template>
 
@@ -161,9 +155,23 @@ import characterWordList from "../../components/character-word-list/character-wo
 import VideoUpload from "../../components/video-upload/video-upload.vue";
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 import VideoPlay from "../../components/video-play/video-play.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import ChatMessageItem from "../../components/chat-message-item/chat-message-item.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
+import ChatRecord from "../../components/chat-record/chat-record.vue";
+import FileUpload from "../../components/file-upload/file-upload.vue";
+import ImageUpload from "../../components/image-upload/image-upload.vue";
+import ChatAtBox from "../../components/chat-at-box/chat-at-box.vue";
 
 export default {
   components: {
+    ChatAtBox,
+    ImageUpload,
+    FileUpload,
+    ChatRecord,
+    HeadImage,
+    ChatMessageItem,
+    NavBar,
     VideoPlay,
     SvgIcon,
     VideoUpload,
@@ -1271,6 +1279,8 @@ export default {
         this.quoteMsgInfo.quoteContent += msgInfo.content;
       } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.IMAGE) {
         this.quoteMsgInfo.quoteContent += "[图片]";
+      } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.EMOJI) {
+        this.quoteMsgInfo.quoteContent += "[表情]";
       } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.VIDEO) {
         this.quoteMsgInfo.quoteContent += "[视频]";
       } else if (msgInfo.type === this.$enums.MESSAGE_TYPE.FILE) {

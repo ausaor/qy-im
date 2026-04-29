@@ -44,8 +44,11 @@
 </template>
 
 <script>
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+
 export default {
   name: "ming-reset-pwd",
+  components: {NavBar},
   data() {
     return {
       formData: {

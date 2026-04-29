@@ -38,10 +38,12 @@
 import CharacterAvatar from "../../components/character-avatar/character-avatar.vue";
 import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
 import CharacterList from "../../components/character-list/character-list.vue";
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
 
 export default {
   name: "group-switch",
-  components: {CharacterList, GroupTemplateList, CharacterAvatar},
+  components: {HeadImage, NavBar, CharacterList, GroupTemplateList, CharacterAvatar},
   data() {
     return {
       searchText: "",

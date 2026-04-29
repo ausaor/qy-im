@@ -55,6 +55,18 @@
 						<text title="发送失败" v-if="loadFail" @click="onSendFail"
 							class="send-fail iconfont icon-warning-circle-fill"></text>
 					</view>
+          <view class="chat-msg-emoji" v-if="msgInfo.type == $enums.MESSAGE_TYPE.EMOJI">
+            <long-press-menu :items="menuItems" @select="onSelectMenu">
+              <view class="img-load-box">
+                <image class="send-image" mode="heightFix" :src="JSON.parse(msgInfo.content).imageUrl"
+                       lazy-load="true" @click.stop="onShowFullImage()">
+                </image>
+                <uni-icons v-if="loading" type="spinner-cycle" size="20" color="#999"></uni-icons>
+              </view>
+            </long-press-menu>
+            <text title="发送失败" v-if="loadFail" @click="onSendFail"
+                  class="send-fail iconfont icon-warning-circle-fill"></text>
+          </view>
 					<view class="chat-msg-file" v-if="msgInfo.type == $enums.MESSAGE_TYPE.FILE">
 						<long-press-menu :items="menuItems" @select="onSelectMenu">
 							<view class="chat-file-box">
@@ -110,6 +122,9 @@
                   <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.IMAGE">
                     <image class="quote-image" mode="aspectFill" :src="JSON.parse(msgInfo.quoteMsg.content).originUrl" lazy-load="true"></image>
                   </view>
+                  <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.EMOJI">
+                    <image class="quote-emoji" mode="aspectFill" :src="JSON.parse(msgInfo.quoteMsg.content).imageUrl" lazy-load="true"></image>
+                  </view>
                   <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.VIDEO" class="quote-video">
                     <image class="video-cover-image" mode="heightFix" :src="JSON.parse(msgInfo.quoteMsg.content).coverUrl" lazy-load="true"></image>
                     <text class="play-icon iconfont icon-play"></text>
@@ -158,10 +173,11 @@
 
 <script>
 import SvgIcon from "../svg-icon/svg-icon.vue";
+import LongPressMenu from "../long-press-menu/long-press-menu.vue";
 
 export default {
 	name: "chat-message-item",
-  components: {SvgIcon},
+  components: {LongPressMenu, SvgIcon},
 	props: {
     showInfo: {
       type: Object,
@@ -363,7 +379,7 @@ export default {
         processedMatches.push(fullMatch);
         
         // 转换为可点击元素,使用蓝色字体样式,并添加左右间距
-        const replacement = `<span class="tip-user-link" data-userid="${userId}" style="color: #3498db; cursor: pointer; margin: 0 8rpx;">${username}</span>`;
+        const replacement = `<a href="javascript:void(0)" class="tip-user-link" data-userid="${userId}" style="color: #3498db; cursor: pointer; margin: 0 8rpx;">${username}</a>`;
         result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), replacement);
       }
       
@@ -732,6 +748,32 @@ export default {
 					}
 				}
 
+        .chat-msg-emoji {
+          display: flex;
+          flex-wrap: nowrap;
+          flex-direction: row;
+          align-items: center;
+
+          .img-load-box {
+            position: relative;
+
+            .send-image {
+              min-width: 200rpx;
+              max-width: 420rpx;
+              height: 350rpx;
+              cursor: pointer;
+              border-radius: 4px;
+            }
+          }
+
+          .send-fail {
+            color: $im-color-danger;
+            font-size: $im-font-size;
+            cursor: pointer;
+            margin: 0 20px;
+          }
+        }
+
 				.chat-msg-file {
 					display: flex;
 					flex-wrap: nowrap;
@@ -870,6 +912,14 @@ export default {
               }
 
               .quote-image {
+                min-width: 120rpx;
+                max-width: 160rpx;
+                height: 120rpx;
+                cursor: pointer;
+                border-radius: 12rpx;
+              }
+
+              .quote-emoji {
                 min-width: 120rpx;
                 max-width: 160rpx;
                 height: 120rpx;
@@ -1039,6 +1089,10 @@ export default {
 					.chat-msg-image {
 						flex-direction: row-reverse;
 					}
+
+          .chat-msg-emoji {
+            flex-direction: row-reverse;
+          }
 
 					.chat-msg-file {
 						flex-direction: row-reverse;

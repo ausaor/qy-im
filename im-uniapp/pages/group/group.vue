@@ -30,7 +30,11 @@
 </template>
 
 <script>
+import NavBar from "../../components/nav-bar/nav-bar.vue";
+import GroupItem from "../../components/group-item/group-item.vue";
+
 export default {
+  components: {GroupItem, NavBar},
 	data() {
 		return {
 			showSearch: false,
