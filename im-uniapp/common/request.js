@@ -17,6 +17,7 @@ const request = (options) => {
 			method: options.method || 'GET',
 			header: header,
 			data: options.data || {},
+			timeout: options.timeout || 10000,
 			async success(res) {
 				if (res.data.code == 200) {
 					return resolve(res.data.data)
@@ -79,6 +80,7 @@ const reqRefreshToken = (loginInfo) => {
 			header: {
 				refreshToken: loginInfo.refreshToken
 			},
+			timeout: 10000, // 刷新Token也增加超时
 			success: (res) => {
 				resolve(res);
 			},

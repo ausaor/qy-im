@@ -26,7 +26,9 @@
 		{
 			"path": "pages/region-group/region-chat-box",
 			"style": {
-				"navigationStyle": "custom",
+				"mp-weixin": {
+					"disableScroll": true
+				},
 				"app-plus": {
 					"softinputMode": "adjustResize"
 				}
@@ -41,7 +43,9 @@
 		{
 			"path": "pages/chat/chat-box",
 			"style": {
-				"navigationStyle": "custom",
+				"mp-weixin": {
+					"disableScroll": true
+				},
 				"app-plus": {
 					"softinputMode": "adjustResize"
 				}
@@ -50,7 +54,9 @@
 		{
 			"path": "pages/chat/chat-system-box",
 			"style": {
-				"navigationStyle": "custom",
+				"mp-weixin": {
+					"disableScroll": true
+				},
 				"app-plus": {
 					"softinputMode": "adjustResize"
 				}

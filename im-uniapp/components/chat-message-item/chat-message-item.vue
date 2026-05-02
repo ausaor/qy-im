@@ -16,12 +16,12 @@
 			{{ $date.toTimeText(msgInfo.sendTime) }}
 		</view>
 		<view class="chat-msg-normal" v-if="isNormal" :class="{ 'chat-msg-mine': msgInfo.selfSend }">
-			<head-image class="avatar" @longpress.prevent="$emit('longPressHead')" :id="msgInfo.sendId" :url="showInfo.headImage"
-				:name="showInfo.showName" size="small"></head-image>
+			<head-image class="avatar" @longpress.prevent="$emit('longPressHead')" :id="msgInfo.sendId" :url="headImage"
+				:name="showName" size="small"></head-image>
 			<view class="chat-msg-content">
 				<view v-if="(msgInfo.groupId || msgInfo.regionGroupId) && !msgInfo.selfSend" class="chat-msg-top">
-					<text :style="nameColorStyle" class="alias-name">{{ showInfo.showName }}</text>
-          <text v-show="myGroupMemberInfo.showNickName" class="nick-name">{{showInfo.nickName}}</text>
+					<text :style="nameColorStyle" class="alias-name">{{ showName }}</text>
+          <text v-show="myGroupMemberInfo.showNickName" class="nick-name">{{showName}}</text>
           <text v-if="isOwner && msgInfo.groupId" class="group-owner">群主</text>
           <text v-if="msgInfo.sendId===1" class="blogger">博主</text>
 				</view>
@@ -179,9 +179,16 @@ export default {
 	name: "chat-message-item",
   components: {LongPressMenu, SvgIcon},
 	props: {
+    headImage: {
+      type: String,
+      required: true
+    },
+    showName: {
+      type: String,
+      required: true
+    },
     showInfo: {
       type: Object,
-      required: true,
       default() {
         return {
           headImage: "",

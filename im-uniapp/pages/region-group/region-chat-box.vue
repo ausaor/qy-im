@@ -10,7 +10,7 @@
             <view v-for="(msgInfo, idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid"
                   class="message-wrapper" :class="{active: targetMsgId === msgInfo.id}">
               <chat-message-item :ref="'message'+msgInfo.id" v-if="idx >= showMinIdx"
-                                 @call="onRtCall(msgInfo)" :showInfo="showInfo(msgInfo)"
+                                 @call="onRtCall(msgInfo)" :head-image="headImage(msgInfo)" :show-name="showName(msgInfo)"
                                  @recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
                                  @longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
                                  @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg" @playVideo="playVideo"
@@ -807,6 +807,14 @@ export default {
       let ids = [this.mine.id];
       this.$refs.selBox.init(ids, ids);
       this.$refs.selBox.open();
+    },
+    headImage(msgInfo) {
+      let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
+      return member ? member.headImage : "";
+    },
+    showName(msgInfo) {
+      let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
+      return member ? member.aliasName : "";
     },
     showInfo(msgInfo) {
       let showInfoObj = {

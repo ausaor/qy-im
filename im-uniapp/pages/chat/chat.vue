@@ -2,10 +2,14 @@
 	<view class="tab-page">
 		<nav-bar search @search="onSearch()" :theme-index="0">消息</nav-bar>
 		<view v-if="loading" class="chat-loading">
-			<uni-load-more :content="'消息接收中...'" :icon-size='50'></uni-load-more>
+      <custom-loading :size="50" :mask="false">
+        <view>消息接收中...</view>
+      </custom-loading>
 		</view>
 		<view v-if="initializing" class="chat-loading">
-			<uni-load-more :content="'正在初始化...'" :icon-size='50'></uni-load-more>
+      <custom-loading :size="50" :mask="false">
+        <view>正在初始化...</view>
+      </custom-loading>
 		</view>
 		<view class="nav-bar" v-if="showSearch">
 			<view class="nav-search">
@@ -17,7 +21,7 @@
 			温馨提示：您现在还没有任何聊天消息，快跟您的好友发起聊天吧~
 		</view>
 		<scroll-view class="scroll-bar" v-else scroll-with-animation="true" scroll-y="true">
-			<view v-for="(chat, index) in chatStore.chats" :key="index" v-show="!searchText || chat.showName.includes(searchText)">
+			<view v-for="(chat, index) in chatStore.chats" :key="index">
 				<long-press-menu v-if="isShowChat(chat)" :items="menu.items" @select="onSelectMenu($event, index)">
 					<chat-item :chat="chat" :index="index" :active="menu.chatIdx == index"></chat-item>
 				</long-press-menu>
@@ -31,9 +35,10 @@
 import NavBar from "../../components/nav-bar/nav-bar.vue";
 import LongPressMenu from "../../components/long-press-menu/long-press-menu.vue";
 import ChatItem from "../../components/chat-item/chat-item.vue";
+import CustomLoading from "../../components/custom-loading/custom-loading.vue";
 
 export default {
-  components: {ChatItem, LongPressMenu, NavBar},
+  components: {CustomLoading, ChatItem, LongPressMenu, NavBar},
 	data() {
 		return {
 			showSearch: false,
@@ -116,7 +121,7 @@ export default {
 			return this.chatStore.isLoading();
 		},
 		initializing(){
-			return !getApp().$vm.isInit;
+      return !this.configStore.appInit;
 		}
 	},
 	watch: {

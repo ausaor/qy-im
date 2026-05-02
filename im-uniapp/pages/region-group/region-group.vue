@@ -2,10 +2,14 @@
   <view class="tab-page region-group">
     <nav-bar search add @add="toSelectRegion" @search="onSearch()" :theme-index="1">地区群聊</nav-bar>
     <view v-if="loading" class="chat-loading">
-      <uni-load-more :content="'消息接收中...'" :icon-size='50'></uni-load-more>
+      <custom-loading :size="50" :mask="false">
+        <view>消息接收中...</view>
+      </custom-loading>
     </view>
     <view v-if="initializing" class="chat-loading">
-      <uni-load-more :content="'正在初始化...'" :icon-size='50'></uni-load-more>
+      <custom-loading :size="50" :mask="false">
+        <view>正在初始化...</view>
+      </custom-loading>
     </view>
     <view class="nav-bar" v-if="showSearch">
       <view class="nav-search">
@@ -30,10 +34,11 @@
 import RegionItem from "../../components/region-item/region-item.vue";
 import NavBar from "../../components/nav-bar/nav-bar.vue";
 import LongPressMenu from "../../components/long-press-menu/long-press-menu.vue";
+import CustomLoading from "../../components/custom-loading/custom-loading.vue";
 
 export default {
   name: "region-group",
-  components: {LongPressMenu, NavBar, RegionItem},
+  components: {CustomLoading, LongPressMenu, NavBar, RegionItem},
   data() {
     return {
       showSearch: false,
@@ -123,7 +128,7 @@ export default {
       return this.regionStore.isRegionLoading();
     },
     initializing(){
-      return !getApp().$vm.isInit;
+      return !this.configStore.appInit;
     },
     unreadCount() {
       let count = 0;

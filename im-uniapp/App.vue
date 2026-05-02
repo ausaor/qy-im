@@ -17,12 +17,12 @@ export default {
 	},
 	methods: {
 		init() {
+      this.reconnecting = false;
 			this.isExit = false;
 			// 加载数据
 			this.loadStore().then(() => {
 				// 初始化websocket
 				this.initWebSocket();
-				this.isInit = true;
 			}).catch((e) => {
 				console.log(e);
 				this.exit();
@@ -30,7 +30,6 @@ export default {
 		},
 		initWebSocket() {
 			let loginInfo = uni.getStorageSync("loginInfo")
-			wsApi.init();
 			wsApi.connect(UNI_APP.WS_URL, loginInfo.accessToken);
 			wsApi.onConnect(() => {
 				// 重连成功提示
@@ -41,15 +40,9 @@ export default {
 						icon: 'none'
 					})
 				}
-				// 加载离线消息
-				this.pullPrivateOfflineMessage(this.chatStore.privateMsgMaxId);
-				this.pullGroupOfflineMessage(this.chatStore.groupMsgMaxId);
-        this.pullSystemOfflineMessage(this.chatStore.systemMsgMaxSeqNo);
-        this.pullRegionGroupOfflineMessage(this.regionStore.regionGroupMsgMaxId);
-        this.pullOfflineTalks(this.talkStore.privateTalkMaxId);
-        this.pullFriendRequests();
-        this.pullGroupRequests();
-        this.pullOfflineTalkNotify();
+				// 使用串行方式加载离线消息，避免占满浏览器6个并发连接数
+				this.pullOfflineMessagesBatch();
+        this.configStore.setAppInit(true);
 			});
 			wsApi.onMessage((cmd, msgInfo) => {
 				if (cmd == 2) {
@@ -83,22 +76,23 @@ export default {
 			});
 			wsApi.onClose((res) => {
 				console.log("ws断开", res);
-				// 重新连接
-				this.reconnectWs();
-
+        // 重新连接
+        if (!this.reconnecting) {
+          this.reconnectWs();
+          this.configStore.setAppInit(false);
+        }
 			})
 		},
 		loadStore() {
 			return this.userStore.loadUser().then(() => {
-				const promises = [];
-				promises.push(this.friendStore.loadFriend());
-				promises.push(this.groupStore.loadGroup());
-				promises.push(this.regionStore.loadRegionGroup());
-				promises.push(this.chatStore.loadChat());
-				promises.push(this.regionStore.loadRegionChat());
-				promises.push(this.talkStore.loadTalkInfo());
-				promises.push(this.configStore.loadConfig());
-				return Promise.all(promises);
+				// 使用串行加载基础数据，避免占满浏览器并发连接数
+				return this.friendStore.loadFriend()
+					.then(() => this.groupStore.loadGroup())
+					.then(() => this.regionStore.loadRegionGroup())
+					.then(() => this.chatStore.loadChat())
+					.then(() => this.regionStore.loadRegionChat())
+					.then(() => this.talkStore.loadTalkInfo())
+					.then(() => this.configStore.loadConfig());
 			})
 		},
 		unloadStore() {
@@ -109,46 +103,88 @@ export default {
 			this.userStore.clear();
       this.regionStore.clear();
 		},
+		pullOfflineMessagesBatch() {
+			// 串行执行离线消息拉取，避免占满浏览器6个并发连接数
+			const tasks = [
+				() => this.pullPrivateOfflineMessage(this.chatStore.privateMsgMaxId),
+				() => this.pullGroupOfflineMessage(this.chatStore.groupMsgMaxId),
+				() => this.pullSystemOfflineMessage(this.chatStore.systemMsgMaxSeqNo),
+				() => this.pullRegionGroupOfflineMessage(this.regionStore.regionGroupMsgMaxId),
+				() => this.pullOfflineTalks(this.talkStore.privateTalkMaxId),
+				() => this.pullFriendRequests(),
+				() => this.pullGroupRequests(),
+				() => this.pullOfflineTalkNotify()
+			];
+			
+			// 使用 Promise 链串行执行，确保前一个请求完成后再执行下一个
+			let chain = Promise.resolve();
+			tasks.forEach((task, index) => {
+				chain = chain.then(() => {
+					console.log(`执行离线消息任务 ${index + 1}/${tasks.length}`);
+					return task().catch(err => {
+						// 单个任务失败不影响后续任务
+						console.error(`离线消息任务 ${index + 1} 失败:`, err);
+					});
+				});
+			});
+			
+			chain.then(() => {
+				console.log('所有离线消息加载完成');
+			});
+		},
 		pullPrivateOfflineMessage(minId) {
 			this.chatStore.setLoadingPrivateMsg(true)
-			http({
+			return http({
 				url: "/message/private/pullOfflineMessage?minId=" + minId,
-				method: 'GET'
+				method: 'GET',
+				timeout: 8000 // 8秒超时
+			}).then(() => {
+				this.chatStore.setLoadingPrivateMsg(false)
 			}).catch(() => {
 				this.chatStore.setLoadingPrivateMsg(false)
 			})
 		},
 		pullGroupOfflineMessage(minId) {
 			this.chatStore.setLoadingGroupMsg(true)
-			http({
+			return http({
 				url: "/message/group/pullOfflineMessage?minId=" + minId,
-				method: 'GET'
+				method: 'GET',
+				timeout: 8000 // 8秒超时
+			}).then(() => {
+				this.chatStore.setLoadingGroupMsg(false)
 			}).catch(() => {
 				this.chatStore.setLoadingGroupMsg(false)
 			})
 		},
     pullSystemOfflineMessage(minSeqNo) {
       this.chatStore.setLoadingSystemMsg(true)
-      http({
+      return http({
         url: "/message/system/pullOfflineMessage?minSeqNo=" + minSeqNo,
-        method: 'GET'
+        method: 'GET',
+        timeout: 8000 // 8秒超时
+      }).then(() => {
+        this.chatStore.setLoadingSystemMsg(false)
       }).catch(() => {
         this.chatStore.setLoadingSystemMsg(false)
       })
     },
     pullRegionGroupOfflineMessage(minId) {
       this.regionStore.setLoadingRegionGroupMsg(true)
-      http({
+      return http({
         url: "/message/regionGroup/pullOfflineMessage?minId=" + minId,
-        method: 'GET'
+        method: 'GET',
+        timeout: 8000 // 8秒超时
+      }).then(() => {
+        this.regionStore.setLoadingRegionGroupMsg(false)
       }).catch(() => {
         this.regionStore.setLoadingRegionGroupMsg(false)
       })
     },
     pullOfflineTalks(minId) {
-      http({
+      return http({
         url: "/talk/pullOfflineTalks?minId=" + minId,
-        method: 'GET'
+        method: 'GET',
+        timeout: 8000 // 8秒超时
       }).then((data) => {
         this.talkStore.setUnreadTalkInfo(data);
       }).catch(() => {
@@ -156,27 +192,30 @@ export default {
       })
     },
     pullFriendRequests() {
-      http({
+      return http({
         url: "/friend/request/list",
-        method: 'GET'
+        method: 'GET',
+        timeout: 8000 // 8秒超时
       }).then((data) => {
         this.friendStore.setFriendRequests(data);
       }).catch(() => {
       })
     },
     pullGroupRequests() {
-      http({
+      return http({
         url: "/group/request/list",
-        method: 'GET'
+        method: 'GET',
+        timeout: 8000 // 8秒超时
       }).then((data) => {
         this.groupStore.setGroupRequests(data);
       }).catch(() => {
       })
     },
     pullOfflineTalkNotify() {
-      http({
+      return http({
         url: "/talk-notify/pullOfflineNotify",
-        method: 'GET'
+        method: 'GET',
+        timeout: 8000 // 8秒超时
       }).then((data) => {
       }).catch((err) => {
       })
@@ -691,15 +730,6 @@ uni-page-head {
 }
 
 // #endif
-
-@font-face {
-  font-family: 'MyGlobalFont';
-  src: url('/static/fonts/2.woff2') format('woff2');
-}
-
-body {
-  font-family: 'MyGlobalFont', sans-serif;
-}
 
 /* 确保所有文本元素继承全局字体 */
 text, view, div, p, span, button, input {

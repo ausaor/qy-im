@@ -10,7 +10,7 @@
             <view v-for="(msgInfo, idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid"
                   class="message-wrapper" :class="{active: targetMsgId === msgInfo.id}">
               <chat-message-item :ref="'message'+msgInfo.id" v-if="idx >= showMinIdx"
-                                 @call="onRtCall(msgInfo)" :showInfo="showInfo(msgInfo)"
+                                 @call="onRtCall(msgInfo)" :show-name="showName(msgInfo)" :head-image="headImage(msgInfo)"
                                  @recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
                                  @longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
                                  @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg" @playVideo="playVideo"

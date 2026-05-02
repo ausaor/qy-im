@@ -1,8 +1,5 @@
 <template>
   <view class="im-nav-bar" :style="{background: navBarBackground}">
-    <!-- #ifndef H5 -->
-    <view style="height: var(--status-bar-height)"></view>
-    <!-- #endif -->
     <view class="im-nav-bar-content">
       <view class="back" @click="handleBackClick" v-if="back">
         <uni-icons type="back" :size="iconFontSize" :color="'#ffffff'"></uni-icons>

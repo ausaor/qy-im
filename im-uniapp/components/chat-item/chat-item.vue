@@ -48,22 +48,40 @@ export default {
 	methods: {
 		showChatBox() {
 			// 初始化期间进入会话会导致消息不刷新
-			if(!getApp().$vm.isInit || this.chatStore.isLoading()){
+			if(!this.configStore.appInit || this.chatStore.isLoading()){
 				uni.showToast({
 					title: "正在初始化页面,请稍后...",
 					icon: 'none'
 				})
 				return;
 			}
-      if (this.chat.type == 'SYSTEM') {
-        uni.navigateTo({
-          url: "/pages/chat/chat-system-box?chatIdx=" + this.index
-        })
-		  } else {
-        uni.navigateTo({
-          url: "/pages/chat/chat-box?chatIdx=" + this.index
-        })
+      
+      // 验证 chat 数据
+      if (!this.chat) {
+        console.error('chat-item: chat 数据为空');
+        uni.showToast({
+          title: '会话数据异常',
+          icon: 'none'
+        });
+        return;
       }
+      
+      const url = this.chat.type == 'SYSTEM' 
+        ? "/pages/chat/chat-system-box?chatIdx=" + this.index
+        : "/pages/chat/chat-box?chatIdx=" + this.index;
+      
+      console.log('chat-item: 跳转到', url);
+      
+      uni.navigateTo({
+        url: url,
+        fail: (err) => {
+          console.error('chat-item: 跳转失败', err);
+          uni.showToast({
+            title: '页面跳转失败',
+            icon: 'none'
+          });
+        }
+      })
 		}
 	},
 	computed: {
