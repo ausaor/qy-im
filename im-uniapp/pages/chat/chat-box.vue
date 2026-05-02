@@ -6,11 +6,13 @@
 				<scroll-view ref="messagesContainer" class="scroll-box" scroll-y="true" upper-threshold="200" @scroll="onScroll"
                      @scrolltoupper="onScrollToTop" @scrolltolower="onScrollToBottom"
 					:scroll-into-view="'chat-item-' + scrollMsgIdx" :scroll-top="scrollTop">
-          <view v-if="chat" class="chat-wrap">
+          <view v-if="chat && !isLoadingData" class="chat-wrap">
             <view v-for="(msgInfo, idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid"
                   class="message-wrapper" :class="{active: targetMsgId === msgInfo.id}">
               <chat-message-item :ref="'message'+msgInfo.id" v-if="idx >= showMinIdx"
                                  @call="onRtCall(msgInfo)" :show-name="showName(msgInfo)" :head-image="headImage(msgInfo)"
+                                 :nick-name="nickName(msgInfo)" :characterNum="characterNum(msgInfo)" :role="role(msgInfo)"
+                                 :chatBubbleIndex="chatBubbleIndex(msgInfo)" :quoteShowName="quoteShowName(msgInfo)"
                                  @recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
                                  @longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
                                  @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg" @playVideo="playVideo"
@@ -230,6 +232,7 @@ export default {
       lastScrollTop: 0,      // 上一次滚动位置
       scrollDirection: null, // 滚动方向：'up' 或 'down'
       timer: null, // 防抖计时器
+			isLoadingData: true, // 是否正在加载数据
 		}
 	},
 	methods: {
@@ -349,6 +352,46 @@ export default {
 				return msgInfo.selfSend ? this.mine.nickName : this.chat.showName
 			}
 		},
+    nickName(msgInfo) {
+      if (this.chat.type == 'GROUP') {
+        let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+        return member ? member.nickName : "";
+      }
+      return "";
+    },
+    characterNum(msgInfo) {
+      if (this.chat.type == 'GROUP') {
+        let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+        return member ? member.characterNum : 0;
+      }
+      return null;
+    },
+    role(msgInfo) {
+      if (this.chat.type == 'GROUP') {
+        let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+        return member ? member.role : "";
+      }
+      return msgInfo.selfSend ? this.mine.role : this.friend.role;
+    },
+    chatBubbleIndex(msgInfo) {
+      if (this.chat.type == 'GROUP') {
+        let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+        return member ? member.chatBubble : 0;
+      } else {
+        return msgInfo.selfSend ? this.mine.chatBubble : this.friend.chatBubble
+      }
+    },
+    quoteShowName(msgInfo) {
+      if (this.chat.type == 'GROUP') {
+        if (msgInfo.quoteMsg) {
+          let member = this.groupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+          return member ? member.aliasName : "";
+        }
+        return "";
+      } else {
+        return msgInfo.selfSend ? this.mine.nickName : this.chat.showName
+      }
+    },
     showInfo(msgInfo) {
       let showInfoObj = {
         showName: "",
@@ -954,7 +997,7 @@ export default {
       }
 		},
 		loadReaded(fid) {
-			this.$http({
+			return this.$http({
 				url: `/message/private/maxReadedId?friendId=${fid}`,
 				method: 'get'
 			}).then((id) => {
@@ -966,7 +1009,7 @@ export default {
 		},
 		readedMessage() {
 			if (this.unreadCount == 0) {
-				return;
+				return Promise.resolve();
 			}
 			let url = ""
 			if (this.chat.type == "GROUP") {
@@ -974,7 +1017,7 @@ export default {
 			} else {
 				url = `/message/private/readed?friendId=${this.chat.targetId}`
 			}
-			this.$http({
+			return this.$http({
 				url: url,
 				method: 'PUT'
 			}).then(() => {
@@ -983,26 +1026,26 @@ export default {
 			})
 		},
 		loadGroup(groupId) {
-			this.$http({
+			return this.$http({
 				url: `/group/find/${groupId}`,
 				method: 'GET'
 			}).then((group) => {
         this.group = group;
         this.chatStore.updateChatFromGroup(group);
         this.groupStore.updateGroup(group);
-			});
 
-			this.$http({
-				url: `/group/members/${groupId}`,
-				method: 'GET'
-			}).then((groupMembers) => {
-        this.groupMembers = groupMembers;
-        this.myGroupMemberInfo = this.groupMembersMap.get(this.mine.id);
-			});
+        return this.$http({
+          url: `/group/members/${groupId}`,
+          method: 'GET'
+        }).then((groupMembers) => {
+          this.groupMembers = groupMembers;
+          this.myGroupMemberInfo = this.groupMembersMap.get(this.mine.id);
+        });
+      });
 		},
 		loadFriend(friendId) {
 			// 获取对方最新信息
-			this.$http({
+			return this.$http({
 				url: `/user/find/${friendId}`,
 				method: 'GET'
 			}).then((friend) => {
@@ -1480,15 +1523,6 @@ export default {
 		// 初始状态只显示20条消息
 		let size = this.messageSize;
 		this.showMinIdx = size > 20 ? size - 20 : 0;
-		// 消息已读
-		this.readedMessage()
-		// 加载好友或群聊信息
-		if (this.chat.type == "GROUP") {
-			this.loadGroup(this.chat.targetId);
-		} else {
-			this.loadFriend(this.chat.targetId);
-			this.loadReaded(this.chat.targetId)
-		}
 		// 激活当前会话
 		this.chatStore.activeChat(options.chatIdx);
 		// 复位回执消息
@@ -1502,19 +1536,38 @@ export default {
     this.windowHeight = uni.getSystemInfoSync().windowHeight;
     this.screenHeight = uni.getSystemInfoSync().screenHeight;
     this.reCalChatMainHeight();
-    this.$nextTick(() => {
-      // 上面获取的windowHeight可能不准，重新计算一次聊天窗口高度
-      this.windowHeight = uni.getSystemInfoSync().windowHeight;
-      this.reCalChatMainHeight();
-      this.scrollToBottom();
-      // #ifdef H5
-      this.initHeight = window.innerHeight;
-      // 兼容ios的h5:禁止页面滚动
-      const chatBox = document.getElementById('chatBox')
-      chatBox.addEventListener('touchmove', e => {
-        e.preventDefault()
-      }, { passive: false });
-      // #endif
+    
+    // 并行加载数据，等待所有数据加载完成后再显示消息列表
+    const loadPromises = [];
+    
+    // 消息已读
+    loadPromises.push(this.readedMessage());
+    
+    // 加载好友或群聊信息
+    if (this.chat.type == "GROUP") {
+      loadPromises.push(this.loadGroup(this.chat.targetId));
+    } else {
+      loadPromises.push(this.loadFriend(this.chat.targetId));
+      loadPromises.push(this.loadReaded(this.chat.targetId));
+    }
+    
+    // 等待所有数据加载完成
+    Promise.all(loadPromises).finally(() => {
+      this.isLoadingData = false;
+      this.$nextTick(() => {
+        // 上面获取的windowHeight可能不准，重新计算一次聊天窗口高度
+        this.windowHeight = uni.getSystemInfoSync().windowHeight;
+        this.reCalChatMainHeight();
+        this.scrollToBottom();
+        // #ifdef H5
+        this.initHeight = window.innerHeight;
+        // 兼容ios的h5:禁止页面滚动
+        const chatBox = document.getElementById('chatBox')
+        chatBox.addEventListener('touchmove', e => {
+          e.preventDefault()
+        }, { passive: false });
+        // #endif
+      });
     });
 	},
 	onUnload() {

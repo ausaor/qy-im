@@ -43,12 +43,21 @@ module.exports = defineConfig({
 		chunkSizeWarningLimit: 1000,
 	},
 	server: {
+		port: 5173,
 		proxy: {
 			'/api': {
-				rewrite: path => path.replace(/^\/?api/, ''),
-				logLevel: 'debug',
 				target: 'http://127.0.0.1:8888',
-				changeOrigin: true
+				changeOrigin: true,
+				rewrite: (path) => {
+					console.log('[Proxy] Rewriting path:', path);
+					return path.replace(/^\/api/, '');
+				},
+				onProxyReq: (proxyReq, req, res) => {
+					console.log('[Proxy] Forwarding:', req.method, req.url, '->', proxyReq.path);
+				},
+				onProxyRes: (proxyRes, req, res) => {
+					console.log('[Proxy] Response:', proxyRes.statusCode, req.url);
+				}
 			}
 		}
 	}

@@ -154,6 +154,7 @@
   <drawer
         :visible="regionSpaceVisible"
         @close="closeDrawer"
+        :zIndex=5
         :width=60>
       <template v-slot:header>
         <space-cover :name="'地区空间'" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify" :notify-count="unreadNotifyCount"></space-cover>
@@ -222,8 +223,8 @@ export default {
     }
   },
   created() {
-    /*this.friends = this.$store.state.friendStore.friends;
-    this.loadRegionGroupMembers(this.regionGroup.id);*/
+    /*this.friends = this.$store.state.friendStore.friends;*/
+    this.loadRegionGroupMembers(this.regionGroup.id);
   },
   mounted() {
   },
@@ -507,14 +508,14 @@ export default {
     },
   },
   watch: {
-    regionGroup: {
-      handler(newRegionGroup, oldRegionGroup) {
-        this.friends = this.$store.state.friendStore.friends
-        if (newRegionGroup.id > 0 && (!oldRegionGroup || newRegionGroup.id !== oldRegionGroup.id)) {
-          this.loadRegionGroupMembers(newRegionGroup.id);
-        }
-      }
-    }
+    // regionGroup: {
+    //   handler(newRegionGroup, oldRegionGroup) {
+    //     this.friends = this.$store.state.friendStore.friends
+    //     if (newRegionGroup.id > 0 && (!oldRegionGroup || newRegionGroup.id !== oldRegionGroup.id)) {
+    //       this.loadRegionGroupMembers(newRegionGroup.id);
+    //     }
+    //   }
+    // }
   }
 }
 </script>

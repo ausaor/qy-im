@@ -13,7 +13,7 @@
         <el-container>
           <el-container class="content-box">
             <el-main class="im-chat-main" id="chatScrollBox" @scroll="onScroll">
-              <div class="im-chat-box">
+              <div class="im-chat-box" v-if="chat && isDataLoaded">
                 <ul>
                   <li v-for="(msgInfo,idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid" :ref="`message-${msgInfo.id}`"
                       :data-highlight="highlightedMessageId === msgInfo.id" class="message-wrapper">
@@ -22,7 +22,9 @@
                         :ref="`message-item-${msgInfo.id ? msgInfo.id : msgInfo.uid}`"
                         @call="onCall(msgInfo.type)"
                         :mine="msgInfo.sendId == mine.id"
-                        :showInfo="showInfo(msgInfo)"
+                        :show-name="showName(msgInfo)" :head-image="headImage(msgInfo)"
+                        :nick-name="nickName(msgInfo)" :characterNum="characterNum(msgInfo)" :role="role(msgInfo)"
+                        :chatBubbleIndex="chatBubbleIndex(msgInfo)" :quoteShowName="quoteShowName(msgInfo)"
                         :msgInfo="msgInfo"
                         :isOwner="group.ownerId === msgInfo.sendId"
                         :myGroupMemberInfo="myGroupMemberInfo"
@@ -229,7 +231,8 @@
         newMessageSize: 0, // 滚动条不在底部时新的消息数量
         lastScrollTop: 0,
         allCharacterIds: new Set(),
-        maxTmpId: 0 // 最后生成的临时ID
+        maxTmpId: 0, // 最后生成的临时ID
+        isDataLoaded: false // 数据是否加载完成
 			}
 		},
     created() {
@@ -984,7 +987,7 @@
         }).then(() => {})
       },
       loadReaded(fId) {
-        this.$http({
+        return this.$http({
           url: `/message/private/maxReadedId?friendId=${fId}`,
           method: 'get'
         }).then((id) => {
@@ -995,18 +998,18 @@
         });
       },
 			loadGroup(groupId) {
-				this.$http({
+				return this.$http({
 					url: `/group/find/${groupId}`,
 					method: 'get'
 				}).then((group) => {
 					this.group = group;
 					this.$store.commit("updateChatFromGroup", group);
 					this.$store.commit("updateGroup", group);
-          this.loadGroupMembers();
+          return this.loadGroupMembers();
 				});
 			},
       loadGroupMembers() {
-        this.$http({
+        return this.$http({
           url: `/group/members/${this.group.id}`,
           method: 'get'
         }).then((groupMembers) => {
@@ -1023,13 +1026,13 @@
           this.myGroupMemberInfo = this.groupMembersMap.get(this.mine.id);
 
           if (this.group.groupType === 1 || this.group.groupType === 4) {
-            this.queryGroupTemplateCharacterIds();
+            return this.queryGroupTemplateCharacterIds();
           }
         });
       },
 			loadFriend(friendId) {
 				// 获取对方最新信息
-				this.$http({
+				return this.$http({
 					url: `/user/find/${friendId}`,
 					method: 'get'
 				}).then((friend) => {
@@ -1050,6 +1053,62 @@
             this.allCharacterIds = data;
           }
         })
+      },
+      headImage(msgInfo) {
+        if (this.chat.type == 'GROUP') {
+          let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+          return member ? member.headImage : "";
+        } else {
+          return msgInfo.selfSend ? this.mine.headImage : this.chat.headImage
+        }
+      },
+      showName(msgInfo) {
+        if (this.chat.type == 'GROUP') {
+          let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+          return member ? member.aliasName : "";
+        } else {
+          return msgInfo.selfSend ? this.mine.nickName : this.chat.showName
+        }
+      },
+      nickName(msgInfo) {
+        if (this.chat.type == 'GROUP') {
+          let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+          return member ? member.nickName : "";
+        }
+        return "";
+      },
+      characterNum(msgInfo) {
+        if (this.chat.type == 'GROUP') {
+          let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+          return member ? member.characterNum : 0;
+        }
+        return null;
+      },
+      role(msgInfo) {
+        if (this.chat.type == 'GROUP') {
+          let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+          return member ? member.role : "";
+        }
+        return msgInfo.selfSend ? this.mine.role : this.friend.role;
+      },
+      chatBubbleIndex(msgInfo) {
+        if (this.chat.type == 'GROUP') {
+          let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
+          return member ? member.chatBubble : 0;
+        } else {
+          return msgInfo.selfSend ? this.mine.chatBubble : this.friend.chatBubble
+        }
+      },
+      quoteShowName(msgInfo) {
+        if (this.chat.type == 'GROUP') {
+          if (msgInfo.quoteMsg) {
+            let member = this.groupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+            return member ? member.aliasName : "";
+          }
+          return "";
+        } else {
+          return msgInfo.selfSend ? this.mine.nickName : this.chat.showName
+        }
       },
       showInfo(msgInfo) {
         let showInfoObj = {
@@ -1241,6 +1300,10 @@
           this.playAudios = [];
         }
       },
+      onChatDataLoaded() {
+        // 数据加载完成后，显示消息列表
+        this.isDataLoaded = true;
+      },
 		},
 		computed: {
 			mine() {
@@ -1298,14 +1361,25 @@
               newChat.targetId != oldChat.targetId)) {
             // 停止之前的录音
             this.playingAudio && this.playingAudio.stopPlayAudio();
+            
+            // 设置数据未加载状态，隐藏消息列表
+            this.isDataLoaded = false;
+            
             if (this.chat.type === "GROUP") {
-              this.loadGroup(this.chat.targetId);
+              // 群聊：加载群信息和成员
+              this.loadGroup(this.chat.targetId).then(() => {
+                this.onChatDataLoaded();
+              });
             } else {
-              this.groupMembers = [];
-              this.loadFriend(this.chat.targetId);
-              // 加载已读状态
-              this.loadReaded(this.chat.targetId)
+              // 私聊：加载好友信息和已读状态
+              Promise.all([
+                this.loadFriend(this.chat.targetId),
+                this.loadReaded(this.chat.targetId)
+              ]).then(() => {
+                this.onChatDataLoaded();
+              });
             }
+            
             // 滚到底部
             this.scrollToBottom();
             this.showSide = false;

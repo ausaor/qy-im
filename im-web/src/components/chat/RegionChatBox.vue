@@ -13,7 +13,7 @@
         <el-container>
           <el-container class="content-box">
             <el-main class="im-chat-main" id="chatScrollBox" @scroll="onScroll">
-              <div class="im-chat-box">
+              <div class="im-chat-box" v-if="chat && isDataLoaded">
                 <ul>
                   <li v-for="(msgInfo, idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid" :ref="`message-${msgInfo.id}`"
                       :data-highlight="highlightedMessageId === msgInfo.id" class="message-wrapper">
@@ -21,7 +21,8 @@
                         v-if="idx>=showMinIdx"
                         @call="onCall(msgInfo.type)"
                         :mine="msgInfo.sendId == mine.id"
-                        :showInfo="showInfo(msgInfo)"
+                        :head-image="headImage(msgInfo)" :show-name="showName(msgInfo)"
+                        :role="role(msgInfo)" :chatBubbleIndex="chatBubbleIndex(msgInfo)" :quoteShowName="quoteShowName(msgInfo)"
                         :msgInfo="msgInfo"
                         :isOwner="regionGroup.ownerId === msgInfo.sendId"
                         :myGroupMemberInfo="myGroupMemberInfo"
@@ -109,7 +110,7 @@
               </div>
             </el-footer>
           </el-container>
-          <el-aside class="chat-group-side-box" width="300px" v-show="showSide">
+          <el-aside class="chat-group-side-box" width="300px" v-if="showSide">
             <chat-region-group-side :regionGroup="regionGroup" @reload="loadRegionGroup(regionGroup.id)">
             </chat-region-group-side>
           </el-aside>
@@ -179,7 +180,8 @@ export default {
       isInBottom: false, // 滚动条是否在底部
       newMessageSize: 0, // 滚动条不在底部时新的消息数量
       lastScrollTop: 0,
-      maxTmpId: 0 // 最后生成的临时ID
+      maxTmpId: 0, // 最后生成的临时ID
+      isDataLoaded: false // 数据是否加载完成
     }
   },
   created() {
@@ -715,29 +717,29 @@ export default {
     },
     readedMessage() {
       if (this.chat.unreadCount == 0) {
-        return;
+        return Promise.resolve();
       }
       this.$store.commit("resetRegionUnreadCount", this.chat)
       let url = `/message/regionGroup/readed?regionGroupId=${this.chat.targetId}`
-      this.$http({
+      return this.$http({
         url: url,
         method: 'put'
       }).then(() => {})
     },
     loadRegionGroup(groupId) {
-      this.$http({
+      return this.$http({
         url: `/region/group/find/${groupId}`,
         method: 'get'
       }).then((regionGroup) => {
         this.regionGroup = regionGroup;
         this.$store.commit("updateRegionChatFromGroup", regionGroup);
         this.$store.commit("updateRegionGroup", regionGroup);
+        return this.loadRegionGroupMembers(groupId);
       });
-
-      this.loadRegionGroupMembers(groupId);
     },
     loadRegionGroupMembers(groupId) {
-      this.$http({
+      console.log("加载群组成员", groupId);
+      return this.$http({
         url: `/region/group/members/${groupId}`,
         method: 'get'
       }).then((groupMembers) => {
@@ -748,6 +750,29 @@ export default {
         }, new Map()); // 初始值为一个空Map
         this.myGroupMemberInfo = this.regionGroupMembersMap.get(this.mine.id);
       });
+    },
+    headImage(msgInfo) {
+      let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
+      return member ? member.headImage : "";
+    },
+    showName(msgInfo) {
+      let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
+      return member ? member.aliasName : "";
+    },
+    role(msgInfo) {
+      let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
+      return member ? member.role : "";
+    },
+    chatBubbleIndex(msgInfo) {
+      let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
+      return member ? member.chatBubble : 0;
+    },
+    quoteShowName(msgInfo) {
+      if (msgInfo.quoteMsg) {
+        let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.quoteMsg.sendId);
+        return member ? member.aliasName : "";
+      }
+      return "";
     },
     showInfo(msgInfo) {
       let showInfoObj = {
@@ -886,6 +911,10 @@ export default {
         this.playingAudio = playingAudio;
       }
     },
+    onChatDataLoaded() {
+      // 数据加载完成后，显示消息列表
+      this.isDataLoaded = true;
+    },
   },
   computed: {
     mine() {
@@ -929,13 +958,21 @@ export default {
     chat: {
       handler(newChat, oldChat) {
         if (newChat.targetId > 0) {
-          this.loadRegionGroup(this.chat.targetId);
+          // 设置数据未加载状态，隐藏消息列表
+          this.isDataLoaded = false;
+          
+          // 等待群信息和已读状态加载完成
+          Promise.all([
+            this.loadRegionGroup(this.chat.targetId),
+            this.readedMessage()
+          ]).then(() => {
+            this.onChatDataLoaded();
+          });
+          
           // 滚到底部
           this.scrollToBottom();
           this.showSide = false;
           this.isInBottom = true;
-          // 消息已读
-          this.readedMessage()
           // 初始状态只显示30条消息
           let size = this.chat.messages.length;
           this.showMinIdx = size > 30 ? size - 30 : 0;

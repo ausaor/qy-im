@@ -28,7 +28,6 @@
 				<view class="chat-msg-bottom">
 					<view v-if="msgInfo.type == $enums.MESSAGE_TYPE.TEXT">
 						<long-press-menu :items="menuItems" @select="onSelectMenu">
-<!--							<up-parse class="chat-msg-text" :showImgMenu="false" :content="nodesText"></up-parse>-->
 							 <rich-text class="chat-msg-text" :style="currentBubbleStyle" :nodes="nodesText" @itemclick="onLinkClick"></rich-text>
 						</long-press-menu>
 					</view>
@@ -114,7 +113,7 @@
           <view class="quote-message" v-if="msgInfo.quoteMsg">
             <long-press-menu :items="quoteMsgMenuItems" @select="scrollToMessage(msgInfo.quoteMsg.id)">
               <view class="chat-quote-message" @click.stop="scrollToMessage(msgInfo.quoteMsg.id)">
-                <view class="send-user">{{showInfo.quoteShowName}}:</view>
+                <view class="send-user">{{quoteShowName}}:</view>
                 <view class="quote-content">
                   <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.TEXT">
                     <rich-text class="quote-text" :nodes="nodesTextQuote"></rich-text>
@@ -187,19 +186,21 @@ export default {
       type: String,
       required: true
     },
-    showInfo: {
-      type: Object,
-      default() {
-        return {
-          headImage: "",
-          showName: "",
-          nickName: "",
-          characterNum: null,
-          quoteShowName: "",
-          role: '',
-          chatBubbleIndex: 0,
-        }
-      }
+    nickName: {
+      type: String,
+    },
+    characterNum: {
+      type: Number
+    },
+    role: {
+      type: String
+    },
+    chatBubbleIndex: {
+      type: Number,
+      default: 0
+    },
+    quoteShowName: {
+      type: String
     },
 		msgInfo: {
 			type: Object,
@@ -241,7 +242,7 @@ export default {
   computed: {
     // 获取当前气泡样式
     currentBubbleStyle() {
-      const index = this.showInfo.chatBubbleIndex || 0;
+      const index = this.chatBubbleIndex || 0;
       const bubble = this.uiStore.chatBubble.bubbles[index];
       if (bubble) {
         return {
@@ -355,8 +356,8 @@ export default {
     },
     nameColorStyle() {
       let index = 0;
-      if (this.showInfo.characterNum != null && this.showInfo.characterNum <= 10) {
-        index = this.showInfo.characterNum - 1;
+      if (this.characterNum != null && this.characterNum <= 10) {
+        index = this.characterNum - 1;
       } else {
         return '';
       }
@@ -464,7 +465,7 @@ export default {
       }
     },
 		onSelectMenu(item) {
-      this.msgInfo.showName = this.showInfo.showName;
+      this.msgInfo.showName = this.showName;
 			this.$emit(item.key.toLowerCase(), this.msgInfo);
 			this.menu.show = false;
 		},
@@ -473,7 +474,7 @@ export default {
       this.menu.show = false;
     },
 		onShowFullImage() {
-			let imageUrl = JSON.parse(this.msgInfo.content).originUrl;
+			let imageUrl = JSON.parse(this.msgInfo.content).originUrl || JSON.parse(this.msgInfo.content).imageUrl;
 			uni.previewImage({
 				urls: [imageUrl]
 			})

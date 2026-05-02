@@ -10,6 +10,7 @@
 		"vite-plugin-svg-icons": "^2.0.1"
 	},
 	"devDependencies": {
+		"vite": "^5.2.8",
 		"@dcloudio/vite-plugin-uni": "^3.0.0-alpha-5000520260323001"
 	}
 }

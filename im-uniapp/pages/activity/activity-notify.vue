@@ -32,8 +32,8 @@
 
         <!-- 消息内容 -->
         <view class="message-content">
-          <up-parse class="content-text" v-if="item.actionType===1 && item.talkComment.type === $enums.MESSAGE_TYPE.TEXT"
-                    :showImgMenu="false" :content="nodesText(item.talkComment.content)"></up-parse>
+          <rich-text class="content-text" v-if="item.actionType===1 && item.talkComment.type === $enums.MESSAGE_TYPE.TEXT"
+                     :nodes="nodesText(item.talkComment.content)"></rich-text>
           <view class="content-text" v-if="item.actionType===1 && item.talkComment.type === $enums.MESSAGE_TYPE.IMAGE">
             <image class="comment-image" :src="JSON.parse(item.talkComment.content).originUrl" mode="aspectFill"></image>
           </view>
@@ -59,7 +59,7 @@
             </view>
             <view class="image-caption">
               <text class="caption-prefix">{{item.talk.nickName}}：</text>
-              <up-parse class="caption-text" :showImgMenu="false" :content="nodesText(item.talk.content)"></up-parse>
+              <rich-text class="caption-text" :nodes="nodesText(item.talk.content)"></rich-text>
             </view>
           </view>
 
@@ -70,8 +70,8 @@
               <text v-if="reply.replyCommentId" style="margin: 0 5rpx;color: #1890ff;font-size: 28rpx;">回复</text>
               <text class="reply-username" v-if="reply.replyCommentId">{{ reply.replyUserNickname }}</text>
               <text>：</text>
-              <up-parse v-if="reply.type === $enums.MESSAGE_TYPE.TEXT"
-                        class="reply-content" :showImgMenu="false" :content="nodesText(reply.content)"></up-parse>
+              <rich-text v-if="reply.type === $enums.MESSAGE_TYPE.TEXT"
+                         class="reply-content" :nodes="nodesText(reply.content)"></rich-text>
 
               <image v-if="reply.type === $enums.MESSAGE_TYPE.IMAGE"
                      class="reply-image" :src="JSON.parse(reply.content).originUrl" mode="aspectFill"></image>

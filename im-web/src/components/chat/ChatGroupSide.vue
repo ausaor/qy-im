@@ -229,6 +229,7 @@
     <drawer
         :visible="groupSpaceVisible"
         @close="closeDrawer"
+        :zIndex=5
         :width=60>
       <template v-slot:header>
         <space-cover :name="'群空间'" @refresh="refreshTalkList" @add="handleShowAddTalk" @showTalkNotify="showTalkNotify" :notify-count="unreadNotifyCount"></space-cover>
@@ -239,6 +240,7 @@
     </drawer>
     <drawer
         :visible="starSpaceVisible"
+        :zIndex=5
         @close="closeStarSpaceDrawer"
         :width=60>
       <template v-slot:header>

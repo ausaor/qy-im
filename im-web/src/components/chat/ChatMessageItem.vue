@@ -8,22 +8,22 @@
 
 		<div class="chat-msg-normal" v-if="isNormal" :class="{'chat-msg-mine':mine}">
 			<div class="head-image">
-				<head-image :name="showInfo.showName" :size="40" :url="showInfo.headImage" :id="msgInfo.sendId"></head-image>
+				<head-image :name="showName" :size="40" :url="headImage" :id="msgInfo.sendId"></head-image>
 			</div>
 			<div class="chat-msg-content">
         <div v-show="mode==1 && (msgInfo.groupId || msgInfo.regionGroupId)" class="chat-msg-top">
-          <span :style="nameColorStyle">{{showInfo.showName}}</span>
-          <span v-show="myGroupMemberInfo.showNickName">{{showInfo.nickName}}</span>
+          <span :style="nameColorStyle">{{showName}}</span>
+          <span v-show="myGroupMemberInfo.showNickName">{{nickName}}</span>
           <span v-if="isOwner && (msgInfo.groupId || msgInfo.regionGroupId)" class="group-master">群主</span>
-          <span v-if="showInfo.role==='SUPER_ADMIN'" class="blogger">博主</span>
-          <span v-if="showInfo.role==='ADMIN'" class="sys-admin">系统管理员</span>
+          <span v-if="role==='SUPER_ADMIN'" class="blogger">博主</span>
+          <span v-if="role==='ADMIN'" class="sys-admin">系统管理员</span>
         </div>
 				<div v-show="mode==2" class="chat-msg-top">
-					<span :style="nameColorStyle">{{showInfo.showName}}</span>
-					<span v-show="myGroupMemberInfo.showNickName">{{showInfo.nickName}}</span>
+					<span :style="nameColorStyle">{{showName}}</span>
+					<span v-show="myGroupMemberInfo.showNickName">{{nickName}}</span>
           <span v-if="isOwner && (msgInfo.groupId || msgInfo.regionGroupId)" class="group-master">群主</span>
-          <span v-if="showInfo.role==='SUPER_ADMIN'" class="blogger">博主</span>
-          <span v-if="showInfo.role==='ADMIN'" class="sys-admin">系统管理员</span>
+          <span v-if="role==='SUPER_ADMIN'" class="blogger">博主</span>
+          <span v-if="role==='ADMIN'" class="sys-admin">系统管理员</span>
           <span>{{$date.toTimeText(msgInfo.sendTime)}}</span>
 				</div>
 				<div class="chat-msg-bottom" @contextmenu.prevent="showRightMenu($event)">
@@ -105,7 +105,7 @@
           <div class="quote-message" v-if="msgInfo.quoteMsg" @click.stop="scrollToMessage(msgInfo.quoteMsg.id)"
                @contextmenu.prevent.stop="showQuoteRightMenu($event)">
             <div class="chat-quote-message">
-              <div class="send-user">{{showInfo.quoteShowName}}：</div>
+              <div class="send-user">{{quoteShowName}}：</div>
               <div class="quote-content">
                 <span v-if="msgInfo.quoteMsg.type==$enums.MESSAGE_TYPE.TEXT"
                       v-html="htmlQuoteText"></span>
@@ -178,33 +178,30 @@ export default {
 				type: Boolean,
 				required: true
 			},
-      showInfo: {
-        type: Object,
-        required: true,
-        default() {
-          return {
-            headImage: "",
-            showName: "",
-            nickName: "",
-            quoteShowName: "",
-            characterNum: null,
-            role: '',
-            chatBubbleIndex: 0,
-          }
-        }
+      headImage: {
+        type: String,
+        required: true
       },
-			/*headImage: {
-				type: String,
-				required: true
-			},
-			showName: {
-				type: String,
-				required: true
-			},
+      showName: {
+        type: String,
+        required: true
+      },
       nickName: {
         type: String,
-        required: false
-      },*/
+      },
+      characterNum: {
+        type: Number
+      },
+      role: {
+        type: String
+      },
+      chatBubbleIndex: {
+        type: Number,
+        default: 0
+      },
+      quoteShowName: {
+        type: String
+      },
 			msgInfo: {
 				type: Object,
 				required: true
@@ -311,7 +308,7 @@ export default {
         this.rightMenuQuote.show = "true";
       },
       onSelectMenu(item) {
-        this.msgInfo.showName = this.showInfo.showName;
+        this.msgInfo.showName = this.showName;
 				this.$emit(item.key.toLowerCase(), this.msgInfo);
 			},
       onSelectMenuQuote() {
@@ -542,7 +539,7 @@ export default {
       bubbleStyle() {
         // 从store中获取气泡样式
         const bubbles = this.$store.state.uiStore.chatBubble.bubbles;
-        const index = this.showInfo.chatBubbleIndex || 0;
+        const index = this.chatBubbleIndex || 0;
         if (bubbles && bubbles[index]) {
           return bubbles[index];
         }
@@ -554,8 +551,8 @@ export default {
       },
       nameColorStyle() {
         let index = 0;
-        if (this.showInfo.characterNum != null && this.showInfo.characterNum <= 10) {
-          index = this.showInfo.characterNum - 1;
+        if (this.characterNum != null && this.characterNum <= 10) {
+          index = this.characterNum - 1;
         } else {
           return '';
         }
