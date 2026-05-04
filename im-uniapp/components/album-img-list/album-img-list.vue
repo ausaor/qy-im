@@ -16,6 +16,8 @@
             <image v-if="tab.id.startsWith('album_')" class="album-emo-item" :src="tab.icon"></image>
 					</view>
 				</view>
+				<!-- 右侧占位元素，确保滚动到最右边时有右间距 -->
+				<view class="nav-tab-spacer"></view>
 			</view>
 		</scroll-view>
 
@@ -314,8 +316,8 @@ export default {
 }
 
 .emoji-nav-bar {
+  width: 100%;
 	flex-shrink: 0;
-	height: 90rpx;
 	border-bottom: 1rpx solid #f0f0f0;
 	background-color: #fafafa;
 	
@@ -324,14 +326,18 @@ export default {
 		width: auto;
 		min-width: 100%;
 		padding: 10rpx 20rpx;
+		box-sizing: border-box;
 		
 		.nav-tab-item {
       display: inline-flex;
+      flex-shrink: 0;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 80rpx;
-      margin: 0 20rpx;
+      width: 80rpx !important;
+      min-width: 80rpx;
+      height: 80rpx;
+      margin: 0 10rpx;
       color: #000;
       transition: all .2s ease;
 			
@@ -350,6 +356,13 @@ export default {
           border-radius: 50%;
 				}
 			}
+		}
+		
+		/* 右侧占位元素，确保滚动到最右边时有右间距 */
+		.nav-tab-spacer {
+			flex-shrink: 0;
+			width: 10rpx;
+			height: 1px;
 		}
 	}
 }
