@@ -2,6 +2,7 @@ package xyz.qy.implatform.controller;
 
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,8 +13,10 @@ import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IEmoAlbumService;
+import xyz.qy.implatform.vo.EmoAlbumVO;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @RestController
 @RequestMapping("/emoAlbum")
@@ -43,5 +46,11 @@ public class EmoAlbumController {
     public Result deleteEmoAlbum(Long id) {
         emoAlbumService.deleteEmoAlbum(id);
         return ResultUtils.success();
+    }
+
+    @ApiOperation("获取表情相册列表")
+    @GetMapping("/getEmoAlbumList")
+    public Result<List<EmoAlbumVO>> getEmoAlbumList() {
+        return ResultUtils.success(emoAlbumService.getEmoAlbumList());
     }
 }

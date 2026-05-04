@@ -11,4 +11,6 @@ public interface IEmoImgService extends IService<EmoImg> {
     List<EmoAlbumVO> getEmoAlbumImgList();
 
     List<EmoImgVO> search(String name);
+
+    List<EmoImgVO> getEmoImgListByAlbumId(Integer albumId);
 }

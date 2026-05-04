@@ -61,4 +61,13 @@ public class IEmoImgServiceImpl extends ServiceImpl<EmoImgMapper, EmoImg> implem
 
         return BeanUtils.copyPropertiesList(emoImgList, EmoImgVO.class);
     }
+
+    @Override
+    public List<EmoImgVO> getEmoImgListByAlbumId(Integer albumId) {
+        LambdaQueryWrapper<EmoImg> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EmoImg::getAlbumId, albumId);
+        queryWrapper.eq(EmoImg::getDeleted, false);
+        List<EmoImg> emoImgList = this.list(queryWrapper);
+        return BeanUtils.copyProperties(emoImgList, EmoImgVO.class);
+    }
 }

@@ -13,7 +13,7 @@
                                  @call="onRtCall(msgInfo)" :head-image="headImage(msgInfo)" :show-name="showName(msgInfo)"
                                  :role="role(msgInfo)" :chatBubbleIndex="chatBubbleIndex(msgInfo)" :quoteShowName="quoteShowName(msgInfo)"
                                  @recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
-                                 @longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile"
+                                 @longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile" @collect="collectImage"
                                  @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg" @playVideo="playVideo"
                                  @audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
                                  :myGroupMemberInfo="myGroupMemberInfo" :isOwner="regionGroup.ownerId === msgInfo.sendId">
@@ -92,14 +92,11 @@
           <view class="tool-name">语音通话</view>
         </view>-->
       </view>
-      <scroll-view v-if="chatTabBox === 'emo'" class="chat-emotion" scroll-y="true"
-                   :style="{height: keyboardHeight+'px'}">
-        <view class="emotion-item-list">
-          <image class="emotion-item emoji-large" :title="emoText" :src="$emo.textToPath(emoText)"
-                 v-for="(emoText, i) in $emo.emoTextList" :key="i" @click="selectEmoji(emoText)" mode="aspectFit"
-                 lazy-load="true"></image>
-        </view>
-      </scroll-view>
+      <album-img-list
+          v-if="chatTabBox === 'emo'"
+          :style="{height: keyboardHeight+'px'}"
+          @select="doSelectEmoji"
+      ></album-img-list>
     </view>
     <!-- @用户时选择成员 -->
     <chat-at-box ref="atBox" :ownerId="regionGroup.ownerId" :members="regionGroupMembers"
@@ -127,10 +124,12 @@ import ChatRecord from "../../components/chat-record/chat-record.vue";
 import FileUpload from "../../components/file-upload/file-upload.vue";
 import ImageUpload from "../../components/image-upload/image-upload.vue";
 import ChatAtBox from "../../components/chat-at-box/chat-at-box.vue";
+import AlbumImgList from "../../components/album-img-list/album-img-list.vue";
 
 export default {
   name: "region-chat-box",
   components: {
+    AlbumImgList,
     ChatAtBox,
     ImageUpload, FileUpload, ChatRecord, HeadImage, ChatMessageItem, NavBar, VideoPlay, VideoUpload, SvgIcon},
   data() {
@@ -308,8 +307,20 @@ export default {
       })
       return atText;
     },
-    selectEmoji(emoText) {
-      let path = this.$emo.textToPath(emoText)
+    doSelectEmoji(data) {
+      if (data.type === 'emo' || data.type === 'original') {
+        this.selectEmoji(data.emoText, data.type)
+      } else if (data.type === 'image') {
+        this.chooseEmoAlbumImg(data)
+      }
+    },
+    selectEmoji(emoText, type) {
+      let path = "";
+      if (type === 'emo') {
+        path = this.$emo.textToPath(emoText)
+      } else {
+        path = this.$emo.textToPathOriginal(emoText)
+      }
       // 先把键盘禁用了，否则会重新弹出键盘
       this.isReadOnly = true;
       this.isEmpty = false;
@@ -324,6 +335,40 @@ export default {
             this.editorCtx.blur();
           }
         });
+      })
+    },
+    chooseEmoAlbumImg(albumImg) {
+      let content = {
+        id: albumImg.id,
+        albumId: albumImg.albumId,
+        name: albumImg.name,
+        imageUrl: albumImg.imageUrl,
+        width: albumImg.width,
+        height: albumImg.height
+      }
+      let msgInfo = {
+        sendId: this.mine.id,
+        tmpId: this.generateId(),
+        content: JSON.stringify(content),
+        type: this.$enums.MESSAGE_TYPE.EMOJI,
+        sendTime: new Date().getTime(),
+        selfSend: true,
+        loadStatus: "loading",
+        readedCount: 0,
+        status: this.$enums.MESSAGE_STATUS.UNSEND,
+        joinType: this.regionGroup.joinType,
+        receipt: this.isReceipt
+      }
+      // 填充对方id
+      this.fillTargetId(msgInfo, this.chat.targetId);
+      this.sendMessageRequest(msgInfo).then((m) => {
+        msgInfo.loadStatus = 'ok';
+        msgInfo.id = m.id;
+        this.regionStore.insertRegionMessage(msgInfo, this.chat);
+        // 会话置顶
+        this.moveChatToTop();
+        // 滚到最低部
+        this.scrollToBottom();
       })
     },
     switchReceipt() {
@@ -1057,6 +1102,26 @@ export default {
       if (msg.chatType === 'REGION-GROUP' && this.regionGroup.id === msg.regionGroupId && msg.groupChangeType) {
         this.loadRegionGroupMembers(this.regionGroup.id);
       }
+    },
+    collectImage(msgInfo) {
+      let imgInfo = JSON.parse(msgInfo.content)
+      let imageUrl = imgInfo.imageUrl || imgInfo.originUrl;
+      let param = {
+        imageUrl: imageUrl,
+        emoId: imgInfo.albumId ? imgInfo.id : null,
+        albumId: imgInfo.albumId
+      }
+
+      this.$http({
+        url: `/emoFavorite/addEmoFavorite`,
+        method: 'post',
+        data: param
+      }).then((data) => {
+        uni.showToast({
+          title: "收藏成功",
+          icon: "none"
+        })
+      });
     },
   },
   computed: {

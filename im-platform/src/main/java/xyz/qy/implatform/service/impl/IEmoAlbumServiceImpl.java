@@ -10,6 +10,10 @@ import xyz.qy.implatform.mapper.EmoAlbumMapper;
 import xyz.qy.implatform.service.IEmoAlbumService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
+import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.vo.EmoAlbumVO;
+
+import java.util.List;
 
 @Service
 public class IEmoAlbumServiceImpl extends ServiceImpl<EmoAlbumMapper, EmoAlbum> implements IEmoAlbumService {
@@ -57,5 +61,13 @@ public class IEmoAlbumServiceImpl extends ServiceImpl<EmoAlbumMapper, EmoAlbum> 
         emoAlbum.setDeleted(true);
         emoAlbum.setUpdateBy(userId);
         this.updateById(emoAlbum);
+    }
+
+    @Override
+    public List<EmoAlbumVO> getEmoAlbumList() {
+        List<EmoAlbum> albumList = this.lambdaQuery()
+                .eq(EmoAlbum::getDeleted, false)
+                .list();
+        return BeanUtils.copyProperties(albumList, EmoAlbumVO.class);
     }
 }

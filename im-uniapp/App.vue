@@ -92,7 +92,8 @@ export default {
 					.then(() => this.chatStore.loadChat())
 					.then(() => this.regionStore.loadRegionChat())
 					.then(() => this.talkStore.loadTalkInfo())
-					.then(() => this.configStore.loadConfig());
+					.then(() => this.configStore.loadConfig())
+          .then(() => this.uiStore.loadEmoAlbums());
 			})
 		},
 		unloadStore() {

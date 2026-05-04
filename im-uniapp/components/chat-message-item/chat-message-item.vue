@@ -313,6 +313,13 @@ export default {
           icon: 'flag'
         })
       }
+      if (this.$msgType.isImage(this.msgInfo.type)) {
+        items.push({
+          key: 'COLLECT',
+          name: '添加到表情',
+          icon: 'flag'
+        })
+      }
 			items.push({
 				key: 'DELETE',
 				name: '删除',

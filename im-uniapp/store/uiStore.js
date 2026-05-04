@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-
+import http from '@/common/request';
 
 export default defineStore('uiStore', {
     state: () => {
@@ -163,11 +163,100 @@ export default defineStore('uiStore', {
                     }
                 ],
                 currentBubbleIndex: 0
-            }
+            },
+            emoAlbums: [],
+            emoAlbumImgMap: new Map(),
+            emoSelector: {
+                tabs: [
+                    { id: 'search', name: '搜索', icon: 'search' },
+                    { id: 'emo', name: '表情', icon: 'icon-icon_emoji', color: '#409EFF' },
+                    { id: 'original', name: '经典', icon: 'icon-icon_emoji', color: '#E6A23C' },
+                    { id: 'favorite', name: '收藏', icon: 'heart-filled', color: 'red'},
+                ],
+                activeTab: 'emo',
+            },
         }
     },
     actions: {
-
+        setEmoAlbums(emoAlbums) {
+            this.emoAlbums = emoAlbums;
+            // 动态添加相册标签
+            if (emoAlbums && emoAlbums.length > 0) {
+                emoAlbums.forEach(album => {
+                    const existingTab = this.emoSelector.tabs.find(tab => tab.id === `album_${album.id}`);
+                    if (!existingTab) {
+                        this.emoSelector.tabs.push({
+                            id: `album_${album.id}`,
+                            name: album.name,
+                            icon: album.logoUrl,
+                            albumId: album.id
+                        });
+                    }
+                });
+            }
+        },
+        loadEmoAlbums() {
+            return new Promise((resolve, reject) => {
+                http({
+                    url: '/emoAlbum/getEmoAlbumList',
+                    method: 'GET'
+                }).then((emoAlbums) => {
+                    this.setEmoAlbums(emoAlbums);
+                    resolve();
+                }).catch((res) => {
+                    reject(res);
+                })
+            });
+        },
+        loadEmoFavoriteList() {
+            return new Promise((resolve, reject) => {
+                http({
+                    url: '/emoFavorite/list',
+                    method: 'GET'
+                }).then((list) => {
+                    resolve(list);
+                }).catch((res) => {
+                    reject(res);
+                })
+            });
+        },
+        loadEmoAlbumImgs(albumId) {
+            return new Promise((resolve, reject) => {
+                const cacheKey = `album_${albumId}`;
+                if (this.emoAlbumImgMap.has(cacheKey)) {
+                    resolve(this.emoAlbumImgMap.get(cacheKey));
+                    return;
+                }
+                http({
+                    url: `/emoImg/getEmoImgList/${albumId}`,
+                    method: 'GET'
+                }).then((imgs) => {
+                    this.emoAlbumImgMap.set(cacheKey, imgs);
+                    resolve(imgs);
+                }).catch((res) => {
+                    reject(res);
+                })
+            });
+        },
+        searchEmoImgs(name) {
+            return new Promise((resolve, reject) => {
+                http({
+                    url: `/emoImg/search?name=${name}`,
+                    method: 'GET',
+                }).then((results) => {
+                    resolve(results);
+                }).catch((res) => {
+                    reject(res);
+                })
+            });
+        },
+        setActiveTab(tabId) {
+            this.emoSelector.activeTab = tabId;
+        }
     },
-    getters: {}
+    getters: {
+        getAllAlbums: (state) => {
+            return state.emoAlbums;
+        }
+    }
 })
