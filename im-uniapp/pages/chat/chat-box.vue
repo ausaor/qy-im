@@ -1557,8 +1557,6 @@ export default {
 	},
 	watch: {
 		messageSize: function(newSize, oldSize) {
-      console.log("newSize", newSize);
-      console.log("oldSize", oldSize);
       // 接收到新消息
       if (newSize > oldSize && oldSize > 0) {
         let lastMessage = this.chat.messages[newSize - 1];
@@ -1591,6 +1589,9 @@ export default {
 		// 初始状态只显示20条消息
 		let size = this.messageSize;
 		this.showMinIdx = size > 20 ? size - 20 : 0;
+    // 已读
+    this.readedMessage();
+
 		// 激活当前会话
 		this.chatStore.activeChat(options.chatIdx);
 		// 复位回执消息
@@ -1607,9 +1608,6 @@ export default {
     
     // 并行加载数据，等待所有数据加载完成后再显示消息列表
     const loadPromises = [];
-    
-    // 消息已读
-    loadPromises.push(this.readedMessage());
     
     // 加载好友或群聊信息
     if (this.chat.type == "GROUP") {

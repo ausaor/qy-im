@@ -105,9 +105,38 @@ export default {
 					complete: () => {}
 				})
 			}
-		}
+		},
+    refreshRegionUnreadBadge() {
+      if (this.regionUnreadCount > 0) {
+        uni.setTabBarBadge({
+          index: 1,
+          text: this.regionUnreadCount + ""
+        })
+      } else {
+        uni.removeTabBarBadge({
+          index: 1,
+          complete: () => {}
+        })
+      }
+    },
+    refreshOtherUnreadBadge() {
+      if (this.friendRequestCount > 0 || this.notifyCount > 0 || this.unreadUserCount > 0 || this.receivedGroupRequestsCount > 0 || this.joinGroupRequestsCount > 0 || this.starSpaceNotifyCount > 0) {
+        uni.setTabBarBadge({
+          index: 2,
+          text: this.friendRequestCount + this.notifyCount + this.unreadUserCount + this.receivedGroupRequestsCount + this.joinGroupRequestsCount  + this.starSpaceNotifyCount + ""
+        })
+      } else {
+        uni.removeTabBarBadge({
+          index: 2,
+          complete: () => {}
+        })
+      }
+    },
 	},
 	computed: {
+    mine() {
+      return this.userStore.userInfo;
+    },
 		unreadCount() {
 			let count = 0;
 			this.chatStore.chats.forEach(chat => {
@@ -117,6 +146,35 @@ export default {
 			})
 			return count;
 		},
+    regionUnreadCount() {
+      let count = 0;
+      this.regionStore.regionChats.forEach(chat => {
+        if (!chat.delete) {
+          count += chat.unreadCount;
+        }
+      })
+      return count;
+    },
+    friendRequestCount() {
+      return this.friendStore.friendRequests.filter((r) => r.recvId === this.mine.id && r.status === 1).length
+    },
+    receivedGroupRequestsCount() {
+      return this.groupStore.groupRequests.filter((r) => r.userId === this.mine.id && r.status === 1 && r.type === 2).length
+    },
+    joinGroupRequestsCount() {
+      // 群组申请(当前用户是群主，待审核的加群申请)
+      return this.groupStore.groupRequests
+          .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length;
+    },
+    unreadUserCount() {
+      return this.talkStore.unreadUserList.length;
+    },
+    notifyCount() {
+      return this.talkStore.notifyCount;
+    },
+    starSpaceNotifyCount() {
+      return this.talkStore.getTotalCharacterNotifyCount();
+    },
 		loading() {
 			return this.chatStore.isLoading();
 		},
@@ -127,10 +185,33 @@ export default {
 	watch: {
 		unreadCount(newCount, oldCount) {
 			this.refreshUnreadBadge();
-		}
+		},
+    regionUnreadCount(newCount, oldCount) {
+      this.refreshRegionUnreadBadge();
+    },
+    friendRequestCount(newCount, oldCount) {
+      this.refreshOtherUnreadBadge();
+    },
+    receivedGroupRequestsCount(newCount, oldCount) {
+      this.refreshOtherUnreadBadge();
+    },
+    joinGroupRequestsCount(newCount, oldCount) {
+      this.refreshOtherUnreadBadge();
+    },
+    unreadUserCount(newCount, oldCount) {
+      this.refreshOtherUnreadBadge();
+    },
+    notifyCount(newCount, oldCount) {
+      this.refreshOtherUnreadBadge();
+    },
+    starSpaceNotifyCount(newCount, oldCount) {
+      this.refreshOtherUnreadBadge();
+    }
 	},
 	onShow() {
 		this.refreshUnreadBadge();
+    this.refreshRegionUnreadBadge();
+    this.refreshOtherUnreadBadge();
 	}
 }
 </script>

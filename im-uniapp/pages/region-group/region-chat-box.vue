@@ -551,7 +551,6 @@ export default {
           this.quoteMsgInfo.quoteContent = '';
           this.quoteMsgInfo.show = false;
         }
-        console.log("quoteMsgInfo", this.quoteMsgInfo)
         this.$http({
           url: this.messageAction,
           method: 'post',
@@ -1204,8 +1203,6 @@ export default {
   },
   watch: {
     messageSize: function(newSize, oldSize) {
-      console.log("newSize", newSize);
-      console.log("oldSize", oldSize);
       // 接收到新消息
       if (newSize > oldSize && oldSize > 0) {
         let lastMessage = this.chat.messages[newSize - 1];
@@ -1233,10 +1230,11 @@ export default {
     uni.$on('region-group-change-event', this.handleGroupChangeEvent);
     // 聊天数据
     this.chat = this.regionStore.findRegionChatById(options.regionGroupId);
-    console.log("regionChat", this.chat)
     // 初始状态只显示20条消息
     let size = this.messageSize;
     this.showMinIdx = size > 20 ? size - 20 : 0;
+    // 消息已读
+    this.readedMessage()
 
     // 激活当前会话
     this.regionStore.activeRegionChat(options.regionGroupId);
@@ -1255,9 +1253,6 @@ export default {
     
     // 并行加载数据，等待所有数据加载完成后再显示消息列表
     const loadPromises = [];
-    
-    // 消息已读
-    loadPromises.push(this.readedMessage());
     
     // 加载区域群聊信息
     loadPromises.push(this.loadRegionGroup(options.regionGroupId));
