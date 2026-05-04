@@ -13,7 +13,7 @@
         <el-container>
           <el-container class="content-box">
             <el-main class="im-chat-main" id="chatScrollBox" @scroll="onScroll">
-              <div class="im-chat-box" v-if="chat && isDataLoaded">
+              <div class="im-chat-box" v-if="chat">
                 <ul>
                   <li v-for="(msgInfo,idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid" :ref="`message-${msgInfo.id}`"
                       :data-highlight="highlightedMessageId === msgInfo.id" class="message-wrapper">
@@ -998,19 +998,21 @@
         });
       },
 			loadGroup(groupId) {
-				return this.$http({
+				this.$http({
 					url: `/group/find/${groupId}`,
 					method: 'get'
 				}).then((group) => {
 					this.group = group;
 					this.$store.commit("updateChatFromGroup", group);
 					this.$store.commit("updateGroup", group);
-          return this.loadGroupMembers();
 				});
+
+        this.loadGroupMembers(groupId);
 			},
-      loadGroupMembers() {
-        return this.$http({
-          url: `/group/members/${this.group.id}`,
+
+      loadGroupMembers(groupId) {
+        this.$http({
+          url: `/group/members/${groupId}`,
           method: 'get'
         }).then((groupMembers) => {
           this.groupMembers = groupMembers;
@@ -1362,30 +1364,21 @@
             // 停止之前的录音
             this.playingAudio && this.playingAudio.stopPlayAudio();
             
-            // 设置数据未加载状态，隐藏消息列表
-            this.isDataLoaded = false;
-            
             if (this.chat.type === "GROUP") {
               // 群聊：加载群信息和成员
-              this.loadGroup(this.chat.targetId).then(() => {
-                this.onChatDataLoaded();
-              });
+              this.loadGroup(this.chat.targetId);
             } else {
-              // 私聊：加载好友信息和已读状态
-              Promise.all([
-                this.loadFriend(this.chat.targetId),
-                this.loadReaded(this.chat.targetId)
-              ]).then(() => {
-                this.onChatDataLoaded();
-              });
+              this.loadFriend(this.chat.targetId);
+              this.loadReaded(this.chat.targetId);
             }
-            
+
             // 滚到底部
             this.scrollToBottom();
             this.showSide = false;
             this.isInBottom = true;
             // 消息已读
             this.readedMessage()
+            
             // 初始状态只显示30条消息
             let size = this.chat.messages.length;
             this.showMinIdx = size > 30 ? size - 30 : 0;

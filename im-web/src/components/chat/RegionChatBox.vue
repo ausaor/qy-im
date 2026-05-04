@@ -13,7 +13,7 @@
         <el-container>
           <el-container class="content-box">
             <el-main class="im-chat-main" id="chatScrollBox" @scroll="onScroll">
-              <div class="im-chat-box" v-if="chat && isDataLoaded">
+              <div class="im-chat-box" v-if="chat">
                 <ul>
                   <li v-for="(msgInfo, idx) in chat.messages" :key="msgInfo.id ? msgInfo.id : msgInfo.uid" :ref="`message-${msgInfo.id}`"
                       :data-highlight="highlightedMessageId === msgInfo.id" class="message-wrapper">
@@ -727,15 +727,15 @@ export default {
       }).then(() => {})
     },
     loadRegionGroup(groupId) {
-      return this.$http({
+      this.$http({
         url: `/region/group/find/${groupId}`,
         method: 'get'
       }).then((regionGroup) => {
         this.regionGroup = regionGroup;
         this.$store.commit("updateRegionChatFromGroup", regionGroup);
         this.$store.commit("updateRegionGroup", regionGroup);
-        return this.loadRegionGroupMembers(groupId);
       });
+      this.loadRegionGroupMembers(groupId);
     },
     loadRegionGroupMembers(groupId) {
       console.log("加载群组成员", groupId);
@@ -958,16 +958,8 @@ export default {
     chat: {
       handler(newChat, oldChat) {
         if (newChat.targetId > 0) {
-          // 设置数据未加载状态，隐藏消息列表
-          this.isDataLoaded = false;
-          
-          // 等待群信息和已读状态加载完成
-          Promise.all([
-            this.loadRegionGroup(this.chat.targetId),
-            this.readedMessage()
-          ]).then(() => {
-            this.onChatDataLoaded();
-          });
+          this.loadRegionGroup(this.chat.targetId);
+          this.readedMessage();
           
           // 滚到底部
           this.scrollToBottom();

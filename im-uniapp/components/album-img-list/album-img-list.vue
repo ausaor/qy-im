@@ -39,14 +39,14 @@
 				</view>
 				
 				<!-- 搜索结果列表 -->
-				<view class="emoji-grid">
+				<view class="emoji-grid search-grid">
 					<view 
 						v-for="(item, index) in searchResults" 
 						:key="index"
-						class="emoji-item"
+						class="emoji-item search-item"
 						@click="onSelectEmoji(item)"
 					>
-						<image class="emoji-image" :src="item.thumbUrl || item.imageUrl" mode="aspectFit" />
+						<image class="emoji-image search-image" :src="item.thumbUrl || item.imageUrl" mode="aspectFit" />
 					</view>
 					<view v-if="searchResults.length === 0 && searchText" class="empty-tip">
 						<text>未找到相关表情</text>
@@ -79,15 +79,15 @@
 			</view>
 
 			<!-- 收藏表情列表 -->
-			<view v-else-if="activeTabId === 'favorite'" class="emoji-grid">
+			<view v-else-if="activeTabId === 'favorite'" class="emoji-grid favorite-grid">
 				<view 
 					v-for="(item, index) in favoriteList" 
 					:key="index"
-					class="emoji-item"
+					class="emoji-item favorite-item"
 					@click="onSelectEmoji(item)"
 					@longpress="onLongPressFavorite(item)"
 				>
-					<image class="emoji-image" :src="item.thumbUrl || item.imageUrl" mode="aspectFit" />
+					<image class="emoji-image favorite-image" :src="item.thumbUrl || item.imageUrl" mode="aspectFit" />
 				</view>
 				<view v-if="favoriteList.length === 0" class="empty-tip">
 					<text>暂无收藏表情</text>
@@ -451,6 +451,44 @@ export default {
 			-webkit-box-orient: vertical;
 			word-break: break-all;
 			width: 100%;
+		}
+	}
+}
+
+.favorite-grid {
+	grid-template-columns: repeat(5, 1fr) !important;
+	gap: 12rpx !important;
+	padding: 16rpx !important;
+	
+	.favorite-item {
+		flex-direction: column;
+		align-items: center;
+		padding: 16rpx 8rpx;
+		height: auto;
+		aspect-ratio: auto;
+		
+		.favorite-image {
+			width: 100rpx;
+			height: 100rpx;
+		}
+	}
+}
+
+.search-grid {
+	grid-template-columns: repeat(5, 1fr) !important;
+	gap: 12rpx !important;
+	padding: 16rpx !important;
+	
+	.search-item {
+		flex-direction: column;
+		align-items: center;
+		padding: 16rpx 8rpx;
+		height: auto;
+		aspect-ratio: auto;
+		
+		.search-image {
+			width: 100rpx;
+			height: 100rpx;
 		}
 	}
 }

@@ -1045,16 +1045,17 @@ export default {
         this.group = group;
         this.chatStore.updateChatFromGroup(group);
         this.groupStore.updateGroup(group);
-
-        return this.$http({
-          url: `/group/members/${groupId}`,
-          method: 'GET'
-        }).then((groupMembers) => {
-          this.groupMembers = groupMembers;
-          this.myGroupMemberInfo = this.groupMembersMap.get(this.mine.id);
-        });
       });
 		},
+    loadGroupMembers(groupId) {
+      return this.$http({
+        url: `/group/members/${groupId}`,
+        method: 'GET'
+      }).then((groupMembers) => {
+        this.groupMembers = groupMembers;
+        this.myGroupMemberInfo = this.groupMembersMap.get(this.mine.id);
+      });
+    },
 		loadFriend(friendId) {
 			// 获取对方最新信息
 			return this.$http({
@@ -1352,6 +1353,7 @@ export default {
     },
     refreshChat() {
       this.loadGroup(this.chat.targetId)
+      this.loadGroupMembers(this.chat.targetId)
     },
     gotoHome() {
       uni.reLaunch({
@@ -1403,6 +1405,7 @@ export default {
       console.log("handleGroupChangeEvent", msg);
       if (msg.chatType === 'GROUP' && this.group.id === msg.groupId && msg.groupChangeType) {
         this.loadGroup(this.group.id);
+        this.loadGroupMembers(this.group.id)
       }
     },
     handleGroupAudioEvent(msg) {
@@ -1611,6 +1614,7 @@ export default {
     // 加载好友或群聊信息
     if (this.chat.type == "GROUP") {
       loadPromises.push(this.loadGroup(this.chat.targetId));
+      loadPromises.push(this.loadGroupMembers(this.chat.targetId));
     } else {
       loadPromises.push(this.loadFriend(this.chat.targetId));
       loadPromises.push(this.loadReaded(this.chat.targetId));
