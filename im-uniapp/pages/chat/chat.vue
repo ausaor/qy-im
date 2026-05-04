@@ -20,7 +20,7 @@
 		<view class="chat-tip" v-if="!loading && chatStore.chats.length == 0">
 			温馨提示：您现在还没有任何聊天消息，快跟您的好友发起聊天吧~
 		</view>
-		<scroll-view class="scroll-bar" v-else scroll-with-animation="true" scroll-y="true">
+		<scroll-view class="scroll-bar" v-else scroll-with-animation="true" scroll-y="true" :style="{height: scrollViewHeight}">
 			<view v-for="(chat, index) in chatStore.chats" :key="index">
 				<long-press-menu v-if="isShowChat(chat)" :items="menu.items" @select="onSelectMenu($event, index)">
 					<chat-item :chat="chat" :index="index" :active="menu.chatIdx == index"></chat-item>
@@ -43,6 +43,7 @@ export default {
 		return {
 			showSearch: false,
 			searchText: "",
+			scrollViewHeight: '0px',
 			menu: {
 				show: false,
 				style: "",
@@ -212,6 +213,17 @@ export default {
 		this.refreshUnreadBadge();
     this.refreshRegionUnreadBadge();
     this.refreshOtherUnreadBadge();
+		// 设置 scroll-view 的高度
+		this.$nextTick(() => {
+			const query = uni.createSelectorQuery().in(this);
+			query.select('.tab-page').boundingClientRect(data => {
+				if (data) {
+					// 减去底部 tabBar 的高度（通常为 50px 或 100rpx）
+					const tabBarHeight = 50; // px
+					this.scrollViewHeight = (data.height - tabBarHeight) + 'px';
+				}
+			}).exec();
+		});
 	}
 }
 </script>
@@ -247,6 +259,9 @@ export default {
 	.scroll-bar {
 		flex: 1;
 		height: 100%;
+		/* 确保在移动端浏览器中可以滚动 */
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
 	}
 }
 </style>

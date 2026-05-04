@@ -1,8 +1,8 @@
 package xyz.qy.implatform.util;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.qiniu.util.Hex;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;

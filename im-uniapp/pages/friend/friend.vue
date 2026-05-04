@@ -68,12 +68,12 @@
 			温馨提示：您现在还没有任何好友，快点击右上方'+'按钮添加好友吧~
 		</view>
 		<view class="friend-items" v-else>
-			<up-index-list :index-list="friendIdx">
+			<up-index-list :index-list="friendIdx" :custom-nav-height="0">
 				<template v-for="(friends, i) in friendGroups">
 					<up-index-item>
 						<up-index-anchor :text="friendIdx[i] == '*' ? '在线' : friendIdx[i]"></up-index-anchor>
 						<view v-for="(friend, idx) in friends" :key="idx">
-							<friend-item :friend="friend"></friend-item>
+							<frined-item :friend="friend"></frined-item>
 						</view>
 					</up-index-item>
 				</template>
@@ -87,9 +87,10 @@ import { pinyin } from 'pinyin-pro';
 import SvgIcon from "../../components/svg-icon/svg-icon.vue";
 import NavBar from "../../components/nav-bar/nav-bar.vue";
 import HeadImage from "../../components/head-image/head-image.vue";
+import FrinedItem from "../../components/friend-item/friend-item.vue";
 
 export default {
-  components: {HeadImage, NavBar, SvgIcon},
+  components: {FrinedItem, HeadImage, NavBar, SvgIcon},
 	data() {
 		return {
 			showSearch: false,
@@ -354,8 +355,9 @@ export default {
 	.friend-items {
     flex: 1;
 		padding: 0;
-		overflow: scroll;
+		overflow: hidden;
 		position: relative;
+		height: 0; // 配合flex:1使用，确保正确计算高度
 
 		.scroll-bar {
 			height: 100%;

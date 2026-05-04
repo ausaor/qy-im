@@ -13,6 +13,14 @@ GitHub：https://github.com/ausaor/qy-im
 
 
 
+### 访问地址
+
+web端：https://im.timemory.xyz
+
+H5：https://im.timemory.xyz/h5/#
+
+
+
 ### 演示视频
 
 

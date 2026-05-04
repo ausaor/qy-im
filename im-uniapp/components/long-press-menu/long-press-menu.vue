@@ -1,6 +1,6 @@
 <template>
 	<view>
-		<view @longpress.stop="onLongPress($event)" @touchmove="onTouchMove" @touchend="onTouchEnd">
+		<view @longpress.stop="onLongPress($event)" @touchstart="onTouchStart" @touchmove.stop="onTouchMove" @touchend="onTouchEnd" @contextmenu.prevent>
 			<slot></slot>
 		</view>
 		<view v-if="isShowMenu" class="menu-mask" @touchstart="onClose()" @contextmenu.prevent=""></view>
@@ -19,7 +19,10 @@ export default {
 		return {
 			isShowMenu: false,
 			isTouchMove: false,
-			style: ""
+			style: "",
+      menuStyle: "",
+			touchStartX: 0,
+			touchStartY: 0,
 		}
 	},
 	props: {
@@ -29,13 +32,21 @@ export default {
 	},
 	methods: {
 		onLongPress(e) {
+			console.log('长按事件触发', e);
 			if (this.isTouchMove) {
 				// 屏幕移动时不弹出
+				console.log('检测到触摸移动，不显示菜单');
 				return;
 			}
+			// 阻止默认行为，防止浏览器上下文菜单
+			e.preventDefault && e.preventDefault();
 			uni.getSystemInfo({
 				success: (res) => {
-					let touches = e.touches[0];
+					let touches = e.touches ? e.touches[0] : e.changedTouches[0];
+					if (!touches) {
+						console.error('无法获取触摸点信息');
+						return;
+					}
 					let style = "";
 					/* 因 非H5端不兼容 style 属性绑定 Object ，所以拼接字符 */
 					if (touches.clientY > (res.windowHeight / 2)) {
@@ -49,19 +60,42 @@ export default {
 						style += `left:${touches.clientX}px;`;
 					}
 					this.menuStyle = style;
+					console.log('菜单样式:', style);
 					//
 					this.$nextTick(() => {
 						this.isShowMenu = true;
+						console.log('菜单已显示');
 					});
 				}
 			})
 		},
-		onTouchMove() {
-			this.onClose();
-			this.isTouchMove = true;
+		onTouchStart(e) {
+			// 记录触摸起始位置
+			if (e.touches && e.touches.length > 0) {
+				const touch = e.touches[0];
+				this.touchStartX = touch.pageX;
+				this.touchStartY = touch.pageY;
+				this.isTouchMove = false;
+				console.log('触摸开始', this.touchStartX, this.touchStartY);
+			}
+		},
+		onTouchMove(e) {
+			// 检测是否有明显的移动
+			if (e.touches && e.touches.length > 0) {
+				const touch = e.touches[0];
+				const moveX = Math.abs(touch.pageX - this.touchStartX);
+				const moveY = Math.abs(touch.pageY - this.touchStartY);
+				// 如果移动距离超过5px，认为是移动而非长按
+				if (moveX > 5 || moveY > 5) {
+					this.onClose();
+					this.isTouchMove = true;
+					console.log('检测到明显移动，关闭菜单');
+				}
+			}
 		},
 		onTouchEnd() {
 			this.isTouchMove = false;
+			console.log('触摸结束');
 		},
 		onSelectMenu(item) {
 			this.$emit("select", item);
@@ -99,6 +133,7 @@ export default {
 	background-color: #fff;
 	z-index: 1000;
 	box-shadow: $im-box-shadow-dark;
+	min-width: 120px;
 
 	.menu-item {
 		height: 28px;
@@ -108,8 +143,11 @@ export default {
 		display: flex;
 		padding: 6px 20px;
 		justify-content: flex-start;
+		cursor: pointer;
+		user-select: none;
+		-webkit-user-select: none;
 
-		&:hover {
+		&:active {
 			background: $im-bg-active;
 		}
 

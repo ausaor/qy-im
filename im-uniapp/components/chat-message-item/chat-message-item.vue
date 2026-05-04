@@ -20,7 +20,7 @@
 				<view class="chat-msg-bottom">
 					<view v-if="msgInfo.type == $enums.MESSAGE_TYPE.TEXT">
 						<long-press-menu :items="menuItems" @select="onSelectMenu">
-							 <rich-text class="chat-msg-text" :style="currentBubbleStyle" :nodes="nodesText" @itemclick="onLinkClick"></rich-text>
+							 <rich-text class="chat-msg-text" :style="currentBubbleStyle" :nodes="nodesText" @itemclick="onLinkClick" style="pointer-events: auto;"></rich-text>
 						</long-press-menu>
 					</view>
           <view v-if="msgInfo.type == $enums.MESSAGE_TYPE.WORD_VOICE" class="chat-msg-word-voice">
