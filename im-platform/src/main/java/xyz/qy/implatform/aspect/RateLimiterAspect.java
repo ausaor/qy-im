@@ -67,7 +67,7 @@ public class RateLimiterAspect {
             if (ObjectUtil.isNull(number) || number.intValue() > COUNT) {
                 throw new GlobalException("访问过于频繁，请稍候再试");
             }
-            log.info("限制请求'{}',当前请求'{}',缓存key'{}'", COUNT, number.intValue(), combineKey);
+            //log.info("限制请求'{}',当前请求'{}',缓存key'{}'", COUNT, number.intValue(), combineKey);
         } catch (GlobalException e) {
             throw e;
         } catch (Exception e) {

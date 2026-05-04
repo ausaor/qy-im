@@ -2,15 +2,7 @@
 	<view class="chat-msg-item">
 		<view class="chat-msg-tip"
 			v-if="msgInfo.type == $enums.MESSAGE_TYPE.RECALL || msgInfo.type == $enums.MESSAGE_TYPE.TIP_TEXT">
-			<!-- #ifdef APP-PLUS || MP-WEIXIN || MP-QQ -->
-			<rich-text :nodes="tipNodes" @itemclick="onTipLinkClick"></rich-text>
-			<!-- #endif -->
-			<!-- #ifdef H5 -->
-			<view v-html="tipNodes" @click="onTipLinkClickH5"></view>
-			<!-- #endif -->
-			<!-- #ifdef MP-ALIPAY || MP-BAIDU || MP-TOUTIAO -->
-			<rich-text :nodes="tipNodes"></rich-text>
-			<!-- #endif -->
+      <rich-text :nodes="tipNodes" @itemclick="onTipLinkClick"></rich-text>
 		</view>
 		<view class="chat-msg-tip" v-if="msgInfo.type == $enums.MESSAGE_TYPE.TIP_TIME">
 			{{ $date.toTimeText(msgInfo.sendTime) }}
@@ -387,7 +379,7 @@ export default {
         processedMatches.push(fullMatch);
         
         // 转换为可点击元素,使用蓝色字体样式,并添加左右间距
-        const replacement = `<a href="javascript:void(0)" class="tip-user-link" data-userid="${userId}" style="color: #3498db; cursor: pointer; margin: 0 8rpx;">${username}</a>`;
+        const replacement = `<a href="javascript:void(0)" class="tip-user-link" data-userid="${userId}" style="color: #3498db; cursor: pointer; margin: 0 12rpx;">${username}</a>`;
         result = result.replace(new RegExp(this.escapeRegExp(fullMatch), 'g'), replacement);
       }
       
@@ -621,6 +613,10 @@ export default {
 		color: $im-text-color-lighter;
 		font-size: $im-font-size-smaller-extra;
 		padding: 10rpx;
+
+    .tip-user-link {
+      text-decoration: none; /* 去掉下划线 */
+    }
 	}
 
 	.chat-msg-normal {

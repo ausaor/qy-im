@@ -28,6 +28,20 @@
         </view>
       </uni-forms>
     </view>
+    
+    <!-- 备案信息 -->
+    <view class="footer-wrap">
+      <view class="beian-info">
+        <view class="beian-item">
+          <image src="https://beian.mps.gov.cn/img/logo01.dd7ff50e.png" class="beian-icon" mode="aspectFit"></image>
+          <text>桂公网安备45033202000063号</text>
+        </view>
+        <view class="beian-divider">|</view>
+        <view class="beian-item">
+          <text>桂ICP备2026005181号-1</text>
+        </view>
+      </view>
+    </view>
 	</view>
 </template>
 
@@ -153,6 +167,46 @@ export default {
           color: #2B85E4;
           margin: 0 4rpx;
         }
+      }
+    }
+  }
+  
+  .footer-wrap {
+    position: fixed;
+    bottom: 20rpx;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    
+    .beian-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16rpx;
+      padding: 12rpx 24rpx;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      border-radius: 40rpx;
+      box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+      
+      .beian-item {
+        display: flex;
+        align-items: center;
+        gap: 8rpx;
+        
+        .beian-icon {
+          width: 28rpx;
+          height: 28rpx;
+        }
+        
+        text {
+          font-size: 24rpx;
+          line-height: 1.5;
+        }
+      }
+      
+      .beian-divider {
+        font-size: 28rpx;
       }
     }
   }
