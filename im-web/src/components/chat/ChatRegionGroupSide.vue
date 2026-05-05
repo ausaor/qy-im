@@ -151,6 +151,9 @@
       </div>
     </div>
   </div>
+    <div class="complaint-box">
+      <span @click="showComplaint">被骚扰了？举报该群</span>
+    </div>
   <drawer
         :visible="regionSpaceVisible"
         @close="closeDrawer"
@@ -166,6 +169,7 @@
     </drawer>
     <talk-notify ref="talkNotifyRef" :category="'region'" :region-code="regionGroup.code"></talk-notify>
     <music-play ref="musicPlayRef" :category="'region'" :section="'region'" :region-code="regionGroup.code"></music-play>
+    <complaint ref="complaintRef" :target-type="'regionGroup'" :target-name="regionGroup.remark" :target-id="regionGroup.id" :visible="complaintVisible" @close="closeComplaint"></complaint>
   </div>
 </template>
 
@@ -178,6 +182,7 @@ import FileUpload from "@/components/common/FileUpload";
 import HeadImage from "@components/common/HeadImage.vue";
 import TalkNotify from "@components/talk/TalkNotify.vue";
 import MusicPlay from "@components/common/musicPlay.vue";
+import Complaint from "@components/common/Complaint.vue";
 
 export default {
   name: "ChatRegionGroupSide",
@@ -190,6 +195,7 @@ export default {
     Drawer,
     FileUpload,
     MusicPlay,
+    Complaint,
   },
   props: {
     regionGroup: {
@@ -220,6 +226,7 @@ export default {
       myGroupMemberInfo: {},
       regionSpaceVisible: false,
       maxSize: 2 * 1024 * 1024,
+      complaintVisible: false,
     }
   },
   created() {
@@ -473,7 +480,13 @@ export default {
       }).then(() => {
         this.$message.success("修改成功");
       });
-    }
+    },
+    showComplaint() {
+      this.complaintVisible = true;
+    },
+    closeComplaint() {
+      this.complaintVisible = false;
+    },
   },
   computed: {
     mine() {
@@ -866,6 +879,17 @@ export default {
       align-items: center;
     }
 
+  }
+
+  .complaint-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    font-size: 14px;
+    color: #5359dc;
+    cursor: pointer;
+    margin-top: 8px;
   }
 }
 </style>

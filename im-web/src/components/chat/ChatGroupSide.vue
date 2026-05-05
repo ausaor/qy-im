@@ -225,6 +225,9 @@
           </div>
         </div>
       </div>
+      <div class="complaint-box">
+        <span @click="showComplaint">被骚扰了？举报该群</span>
+      </div>
 		</el-scrollbar>
     <drawer
         :visible="groupSpaceVisible"
@@ -253,6 +256,7 @@
     <talk-notify ref="talkNotifyRef" :category="'group'" :group-id="group.id"></talk-notify>
     <talk-notify ref="starTalkNotifyRef" :category="'character'" :section="section" :group-template-id="groupTemplateId" :character-ids="characterIdList"></talk-notify>
     <music-play ref="musicPlayRef" :category="'group'" :section="'group'" :groupId="group.id"></music-play>
+    <complaint :target-type="'group'" :target-name="group.name" :target-id="group.id" :visible="complaintVisible" @close="closeComplaint"></complaint>
     <add-group-member
         :visible="showAddGroupMember"
         :groupId="group.id"
@@ -289,6 +293,7 @@
   import HeadImage from "@components/common/HeadImage.vue";
   import MusicPlay  from "@components/common/musicPlay.vue";
   import BanGroupMember from "@components/group/BanGroupMember.vue";
+  import Complaint from "@components/common/Complaint.vue";
 
 	export default {
 		name: "chatGroupSide",
@@ -303,6 +308,7 @@
       TalkNotify,
       MusicPlay,
       BanGroupMember,
+      Complaint,
 		},
 		data() {
 			return {
@@ -332,6 +338,7 @@
         characterIdList: [],
         starSpaceNotifyCount: 0,
         section: '',
+        complaintVisible: false,
 			}
 		},
 		props: {
@@ -709,6 +716,12 @@
       },
       getStarSpaceNotifyCount(allCharacterIds) {
         return this.$store.getters.getGroupTemplateNotifyCount(this.group.templateGroupId) + this.$store.getters.getCharactersNotifyCount(allCharacterIds.values());
+      },
+      showComplaint() {
+        this.complaintVisible = true;
+      },
+      closeComplaint() {
+        this.complaintVisible = false;
       }
 		},
     watch: {
@@ -1207,6 +1220,17 @@
           margin-right: 10px;
         }
       }
+    }
+
+    .complaint-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      font-size: 14px;
+      color: #5359dc;
+      cursor: pointer;
+      margin-top: 8px;
     }
 
 			.btn-group {

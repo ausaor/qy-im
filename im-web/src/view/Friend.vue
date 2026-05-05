@@ -93,7 +93,17 @@
               
               <div class="profile-content">
                 <div class="profile-info-section">
-                  <h2>基本信息</h2>
+                  <div class="basic-info-header">
+                    <h2>基本信息</h2>
+                    <div class="more-operation" @click.stop="toggleMoreMenu">
+                      <i class="el-icon-more"></i>
+                      <div v-show="moreMenuVisible" class="more-menu">
+                        <div class="menu-item" @click="onSendMessage(userInfo)">发送消息</div>
+                        <div class="menu-item" @click="showComplaint">投诉</div>
+                        <div class="menu-item danger-text" @click="onDelFriend(userInfo)">删除好友</div>
+                      </div>
+                    </div>
+                  </div>
                   <div class="profile-info-grid">
                     <div class="profile-info-item">
                       <span class="profile-info-label">性别</span>
@@ -184,6 +194,7 @@
       </template>
     </drawer>
     <music-play ref="musicPlayRef" :category="'private'" :section="'friend'" :friend-id="userInfo.id" :show-upload="false"></music-play>
+    <complaint :target-type="'user'" :target-name="userInfo.nickName" :target-id="userInfo.id" :visible="complaintVisible" @close="closeComplaint"></complaint>
   </el-container>
 </template>
 
@@ -196,6 +207,7 @@ import Drawer from "@/components/common/Drawer";
 import SpaceCover from "@/components/common/SpaceCover";
 import FileUpload from "@/components/common/FileUpload";
 import MusicPlay from "@components/common/musicPlay.vue";
+import Complaint from "@components/common/Complaint.vue";
 import { pinyin } from 'pinyin-pro';
 
 export default {
@@ -209,6 +221,7 @@ export default {
     SpaceCover,
     FileUpload,
     MusicPlay,
+    Complaint,
   },
   data() {
     return {
@@ -221,6 +234,8 @@ export default {
       activeFriend: {},
       showType: 0, // 0:不展示；1:新的朋友 2:好友信息
       headerTitle: '',
+      complaintVisible: false,
+      moreMenuVisible: false,
     }
   },
   methods: {
@@ -411,6 +426,22 @@ export default {
 
       })
     },
+    showComplaint() {
+      this.complaintVisible = true;
+    },
+    closeComplaint() {
+      this.complaintVisible = false;
+    },
+    toggleMoreMenu() {
+      this.moreMenuVisible = !this.moreMenuVisible;
+    },
+    handleClickOutside(event) {
+      // 如果点击的不是 more-operation 元素或其子元素，则关闭菜单
+      const moreOperation = this.$el.querySelector('.more-operation');
+      if (moreOperation && !moreOperation.contains(event.target)) {
+        this.moreMenuVisible = false;
+      }
+    }
   },
   computed: {
     mine() {
@@ -478,7 +509,12 @@ export default {
     }
   },
   mounted() {
-
+    // 添加全局点击事件监听器，点击外部关闭菜单
+    document.addEventListener('click', this.handleClickOutside);
+  },
+  beforeDestroy() {
+    // 组件销毁时移除事件监听器
+    document.removeEventListener('click', this.handleClickOutside);
   }
 }
 </script>
@@ -719,17 +755,73 @@ export default {
         .profile-content {
           padding: 30px;
           
-          h2 {
-            color: #333;
-            font-size: 20px;
-            margin: 0 0 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
-            font-weight: 600;
-          }
-          
           .profile-info-section {
             margin-bottom: 30px;
+
+            .basic-info-header {
+              display: flex;
+              justify-content: space-between;
+              border-bottom: 2px solid #f0f0f0;
+              padding-bottom: 10px;
+              margin-bottom: 20px;
+
+              h2 {
+                color: #333;
+                font-size: 20px;
+                font-weight: 600;
+              }
+
+              .more-operation {
+                cursor: pointer;
+                font-size: 20px;
+                padding: 8px;
+                border-radius: 50%;
+                transition: all .3s ease;
+                background: #f4f4fc;
+                color: #2830d3;
+                margin: 0;
+                position: relative;
+
+                &:hover {
+                  background: #e8e8f8;
+                }
+
+                .more-menu {
+                  position: absolute;
+                  top: 100%;
+                  right: 0;
+                  margin-top: 8px;
+                  background: white;
+                  border-radius: 8px;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                  min-width: 120px;
+                  z-index: 1000;
+                  overflow: hidden;
+
+                  .menu-item {
+                    padding: 12px 8px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    color: #212529;
+                    transition: all 0.2s ease;
+                    text-align: center;
+
+                    &:hover {
+                      background: #f5f7fa;
+                    }
+
+                    &.danger-text {
+                      color: #f56c6c;
+                      font-weight: 500;
+
+                      &:hover {
+                        background: #fef0f0;
+                      }
+                    }
+                  }
+                }
+              }
+            }
             
             .profile-info-grid {
               display: grid;
@@ -767,6 +859,15 @@ export default {
           
           .profile-actions-section {
             margin-bottom: 30px;
+
+            h2 {
+              color: #333;
+              font-size: 20px;
+              margin: 0 0 20px;
+              padding-bottom: 10px;
+              border-bottom: 2px solid #f0f0f0;
+              font-weight: 600;
+            }
             
             .profile-action-items {
               display: grid;

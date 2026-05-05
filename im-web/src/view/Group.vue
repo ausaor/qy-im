@@ -119,6 +119,14 @@
 						<div class="group-card group-info-card">
 							<div class="card-header">
 								<h3>群信息</h3>
+                <div class="more-operation" @click.stop="toggleMoreMenu">
+                  <i class="el-icon-more"></i>
+                  <div v-show="moreMenuVisible" class="more-menu">
+                    <div class="menu-item" @click="onSendMessage">发送消息</div>
+                    <div class="menu-item" @click="showComplaint">投诉</div>
+                    <div class="menu-item danger-text" @click="onDissolve">解散群聊</div>
+                  </div>
+                </div>
 							</div>
 							<div class="card-body">
 								<div class="group-info">
@@ -136,15 +144,19 @@
 										<el-button class="send-btn" icon="el-icon-position" type="primary" @click="onSendMessage()" size="mini">发消息</el-button>
 									</div>
 									<div class="group-form-box">
+                    <div class="form-item">
+                      <label class="form-label">群名称：</label>
+                      <div class="form-value">{{activeGroup.name}}</div>
+                    </div>
 										<!-- 群主信息 -->
 										<div class="form-item">
-											<label class="form-label">群主</label>
+											<label class="form-label">群主：</label>
 											<div class="form-value">{{ownerName}}</div>
 										</div>
 										
 										<!-- 群备注 -->
 										<div class="form-item">
-											<label class="form-label">群备注</label>
+											<label class="form-label">群备注：</label>
 											<div class="editable-field" v-if="!editingFields.remark">
 												<span class="field-value">{{activeGroup.remark || '无'}}</span>
 												<i class="el-icon-edit edit-icon" @click="startEdit('remark')"></i>
@@ -163,7 +175,7 @@
 										
 										<!-- 我在本群的昵称 -->
 										<div class="form-item">
-											<label class="form-label">我在本群的昵称</label>
+											<label class="form-label">我在本群的昵称：</label>
 											<div class="editable-field" v-if="!editingFields.aliasName || activeGroup.groupType!==0">
 												<span class="field-value">{{activeGroup.aliasName || '无'}}</span>
 												<i 
@@ -186,7 +198,7 @@
 										
 										<!-- 备注名 -->
 										<div class="form-item" v-show="activeGroup.groupType!==0">
-											<label class="form-label">备注名</label>
+											<label class="form-label">备注名：</label>
 											<div class="editable-field" v-if="!editingFields.nickName">
 												<span class="field-value">{{activeGroup.nickName || '无'}}</span>
 												<i class="el-icon-edit edit-icon" @click="startEdit('nickName')"></i>
@@ -205,7 +217,7 @@
 										
 										<!-- 群公告 -->
 										<div class="form-item">
-											<label class="form-label">群公告</label>
+											<label class="form-label">群公告：</label>
 											<div class="editable-field" v-if="!editingFields.notice || !isOwner">
 												<span class="field-value">{{activeGroup.notice || '群主未设置'}}</span>
 												<i 
@@ -483,6 +495,7 @@
     <group-request-panel ref="groupRequestPanel" :is-owner="isOwner" :join-group-requests="joinGroupRequests" :invite-group-requests="inviteGroupRequests"></group-request-panel>
     <template-character-choose :visible="groupRequestChangeCharacterVisible" @close="groupRequestChangeCharacterVisible = false" @confirm="groupRequestChangeCharacterEvent"></template-character-choose>
     <BanGroupMember ref="banGroupMemberRef" :visible="banGroupMemberVisible" :operation="banOperation" :members="banMembers" @close="closeBanGroupMemberDialog" @confirm="doBanMembers"></BanGroupMember>
+    <complaint ref="complaintRef" :target-id="activeGroup.id" :target-name="activeGroup.name" :target-type="'group'" :visible="complaintVisible" @close="closeComplaint"></complaint>
 	</el-container>
 </template>
 
@@ -509,6 +522,7 @@
   import MusicPlay from "@components/common/musicPlay.vue";
   import GroupRequestPanel from "@components/group/GroupRequestPanel.vue";
   import BanGroupMember from "@components/group/BanGroupMember.vue";
+  import Complaint from "@components/common/Complaint.vue";
 
 	export default {
 		name: "group",
@@ -534,6 +548,7 @@
       TemplateCharacterChooseDialog,
       GroupRequestPanel,
       BanGroupMember,
+      Complaint,
 		},
 		data() {
 			return {
@@ -609,10 +624,18 @@
         characterIdList: [],
         allCharacterIds: new Set(),
         starSpaceNotifyCount: 0,
+        complaintVisible: false,
+        moreMenuVisible: false,
 			};
 		},
     mounted() {
       this.friends = this.$store.state.friendStore.friends;
+      // 添加全局点击事件监听器，点击外部关闭菜单
+      document.addEventListener('click', this.handleClickOutside);
+    },
+    beforeDestroy() {
+      // 组件销毁时移除事件监听器
+      document.removeEventListener('click', this.handleClickOutside);
     },
     created() {
     },
@@ -1285,7 +1308,23 @@
       },
       getStarSpaceNotifyCount() {
         return this.$store.getters.getGroupTemplateNotifyCount(this.activeGroup.templateGroupId) + this.$store.getters.getCharactersNotifyCount(this.allCharacterIds.values());
-      }
+      },
+      showComplaint() {
+        this.complaintVisible = true;
+      },
+      closeComplaint() {
+        this.complaintVisible = false;
+      },
+      toggleMoreMenu() {
+        this.moreMenuVisible = !this.moreMenuVisible;
+      },
+      handleClickOutside(event) {
+        // 如果点击的不是 more-operation 元素或其子元素，则关闭菜单
+        const moreOperation = this.$el.querySelector('.more-operation');
+        if (moreOperation && !moreOperation.contains(event.target)) {
+          this.moreMenuVisible = false;
+        }
+      },
 		},
 		computed: {
 			groupStore() {
@@ -1584,6 +1623,8 @@
           .card-header {
             padding: 20px;
             border-bottom: 1px solid rgba(224, 224, 224, 0.5);
+            display: flex;
+            justify-content: space-between;
 
             h3 {
               margin: 0;
@@ -1592,6 +1633,57 @@
               font-weight: 600;
               letter-spacing: 1px;
               text-shadow: 0 0 10px rgba(33, 37, 41, 0.1);
+            }
+
+            .more-operation {
+              cursor: pointer;
+              font-size: 20px;
+              padding: 8px;
+              border-radius: 50%;
+              transition: all .3s ease;
+              background: #f4f4fc;
+              color: #2830d3;
+              margin: 0;
+              position: relative;
+
+              &:hover {
+                background: #e8e8f8;
+              }
+
+              .more-menu {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                margin-top: 8px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                min-width: 120px;
+                z-index: 1000;
+                overflow: hidden;
+
+                .menu-item {
+                  padding: 12px 8px;
+                  cursor: pointer;
+                  font-size: 14px;
+                  text-align: center;
+                  color: #212529;
+                  transition: all 0.2s ease;
+
+                  &:hover {
+                    background: #f5f7fa;
+                  }
+
+                  &.danger-text {
+                    color: #f56c6c;
+                    font-weight: 500;
+
+                    &:hover {
+                      background: #fef0f0;
+                    }
+                  }
+                }
+              }
             }
           }
 
