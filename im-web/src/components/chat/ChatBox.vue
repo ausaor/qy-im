@@ -22,8 +22,8 @@
                         :ref="`message-item-${msgInfo.id ? msgInfo.id : msgInfo.uid}`"
                         @call="onCall(msgInfo.type)"
                         :mine="msgInfo.sendId == mine.id"
-                        :show-name="showName(msgInfo)" :head-image="headImage(msgInfo)"
-                        :nick-name="nickName(msgInfo)" :characterNum="characterNum(msgInfo)" :role="role(msgInfo)"
+                        :showName="showName(msgInfo)" :headImage="headImage(msgInfo)"
+                        :nickName="nickName(msgInfo)" :characterNum="characterNum(msgInfo)" :role="role(msgInfo)"
                         :chatBubbleIndex="chatBubbleIndex(msgInfo)" :quoteShowName="quoteShowName(msgInfo)"
                         :msgInfo="msgInfo"
                         :isOwner="group.ownerId === msgInfo.sendId"
@@ -1067,7 +1067,7 @@
       showName(msgInfo) {
         if (this.chat.type == 'GROUP') {
           let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
-          return member ? member.aliasName : "";
+          return member ? member.aliasName : msgInfo.sendNickName;
         } else {
           return msgInfo.selfSend ? this.mine.nickName : this.chat.showName
         }

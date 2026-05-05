@@ -180,11 +180,11 @@ export default {
 			},
       headImage: {
         type: String,
-        required: true
+        default: '',
       },
       showName: {
         type: String,
-        required: true
+        default: '',
       },
       nickName: {
         type: String,

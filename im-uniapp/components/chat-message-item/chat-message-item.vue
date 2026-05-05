@@ -13,7 +13,7 @@
 			<view class="chat-msg-content">
 				<view v-if="(msgInfo.groupId || msgInfo.regionGroupId) && !msgInfo.selfSend" class="chat-msg-top">
 					<text :style="nameColorStyle" class="alias-name">{{ showName }}</text>
-          <text v-show="myGroupMemberInfo.showNickName" class="nick-name">{{showName}}</text>
+          <text v-show="myGroupMemberInfo.showNickName" class="nick-name">{{nickName}}</text>
           <text v-if="isOwner && msgInfo.groupId" class="group-owner">群主</text>
           <text v-if="msgInfo.sendId===1" class="blogger">博主</text>
 				</view>

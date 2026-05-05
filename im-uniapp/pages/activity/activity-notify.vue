@@ -15,7 +15,6 @@
     <scroll-view
         class="message-list"
         scroll-y="true"
-        refresher-enabled="true"
     >
       <view class="message-item" v-for="(item, index) in messageList" :key="index">
         <!-- 用户信息 -->

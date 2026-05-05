@@ -860,7 +860,7 @@ export default {
     },
     showName(msgInfo) {
       let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
-      return member ? member.aliasName : "";
+      return member ? member.aliasName : msgInfo.sendNickName;
     },
     role(msgInfo) {
       let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
