@@ -242,6 +242,15 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         this.update(wrapper);
     }
 
+    @Override
+    public void removeByUserId(Long userId) {
+        LambdaUpdateWrapper<GroupMember> wrapper = Wrappers.lambdaUpdate();
+        wrapper.eq(GroupMember::getUserId, userId)
+                .set(GroupMember::getQuit, true)
+                .set(GroupMember::getQuitTime,new Date());
+        this.update(wrapper);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(key = "#groupMemberVO.getGroupId()")
     @Override

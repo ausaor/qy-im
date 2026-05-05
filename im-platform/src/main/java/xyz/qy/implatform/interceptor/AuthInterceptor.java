@@ -42,8 +42,8 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
         String strJson = JwtUtil.getInfo(token);
         UserSession userSession = JSON.parseObject(strJson, UserSession.class);
-        if (redisCache.hasKey(RedisKey.IM_USER_BAN_ACCOUNT + userSession.getUserId())) {
-            throw new GlobalException("账号已被封禁");
+        if (redisCache.hasKey(RedisKey.IM_USER_INVALID_ACCOUNT + userSession.getUserId())) {
+            throw new GlobalException("异常账号");
         }
 
         //验证 token

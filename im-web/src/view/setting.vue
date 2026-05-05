@@ -38,6 +38,10 @@
           <i class="el-icon-chat-line-round"></i>
           <span slot="title">消息气泡</span>
         </el-menu-item>
+        <el-menu-item index="8">
+          <i class="el-icon-delete"></i>
+          <span slot="title">注销账号</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -315,6 +319,7 @@
           </el-form>
         </el-card>
       </div>
+      <!-- 7. 消息气泡页面 -->
       <div v-if="activeTab === '7'">
         <el-card>
           <div slot="header">
@@ -336,6 +341,48 @@
               </div>
               <div class="bubble-name">{{ bubble.name }}</div>
             </div>
+          </div>
+        </el-card>
+      </div>
+
+      <!-- 8. 注销账号页面 -->
+      <div v-if="activeTab === '8'">
+        <el-card>
+          <div slot="header">
+            <h3>注销账号</h3>
+          </div>
+          
+          <el-alert
+            title="警告"
+            description="注销账号是不可逆操作！注销后您的所有数据将被永久删除，包括聊天记录、好友关系、群组信息等。请谨慎操作。"
+            type="error"
+            show-icon
+            style="margin-bottom: 20px;"
+          ></el-alert>
+
+          <el-alert
+            title="注意事项"
+            type="warning"
+            show-icon
+            style="margin-bottom: 20px;"
+          >
+            <div slot="default">
+              <p>1. 注销后，您的账号将无法恢复</p>
+              <p>2. 您的个人资料将不再可见</p>
+              <p>3. 所有好友关系将被解除</p>
+              <p>4. 您将退出所有加入的群组</p>
+            </div>
+          </el-alert>
+
+          <div class="delete-account-section">
+            <el-button 
+              type="danger" 
+              size="large"
+              @click="confirmDeleteAccount"
+              icon="el-icon-warning"
+            >
+              注销账号
+            </el-button>
           </div>
         </el-card>
       </div>
@@ -711,6 +758,31 @@ export default {
       this.$store.commit("setChatBubbleIndex", index);
       this.localUserInfo.chatBubble = index;
       this.updateUserInfo();
+    },
+    // 注销账号相关方法
+    confirmDeleteAccount() {
+      this.$confirm('此操作将永久注销您的账号，所有数据将被删除且无法恢复，是否继续？', '警告', {
+        confirmButtonText: '确定注销',
+        cancelButtonText: '取消',
+        type: 'error',
+        center: true
+      }).then(() => {
+        this.deleteAccount();
+      }).catch(() => {
+        this.$message.info('已取消注销操作');
+      });
+    },
+    deleteAccount() {
+      this.$http({
+        url: "/user/deleteAccount",
+        method: "post"
+      }).then(() => {
+        this.$message.success('账号注销成功');
+        // 清除本地存储并退出登录
+        this.onExit();
+      }).catch(() => {
+        this.$message.error('账号注销失败，请重试');
+      });
     }
   },
   beforeDestroy() {
@@ -1210,5 +1282,47 @@ export default {
   font-size: 12px;
   color: #606266;
   font-weight: 500;
+}
+
+// 注销账号样式
+.delete-account-section {
+  display: flex;
+  justify-content: center;
+  padding: 30px 0;
+  
+  .el-button {
+    min-width: 150px;
+    font-size: 16px;
+    padding: 14px 28px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(245, 108, 108, 0.3);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(245, 108, 108, 0.4);
+    }
+  }
+}
+
+// 警告信息样式增强
+::v-deep .el-alert--error {
+  background-color: #fef0f0;
+  border: 1px solid #fde2e2;
+  
+  .el-alert__title {
+    font-weight: 600;
+    font-size: 15px;
+  }
+}
+
+::v-deep .el-alert--warning {
+  background-color: #fdf6ec;
+  border: 1px solid #faecd8;
+  
+  p {
+    margin: 5px 0;
+    line-height: 1.6;
+  }
 }
 </style>

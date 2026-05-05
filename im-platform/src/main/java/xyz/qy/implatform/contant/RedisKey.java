@@ -69,8 +69,9 @@ public final class RedisKey {
     // 用户聊天功能开关key
     public final static String IM_USER_MSG_SWITCH = IM_CACHE + "ban:msg:user:switch:";
 
-    // 用户账号封禁key
-    public final static String IM_USER_BAN_ACCOUNT = IM_CACHE + "user:ban-account:";
+    // 无效用户账号key
+    public final static String IM_USER_INVALID_ACCOUNT = IM_CACHE + "user:invalid-account:";
+
 
     // 群聊聊天功能开关key
     public final static String IM_GROUP_MSG_SWITCH = IM_CACHE + "ban:msg:group:switch:";

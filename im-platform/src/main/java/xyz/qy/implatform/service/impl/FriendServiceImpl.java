@@ -202,6 +202,17 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         log.info("删除好友，用户id:{},好友id:{}", userId, friendId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void delAllFriends(Long userId) {
+        List<Friend> friends = findFriendByUserId(userId);
+        FriendServiceImpl proxy = (FriendServiceImpl) AopContext.currentProxy();
+        for (Friend friend : friends) {
+            proxy.unbindFriend(userId, friend.getFriendId());
+            proxy.unbindFriend(friend.getFriendId(), userId);
+        }
+    }
+
     /**
      * 判断用户2是否用户1的好友
      *

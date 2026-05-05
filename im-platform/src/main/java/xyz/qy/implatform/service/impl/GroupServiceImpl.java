@@ -277,6 +277,15 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         this.sendDelGroupMessage(groupId, userIds);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void deleteAllGroup(Long userId) {
+        LambdaUpdateWrapper<Group> updateWrapper = Wrappers.lambdaUpdate();
+        updateWrapper.eq(Group::getOwnerId, userId);
+        updateWrapper.set(Group::getDeleted, true);
+        this.update(updateWrapper);
+    }
+
     /**
      * 退出群聊
      *

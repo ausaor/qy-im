@@ -132,6 +132,9 @@
 			"path": "pages/mine/mine-reset-pwd"
 		},
 		{
+			"path": "pages/mine/delete-account"
+		},
+		{
 			"path": "pages/activity/activity-space",
 			"style": {
 				"navigationStyle": "custom",

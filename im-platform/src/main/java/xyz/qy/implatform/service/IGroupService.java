@@ -29,6 +29,8 @@ public interface IGroupService extends IService<Group> {
 
     void deleteGroup(Long groupId);
 
+    void deleteAllGroup(Long userId);
+
     void quitGroup(Long groupId);
 
     void kickGroup(Long groupId,Long userId);

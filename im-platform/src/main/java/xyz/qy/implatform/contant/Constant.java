@@ -70,4 +70,7 @@ public final class Constant {
      * 回执消息限制人数
      */
     public static final int RECEIPT_LIMIT_MEMBERS = 50;
+
+    // 系统邮箱后缀
+    public static final String SYS_EMAIL_SUFFIX = "@qy.xyz";
 }

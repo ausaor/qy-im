@@ -1,6 +1,7 @@
 package xyz.qy.implatform.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -89,5 +90,13 @@ public class RegionGroupMemberServiceImpl extends ServiceImpl<RegionGroupMemberM
     @Override
     public Boolean existsInSameGroup(Long userId1, Long userId2) {
         return baseMapper.existsInSameGroup(userId1, userId2);
+    }
+
+    @Override
+    public void removeByUserId(Long userId) {
+        LambdaUpdateWrapper<RegionGroupMember> updateWrapper = Wrappers.lambdaUpdate();
+        updateWrapper.eq(RegionGroupMember::getUserId, userId)
+                .set(RegionGroupMember::getQuit, true);
+        this.update(updateWrapper);
     }
 }

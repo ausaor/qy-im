@@ -140,6 +140,12 @@ public class User extends Model<User> {
     private Boolean isBanned;
 
     /**
+     * 是否注销账号
+     */
+    @TableField("is_deleted")
+    private Boolean isDeleted;
+
+    /**
      * 语音自动播放
      */
     @TableField("auto_play")

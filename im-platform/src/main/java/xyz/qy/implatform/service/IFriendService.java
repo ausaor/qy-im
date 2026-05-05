@@ -35,6 +35,8 @@ public interface IFriendService extends IService<Friend> {
 
     void delFriend(Long friendId);
 
+    void delAllFriends(Long userId);
+
     void update(FriendVO vo);
 
     void updateMyInfoToFriend(FriendVO vo);

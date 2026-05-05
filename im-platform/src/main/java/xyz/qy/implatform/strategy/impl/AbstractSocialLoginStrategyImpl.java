@@ -2,6 +2,7 @@ package xyz.qy.implatform.strategy.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.dto.SocialTokenDTO;
 import xyz.qy.implatform.dto.SocialUserInfoDTO;
 import xyz.qy.implatform.entity.User;
@@ -66,6 +67,9 @@ public abstract class AbstractSocialLoginStrategyImpl implements SocialLoginStra
             if (user.getIsDisable()) {
                 throw new GlobalException("您的账号已被管理员封禁!");
             }
+            if (user.getIsDeleted()) {
+                throw new GlobalException("无效的账号!");
+            }
             user = updateUser(user, ipAddress, ipSource);
         }
         return jwtUtil.createToken(user, 0);
@@ -105,7 +109,7 @@ public abstract class AbstractSocialLoginStrategyImpl implements SocialLoginStra
         SocialUserInfoDTO socialUserInfo = getSocialUserInfo(socialToken);
         User user = new User();
         user.setUserName(userService.generateRandomUsername());
-        user.setEmail(user.getUserName() + "@qy.xyz");
+        user.setEmail(user.getUserName() + Constant.SYS_EMAIL_SUFFIX);
         user.setNickName(socialUserInfo.getNickname());
         user.setHeadImage(socialUserInfo.getAvatar());
         user.setPassword(passwordEncoder.encode(SysStringUtils.makeRandomPassword()));

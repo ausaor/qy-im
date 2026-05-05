@@ -688,6 +688,17 @@
           });
           return;
         }
+        if (msg.type == this.$enums.MESSAGE_TYPE.USER_DELETED) {
+          this.removeToken();
+          this.$wsApi.close(3000);
+          this.$alert("您的账号已完成注销，无法再登录", {
+            confirmButtonText: '确定',
+            callback: action => {
+              this.onExit();
+            }
+          });
+          return;
+        }
         // 消息加载标志
         if (msg.type == this.$enums.MESSAGE_TYPE.LOADING) {
           console.log("系统消息加载......", JSON.parse(msg.content))

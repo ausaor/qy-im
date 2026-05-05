@@ -171,5 +171,12 @@ public class UserController {
         userService.getEmailCode(emailCategory);
         return ResultUtils.success();
     }
+
+    @ApiOperation(value = "删除账号",notes="删除账号")
+    @PostMapping ("/deleteAccount")
+    public Result deleteAccount() {
+        userService.deleteAccount();
+        return ResultUtils.success();
+    }
 }
 

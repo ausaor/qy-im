@@ -12,7 +12,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,6 +46,8 @@ import xyz.qy.implatform.mapper.UserMapper;
 import xyz.qy.implatform.service.IFriendRequestService;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
+import xyz.qy.implatform.service.IGroupService;
+import xyz.qy.implatform.service.IRegionGroupMemberService;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
@@ -82,34 +83,40 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
-    @Autowired
+    @Resource
     RedisTemplate<String, Object> redisTemplate;
 
-    @Autowired
+    @Resource
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
+    @Resource
+    private IGroupService groupService;
+
+    @Resource
     private IGroupMemberService groupMemberService;
 
-    @Autowired
+    @Resource
+    private IRegionGroupMemberService regionGroupMemberService;
+
+    @Resource
     private IFriendService friendService;
 
-    @Autowired
+    @Resource
     private UploadStrategyContext uploadStrategyContext;
 
-    @Autowired
+    @Resource
     private RedisCache redisCache;
 
     @Resource
     private HttpServletRequest request;
 
-    @Autowired
+    @Resource
     private JwtProperties jwtProperties;
 
-    @Autowired
+    @Resource
     private IMClient imClient;
 
-    @Autowired
+    @Resource
     private JwtUtil jwtUtil;
 
     @Resource
@@ -150,6 +157,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         assert user != null;
+        if (user.getIsDeleted()) {
+            throw new GlobalException("无效的账号!");
+        }
+
         if (user.getIsDisable()) {
             throw new GlobalException("您的账号已被管理员封禁!");
         }
@@ -389,6 +400,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public UserVO findUserById(Long id) {
         User user = this.getById(id);
+        if (user.getIsDeleted()) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户不存在");
+        }
         UserVO vo = BeanUtils.copyProperties(user, UserVO.class);
         Friend friend = findFriend(id);
         if (friend != null) {
@@ -449,6 +463,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                         qw -> qw.like(User::getNickName, nickname)
                                 .or()
                                 .like(User::getUserName, nickname))
+                .eq(User::getIsDeleted, false)
                 .orderByDesc(User::getCreateTime);
         Page<User> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryWrapper);
         List<User> users = page.getRecords();
@@ -566,9 +581,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public List<UserVO> findUserByName(String name) {
         LambdaQueryWrapper<User> queryWrapper = Wrappers.lambdaQuery();
-        queryWrapper.like(User::getUserName, name)
-                .or()
-                .like(User::getNickName, name)
+        queryWrapper.eq(User::getIsDeleted, false)
+                .and(qw -> qw.like(User::getUserName, name)
+                        .or()
+                        .like(User::getNickName, name)
+                )
                 .last("limit 20");
         List<User> users = this.list(queryWrapper);
         List<Long> userIds = users.stream().map(User::getId).collect(Collectors.toList());
@@ -681,7 +698,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         user.setIsBanned(true);
         user.setIsDisable(true);
-        redisCache.setCacheObject(RedisKey.IM_USER_BAN_ACCOUNT + userId, userId);
+        redisCache.setCacheObject(RedisKey.IM_USER_INVALID_ACCOUNT + userId, userId, 30, TimeUnit.DAYS);
         this.updateById(user);
 
         SystemMessageVO msgInfo = new SystemMessageVO();
@@ -705,7 +722,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setIsBanned(false);
         user.setIsDisable(false);
         this.updateById(user);
-        redisCache.deleteObject(RedisKey.IM_USER_BAN_ACCOUNT + userId);
+        redisCache.deleteObject(RedisKey.IM_USER_INVALID_ACCOUNT + userId);
     }
 
     @Override
@@ -736,5 +753,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new GlobalException("请先绑定邮箱");
         }
         emailService.getEmailCode(new EmailDTO(user.getEmail(), emailCategory));
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void deleteAccount() {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        if (userId.equals(Constant.ADMIN_USER_ID)) {
+            throw new GlobalException("超级管理员账号不能注销");
+        }
+        User user = this.getById(userId);
+        user.setIsDeleted(true);
+        user.setIsDisable(true);
+        user.setEmail(user.getUserName() + Constant.SYS_EMAIL_SUFFIX); // 释放用户邮箱, 用户可以重新注册
+        user.setQqOpenId(StringUtils.EMPTY);
+        user.setQqAccessToken(StringUtils.EMPTY);
+        this.updateById(user);
+
+        friendService.delAllFriends(userId);
+        groupService.deleteAllGroup(userId);
+        groupMemberService.removeByUserId(userId);
+        regionGroupMemberService.removeByUserId(userId);
+
+        redisCache.setCacheObject(RedisKey.IM_USER_INVALID_ACCOUNT + userId, userId, 30, TimeUnit.DAYS);
+
+        SystemMessageVO msgInfo = new SystemMessageVO();
+        msgInfo.setType(MessageType.USER_DELETED.code());
+        msgInfo.setContent("账号注销");
+
+        IMSystemMessage<SystemMessageVO> sendMessage = new IMSystemMessage<>();
+        sendMessage.setRecvIds(Collections.singletonList(userId));
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendResult(false);
+        imClient.sendSystemMessage(sendMessage);
     }
 }

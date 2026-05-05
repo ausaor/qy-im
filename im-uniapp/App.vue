@@ -455,6 +455,16 @@ export default {
 				this.exit();
         return
 			}
+      if (msg.type == enums.MESSAGE_TYPE.USER_DELETED) {
+        // 用户注销账号
+        wsApi.close(3099);
+        uni.showModal({
+          content: '您的账号已完成注销，无法再登录',
+          showCancel: false,
+        })
+        this.exit();
+        return
+      }
       // 消息加载标志
       if (msg.type == enums.MESSAGE_TYPE.LOADING) {
         this.chatStore.setLoadingSystemMsg(JSON.parse(msg.content))

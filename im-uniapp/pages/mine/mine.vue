@@ -38,6 +38,7 @@
       <arrow-bar title="重置密码" icon="icon-zhongzhimima"  @tap="onResetPassword()"></arrow-bar>
       <arrow-bar title="消息通知" icon="icon-notice"  @tap="onMsgNotice()"></arrow-bar>
       <arrow-bar title="绑定邮箱" icon="icon-email1"  @tap="onBindEmail()"></arrow-bar>
+      <arrow-bar title="注销账号" icon="icon-zhuxiaozhanghao"  @tap="onDeleteAccount()"></arrow-bar>
       <arrow-bar title="我的空间" icon="icon-shejiaotubiao-40" :in-color="'orange'"  @tap="onActivitySpace()"></arrow-bar>
 		</bar-group>
 		<bar-group>
@@ -87,6 +88,11 @@ export default {
     onActivitySpace() {
       uni.navigateTo({
         url: "/pages/activity/activity-space?category=private&section=my"
+      })
+    },
+    onDeleteAccount() {
+      uni.navigateTo({
+        url: "/pages/mine/delete-account"
       })
     },
 		onQuit() {

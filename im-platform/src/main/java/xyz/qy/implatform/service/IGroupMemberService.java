@@ -40,6 +40,8 @@ public interface IGroupMemberService extends IService<GroupMember> {
 
     void removeByGroupAndUserId(Long groupId,Long userId);
 
+    void removeByUserId(Long userId);
+
     void switchTemplateCharacter(GroupMemberVO groupMemberVO);
 
     void switchCharacterAvatar(SwitchCharacterAvatarVO avatarVO);

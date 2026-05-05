@@ -73,4 +73,11 @@ public interface IRegionGroupMemberService extends IService<RegionGroupMember> {
      * @return 是否在同一个地区群聊中
      */
     Boolean existsInSameGroup(Long userId1, Long userId2);
+
+    /**
+     * 删除用户地区群聊成员信息
+     *
+     * @param userId 用户id
+     */
+    void removeByUserId(Long userId);
 }

@@ -624,6 +624,7 @@ create table im_user
     province         varchar(50)                               null comment '省份',
     city             varchar(50)                               null comment '城市',
     is_banned        smallint(1)   default 0                   not null comment '禁止发言（1：是；0：否）',
+    is_deleted       tinyint(1)    default 0                   not null comment '是否注销账号（1：是；0：否）',
     auto_play        tinyint(1)    default 1                   not null comment '语音自动播放（1：是；0：否）',
     sound_play       tinyint(1)    default 1                   not null comment '消息提示音（1：开启；0：关闭）',
     friend_review    tinyint(1)    default 1                   not null comment '添加好友是否需要审核',

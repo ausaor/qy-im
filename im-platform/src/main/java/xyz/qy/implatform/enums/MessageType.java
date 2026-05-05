@@ -36,6 +36,7 @@ public enum MessageType {
     USER_BANNED(50,"用户封禁"),
     GROUP_BANNED(51,"群聊封禁"),
     GROUP_UNBAN(52,"群聊解封"),
+    USER_DELETED(53,"用户注销账号"),
     FRIEND_NEW(80, "新增好友"),
     FRIEND_DEL(81, "删除好友"),
     FRIEND_REQUEST_ADD(82, "申请加为好友"),
