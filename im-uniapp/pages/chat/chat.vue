@@ -235,8 +235,6 @@ export default {
 	flex-direction: column;
 
 	.chat-tip {
-		position: absolute;
-		top: 400rpx;
 		padding: 50rpx;
 		line-height: 50rpx;
 		text-align: center;

@@ -1,6 +1,6 @@
 <template>
 
-	<view class="page friend">
+	<view class="tab-page friend">
 		<nav-bar add search @add="onAddNewFriends" @search="showSearch = !showSearch" :theme-index="9">通讯录</nav-bar>
 		<view class="nav-bar" v-if="showSearch">
 			<view class="nav-search">
@@ -8,67 +8,69 @@
 					placeholder="点击搜索好友"></uni-search-bar>
 			</view>
 		</view>
-    <view class="socializes">
-      <view class="socializes-item" @click.stop="toActivityPage">
-        <view class="item-icon">
-          <svg-icon class="svg-icon" icon-class="shejiaotubiao-40"></svg-icon>
-        </view>
-        <view class="item-info">
-          <view class="item-name">空间动态</view>
-          <uni-badge v-show="notifyCount > 0" :text="notifyCount" />
-        </view>
-        <text class="count" v-show="unreadUserCount">{{ unreadUserCount }}人新发表</text>
-        <view class="new-talk-user">
-          <head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="45"></head-image>
-        </view>
-        <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
-      </view>
-      <view class="socializes-item" @click.stop="toStarSpace">
-        <view class="item-icon">
-          <svg-icon class="svg-icon" icon-class="kongjian2"></svg-icon>
-        </view>
-        <view class="item-info">
-          <view class="item-name">星空间</view>
-          <uni-badge v-show="starSpaceNotifyCount > 0" :text="starSpaceNotifyCount" />
-        </view>
-        <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
-      </view>
-      <view class="socializes-item" @click.stop="toFriendRequestPage">
-        <view class="item-icon">
-          <svg-icon class="svg-icon" icon-class="xindepengyou"></svg-icon>
-        </view>
-        <view class="item-info">
-          <view class="item-name">新的朋友</view>
-          <uni-badge v-show="friendRequestCount > 0" :text="friendRequestCount" />
-        </view>
-        <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
-      </view>
-      <view class="socializes-item" @click.stop="toGroupRequestPage">
-        <view class="item-icon">
-          <svg-icon class="svg-icon" icon-class="group"></svg-icon>
-        </view>
-        <view class="item-info">
-          <view class="item-name">新的群聊</view>
-          <uni-badge v-show="receivedGroupRequestsCount > 0" :text="receivedGroupRequestsCount" />
-        </view>
-        <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
-      </view>
-      <view class="socializes-item" @click.stop="toGroupPage">
-        <view class="item-icon">
-          <svg-icon class="svg-icon" icon-class="qunliao"></svg-icon>
-        </view>
-        <view class="item-info">
-          <view class="item-name">我的群聊</view>
-          <uni-badge v-show="joinGroupRequestsCount > 0" :text="joinGroupRequestsCount" />
-        </view>
-        <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
-      </view>
-    </view>
-		<view class="friend-tip" v-if="friends.length == 0">
-			温馨提示：您现在还没有任何好友，快点击右上方'+'按钮添加好友吧~
-		</view>
-		<view class="friend-items" v-else>
-			<up-index-list :index-list="friendIdx" :custom-nav-height="0">
+		<view class="friend-items">
+			<up-index-list :index-list="friendIdx" :custom-nav-height="showSearch ? 100 : 50">
+				<!-- 社交功能区 -->
+				<up-index-item>
+<!--					<up-index-anchor text="功能"></up-index-anchor>-->
+					<view class="socializes">
+						<view class="socializes-item" @click.stop="toActivityPage">
+							<view class="item-icon">
+								<svg-icon class="svg-icon" icon-class="shejiaotubiao-40"></svg-icon>
+							</view>
+							<view class="item-info">
+								<view class="item-name">空间动态</view>
+								<uni-badge v-show="notifyCount > 0" :text="notifyCount" />
+							</view>
+							<text class="count" v-show="unreadUserCount">{{ unreadUserCount }}人新发表</text>
+							<view class="new-talk-user">
+								<head-image v-for="(talk, index) in talkList" :key="index" :url="talk.avatar" :name="talk.nickName" :size="45"></head-image>
+							</view>
+							<uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
+						</view>
+						<view class="socializes-item" @click.stop="toStarSpace">
+							<view class="item-icon">
+								<svg-icon class="svg-icon" icon-class="kongjian2"></svg-icon>
+							</view>
+							<view class="item-info">
+								<view class="item-name">星空间</view>
+								<uni-badge v-show="starSpaceNotifyCount > 0" :text="starSpaceNotifyCount" />
+							</view>
+							<uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
+						</view>
+						<view class="socializes-item" @click.stop="toFriendRequestPage">
+							<view class="item-icon">
+								<svg-icon class="svg-icon" icon-class="xindepengyou"></svg-icon>
+							</view>
+							<view class="item-info">
+								<view class="item-name">新的朋友</view>
+								<uni-badge v-show="friendRequestCount > 0" :text="friendRequestCount" />
+							</view>
+							<uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
+						</view>
+						<view class="socializes-item" @click.stop="toGroupRequestPage">
+							<view class="item-icon">
+								<svg-icon class="svg-icon" icon-class="group"></svg-icon>
+							</view>
+							<view class="item-info">
+								<view class="item-name">新的群聊</view>
+								<uni-badge v-show="receivedGroupRequestsCount > 0" :text="receivedGroupRequestsCount" />
+							</view>
+							<uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
+						</view>
+						<view class="socializes-item" @click.stop="toGroupPage">
+							<view class="item-icon">
+								<svg-icon class="svg-icon" icon-class="qunliao"></svg-icon>
+							</view>
+							<view class="item-info">
+								<view class="item-name">我的群聊</view>
+								<uni-badge v-show="joinGroupRequestsCount > 0" :text="joinGroupRequestsCount" />
+							</view>
+							<uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
+						</view>
+					</view>
+				</up-index-item>
+				<!-- 好友列表区 -->
 				<template v-for="(friends, i) in friendGroups">
 					<up-index-item>
 						<up-index-anchor :text="friendIdx[i] == '*' ? '在线' : friendIdx[i]"></up-index-anchor>
@@ -356,6 +358,11 @@ export default {
 		overflow: hidden;
 		position: relative;
 		height: 0; // 配合flex:1使用，确保正确计算高度
+
+		// 确保 up-index-list 能够正确填充父容器高度
+		:deep(.u-index-list) {
+			height: 100%;
+		}
 
 		.scroll-bar {
 			height: 100%;
