@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ import xyz.qy.implatform.enums.MessageStatus;
 import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.enums.ReviewEnum;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.GroupMessageMapper;
 import xyz.qy.implatform.mapper.GroupMsgReadPositionMapper;
@@ -259,6 +261,53 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         sendMessage.setRecvTerminals(Collections.emptyList());
         imClient.sendGroupMessage(sendMessage);
         log.info("撤回群聊消息，发送id:{},群聊id:{},内容:{}", session.getUserId(), msg.getGroupId(), msg.getContent());
+    }
+
+    @Override
+    public void forcedRecallMessage(Long id) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        String role = session.getRole();
+        GroupMessage msg = this.getById(id);
+        if (Objects.isNull(msg)) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "消息不存在");
+        }
+        // 判断用户是否群主
+        Long groupId = msg.getGroupId();
+        Group group = groupService.GetById(groupId);
+        if (!group.getOwnerId().equals(userId) && !StringUtils.equalsAny(role, RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode())) {
+            throw new GlobalException("您没有强制撤回消息权限！");
+        }
+        // 修改数据库
+        msg.setStatus(MessageStatus.RECALL.code());
+        this.updateById(msg);
+
+        // 群发
+        List<Long> userIds = groupMemberService.findUserIdsByGroupId(msg.getGroupId());
+        // 不用发给自己
+        userIds = userIds.stream().filter(uid -> !session.getUserId().equals(uid)).collect(Collectors.toList());
+        GroupMessageVO msgInfo = BeanUtils.copyProperties(msg, GroupMessageVO.class);
+        msgInfo.setType(MessageType.RECALL.code());
+
+        String content = String.format("#{%s}撤回了一条消息", session.getUserName() + ":" + session.getUserId());
+        msgInfo.setContent(content);
+        msgInfo.setSendTime(new Date());
+
+        IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
+        sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        sendMessage.setRecvIds(userIds);
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendResult(false);
+        sendMessage.setSendToSelf(false);
+        imClient.sendGroupMessage(sendMessage);
+
+        // 推给自己其他终端
+        msgInfo.setContent(String.format("#{%s}撤回了一条消息", session.getUserName() + ":" + session.getUserId()));
+        sendMessage.setSendToSelf(true);
+        sendMessage.setRecvIds(Collections.emptyList());
+        sendMessage.setRecvTerminals(Collections.emptyList());
+        imClient.sendGroupMessage(sendMessage);
+        log.info("强制撤回群聊消息，发送id:{}, 操作人id:{} 群聊id:{},内容:{}", msg.getSendId(), userId, msg.getGroupId(), msg.getContent());
     }
 
     private Integer getGroupMsgReadId(Long groupId, Long userId) {

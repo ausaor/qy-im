@@ -42,6 +42,14 @@ export let processAtUsers = (content, atUserIds)  => {
     });
 }
 
+let isAdminRole = (role) => {
+    return role === 'ADMIN' ||  role === 'SUPER_ADMIN'
+}
+
+let isSuperAdminRole = (role) => {
+    return role === 'SUPER_ADMIN'
+}
+
 /**
  * 处理提示消息用户
  *
@@ -60,4 +68,6 @@ export let processTipUsers = (content) => {
 
 export default {
     isConfirm,
+    isAdminRole,
+    isSuperAdminRole,
 }

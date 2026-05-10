@@ -273,11 +273,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String verifyKey = xyz.qy.implatform.contant.RedisKey.CAPTCHA_CODE_KEY + uuid;
         String captcha = redisCache.getCacheObject(verifyKey);
         if (StringUtils.isBlank(captcha)) {
-            throw new GlobalException(ResultCode.VERITY_CODE_NOT_EXIST, "验证码已过期");
+            throw new GlobalException(ResultCode.VERITY_CODE_NOT_EXIST, "图片验证码已过期");
         }
 
         if (!code.equals(captcha)) {
-            throw new GlobalException(ResultCode.VERITY_CODE_ERROR, "验证码错误");
+            throw new GlobalException(ResultCode.VERITY_CODE_ERROR, "图片验证码错误");
         }
     }
 

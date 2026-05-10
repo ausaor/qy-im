@@ -36,6 +36,8 @@ public interface IRegionGroupMessageService extends IService<RegionGroupMessage>
      */
     void recallMessage(Long id);
 
+    void forcedRecallMessage(Long id);
+
     /**
      * 查询地区群聊历史记录
      *

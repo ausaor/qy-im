@@ -9,18 +9,19 @@
 				<view class="info-item">
 					<view class="info-primary">
 						<text class="info-username">
-							{{ userInfo.userName }}
+							{{ userInfo.nickName }}
 						</text>
 						<text v-show="userInfo.sex == 0" class="iconfont icon-man" color="darkblue"></text>
 						<text v-show="userInfo.sex == 1" class="iconfont icon-girl" color="darkred"></text>
 					</view>
 					<view class="info-text">
 						<text class="label-text">
-							昵称:
+							ID:
 						</text>
 						<text class="content-text">
-							{{ userInfo.nickName }}
+							{{ userInfo.userName }}
 						</text>
+						<uni-icons type="compose" size="18" color="#909399" @click="copyUserName"></uni-icons>
 					</view>
 					<view class="info-text">
 						<view>
@@ -60,6 +61,12 @@
       <view class="activity-space" @click="toFriendSpace">
         <svg-icon icon-class="shejiaotubiao-40" style="width: 60rpx;height: 60rpx;"></svg-icon>
         <text class="label">空间</text>
+      </view>
+    </view>
+    <view class="complaint-box" @click="toComplaintPage">
+      <view class="complaint-content">
+        <text class="complaint-text">投诉</text>
+        <uni-icons type="right" size="20" color="#888888"></uni-icons>
       </view>
     </view>
     <uni-popup ref="popup" type="center" :mask-click="true" @maskClick="closePopup">
@@ -238,7 +245,32 @@ export default {
       }).then(() => {
         this.showFriendRequest = false;
       })
-    }
+    },
+    toComplaintPage() {
+      uni.navigateTo({
+        url: `/pages/common/complaint?targetId=${this.userInfo.id}&targetName=${this.userInfo.nickName}&targetType=user`
+      })
+    },
+    copyUserName() {
+      if (!this.userInfo.userName) {
+        return;
+      }
+      uni.setClipboardData({
+        data: this.userInfo.userName,
+        success: () => {
+          uni.showToast({
+            title: '已复制',
+            icon: 'success'
+          });
+        },
+        fail: () => {
+          uni.showToast({
+            title: '复制失败',
+            icon: 'none'
+          });
+        }
+      });
+    },
 	},
 	computed: {
     mine() {
@@ -280,6 +312,9 @@ export default {
 			flex: 1;
 
 			.info-text {
+				display: flex;
+				align-items: center;
+				gap: 20rpx;
 				line-height: 1.5;
 				//margin-bottom: 10rpx;
 			}
@@ -367,6 +402,24 @@ export default {
         color: #35567f;
         font-size: 32rpx;
         font-weight: 600;
+      }
+    }
+  }
+
+  .complaint-box {
+    margin-top: 20rpx;
+    background-color: #fff;
+    padding: 0 40rpx;
+    
+    .complaint-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100rpx;
+      
+      .complaint-text {
+        font-size: $im-font-size;
+        color: #333;
       }
     }
   }

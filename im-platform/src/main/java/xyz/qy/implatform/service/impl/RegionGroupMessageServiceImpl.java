@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.MessageStatus;
 import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.RegionGroupMessageMapper;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
@@ -430,11 +432,24 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         if (Objects.isNull(member) || member.getQuit()) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "您已不在群聊里面，无法撤回消息");
         }
+        RegionGroup regionGroup = regionGroupService.getById(msg.getRegionGroupId());
+
         // 修改数据库
         msg.setStatus(MessageStatus.RECALL.code());
         this.updateById(msg);
-        // 群发
+        // 常驻用户id
         List<Long> userIds = regionGroupMemberService.findUserIdsByRegionGroupId(msg.getRegionGroupId());
+
+        // 临时用户id
+        Collection<String> keys = redisCache.keys(IMRedisKey.IM_REGION_GROUP_NUM_TEMP_USER + regionGroup.getCode() + ":" + regionGroup.getNum() + ":*");
+        for (String key : keys) {
+            Object object = redisCache.getCacheObject(key);
+            if (ObjectUtil.isNotNull(object)) {
+                UserSession userSession = Convert.convert(UserSession.class, object);
+                userIds.add(userSession.getUserId());
+            }
+        }
+
         // 不用发给自己
         userIds = userIds.stream().filter(uid -> !session.getUserId().equals(uid)).collect(Collectors.toList());
         RegionGroupMessageVO msgInfo = BeanUtils.copyProperties(msg, RegionGroupMessageVO.class);
@@ -458,6 +473,59 @@ public class RegionGroupMessageServiceImpl extends ServiceImpl<RegionGroupMessag
         sendMessage.setRecvTerminals(Collections.emptyList());
         imClient.sendRegionGroupMessage(sendMessage);
         log.info("撤回地区群聊消息，发送id:{},群聊id:{},内容:{}", session.getUserId(), msg.getRegionGroupId(), msg.getContent());
+    }
+
+    @Override
+    public void forcedRecallMessage(Long id) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        String role = session.getRole();
+        RegionGroupMessage msg = this.getById(id);
+        if (Objects.isNull(msg)) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "消息不存在");
+        }
+
+        RegionGroup regionGroup = regionGroupService.getById(msg.getRegionGroupId());
+        if (!userId.equals(regionGroup.getOwnerId()) && !StringUtils.equalsAny(role, RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode())) {
+            throw new GlobalException("您没有强制撤回消息权限！");
+        }
+
+        // 常驻用户id
+        List<Long> userIds = regionGroupMemberService.findUserIdsByRegionGroupId(msg.getRegionGroupId());
+
+        // 临时用户id
+        Collection<String> keys = redisCache.keys(IMRedisKey.IM_REGION_GROUP_NUM_TEMP_USER + regionGroup.getCode() + ":" + regionGroup.getNum() + ":*");
+        for (String key : keys) {
+            Object object = redisCache.getCacheObject(key);
+            if (ObjectUtil.isNotNull(object)) {
+                UserSession userSession = Convert.convert(UserSession.class, object);
+                userIds.add(userSession.getUserId());
+            }
+        }
+
+        // 不用发给自己
+        userIds = userIds.stream().filter(uid -> !session.getUserId().equals(uid)).collect(Collectors.toList());
+        RegionGroupMessageVO msgInfo = BeanUtils.copyProperties(msg, RegionGroupMessageVO.class);
+        msgInfo.setType(MessageType.RECALL.code());
+        String content = String.format("#{%s}撤回了一条消息", session.getUserName() + ":" + userId);
+        msgInfo.setContent(content);
+        msgInfo.setSendTime(new Date());
+
+        IMRegionGroupMessage<RegionGroupMessageVO> sendMessage = new IMRegionGroupMessage<>();
+        sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        sendMessage.setRecvIds(userIds);
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendResult(false);
+        sendMessage.setSendToSelf(false);
+        imClient.sendRegionGroupMessage(sendMessage);
+
+        // 推给自己其他终端
+        msgInfo.setContent(String.format("#{%s}撤回了一条消息", session.getUserName() + ":" + userId));
+        sendMessage.setSendToSelf(true);
+        sendMessage.setRecvIds(Collections.emptyList());
+        sendMessage.setRecvTerminals(Collections.emptyList());
+        imClient.sendRegionGroupMessage(sendMessage);
+        log.info("强制撤回地区群聊消息，发送id:{}, 操作人id: {}, 群聊id:{},内容:{}", msg.getSendId(), userId, msg.getRegionGroupId(), msg.getContent());
     }
 
     @Override

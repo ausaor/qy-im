@@ -15,6 +15,8 @@ public interface IGroupMessageService extends IService<GroupMessage> {
 
     void recallMessage(Long id);
 
+    void forcedRecallMessage(Long id);
+
     /**
      * 拉取离线消息，只能拉取最近1个月的消息，最多拉取1000条
      *

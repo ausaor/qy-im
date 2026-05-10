@@ -41,6 +41,9 @@
 			"path": "pages/common/user-info"
 		},
 		{
+			"path": "pages/common/complaint"
+		},
+		{
 			"path": "pages/chat/chat-box",
 			"style": {
 				"mp-weixin": {

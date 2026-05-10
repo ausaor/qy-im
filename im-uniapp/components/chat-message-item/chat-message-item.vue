@@ -15,7 +15,8 @@
 					<text :style="nameColorStyle" class="alias-name">{{ showName }}</text>
           <text v-show="myGroupMemberInfo.showNickName" class="nick-name">{{nickName}}</text>
           <text v-if="isOwner && msgInfo.groupId" class="group-owner">群主</text>
-          <text v-if="msgInfo.sendId===1" class="blogger">博主</text>
+          <text v-if="role==='SUPER_ADMIN'" class="blogger">博主</text>
+          <text v-if="role==='ADMIN'" class="sys-admin">系管</text>
 				</view>
 				<view class="chat-msg-bottom">
 					<view v-if="msgInfo.type == $enums.MESSAGE_TYPE.TEXT">
@@ -187,6 +188,9 @@ export default {
     role: {
       type: String
     },
+    myRole: {
+      type: String
+    },
     chatBubbleIndex: {
       type: Number,
       default: 0
@@ -306,6 +310,13 @@ export default {
 					icon: 'refreshempty'
 				});
 			}
+      if (this.msgInfo.id > 0 && (this.isOwner || this.$commonUtil.isAdminRole(this.myRole))) {
+        items.push({
+          key: 'FORCEDRECALL',
+          name: '强制撤回',
+          icon: 'refreshempty'
+        });
+      }
       if (this.$msgType.isNormal(this.msgInfo.type)) {
         items.push({
           key: 'QUOTE',
@@ -674,6 +685,18 @@ export default {
         .blogger {
           margin-left: 20rpx;
           background-color: #1E90FF;
+          color: white;
+          font-size: 14rpx;
+          font-weight: 500;
+          padding: 5rpx 12rpx;
+          display: flex;
+          align-items: center;
+          border-radius: 16rpx;
+        }
+
+        .sys-admin {
+          margin-left: 20rpx;
+          background-color: #0A6E46;
           color: white;
           font-size: 14rpx;
           font-weight: 500;

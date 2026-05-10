@@ -110,6 +110,13 @@ export default {
         this.codeUrl = "data:image/gif;base64," + result['img'];
         this.loginForm.uuid = result['uuid'];
       })
+    },
+    report() {
+      this.$http({
+        url: "/website/report",
+        method: "post",
+      }).then((data) => {
+      })
     }
 	},
 
@@ -117,6 +124,7 @@ export default {
     this.getCode();
 		this.loginForm.userName = uni.getStorageSync("userName");
 		this.loginForm.password = uni.getStorageSync("password");
+    this.report();
 	}
 }
 </script>

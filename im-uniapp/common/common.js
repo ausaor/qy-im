@@ -37,3 +37,11 @@ export let processTipUsers = (content) => {
         return username;
     });
 }
+
+export let isAdminRole = (role) => {
+    return role === 'ADMIN' ||  role === 'SUPER_ADMIN'
+}
+
+export let isSuperAdminRole = (role) => {
+    return role === 'SUPER_ADMIN'
+}

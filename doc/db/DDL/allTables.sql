@@ -818,6 +818,29 @@ create index storage_type
     on im_file_info (storage_type);
 
 
+create table im_complaint_record
+(
+    id              bigint auto_increment comment '主键'
+        primary key,
+    user_id         bigint                  not null comment '用户id',
+    target_id       bigint                  not null comment '投诉目标id',
+    target_name     varchar(100)            not null comment '投诉对象名称',
+    target_type     varchar(20)             not null comment '投诉对象类型（user：用户；group：群聊；regionGroup：地区群聊）',
+    reason          varchar(50)  default '' not null comment '投诉原因',
+    evidence_img    text                    null comment '图片证据',
+    content         varchar(500)            not null comment '投诉内容',
+    status          tinyint(1)   default 0  not null comment '处理状态（0：已投诉；1：处理中；2：已处理；3：无效投诉）',
+    handler_user_id bigint                  null comment '处理人id',
+    operation       varchar(200) default '' null comment '操作',
+    deleted         tinyint(1)   default 0  null comment '是否删除：0-否；1-是',
+    create_by       bigint                  not null comment '创建者',
+    create_time     datetime                not null comment '创建时间',
+    update_by       bigint                  null comment '更新者',
+    update_time     datetime                null comment '更新时间'
+)
+    comment '投诉记录表';
+
+
 create table ai_chat_message
 (
     id          bigint auto_increment comment '主键'

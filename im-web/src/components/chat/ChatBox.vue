@@ -23,13 +23,14 @@
                         @call="onCall(msgInfo.type)"
                         :mine="msgInfo.sendId == mine.id"
                         :showName="showName(msgInfo)" :headImage="headImage(msgInfo)"
-                        :nickName="nickName(msgInfo)" :characterNum="characterNum(msgInfo)" :role="role(msgInfo)"
+                        :nickName="nickName(msgInfo)" :characterNum="characterNum(msgInfo)" :role="role(msgInfo)" :myRole="myRole"
                         :chatBubbleIndex="chatBubbleIndex(msgInfo)" :quoteShowName="quoteShowName(msgInfo)"
                         :msgInfo="msgInfo"
                         :isOwner="group.ownerId === msgInfo.sendId"
                         :myGroupMemberInfo="myGroupMemberInfo"
                         @delete="deleteMessage"
                         @recall="recallMessage"
+                        @forcedrecall="forcedRecallMessage"
                         @quote="quoteMessage"
                         @collect="collectImage"
                         @scrollToMessage="scrollToTargetMsg"
@@ -935,7 +936,28 @@
           }).then(() => {
             this.$message.success("消息已撤回");
             msgInfo = JSON.parse(JSON.stringify(msgInfo));
-            msgInfo.type = 10;
+            msgInfo.type = this.$enums.MESSAGE_TYPE.RECALL;
+            msgInfo.content = '#{你:'+ this.mine.id +'}撤回了一条消息';
+            msgInfo.status = this.$enums.MESSAGE_STATUS.RECALL;
+            msgInfo.chatType = this.chat.type;
+            this.$store.commit("insertMessage", msgInfo);
+          })
+        });
+      },
+      forcedRecallMessage(msgInfo) {
+        this.$confirm('确认撤回消息?', '撤回消息', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let url = `/message/${this.chat.type.toLowerCase()}/forcedRecall/${msgInfo.id}`
+          this.$http({
+            url: url,
+            method: 'delete'
+          }).then(() => {
+            this.$message.success("消息已撤回");
+            msgInfo = JSON.parse(JSON.stringify(msgInfo));
+            msgInfo.type = this.$enums.MESSAGE_TYPE.RECALL;
             msgInfo.content = '#{你:'+ this.mine.id +'}撤回了一条消息';
             msgInfo.status = this.$enums.MESSAGE_STATUS.RECALL;
             msgInfo.chatType = this.chat.type;
@@ -1311,6 +1333,9 @@
 			mine() {
 				return this.$store.state.userStore.userInfo;
 			},
+      myRole() {
+        return this.mine.role;
+      },
 			title() {
         let title = "";
 				if (this.chat.type === "GROUP") {
@@ -1368,6 +1393,7 @@
               // 群聊：加载群信息和成员
               this.loadGroup(this.chat.targetId);
             } else {
+              this.group = {};
               this.loadFriend(this.chat.targetId);
               this.loadReaded(this.chat.targetId);
             }

@@ -23,11 +23,12 @@
                         :mine="msgInfo.sendId == mine.id"
                         :head-image="headImage(msgInfo)" :show-name="showName(msgInfo)"
                         :role="role(msgInfo)" :chatBubbleIndex="chatBubbleIndex(msgInfo)" :quoteShowName="quoteShowName(msgInfo)"
-                        :msgInfo="msgInfo"
+                        :msgInfo="msgInfo" :myRole="myRole"
                         :isOwner="regionGroup.ownerId === msgInfo.sendId"
                         :myGroupMemberInfo="myGroupMemberInfo"
                         @delete="deleteMessage"
                         @recall="recallMessage"
+                        @forcedrecall="forcedRecallMessage"
                         @quote="quoteMessage"
                         @collect="collectImage"
                         @playVideo="playVideo"
@@ -680,7 +681,27 @@ export default {
         }).then(() => {
           this.$message.success("消息已撤回");
           msgInfo = JSON.parse(JSON.stringify(msgInfo));
-          msgInfo.type = 10;
+          msgInfo.type = this.$enums.MESSAGE_TYPE.RECALL;
+          msgInfo.content = '#{你:'+ this.mine.id +'}撤回了一条消息';
+          msgInfo.status = this.$enums.MESSAGE_STATUS.RECALL;
+          this.$store.commit("insertRegionMessage", msgInfo);
+        })
+      });
+    },
+    forcedRecallMessage(msgInfo) {
+      this.$confirm('确认撤回消息?', '撤回消息', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        let url = `/message/regionGroup/forcedRecall/${msgInfo.id}`
+        this.$http({
+          url: url,
+          method: 'delete'
+        }).then(() => {
+          this.$message.success("消息已撤回");
+          msgInfo = JSON.parse(JSON.stringify(msgInfo));
+          msgInfo.type = this.$enums.MESSAGE_TYPE.RECALL;
           msgInfo.content = '#{你:'+ this.mine.id +'}撤回了一条消息';
           msgInfo.status = this.$enums.MESSAGE_STATUS.RECALL;
           this.$store.commit("insertRegionMessage", msgInfo);
@@ -919,6 +940,9 @@ export default {
   computed: {
     mine() {
       return this.$store.state.userStore.userInfo;
+    },
+    myRole() {
+      return this.mine.role;
     },
     title() {
       let title = this.regionGroup.regionGroupName;

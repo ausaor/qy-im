@@ -11,8 +11,8 @@
                   class="message-wrapper" :class="{active: targetMsgId === msgInfo.id}">
               <chat-message-item :ref="'message'+msgInfo.id" v-if="idx >= showMinIdx"
                                  @call="onRtCall(msgInfo)" :head-image="headImage(msgInfo)" :show-name="showName(msgInfo)"
-                                 :role="role(msgInfo)" :chatBubbleIndex="chatBubbleIndex(msgInfo)" :quoteShowName="quoteShowName(msgInfo)"
-                                 @recall="onRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
+                                 :role="role(msgInfo)" :myRole="myRole" :chatBubbleIndex="chatBubbleIndex(msgInfo)" :quoteShowName="quoteShowName(msgInfo)"
+                                 @recall="onRecallMessage" @forcedrecall="onForcedRecallMessage" @delete="onDeleteMessage" @copy="onCopyMessage"
                                  @longPressHead="onLongPressHead(msgInfo)" @download="onDownloadFile" @collect="collectImage"
                                  @quote="quoteMessage" @scrollToMessage="scrollToTargetMsg" @playVideo="playVideo"
                                  @audioStateChange="onAudioStateChange" :id="'chat-item-' + idx" :msgInfo="msgInfo"
@@ -958,6 +958,27 @@ export default {
         }
       })
     },
+    onForcedRecallMessage(msgInfo) {
+      uni.showModal({
+        title: '撤回消息',
+        content: '确认撤回消息?',
+        success: (res) => {
+          if (!res.cancel) {
+            let url = `/message/regionGroup/forcedRecall/${msgInfo.id}`
+            this.$http({
+              url: url,
+              method: 'DELETE'
+            }).then(() => {
+              msgInfo = JSON.parse(JSON.stringify(msgInfo));
+              msgInfo.type = this.$enums.MESSAGE_TYPE.RECALL;
+              msgInfo.content = '#{你:'+ this.mine.id +'}撤回了一条消息';
+              msgInfo.status = this.$enums.MESSAGE_STATUS.RECALL;
+              this.regionStore.insertRegionMessage(msgInfo, this.chat);
+            })
+          }
+        }
+      })
+    },
     onCopyMessage(msgInfo) {
       uni.setClipboardData({
         data: msgInfo.content,
@@ -1126,6 +1147,9 @@ export default {
   computed: {
     mine() {
       return this.userStore.userInfo;
+    },
+    myRole() {
+      return this.mine.role;
     },
     messageSize() {
       if (!this.chat || !this.chat.messages) {

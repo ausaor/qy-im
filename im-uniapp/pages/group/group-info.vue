@@ -101,6 +101,12 @@
 			
 			<view v-if="!group.quit" class="group-edit" @click="onEditGroup()">修改群聊资料 > </view>
 		</view>
+    <view class="complaint-box" @click="toComplaintPage">
+      <view class="complaint-content">
+        <text class="complaint-text">投诉</text>
+        <uni-icons type="right" size="20" color="#888888"></uni-icons>
+      </view>
+    </view>
 		
 		<bar-group v-if="!group.quit">
 			<btn-bar type="primary" title="发送消息" @tap="onSendMessage()"></btn-bar>
@@ -511,6 +517,11 @@ export default {
         url: '/pages/chat/chat'
       })
     },
+    toComplaintPage() {
+      uni.navigateTo({
+        url: `/pages/common/complaint?targetId=${this.group.id}&targetName=${this.group.name}&targetType=group`
+      })
+    },
 	},
 	computed: {
 		ownerName() {
@@ -738,6 +749,24 @@ export default {
 			color: $im-text-color-lighter;
 		}
 	}
+
+  .complaint-box {
+    margin-top: 20rpx;
+    background-color: #fff;
+    padding: 0 40rpx;
+    
+    .complaint-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100rpx;
+      
+      .complaint-text {
+        font-size: $im-font-size;
+        color: #333;
+      }
+    }
+  }
 
   .common-form {
     margin-top: 60rpx;

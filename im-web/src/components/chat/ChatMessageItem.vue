@@ -16,14 +16,14 @@
           <span v-show="myGroupMemberInfo.showNickName">{{nickName}}</span>
           <span v-if="isOwner && (msgInfo.groupId || msgInfo.regionGroupId)" class="group-master">群主</span>
           <span v-if="role==='SUPER_ADMIN'" class="blogger">博主</span>
-          <span v-if="role==='ADMIN'" class="sys-admin">系统管理员</span>
+          <span v-if="role==='ADMIN'" class="sys-admin">系管</span>
         </div>
 				<div v-show="mode==2" class="chat-msg-top">
 					<span :style="nameColorStyle">{{showName}}</span>
 					<span v-show="myGroupMemberInfo.showNickName">{{nickName}}</span>
           <span v-if="isOwner && (msgInfo.groupId || msgInfo.regionGroupId)" class="group-master">群主</span>
           <span v-if="role==='SUPER_ADMIN'" class="blogger">博主</span>
-          <span v-if="role==='ADMIN'" class="sys-admin">系统管理员</span>
+          <span v-if="role==='ADMIN'" class="sys-admin">系管</span>
           <span>{{$date.toTimeText(msgInfo.sendTime)}}</span>
 				</div>
 				<div class="chat-msg-bottom" @contextmenu.prevent="showRightMenu($event)">
@@ -193,6 +193,9 @@ export default {
         type: Number
       },
       role: {
+        type: String
+      },
+      myRole: {
         type: String
       },
       chatBubbleIndex: {
@@ -500,6 +503,13 @@ export default {
 						icon: 'el-icon-refresh-left'
 					});
 				}
+        if (this.msgInfo.id > 0 && (this.isOwner || this.$commonUtil.isAdminRole(this.myRole))) {
+          items.push({
+            key: 'FORCEDRECALL',
+            name: '强制撤回',
+            icon: 'el-icon-refresh-left'
+          })
+        }
         if (this.$msgType.isImage(this.msgInfo.type)) {
           items.push({
             key: 'COLLECT',

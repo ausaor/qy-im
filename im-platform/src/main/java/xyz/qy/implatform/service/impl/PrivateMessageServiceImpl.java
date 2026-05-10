@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import xyz.qy.implatform.entity.PrivateMessage;
 import xyz.qy.implatform.enums.MessageStatus;
 import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.PrivateMessageMapper;
 import xyz.qy.implatform.service.IFriendService;
@@ -159,6 +161,40 @@ public class PrivateMessageServiceImpl extends ServiceImpl<PrivateMessageMapper,
         sendMessage.setRecvTerminals(Collections.emptyList());
         imClient.sendPrivateMessage(sendMessage);
         log.info("撤回私聊消息，发送id:{},接收id:{}，内容:{}", msg.getSendId(), msg.getRecvId(), msg.getContent());
+    }
+
+    @Override
+    public void forcedRecallMessage(Long id) {
+        UserSession session = SessionContext.getSession();
+        String role = session.getRole();
+        PrivateMessage msg = this.getById(id);
+        if (msg == null) {
+            throw new GlobalException(ResultCode.PROGRAM_ERROR, "消息不存在");
+        }
+
+        if (!StringUtils.equalsAny(role, RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode())) {
+            throw new GlobalException("您没有强制撤回消息权限！");
+        }
+
+        // 修改消息状态
+        msg.setStatus(MessageStatus.RECALL.code());
+        this.updateById(msg);
+        // 推送消息
+        PrivateMessageVO msgInfo = BeanUtils.copyProperties(msg, PrivateMessageVO.class);
+        msgInfo.setType(MessageType.RECALL.code());
+        msgInfo.setSendTime(new Date());
+        msgInfo.setContent(String.format("#{%s}撤回了一条消息", session.getUserName() + ":" + session.getUserId()));
+
+        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        sendMessage.setRecvId(msgInfo.getRecvId());
+        sendMessage.setSendToSelf(false);
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendResult(false);
+        imClient.sendPrivateMessage(sendMessage);
+
+        sendMessage.setRecvId(msgInfo.getSendId());
+        imClient.sendPrivateMessage(sendMessage);
     }
 
     /**

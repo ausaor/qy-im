@@ -75,6 +75,13 @@ public class RegionGroupMessageController {
         return ResultUtils.success();
     }
 
+    @DeleteMapping("/forcedRecall/{id}")
+    @ApiOperation(value = "强制撤回消息", notes = "强制撤回群聊消息")
+    public Result<Long> forcedRecallMessage(@NotNull(message = "消息id不能为空") @PathVariable Long id) {
+        regionGroupMessageService.forcedRecallMessage(id);
+        return ResultUtils.success();
+    }
+
     @GetMapping("/history")
     @ApiOperation(value = "查询聊天记录", notes = "查询聊天记录")
     public Result<List<RegionGroupMessageVO>> recallMessage(@NotNull(message = "群聊id不能为空") @RequestParam Long regionGroupId,

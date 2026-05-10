@@ -1,6 +1,6 @@
 <template>
 
-	<view class="tab-page friend">
+	<view class="page friend">
 		<nav-bar add search @add="onAddNewFriends" @search="showSearch = !showSearch" :theme-index="9">通讯录</nav-bar>
 		<view class="nav-bar" v-if="showSearch">
 			<view class="nav-search">
@@ -344,8 +344,6 @@ export default {
   }
 
 	.friend-tip {
-		position: absolute;
-		top: 400rpx;
 		padding: 50rpx;
 		text-align: center;
 		line-height: 50rpx;

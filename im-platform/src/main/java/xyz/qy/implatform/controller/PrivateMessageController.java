@@ -49,6 +49,13 @@ public class PrivateMessageController {
         return ResultUtils.success();
     }
 
+    @ApiOperation(value = "强制撤回消息", notes = "强制撤回私聊消息")
+    @DeleteMapping("/forcedRecall/{id}")
+    public Result<Long> forcedRecallMessage(@NotNull(message = "消息id不能为空") @PathVariable Long id) {
+        privateMessageService.forcedRecallMessage(id);
+        return ResultUtils.success();
+    }
+
     @GetMapping("/pullOfflineMessage")
     @ApiOperation(value = "拉取离线消息", notes = "拉取离线消息,消息将通过webscoket异步推送")
     public Result pullOfflineMessage(@RequestParam Long minId) {
