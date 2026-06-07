@@ -112,6 +112,13 @@ export default {
 		getFriendRequest: (state) => () => {
 			return state.friendRequest;
 		},
+		friendMsgDnd: (state) => (friendId) => {
+			let friend = state.friends.find(item => item.id === friendId);
+			if (friend) {
+				return friend.isDnd;
+			}
+			return false;
+		}
 	},
 	actions: {
 		loadFriend(context) {

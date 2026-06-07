@@ -6,6 +6,7 @@ import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.vo.GroupMemberVO;
 import xyz.qy.implatform.vo.SwitchCharacterAvatarVO;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -21,6 +22,15 @@ public interface IGroupMemberService extends IService<GroupMember> {
      * @return 成员列表
      */
     List<GroupMember> findQuitInMonth(Long userId);
+
+    /**
+     * 根据用户id查询某段时间内退的群
+     *
+     * @param userId      用户id
+     * @param minQuitTime 退群时间
+     * @return 成员列表
+     */
+    public List<GroupMember> findQuitMembers(Long userId, Date minQuitTime);
 
     List<GroupMember>  findByGroupId(Long groupId);
 

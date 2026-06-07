@@ -77,6 +77,13 @@ export default {
 		findGroupById: (state, getters) => (gid) => {
 			return state.groups.find(item => item.id === gid);
 		},
+		groupMsgDnd: (state, getters) => (gid) => {
+			let group = getters.findGroupById(gid);
+			if (group) {
+				return group.isDnd;
+			}
+			return false;
+		},
 		getGroupRequests: (state) => () => {
 			return state.groupRequests;
 		},

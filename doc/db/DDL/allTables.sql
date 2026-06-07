@@ -90,10 +90,11 @@ create table im_friend
     friend_nick_name  varchar(255)                             not null comment '好友昵称',
     friend_head_image varchar(255) default ''                  null comment '好友头像',
     friend_remark     varchar(50)                              null comment '好友备注',
+    is_dnd            tinyint(1)   default 0                   not null comment '是否勿扰模式',
     created_time      datetime     default current_timestamp() null comment '创建时间',
     deleted           tinyint(1)   default 0                   not null comment '是否删除'
 )
-    comment '好友表';
+    comment '好友表' row_format = DYNAMIC;
 
 create index idx_friend_id
     on im_friend (friend_id);
@@ -124,6 +125,7 @@ create table im_group
 )
     comment '群';
 
+
 create table im_group_member
 (
     id                    bigint auto_increment comment 'id'
@@ -148,19 +150,21 @@ create table im_group_member
     show_nickname         tinyint(1)    default 0                   not null comment '是否展示群成员昵称（0：否；1：是）',
     is_banned             smallint(1)   default 0                   not null comment '禁止发言（1：是；0否）',
     ban_type              varchar(50)                               null comment '被禁止发言类型（admin：管理员禁止；master：群主禁止）',
+    is_dnd                tinyint(1)    default 0                   not null comment '是否勿扰模式',
     ban_expire_time       datetime                                  null comment '禁止发言失效时间',
     created_time          datetime      default current_timestamp() null comment '创建时间',
     switch_time           datetime                                  null comment '模板人物切换时间',
     constraint unique_idx_1
         unique (group_id, user_id)
 )
-    comment '群成员表';
+    comment '群成员表' row_format = DYNAMIC;
 
 create index idx_group_id
     on im_group_member (group_id);
 
 create index idx_user_id
     on im_group_member (user_id);
+
 
 create table im_group_message
 (
@@ -390,6 +394,7 @@ create table im_region_group
 )
     comment '地区群聊表';
 
+
 create table im_region_group_member
 (
     id              bigint auto_increment comment 'id'
@@ -403,6 +408,7 @@ create table im_region_group_member
     quit_time       datetime             null comment '退出时间',
     is_banned       tinyint(1) default 0 not null comment '是否被禁止发言',
     ban_type        varchar(50)          null comment '被禁止发言类型（admin：管理员禁止）',
+    is_dnd          tinyint(1) default 0 not null comment '是否勿扰模式',
     ban_expire_time datetime             null comment '禁止发言失效时间',
     remark          varchar(200)         null comment '备注',
     create_by       bigint               null comment '创建人用户id',
@@ -412,7 +418,8 @@ create table im_region_group_member
     constraint unique_1
         unique (region_group_id, user_id)
 )
-    comment '地区群聊常驻用户表';
+    comment '地区群聊常驻用户表' row_format = DYNAMIC;
+
 
 create table im_region_group_message
 (

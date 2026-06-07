@@ -220,6 +220,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         member.setAliasNamePrefix(vo.getAliasNamePrefix());
         member.setAliasNameSuffix(vo.getAliasNameSuffix());
         member.setNickname(vo.getNickName());
+        member.setIsDnd(vo.getIsDnd());
         if (GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
             if (StringUtils.isNotBlank(vo.getAliasName()) && !vo.getAliasName().equals(member.getAliasName())) {
                 hasModify = true;
@@ -366,6 +367,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         vo.setAliasNameSuffix(member.getAliasNameSuffix());
         vo.setNickName(member.getNickname());
         vo.setShowNickName(member.getShowNickName());
+        vo.setIsDnd(member.getIsDnd());
         return vo;
     }
 
@@ -475,6 +477,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             vo.setTemplateCharacterId(member.getTemplateCharacterId());
             vo.setQuit(member.getQuit());
             vo.setNickName(member.getNickname());
+            vo.setIsDnd(member.getIsDnd());
             return vo;
         }).collect(Collectors.toList());
     }

@@ -94,4 +94,9 @@ public class RegionGroupVO {
      * 是否退出
      */
     private Boolean quit;
+
+    /**
+     * 是否免打扰
+     */
+    private Boolean isDnd;
 }

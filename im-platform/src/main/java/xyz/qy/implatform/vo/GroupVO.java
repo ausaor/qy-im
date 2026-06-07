@@ -87,4 +87,7 @@ public class GroupVO {
 
     @ApiModelProperty(value = "群版本号")
     private String version;
+
+    @ApiModelProperty(value = "是否免打扰")
+    private Boolean isDnd;
 }

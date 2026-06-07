@@ -128,6 +128,15 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         return this.list(memberWrapper);
     }
 
+    @Override
+    public List<GroupMember> findQuitMembers(Long userId, Date minQuitTime) {
+        LambdaQueryWrapper<GroupMember> wrapper = Wrappers.lambdaQuery();
+        wrapper.eq(GroupMember::getUserId, userId);
+        wrapper.eq(GroupMember::getQuit, true);
+        wrapper.ge(GroupMember::getQuitTime, minQuitTime);
+        return this.list(wrapper);
+    }
+
     /**
      * 根据群聊id查询群聊成员（包括已退出）
      *

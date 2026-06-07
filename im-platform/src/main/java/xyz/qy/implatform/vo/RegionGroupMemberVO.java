@@ -77,6 +77,11 @@ public class RegionGroupMemberVO {
      */
     private Boolean isOwner = false;
 
+    /**
+     * 是否勿扰
+     */
+    private Boolean isDnd =  false;
+
     @ApiModelProperty(value = "聊天气泡")
     private Integer chatBubble;
 }

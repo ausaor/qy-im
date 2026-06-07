@@ -3,7 +3,7 @@
     <div class="chat-left">
       <head-image :url="chat.headImage" :name="chat.showName" :size="45"
         :id="chat.type=='PRIVATE'?chat.targetId:0"></head-image>
-      <div v-show="chat.unreadCount>0" class="unread-text">{{chat.unreadCount}}</div>
+      <div v-show="chat.unreadCount>0" class="unread-text" :class="{'msg-dnd': msgDnd}">{{chat.unreadCount}}</div>
     </div>
     <div class="chat-right">
       <div class="chat-name">
@@ -107,6 +107,15 @@ export default {
         return "[@全体成员]"
       }
       return "";
+    },
+    msgDnd() {
+      if (this.chat.type == 'GROUP') {
+        return this.$store.getters.groupMsgDnd(this.chat.targetId)
+      } else if (this.chat.type == 'PRIVATE') {
+        return this.$store.getters.friendMsgDnd(this.chat.targetId)
+      } else {
+        return false;
+      }
     }
   }
 }
@@ -152,6 +161,10 @@ export default {
       text-align: center;
       white-space: nowrap;
       border: 1px solid #f1e5e5;
+
+      &.msg-dnd {
+        background-color: #909399;
+      }
     }
   }
 

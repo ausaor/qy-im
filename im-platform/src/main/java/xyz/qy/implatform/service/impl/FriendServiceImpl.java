@@ -251,6 +251,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         f.setFriendNickName(vo.getNickName());
         f.setFriendRemark(vo.getFriendRemark());
         f.setFriendHeadImage(vo.getHeadImage());
+        f.setIsDnd(vo.getIsDnd());
         this.updateById(f);
         if (StringUtils.isNotBlank(vo.getMyHeadImageToFriend())) {
             updateMyInfoToFriend(vo);
@@ -358,6 +359,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         vo.setHeadImage(f.getFriendHeadImage());
         vo.setNickName(f.getFriendNickName());
         vo.setDeleted(f.getDeleted());
+        vo.setIsDnd(f.getIsDnd());
         return vo;
     }
 

@@ -2,7 +2,7 @@
   <div class="group-item" :class="active ? 'active' : ''" @contextmenu.prevent="showRightMenu($event)">
     <div class="group-avatar">
       <head-image :size="45" :name="regionGroup.remark" :url="regionGroup.headImage"> </head-image>
-      <div v-show="unreadCount>0" class="unread-text">{{unreadCount}}</div>
+      <div v-show="unreadCount>0" class="unread-text" :class="{'msg-dnd': msgDnd}">{{unreadCount}}</div>
       <div class="group-activity" v-show="unreadTalkCount > 0 || unreadNotifyCount > 0"></div>
     </div>
     <div class="group-info">
@@ -128,6 +128,9 @@
         }
         return 0;
       },
+      msgDnd() {
+        return this.$store.getters.regionGroupMsgDnd(this.regionGroup.id)
+      }
     }
   }
 </script>
@@ -171,6 +174,10 @@
         text-align: center;
         white-space: nowrap;
         border: 1px solid #f1e5e5;
+
+        &.msg-dnd {
+          background-color: #909399;
+        }
       }
 
       .group-activity {

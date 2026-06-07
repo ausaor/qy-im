@@ -531,7 +531,7 @@
         // 插入消息
         this.$store.commit("insertMessage", msg);
         // 播放提示音
-        if (!msg.selfSend && this.$msgType.isNormal(msg.type) &&
+        if (!friend.isDnd && !msg.selfSend && this.$msgType.isNormal(msg.type) &&
             msg.status !== this.$enums.MESSAGE_STATUS.READED) {
           this.playAudioTip();
         }
@@ -622,7 +622,7 @@
         // 插入消息
         this.$store.commit("insertMessage", msg);
         // 播放提示音
-        if (!msg.selfSend && msg.type <= 10 &&
+        if (!group.isDnd && !msg.selfSend && this.$msgType.isNormal(msg.type) &&
             msg.status != this.$enums.MESSAGE_STATUS.READED) {
           this.playAudioTip();
         }
@@ -751,7 +751,7 @@
         // 插入消息
         this.$store.commit("insertMessage", msg);
         // 播放提示音
-        if (msg.type <= 10 &&
+        if (this.$msgType.isNormal(msg.type) &&
             msg.status != this.$enums.MESSAGE_STATUS.READED) {
           this.playAudioTip();
         }
@@ -768,7 +768,7 @@
         // 插入消息
         msg.isOwner = msg.sendId === regionGroup.ownerId;
         this.$store.commit("insertRegionMessage", msg);
-        if(!msg.selfSend && msg.type <= 10
+        if(!regionGroup.isDnd && !msg.selfSend && this.$msgType.isNormal(msg.type)
             && msg.status != this.$enums.MESSAGE_STATUS.READED){
           this.playAudioTip();
         }

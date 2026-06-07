@@ -41,4 +41,9 @@ public class RegionGroupMemberDTO {
      * 群成员头像
      */
     private String headImage;
+
+    /**
+     * 是否免打扰
+     */
+    private Boolean isDnd = false;
 }

@@ -3,9 +3,9 @@
     <el-container>
       <el-header height="60px">
         <span>{{title}}</span>
-        <span class="btn-side" v-show="this.chat.type=='GROUP'">
+        <span class="btn-side">
 <!--          <span title="刷新群聊信息" style="color: greenyellow;margin-right: 10px" class="el-icon-refresh" @click="loadGroup(chat.targetId)"></span>-->
-          <span title="群聊信息" class="el-icon-more" @click="showSide=!showSide"></span>
+          <span class="el-icon-more" @click="showSide=!showSide"></span>
         </span>
 
       </el-header>
@@ -135,11 +135,12 @@
             </el-footer>
           </el-container>
           <el-aside class="chat-group-side-box" width="300px" v-show="showSide">
-            <chat-group-side :group="group" :groupMembers="groupMembers" @reload="loadGroup(group.id)"
+            <chat-group-side v-if="this.chat.type=='GROUP'" :group="group" :groupMembers="groupMembers" @reload="loadGroup(group.id)"
                              :myGroupMemberInfo="myGroupMemberInfo"
                              :friends="friends" :all-character-ids.sync="allCharacterIds"
                              @change="modifyMyGroupMember">
             </chat-group-side>
+            <chat-private-side v-if="this.chat.type=='PRIVATE'" :friend="friend"></chat-private-side>
           </el-aside>
         </el-container>
       </el-main>
@@ -157,6 +158,7 @@
 
 <script>
 	import ChatGroupSide from "./ChatGroupSide.vue";
+  import ChatPrivateSide from "./ChatPrivateSide.vue";
 	import ChatMessageItem from "./ChatMessageItem.vue";
 	import FileUpload from "../common/FileUpload.vue";
 	import Emotion from "../common/Emotion.vue";
@@ -176,6 +178,7 @@
 			ChatMessageItem,
 			FileUpload,
 			ChatGroupSide,
+      ChatPrivateSide,
 			Emotion,
       ChatRecord,
 			ChatHistory,

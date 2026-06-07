@@ -86,6 +86,12 @@ public class RegionGroupMember extends Model<RegionGroupMember> {
     private String banType;
 
     /**
+     * 是否勿扰模式
+     */
+    @TableField("is_dnd")
+    private Boolean isDnd;
+
+    /**
      * 禁止发言失效时间
      */
     @TableField("ban_expire_time")

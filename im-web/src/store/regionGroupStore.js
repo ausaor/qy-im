@@ -458,5 +458,12 @@ export default {
 		findRegionGroupById: (state, getters) => (gid) => {
 			return state.regionGroups.find(item => item.id === gid);
 		},
+		regionGroupMsgDnd: (state, getters) => (gid) => {
+			let group = getters.findRegionGroupById(gid);
+			if (group) {
+				return group.isDnd;
+			}
+			return false;
+		},
 	}
 }

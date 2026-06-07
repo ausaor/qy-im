@@ -90,4 +90,7 @@ public class UserVO {
 
     @ApiModelProperty(value = "聊天气泡")
     private Integer chatBubble;
+
+    @ApiModelProperty(value = "是否开启消息勿扰")
+    private Boolean isDnd = false;
 }

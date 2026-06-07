@@ -31,4 +31,7 @@ public class FriendVO {
 
     @ApiModelProperty(value = "角色")
     private String role;
+
+    @ApiModelProperty(value = "是否免打扰")
+    private Boolean isDnd;
 }

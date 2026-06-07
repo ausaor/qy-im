@@ -173,6 +173,16 @@
           <h3>群组设置</h3>
         </div>
         <div class="card-content">
+          <div class="form-item" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
+            <label class="form-label">群消息免打扰</label>
+            <div class="switch-container">
+              <div 
+                class="custom-switch" 
+                :class="{ 'switch-active': group.isDnd, 'switch-inactive': !group.isDnd }"
+                @click="toggleGroupMsgDnd">
+              </div>
+            </div>
+          </div>
           <div class="form-item" v-if="group.groupType!==0" style="border-bottom: 1px solid lightgray; padding-bottom: 10px">
             <label class="form-label">群成员名称显示</label>
             <div class="switch-container">
@@ -673,6 +683,11 @@
       // 切换全体禁言
       toggleAllBanned() {
         this.doAllBanned(!this.group.isBanned);
+      },
+      // 切换群消息免打扰
+      toggleGroupMsgDnd() {
+        this.group.isDnd = !this.group.isDnd;
+        this.onSaveGroup();
       },
       // 编辑群公告
       editNotice() {

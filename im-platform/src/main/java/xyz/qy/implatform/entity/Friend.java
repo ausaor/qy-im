@@ -60,6 +60,12 @@ public class Friend extends Model<Friend> {
     private String friendRemark;
 
     /**
+     * 是否勿扰模式
+     */
+    @TableField("is_dnd")
+    private Boolean isDnd;
+
+    /**
      * 创建时间
      */
     @TableField("created_time")

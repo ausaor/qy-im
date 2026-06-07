@@ -149,6 +149,18 @@
           <el-button type="text" @click="doBanned('unBanned')">解除禁言</el-button>
         </div>
       </div>
+      <div class="operation-item dnd-switch" v-if="myGroupMemberInfo.joinType === 1">
+        <div class="label-text">消息免打扰：</div>
+        <el-switch
+            style="display: block"
+            v-model="myGroupMemberInfo.isDnd"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-text="开启"
+            inactive-text="关闭"
+            @change="toggleGroupMsgDnd">
+        </el-switch>
+      </div>
     </div>
   </div>
     <div class="complaint-box">
@@ -423,6 +435,11 @@ export default {
         });
       })
     },
+    toggleGroupMsgDnd(value) {
+      this.myGroupMemberInfo.isDnd = value;
+      this.regionGroup.isDnd = value;
+      this.modifyMemberInfo();
+    },
     openRegionSpace() {
       this.regionSpaceVisible = true;
       this.$store.commit("resetRegionTalk", this.regionGroup.code);
@@ -471,7 +488,8 @@ export default {
         regionGroupId: this.regionGroup.id,
         joinType: this.myGroupMemberInfo.joinType,
         aliasName: this.myGroupMemberInfo.aliasName,
-        headImage: this.myGroupMemberInfo.headImage
+        headImage: this.myGroupMemberInfo.headImage,
+        isDnd: this.myGroupMemberInfo.isDnd
       }
       this.$http({
         url: '/region/group/modifyRegionGroupMember',
@@ -479,6 +497,7 @@ export default {
         data: param
       }).then(() => {
         this.$message.success("修改成功");
+        this.$store.commit("updateRegionGroup", this.regionGroup);
       });
     },
     showComplaint() {
@@ -876,6 +895,12 @@ export default {
     .user-banned {
       width: 50%;
       justify-content: center;
+      align-items: center;
+    }
+
+    .dnd-switch {
+      width: 100%;
+      justify-content: left;
       align-items: center;
     }
 

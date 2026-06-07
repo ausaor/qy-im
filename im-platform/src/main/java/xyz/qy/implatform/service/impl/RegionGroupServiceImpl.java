@@ -119,7 +119,9 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             if (CollectionUtils.isNotEmpty(regionGroupList)) {
                 regionGroupList.forEach(item -> {
                     RegionGroupVO regionGroupVO = BeanUtils.copyProperties(item, RegionGroupVO.class);
+                    RegionGroupMember regionGroupMember = regionGroupMembers.stream().filter(m -> m.getRegionGroupId().equals(item.getId())).findFirst().get();
                     regionGroupVO.setJoinType(1);
+                    regionGroupVO.setIsDnd(regionGroupMember.getIsDnd());
                     regionGroupVOS.add(regionGroupVO);
                 });
             }
@@ -135,6 +137,7 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
                 RegionGroup group = this.getById(regionGroup.getId());
                 RegionGroupVO regionGroupVO = BeanUtils.copyProperties(group, RegionGroupVO.class);
                 regionGroupVO.setJoinType(0);
+                regionGroupVO.setIsDnd(false);
                 regionGroupVOS.add(regionGroupVO);
             }
         }
@@ -158,6 +161,9 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
             if (new Date().after(regionGroup.getExpirationTime())) {
                 vo.setOwnerId(null);
             }
+        }
+        if (ObjectUtil.isNotNull(member)) {
+            vo.setIsDnd(member.getIsDnd());
         }
 
         // 判断当前用户是否临时加入
@@ -225,12 +231,23 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         if (ObjectUtil.isNull(regionGroupMember) || regionGroupMember.getQuit()) {
             throw new GlobalException("您不是当前地区群聊常驻成员");
         }
+        boolean hasModify = false;
+        if (!regionGroupMember.getAliasName().equals(dto.getAliasName())) {
+            hasModify = true;
+        }
+        if (StringUtils.isNotBlank(regionGroupMember.getHeadImage()) && !regionGroupMember.getHeadImage().equals(dto.getHeadImage())) {
+            hasModify = true;
+        }
         regionGroupMember.setAliasName(dto.getAliasName());
         regionGroupMember.setHeadImage(dto.getHeadImage());
+        regionGroupMember.setIsDnd(dto.getIsDnd());
         regionGroupMemberService.updateById(regionGroupMember);
 
-        messageSendUtil.sendRegionGroupTipMsg(regionGroupMember.getRegionGroupId(), session.getUserId(), session.getNickName(), null,
-                "地区群聊数据有更新", GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
+        if (hasModify) {
+            messageSendUtil.sendRegionGroupTipMsg(regionGroupMember.getRegionGroupId(), session.getUserId(), session.getNickName(), null,
+                    "地区群聊数据有更新", GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
+        }
+
         return BeanUtils.copyProperties(regionGroupMember, RegionGroupMemberVO.class);
     }
 

@@ -408,6 +408,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (friend != null) {
             vo.setHeadImage(friend.getFriendHeadImage());
             vo.setFriendRemark(friend.getFriendRemark());
+            vo.setIsDnd(friend.getIsDnd());
         }
         Friend myInfoToFriend = findMyInfoToFriend(id);
         if (myInfoToFriend != null) {
