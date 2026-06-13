@@ -5,7 +5,7 @@
 <mapper namespace="xyz.qy.implatform.mapper.TalkMapper">
 
     <sql id="taskQueryBase">
-        select id,user_id,character_id,avatar_id,nick_name,avatar,content,files,`scope`,address,
+        select id,user_id,character_id,avatar_id,nick_name,avatar,content,files,`scope`,address,`status`,
         category,group_visible,region_visible,group_id,region_code,group_template_id,
         create_time,create_by,update_time,update_by,deleted from im_talk
     </sql>
@@ -28,6 +28,9 @@
             <if test="true">
                 and my.category in ('private', 'group', 'region')
             </if>
+            <if test="true">
+                and my.status = '2'
+            </if>
         </where>
         <if test="queryDTO.friendIds != null and queryDTO.friendIds.size() > 0">
             union all
@@ -45,6 +48,9 @@
                 </if>
                 <if test="true">
                     and (f.scope = 2 or f.scope = 9)
+                </if>
+                <if test="true">
+                    and f.status = '2'
                 </if>
             </where>
         </if>
@@ -68,6 +74,9 @@
                 <if test="true">
                     and (f.scope = 2 or f.scope = 9)
                 </if>
+                <if test="true">
+                    and f.status = '2'
+                </if>
             </where>
             order by create_time desc
         </if>
@@ -82,6 +91,9 @@
             </if>
             <if test="true">
                 and g.deleted = 0
+            </if>
+            <if test="true">
+                and g.status = '2'
             </if>
         </where>
         <if test="queryDTO.groupMemberUserIds != null and queryDTO.groupMemberUserIds.size() > 0">
@@ -104,6 +116,9 @@
                 <if test="true">
                     and u.scope = 9
                 </if>
+                <if test="true">
+                    and u.status = '2'
+                </if>
             </where>
         </if>
         order by create_time desc
@@ -118,6 +133,9 @@
             </if>
             <if test="true">
                 and r.deleted = 0
+            </if>
+            <if test="true">
+                and r.status = '2'
             </if>
         </where>
         <if test="queryDTO.groupMemberUserIds != null and queryDTO.groupMemberUserIds.size() > 0">
@@ -140,6 +158,9 @@
                 <if test="true">
                     and u.scope = 9
                 </if>
+                <if test="true">
+                    and u.status = '2'
+                </if>
             </where>
         </if>
         order by create_time desc
@@ -157,6 +178,9 @@
             </if>
             <if test="true">
                 and r.deleted = 0
+            </if>
+            <if test="true">
+                and r.status = '2'
             </if>
         </where>
         <if test="queryDTO.characterUserIds != null and queryDTO.characterUserIds.size() > 0">
@@ -180,9 +204,28 @@
                 <if test="true">
                     and u.scope = 9
                 </if>
+                <if test="true">
+                    and u.status = '2'
+                </if>
             </where>
         </if>
         order by create_time desc
+    </select>
+    <select id="pageQueryMyCharacterTalkList" resultType="xyz.qy.implatform.entity.Talk">
+        <include refid="taskQueryBase"/> r
+        <where>
+            r.character_id = #{queryDTO.characterId}
+            and r.user_id = #{queryDTO.ownerId}
+            <if test="true">
+                and r.category = 'character'
+            </if>
+            <if test="true">
+                and r.scope = 9
+            </if>
+            <if test="true">
+                and r.deleted = 0
+            </if>
+        </where>
     </select>
 
     <select id="pageQueryGroupTemplateTalkList" resultType="xyz.qy.implatform.entity.Talk">
@@ -197,6 +240,9 @@
             </if>
             <if test="true">
                 and g.deleted = 0
+            </if>
+            <if test="true">
+                and g.status = '2'
             </if>
         </where>
         order by create_time desc
@@ -215,6 +261,9 @@
             <if test="true">
                 and g.deleted = 0
             </if>
+            <if test="true">
+                and g.status = '2'
+            </if>
         </where>
         <if test="queryDTO.characterIds != null and queryDTO.characterIds.size() > 0">
             union
@@ -232,6 +281,9 @@
                 </if>
                 <if test="true">
                     and c.deleted = 0
+                </if>
+                <if test="true">
+                    and c.status = '2'
                 </if>
             </where>
         </if>
@@ -260,6 +312,9 @@
                 </if>
                 <if test="true">
                     and u.scope = 9
+                </if>
+                <if test="true">
+                    and u.status = '2'
                 </if>
             </where>
         </if>
@@ -282,6 +337,9 @@
             <if test="true">
                 and c.deleted = 0
             </if>
+            <if test="true">
+                and c.status = '2'
+            </if>
         </where>
         <if test="queryDTO.characterUserIds != null and queryDTO.characterUserIds.size() > 0">
             union all
@@ -309,6 +367,9 @@
                 <if test="true">
                     and u.scope = 9
                 </if>
+                <if test="true">
+                    and u.status = '2'
+                </if>
             </where>
         </if>
         order by create_time desc
@@ -326,6 +387,9 @@
             <if test="true">
                 and c.deleted = 0
             </if>
+            <if test="true">
+                and c.status = '2'
+            </if>
         </where>
         union all
         <include refid="taskQueryBase"/> u
@@ -341,6 +405,9 @@
             </if>
             <if test="true">
                 and u.scope = 9
+            </if>
+            <if test="true">
+                and u.status = '2'
             </if>
         </where>
         order by create_time desc

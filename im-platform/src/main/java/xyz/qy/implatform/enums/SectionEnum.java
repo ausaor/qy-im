@@ -22,6 +22,8 @@ public enum SectionEnum {
 
     CHARACTER("character"),
 
+    MY_CHARACTER("my-character"),
+
     GROUP_TEMPLATE("groupTemplate"),
 
     GROUP_TEMPLATE_CHARACTERS("groupTemplate-characters"),

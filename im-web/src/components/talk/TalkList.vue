@@ -10,8 +10,14 @@
       <div class="sayItem" v-for="(item, index) in talkList" :key="index">
         <head-image :url="item.avatar" :id="item.userId" :name="item.nickName" :size="45"></head-image>
         <div class="rightBox">
-          <div class="nickname" :class="{'character-name': item.characterId !== null }">
-            {{ item.nickName }}
+          <div class="rightBoxHeader">
+            <div class="nickname" :class="{'character-name': item.characterId !== null }">
+              {{ item.nickName }}
+            </div>
+            <div class="talk-info">
+              <span class="author" v-if="item.characterId || item.groupTemplateId" @click="showUserInfo($event, item.userId)">By：{{item.authorName}}</span>
+              <span class="status" v-if="item.status !== '2'">{{item.statusName}}</span>
+            </div>
           </div>
           <p class="content" v-highlight v-html="$emo.transform(item.content)"></p>
           <v-row class="talk-files" v-if="item.fileList">
@@ -926,12 +932,33 @@ export default {
         flex-direction: column;
         width: 100%;
 
+        .rightBoxHeader {
+          display: flex;
+          justify-content: space-between;
+        }
+
         .nickname {
           text-align: left;
         }
 
         .character-name {
           color: #f56c6c;
+        }
+
+        .talk-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 13px;
+
+          .author {
+            color: #909399;
+            cursor: pointer;
+          }
+
+          .status {
+            color: #409eff;
+          }
         }
 
         .content {

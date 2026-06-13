@@ -34,7 +34,7 @@ public class TalkQueryDTO {
     @ValidEnum(enumClass = TalkCategoryEnum.class, property = "code", message = "无效的分类")
     private String category;
 
-    @ApiModelProperty("查询范围：my-自己的，friends-朋友的，group-群聊的，region-地区的；groupTemplate-群聊模板的；character-单个角色的；groupTemplate&Characters-群聊模板与所有角色的；characters-多个角色的；allCharacters-所有角色的")
+    @ApiModelProperty("查询范围：my-自己的，friends-朋友的，group-群聊的，region-地区的；groupTemplate-群聊模板的；character-单个角色的；my-character-我的某个角色；groupTemplate&Characters-群聊模板与所有角色的；characters-多个角色的；allCharacters-所有角色的")
     @ValidEnum(enumClass = SectionEnum.class, property = "code", message = "无效的分类")
     private String section;
 
@@ -59,4 +59,7 @@ public class TalkQueryDTO {
     @Size(max = 500)
     @ApiModelProperty("角色id列表")
     private List<Long> characterIds;
+
+    @ApiModelProperty("状态列表")
+    private List<String> statusList;
 }

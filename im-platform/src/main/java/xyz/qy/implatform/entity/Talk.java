@@ -79,6 +79,12 @@ public class Talk extends BaseEntity{
     private String address;
 
     /**
+     * 状态
+     */
+    @TableField("status")
+    private String status;
+
+    /**
      * 分类（private：个人，group：群聊，region：地区）
      */
     @TableField("category")

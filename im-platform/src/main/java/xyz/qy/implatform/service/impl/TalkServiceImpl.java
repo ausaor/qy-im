@@ -39,6 +39,7 @@ import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.ResultCode;
+import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
@@ -159,6 +160,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         if (TalkCategoryEnum.CHARACTER.getCode().equals(talkAddDTO.getCategory())
             || (talkAddDTO.getCharacterVisible() && TalkCategoryEnum.PRIVATE.getCode().equals(talkAddDTO.getCategory()))) {
             checkCharacterUser(talkAddDTO.getCharacterId(), talkAddDTO.getGroupTemplateId(), session.getUserId(), talkAddDTO.getCategory());
+            // 发布角色空间的动态需要审核
+            talk.setStatus(ReviewEnum.REVIEWING.getCode());
         }
 
         if (StringUtils.isBlank(talk.getNickName()) && ObjectUtil.isNull(talkAddDTO.getCharacterId()) && ObjectUtil.isNull(talkAddDTO.getGroupTemplateId())) {
@@ -230,9 +233,12 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         if (!userId.equals(talk.getUserId())) {
             throw new GlobalException("您没有权限修改该动态");
         }
+        if (ReviewEnum.NO_PASS.getCode().equals(talk.getStatus())) {
+            throw new GlobalException("该动态存在违规内容，不能修改");
+        }
         if (ObjectUtil.isNotNull(talkUpdateDTO.getCharacterId())) {
-            boolean verified = verifyTalkCommentCharacter(talk.getId(), talkUpdateDTO.getCharacterId(), talkUpdateDTO.getAvatarId());
-            if (verified) {
+            boolean conflicted = verifyTalkCommentCharacter(talk.getId(), talkUpdateDTO.getCharacterId(), talkUpdateDTO.getAvatarId());
+            if (conflicted) {
                 throw new GlobalException("所选角色不允许");
             }
         }
@@ -244,6 +250,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         if (TalkCategoryEnum.CHARACTER.getCode().equals(talkUpdateDTO.getCategory())
                 || (talkUpdateDTO.getCharacterVisible() && TalkCategoryEnum.PRIVATE.getCode().equals(talkUpdateDTO.getCategory()))) {
             checkCharacterUser(talkUpdateDTO.getCharacterId(), talkUpdateDTO.getGroupTemplateId(), session.getUserId(), talk.getCategory());
+            // 发布角色空间的动态需要审核
+            talk.setStatus(ReviewEnum.REVIEWING.getCode());
         }
 
         BeanUtils.copyProperties(talkUpdateDTO, talk);
@@ -367,35 +375,33 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             throw new GlobalException("最多只能上传9个文件");
         }
 
-        // 判断files中fileType等于2的数量是否大于1
-        long count = files.stream()
-                .filter(file -> file instanceof Map)
-                .map(file -> (Map<?, ?>) file)
-                .filter(map -> "2".equals(String.valueOf(map.get("fileType"))))
-                .count();
-        if (count > 1) {
+        int videoCount = 0;
+        int audioCount = 0;
+        Set<String> fileTypeValues = new HashSet<>();
+
+        for (Object file : files) {
+            if (!(file instanceof Map)) {
+                continue;
+            }
+            Map<?, ?> map = (Map<?, ?>) file;
+            String fileType = String.valueOf(map.get("fileType"));
+            fileTypeValues.add(fileType);
+            if ("2".equals(fileType)) {
+                videoCount++;
+            } else if ("3".equals(fileType)) {
+                audioCount++;
+            }
+        }
+
+        if (videoCount > 1) {
             throw new GlobalException("只能上传一个视频文件");
         }
-
-        // 判断files中fileType等于2的数量是否大于1
-        long count2 = files.stream()
-                .filter(file -> file instanceof Map)
-                .map(file -> (Map<?, ?>) file)
-                .filter(map -> "3".equals(String.valueOf(map.get("fileType"))))
-                .count();
-        if (count2 > 1) {
+        if (audioCount > 1) {
             throw new GlobalException("只能上传一个音频文件");
         }
-
-        // 获取files中fileType属性的所有值
-        Set<String> fileTypeValues = files.stream()
-                .filter(file -> file instanceof Map)
-                .map(file -> (Map<?, ?>) file)
-                .map(map -> String.valueOf(map.get("fileType")))
-                .collect(Collectors.toSet());
-       if (fileTypeValues.size() > 1) {
-           throw new GlobalException("不能同时上传多种类型文件");
-       }
+        if (fileTypeValues.size() > 1) {
+            throw new GlobalException("不能同时上传多种类型文件");
+        }
     }
 
     @Override
@@ -514,6 +520,20 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             }
 
             talkPage = this.baseMapper.pageQueryCharacterTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
+            if (ObjectUtil.isNotNull(talkPage)) {
+                records = talkPage.getRecords();
+            }
+        } else if (SectionEnum.MY_CHARACTER.getCode().equals(queryDTO.getSection())) {
+            if (ObjectUtil.isNull(queryDTO.getCharacterId())) {
+                throw new GlobalException("角色参数异常");
+            }
+            List<Long> userIdList = characterUserService.getUserIdListByCharacterIds(List.of(queryDTO.getCharacterId()));
+            TemplateCharacter character = characterService.getById(queryDTO.getCharacterId());
+            if (!userIdList.contains(myUserId) && !character.getCreateBy().equals(String.valueOf(myUserId))) {
+                throw new GlobalException("您不是当前角色的绑定成员或创建者");
+            }
+            queryDTO.setOwnerId(myUserId);
+            talkPage = this.baseMapper.pageQueryMyCharacterTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }
@@ -646,6 +666,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             if (myUserId.equals(talkVO.getUserId())) {
                 talkVO.setIsOwner(Boolean.TRUE);
             }
+            talkVO.setAuthorName(userMap.get(talkVO.getUserId()).getNickName());
+            talkVO.setStatusName(ReviewEnum.getNameByCode(talkVO.getStatus()));
             talkVO.setCommentUserAvatar(user.getHeadImage());
             talkVO.setCommentUserNickname(user.getNickName());
             Set<Long> characterIds = new HashSet<>();

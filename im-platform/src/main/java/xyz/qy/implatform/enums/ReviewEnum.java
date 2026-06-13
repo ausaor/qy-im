@@ -22,4 +22,13 @@ public enum ReviewEnum {
     private final String code;
 
     private final String name;
+
+    public static String getNameByCode(String code) {
+        for (ReviewEnum reviewEnum : values()) {
+            if (reviewEnum.getCode().equals(code)) {
+                return reviewEnum.getName();
+            }
+        }
+        return "";
+    }
 }

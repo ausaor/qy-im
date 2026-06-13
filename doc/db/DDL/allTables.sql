@@ -484,6 +484,7 @@ create table im_talk
     region_visible    tinyint(1) default 0 not null comment '地区空间可见',
     character_visible tinyint(1) default 0 not null comment '角色空间可见',
     address           varchar(200)         null comment '发布地址',
+    status            varchar(1)           not null default '0' comment '审核状态',
     create_time       datetime             not null comment '创建时间',
     create_by         bigint               not null comment '创建人',
     update_time       datetime             null comment '更新时间',

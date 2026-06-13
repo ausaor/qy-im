@@ -58,6 +58,9 @@ public class TalkVO {
     @ApiModelProperty(value = "用户昵称")
     private String nickName;
 
+    @ApiModelProperty(value = "作者昵称")
+    private String authorName;
+
     @ApiModelProperty(value = "头像")
     private String avatar;
 
@@ -96,6 +99,12 @@ public class TalkVO {
 
     @ApiModelProperty(value = "发布地址")
     private String address;
+
+    @ApiModelProperty(value = "状态")
+    private String status;
+
+    @ApiModelProperty(value = "状态名称")
+    private String statusName;
 
     @ApiModelProperty(value = "是否删除")
     private Boolean deleted;
