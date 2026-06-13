@@ -44,6 +44,14 @@ export default {
 				}
 			})
 		},
+		setGroupDnd(state, { groupId, isDnd }) {
+			state.groups.forEach((g, idx) => {
+				if (g.id == groupId) {
+					state.groups[idx].isDnd = isDnd;
+					console.log("setGroupDnd", groupId, isDnd);
+				}
+			})
+		},
 		updateGroupRequest(state, groupRequest) {
 			state.groupRequests.forEach((item, index)=>{
 				if(item.id===groupRequest.id){

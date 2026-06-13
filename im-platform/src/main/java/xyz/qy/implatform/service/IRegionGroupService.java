@@ -114,4 +114,10 @@ public interface IRegionGroupService extends IService<RegionGroup> {
      * @param userId 用户id
      */
     boolean hasBecomeRegionGroupLeader(Long userId);
+
+    /**
+     * 设置地区群聊免打扰
+     * @param dto 入参
+     */
+    void setRegionGroupMsgDnd(RegionGroupMemberDTO dto);
 }

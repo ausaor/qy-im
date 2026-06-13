@@ -39,6 +39,14 @@ export default defineStore('groupStore', {
 			let g = this.findGroup(group.id);
 			Object.assign(g, group);
 		},
+		setDnd(groupId, isDnd) {
+			console.log('group setDnd', groupId, isDnd);
+			const index = this.groups.findIndex((g) => g.id == groupId);
+			if (index !== -1) {
+				// 创建新对象以确保响应式更新
+				this.groups[index] = { ...this.groups[index], isDnd };
+			}
+		},
 		updateGroupRequest(groupRequest) {
 			this.groupRequests.forEach((g, idx) => {
 				if (g.id === groupRequest.id) {
@@ -68,6 +76,13 @@ export default defineStore('groupStore', {
 	getters: {
 		findGroup: (state) => (id) => {
 			return state.groups.find((g) => g.id == id);
-		}
+		},
+		groupMsgDnd: (state) => (gid) => {
+			let group = state.groups.find((g) => g.id == gid);
+			if (group) {
+				return group.isDnd;
+			}
+			return false;
+		},
 	}
 })

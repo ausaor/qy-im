@@ -55,6 +55,14 @@ export default defineStore('regionStore', {
                 }
             })
         },
+        setDnd(regionGroupId, dnd) {
+            console.log('region setDnd', regionGroupId, dnd);
+            const index = this.regionGroups.findIndex((g) => g.id === regionGroupId);
+            if (index !== -1) {
+                // 创建新对象以确保响应式更新
+                this.regionGroups[index] = { ...this.regionGroups[index], dnd };
+            }
+        },
 
         /* region chat start */
         removeRegionChat(regionGroupId) {
@@ -433,6 +441,13 @@ export default defineStore('regionStore', {
         findRegionChatByGroup: (state) => (gid) => {
             let chats = state.curRegionChats;
             return chats.find(chat => chat.targetId === gid)
+        },
+        regionGroupMsgDnd: (state) => (gid) => {
+            let group = state.findRegionGroup(gid);
+            if (group) {
+                return group.isDnd;
+            }
+            return false;
         },
     }
 })

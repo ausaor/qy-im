@@ -145,4 +145,11 @@ public interface IGroupService extends IService<Group> {
      * @param dto 入参
      */
     void removeGroupAdmin(GroupMemberDTO dto);
+
+    /**
+     * 设置群聊免打扰
+     *
+     * @param dto 入参
+     */
+    void setGroupMsgDnd(GroupMemberDTO dto);
 }

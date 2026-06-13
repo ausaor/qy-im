@@ -1595,14 +1595,6 @@ export default {
         }
       }
     },
-		unreadCount: {
-			handler(newCount, oldCount) {
-				if (newCount > 0) {
-					// 消息已读
-					this.readedMessage()
-				}
-			}
-		},
 	},
 	onLoad(options) {
     uni.$on('group-change-event', this.handleGroupChangeEvent);

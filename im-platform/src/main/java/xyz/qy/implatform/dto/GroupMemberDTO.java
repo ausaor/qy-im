@@ -16,4 +16,7 @@ public class GroupMemberDTO {
     @ApiModelProperty("用户id")
     @NotNull(message = "用户id不能为空")
     private Long userId;
+
+    @ApiModelProperty("是否免打扰")
+    private Boolean isDnd = false;
 }

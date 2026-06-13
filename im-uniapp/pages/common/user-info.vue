@@ -36,6 +36,9 @@
 				</view>
 			</view>
 		</uni-card>
+    <bar-group>
+      <switch-bar title="消息免打扰" :checked="userInfo.isDnd" @change="toggleUserMsgDnd"></switch-bar>
+    </bar-group>
 		<bar-group v-if="!showFriendRequest">
 			<btn-bar v-show="isFriend" type="primary" title="发送消息" @tap="onSendMessage()">
 			</btn-bar>
@@ -90,9 +93,10 @@ import NavBar from "../../components/nav-bar/nav-bar.vue";
 import HeadImage from "../../components/head-image/head-image.vue";
 import BarGroup from "../../components/bar/bar-group.vue";
 import BtnBar from "../../components/bar/btn-bar.vue";
+import SwitchBar from "../../components/bar/switch-bar.vue";
 
 export default {
-  components: {BtnBar, BarGroup, HeadImage, NavBar, SvgIcon},
+  components: {SwitchBar, BtnBar, BarGroup, HeadImage, NavBar, SvgIcon},
 	data() {
 		return {
 			userInfo: {},
@@ -270,6 +274,20 @@ export default {
           });
         }
       });
+    },
+    toggleUserMsgDnd(e) {
+      const isDnd = e.detail.value;
+      let data = {
+        friendId: this.userInfo.id,
+        isDnd: isDnd
+      }
+      this.$http({
+        url: "/friend/dnd",
+        method: "post",
+        data: data
+      }).then(() => {
+        this.friendStore.setDnd(this.userInfo.id, isDnd);
+      })
     },
 	},
 	computed: {

@@ -1,7 +1,7 @@
 package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import xyz.qy.implatform.dto.FriendAddDTO;
+import xyz.qy.implatform.dto.FriendDTO;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.FriendRequest;
 import xyz.qy.implatform.vo.FriendVO;
@@ -31,7 +31,7 @@ public interface IFriendService extends IService<Friend> {
 
     List<Long> getFriendIdsByUserId(Long userId);
 
-    Integer addFriend(FriendAddDTO dto);
+    Integer addFriend(FriendDTO dto);
 
     void delFriend(Long friendId);
 
@@ -56,4 +56,6 @@ public interface IFriendService extends IService<Friend> {
     void sendDelTipMessage(Long friendId);
 
     void sendFriendRequestMessage(FriendRequest friendRequest, Integer type);
+
+    void setFriendMsgDnd(FriendDTO dto);
 }

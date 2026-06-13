@@ -407,6 +407,9 @@
         }
         return 0;
       },
+      mine() {
+        return this.$store.state.userStore.userInfo;
+      },
 		},
 		methods: {
       onClose() {
@@ -686,8 +689,20 @@
       },
       // 切换群消息免打扰
       toggleGroupMsgDnd() {
-        this.group.isDnd = !this.group.isDnd;
-        this.onSaveGroup();
+        const isDnd = !this.group.isDnd;
+        let data = {
+          groupId: this.group.id,
+          userId: this.mine.id,
+          isDnd: isDnd
+        }
+        this.$http({
+          url: "/group/dnd",
+          method: "post",
+          data: data
+        }).then(() => {
+          this.group.isDnd = isDnd;
+          this.$store.commit("setGroupDnd", { groupId: this.group.id, isDnd: isDnd });
+        })
       },
       // 编辑群公告
       editNotice() {

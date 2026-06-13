@@ -1907,6 +1907,19 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 null, content, GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
     }
 
+    @Override
+    public void setGroupMsgDnd(GroupMemberDTO dto) {
+        UserSession session = SessionContext.getSession();
+        GroupMember member = groupMemberService.findByGroupAndUserId(dto.getGroupId(), session.getUserId());
+        if (ObjectUtil.isNull(member) || member.getQuit()) {
+            throw new GlobalException("您不在群聊中");
+        }
+        member.setIsDnd(dto.getIsDnd());
+        groupMemberService.updateById(member);
+        log.info("设置群聊免打扰成功：groupId：{}，userId：{}", member.getGroupId(), member.getUserId());
+        sendSyncDndMessage(dto.getGroupId(), dto.getIsDnd());
+    }
+
     private void sendDelGroupMessage(Long groupId, List<Long> recvIds) {
         UserSession session = SessionContext.getSession();
         GroupMessageVO msgInfo = new GroupMessageVO();
@@ -1933,6 +1946,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         msgInfo.setContent(isDnd.toString());
         IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
         sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        sendMessage.setRecvIds(Collections.singletonList(session.getUserId()));
         sendMessage.setData(msgInfo);
         sendMessage.setSendResult(false);
         imClient.sendGroupMessage(sendMessage);

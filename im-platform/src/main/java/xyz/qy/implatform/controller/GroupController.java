@@ -181,5 +181,12 @@ public class GroupController {
         groupService.removeGroupAdmin(dto);
         return ResultUtils.success();
     }
+
+    @ApiOperation(value = "设置群聊消息免打扰", notes = "设置群聊消息免打扰")
+    @PostMapping("/dnd")
+    public Result setGroupMsgDnd(@RequestBody @Valid GroupMemberDTO dto) {
+        groupService.setGroupMsgDnd(dto);
+        return ResultUtils.success();
+    }
 }
 

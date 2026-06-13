@@ -25,7 +25,7 @@
             <div
               class="custom-switch"
               :class="{ 'switch-active': friend.isDnd, 'switch-inactive': !friend.isDnd }"
-              @click="toggleFriendMsgDnd(!friend.isDnd)">
+              @click="toggleFriendMsgDnd">
             </div>
           </div>
         </div>
@@ -82,9 +82,20 @@ export default {
     },
   },
   methods: {
-    toggleFriendMsgDnd(value) {
-      this.friend.isDnd = value;
-      this.updateFriendInfo();
+    toggleFriendMsgDnd() {
+      const isDnd = !this.friend.isDnd;
+      let data = {
+        friendId: this.friend.id,
+        isDnd: isDnd
+      }
+      this.$http({
+        url: "/friend/dnd",
+        method: "post",
+        data: data
+      }).then(() => {
+        this.friend.isDnd = isDnd;
+        this.$store.commit('setFriendDnd', {friendId: this.friend.id, isDnd: isDnd});
+      })
     },
     updateFriendInfo() {
       let friend = this.friend;

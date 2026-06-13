@@ -18,7 +18,7 @@
         <view class="chat-at-text">{{ atText }}</view>
         <view class="chat-send-name" v-if="isShowSendName">{{ chat.sendNickName + ':&nbsp;' }}</view>
         <rich-text class="chat-content-text" :nodes="chat.lastContent ? $emo.transform(chat.lastContent,'emoji-small') : ''"></rich-text>
-        <uni-badge v-if="chat.unreadCount > 0" :max-num="99" :text="chat.unreadCount" />
+        <uni-badge v-if="chat.unreadCount > 0" :max-num="99" :text="chat.unreadCount" :type="msgDnd ? 'info' : 'error'" />
       </view>
     </view>
   </view>
@@ -89,6 +89,9 @@ export default {
       let lastMsg = this.chat.messages[size - 1];
       return this.$msgType.isNormal(lastMsg.type)
     },
+    msgDnd() {
+      return this.regionStore.regionGroupMsgDnd(this.regionGroup.id);
+    }
   },
 }
 </script>

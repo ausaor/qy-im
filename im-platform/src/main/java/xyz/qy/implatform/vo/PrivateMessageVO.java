@@ -23,6 +23,9 @@ public class PrivateMessageVO {
     @ApiModelProperty(value = " 接收者id")
     private Long recvId;
 
+    @ApiModelProperty(value = " 朋友id")
+    private Long friendId;
+
     @ApiModelProperty(value = " 发送内容")
     private String content;
 

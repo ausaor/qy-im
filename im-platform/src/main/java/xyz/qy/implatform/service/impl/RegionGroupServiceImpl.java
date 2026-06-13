@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.imclient.IMClient;
 import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.imcommon.contant.IMRedisKey;
+import xyz.qy.imcommon.model.IMRegionGroupMessage;
+import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.contant.Constant;
 import xyz.qy.implatform.contant.DateFormat;
 import xyz.qy.implatform.contant.RedisKey;
@@ -34,6 +36,7 @@ import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.BanTypeEnum;
 import xyz.qy.implatform.enums.GroupChangeTypeEnum;
 import xyz.qy.implatform.enums.LeaderVoteNumEnum;
+import xyz.qy.implatform.enums.MessageType;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
@@ -49,8 +52,8 @@ import xyz.qy.implatform.util.DateTimeUtils;
 import xyz.qy.implatform.util.MessageSendUtil;
 import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.vo.RegionGroupMemberVO;
+import xyz.qy.implatform.vo.RegionGroupMessageVO;
 import xyz.qy.implatform.vo.RegionGroupVO;
-import xyz.qy.implatform.vo.UserVO;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -1249,6 +1252,37 @@ public class RegionGroupServiceImpl extends ServiceImpl<RegionGroupMapper, Regio
         }
 
         return false;
+    }
+
+    @Override
+    public void setRegionGroupMsgDnd(RegionGroupMemberDTO dto) {
+        UserSession session = SessionContext.getSession();
+        if (ObjectUtil.isNull(dto.getRegionGroupId())) {
+            throw new GlobalException("参数异常");
+        }
+        RegionGroupMember member = regionGroupMemberService.findByRegionGroupIdAndUserId(dto.getRegionGroupId(), session.getUserId());
+        if (ObjectUtil.isNull(member) || member.getQuit()) {
+            throw new GlobalException("您不是当前地区群聊常驻用户");
+        }
+        member.setIsDnd(dto.getIsDnd());
+        regionGroupMemberService.updateById(member);
+        sendSyncDndMessage(dto.getRegionGroupId(), dto.getIsDnd());
+    }
+
+    private void sendSyncDndMessage(Long regionGroupId, Boolean isDnd) {
+        UserSession session = SessionContext.getSession();
+        RegionGroupMessageVO msgInfo = new RegionGroupMessageVO();
+        msgInfo.setType(MessageType.REGION_GROUP_DND.code());
+        msgInfo.setSendTime(new Date());
+        msgInfo.setRegionGroupId(regionGroupId);
+        msgInfo.setSendId(session.getUserId());
+        msgInfo.setContent(isDnd.toString());
+        IMRegionGroupMessage<RegionGroupMessageVO> sendMessage = new IMRegionGroupMessage<>();
+        sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendResult(false);
+        sendMessage.setRecvIds(Collections.singletonList(session.getUserId()));
+        imClient.sendRegionGroupMessage(sendMessage);
     }
 
     private boolean isRegionGroupLeader(Long userId, RegionGroup regionGroup) {

@@ -31,6 +31,13 @@ export default {
 				}
 			})
 		},
+		setFriendDnd(state, {friendId, isDnd}) {
+			state.friends.forEach((f, index) => {
+				if (f.id == friendId) {
+					state.friends[index].isDnd = isDnd;
+				}
+			})
+		},
 		updateFriendRequest(state, friendRequest) {
 			state.friendRequest.forEach((item, index)=>{
 				if(item.id===friendRequest.id){

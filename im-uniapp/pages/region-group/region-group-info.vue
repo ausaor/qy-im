@@ -28,7 +28,7 @@
           <uni-icons type="right" size="20" color="#888888"></uni-icons>
         </view>
       </view>
-      <view class="form-item">
+      <view class="form-item" v-if="regionGroup.joinType === 1">
         <view class="label" style="color: #3c9cff;" @click="chooseMember">选择成员</view>
         <view class="value" style="display: flex;align-items: center;">
           <head-image class="group-image" :name="choosedMember.aliasName" :url="choosedMember.headImage"
@@ -39,7 +39,7 @@
       <view class="form-item leader-transfer" v-if="myGroupMemberInfo.isOwner">
         <text @click="leaderTransfer">群主转移</text>
       </view>
-      <view class="form-item leader-vote">
+      <view class="form-item leader-vote" v-if="regionGroup.joinType === 1">
         <text @click="voteLeader">群主投票</text>
         <text @click="voteRemoveLeader">群主解除投票</text>
       </view>
@@ -71,6 +71,9 @@
         <text @click="doBanned('unBanned')">解除禁言</text>
       </view>
     </view>
+    <bar-group>
+      <switch-bar title="消息免打扰" :checked="regionGroup.isDnd" @change="toggleRegionGroupMsgDnd"></switch-bar>
+    </bar-group>
     <bar-group v-if="!regionGroup.quit">
       <btn-bar type="primary" title="发送消息" @tap="onSendMessage()"></btn-bar>
     </bar-group>
@@ -87,10 +90,11 @@ import RegionGroupMembers from "../../components/region-group-members/region-gro
 import NavBar from "../../components/nav-bar/nav-bar.vue";
 import BarGroup from "../../components/bar/bar-group.vue";
 import BtnBar from "../../components/bar/btn-bar.vue";
+import SwitchBar from "../../components/bar/switch-bar.vue";
 
 export default {
   name: "region-group-info",
-  components: {BtnBar, BarGroup, NavBar, RegionGroupMembers, HeadImage, SvgIcon},
+  components: {SwitchBar, BtnBar, BarGroup, NavBar, RegionGroupMembers, HeadImage, SvgIcon},
   data() {
     return {
       regionGroupId: null,
@@ -358,7 +362,21 @@ export default {
       uni.reLaunch({
         url: '/pages/region-group/region-group'
       })
-    }
+    },
+    toggleRegionGroupMsgDnd(e) {
+      const isDnd = e.detail.value;
+      let data = {
+        regionGroupId: this.regionGroup.id,
+        isDnd: isDnd
+      }
+      this.$http({
+        url: "/region/group/dnd",
+        method: "post",
+        data: data
+      }).then(() => {
+        this.regionStore.setDnd(this.regionGroup.id, isDnd);
+      })
+    },
   },
   computed: {
     mine() {

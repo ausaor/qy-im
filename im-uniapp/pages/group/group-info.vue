@@ -101,6 +101,9 @@
 			
 			<view v-if="!group.quit" class="group-edit" @click="onEditGroup()">修改群聊资料 > </view>
 		</view>
+    <bar-group v-if="!group.quit">
+      <switch-bar title="消息免打扰" :checked="group.isDnd" @change="toggleGroupMsgDnd"></switch-bar>
+    </bar-group>
     <view class="complaint-box" @click="toComplaintPage">
       <view class="complaint-content">
         <text class="complaint-text">投诉</text>
@@ -160,13 +163,15 @@ import ImageUpload from "../../components/image-upload/image-upload.vue";
 import BarGroup from "../../components/bar/bar-group.vue";
 import BtnBar from "../../components/bar/btn-bar.vue";
 import NavBar from "../../components/nav-bar/nav-bar.vue";
+import SwitchBar from "../../components/bar/switch-bar.vue";
 
 export default {
   components: {
     NavBar,
     BtnBar,
     BarGroup,
-    ImageUpload, HeadImage, SvgIcon, CharacterAvatarList, CharacterList, GroupMemberList, GroupTemplateList},
+    ImageUpload, HeadImage, SvgIcon, CharacterAvatarList, CharacterList, GroupMemberList, GroupTemplateList,
+    SwitchBar},
 	data() {
 		return {
 			groupId: null,
@@ -522,6 +527,21 @@ export default {
         url: `/pages/common/complaint?targetId=${this.group.id}&targetName=${this.group.name}&targetType=group`
       })
     },
+    toggleGroupMsgDnd(e) {
+      const isDnd = e.detail.value;
+      let data = {
+        groupId: this.group.id,
+        userId: this.mine.id,
+        isDnd: isDnd
+      }
+      this.$http({
+        url: "/group/dnd",
+        method: "post",
+        data: data
+      }).then(() => {
+        this.groupStore.setDnd(this.group.id, isDnd);
+      })
+    }
 	},
 	computed: {
 		ownerName() {

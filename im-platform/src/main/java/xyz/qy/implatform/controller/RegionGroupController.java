@@ -121,4 +121,11 @@ public class RegionGroupController {
         regionGroupService.leaderTransfer(dto);
         return ResultUtils.success();
     }
+
+    @ApiOperation(value = "设置地区群聊免打扰", notes = "设置地区群聊免打扰")
+    @PostMapping("/dnd")
+    public Result setRegionGroupMsgDnd(@RequestBody RegionGroupMemberDTO dto) {
+        regionGroupService.setRegionGroupMsgDnd(dto);
+        return ResultUtils.success();
+    }
 }

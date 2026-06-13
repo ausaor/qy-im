@@ -158,7 +158,7 @@
             inactive-color="#ff4949"
             active-text="开启"
             inactive-text="关闭"
-            @change="toggleGroupMsgDnd">
+            @change="toggleRegionGroupMsgDnd">
         </el-switch>
       </div>
     </div>
@@ -435,10 +435,20 @@ export default {
         });
       })
     },
-    toggleGroupMsgDnd(value) {
-      this.myGroupMemberInfo.isDnd = value;
-      this.regionGroup.isDnd = value;
-      this.modifyMemberInfo();
+    toggleRegionGroupMsgDnd(value) {
+      const isDnd = value;
+      let data = {
+        regionGroupId: this.regionGroup.id,
+        isDnd: isDnd
+      }
+      this.$http({
+        url: "/region/group/dnd",
+        method: "post",
+        data: data
+      }).then(() => {
+        this.myGroupMemberInfo.isDnd = isDnd;
+        this.$store.commit("setRegionGroupDnd", { regionGroupId: this.regionGroup.id, isDnd: isDnd});
+      })
     },
     openRegionSpace() {
       this.regionSpaceVisible = true;

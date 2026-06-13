@@ -506,6 +506,11 @@
           this.$store.commit("removeFriend", friendId);
           return;
         }
+        // 消息免打扰
+        if (msg.type === this.$enums.MESSAGE_TYPE.FRIEND_DND) {
+          this.$store.commit("setFriendDnd", {friendId: msg.friendId, isDnd: JSON.parse(msg.content)});
+          return;
+        }
 
         // 标记这条消息是不是自己发的
         msg.selfSend = msg.sendId === this.$store.state.userStore.userInfo.id;
@@ -537,6 +542,7 @@
         }
       },
       handleGroupMessage(msg) {
+        console.log("群聊消息......", msg)
         // 消息加载标志
         if (msg.type === this.$enums.MESSAGE_TYPE.LOADING) {
           console.log("群聊记录加载......", JSON.parse(msg.content))
@@ -563,6 +569,12 @@
         // 删除群
         if (msg.type === this.$enums.MESSAGE_TYPE.GROUP_DEL) {
           this.$store.commit("removeGroup", msg.groupId);
+          return;
+        }
+        // 消息免打扰
+        if (msg.type === this.$enums.MESSAGE_TYPE.GROUP_DND) {
+          console.log("群聊免打扰......", JSON.parse(msg.content))
+          this.$store.commit("setGroupDnd", { groupId: msg.groupId, isDnd: JSON.parse(msg.content) });
           return;
         }
 
@@ -647,6 +659,11 @@
             targetId: msg.regionGroupId
           }
           this.$store.commit("resetRegionUnreadCount", chatInfo)
+          return;
+        }
+        // 消息免打扰
+        if (msg.type == this.$enums.MESSAGE_TYPE.REGION_GROUP_DND) {
+          this.$store.commit("setRegionGroupDnd", { regionGroupId: msg.regionGroupId, isDnd: JSON.parse(msg.content) });
           return;
         }
         // 消息回执处理

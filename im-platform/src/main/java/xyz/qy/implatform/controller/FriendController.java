@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.annotation.RepeatSubmit;
-import xyz.qy.implatform.dto.FriendAddDTO;
+import xyz.qy.implatform.dto.FriendDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IFriendService;
@@ -39,7 +39,7 @@ public class FriendController {
     @RepeatSubmit
     @PostMapping("/add")
     @ApiOperation(value = "添加好友", notes = "双方建立好友关系")
-    public Result addFriend(@RequestBody @Valid FriendAddDTO dto) {
+    public Result addFriend(@RequestBody @Valid FriendDTO dto) {
         return ResultUtils.success(friendService.addFriend(dto));
     }
 
@@ -68,6 +68,13 @@ public class FriendController {
     @ApiOperation(value = "更新好友关于我的信息", notes = "更新好友关于我的信息")
     public Result updateMyInfoToFriend(@Valid @RequestBody FriendVO vo) {
         friendService.updateMyInfoToFriend(vo);
+        return ResultUtils.success();
+    }
+
+    @PostMapping("/dnd")
+    @ApiOperation(value = "设置好友消息免打扰", notes = "设置好友消息免打扰")
+    public Result setFriendMsgDnd(@Valid @RequestBody FriendDTO dto) {
+        friendService.setFriendMsgDnd(dto);
         return ResultUtils.success();
     }
 }

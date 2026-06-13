@@ -259,6 +259,11 @@ export default {
 				})
 				return;
 			}
+      // 消息免打扰
+      if (msg.type == this.$enums.MESSAGE_TYPE.FRIEND_DND) {
+        this.friendStore.setDnd(friendId, JSON.parse(msg.content));
+        return;
+      }
 			// 消息回执处理,改消息状态为已读
 			if (msg.type == enums.MESSAGE_TYPE.RECEIPT) {
 				this.chatStore.readedMessage({
@@ -356,6 +361,11 @@ export default {
 				this.chatStore.resetUnreadCount(chatInfo)
 				return;
 			}
+      // 消息免打扰
+      if (msg.type == enums.MESSAGE_TYPE.GROUP_DND) {
+        this.groupStore.setDnd(msg.groupId, JSON.parse(msg.content));
+        return;
+      }
 			// 消息回执处理
 			if (msg.type == enums.MESSAGE_TYPE.RECEIPT) {
 				let chatInfo = {
@@ -398,6 +408,11 @@ export default {
           targetId: msg.regionGroupId
         }
         this.regionStore.resetRegionUnreadCount(chatInfo)
+        return;
+      }
+      // 群消息免打扰
+      if (msg.type == enums.MESSAGE_TYPE.REGION_GROUP_DND) {
+        this.regionStore.setDnd(msg.regionGroupId, JSON.parse(msg.content));
         return;
       }
       // 消息回执处理

@@ -30,6 +30,14 @@ export default defineStore('friendStore', {
 			f.onlineWeb = copy.onlineWeb;
 			f.onlineApp = copy.onlineApp;
 		},
+		setDnd(friendId, isDnd) {
+			console.log('friend setDnd', friendId, isDnd);
+			const index = this.friends.findIndex((f) => f.id == friendId);
+			if (index !== -1) {
+				// 创建新对象以确保响应式更新
+				this.friends[index] = { ...this.friends[index], isDnd };
+			}
+		},
 		updateFriendRequest(friendRequest) {
 			this.friendRequests.forEach((f, idx) => {
 				if (f.id === friendRequest.id) {
@@ -120,6 +128,13 @@ export default defineStore('friendStore', {
 		isFriend: (state) => (userId) => {
 			let f = state.findFriend(userId)
 			return f && !f.deleted
+		},
+		friendMsgDnd: (state) => (friendId) => {
+			let friend = state.friends.find((f) => f.id === friendId);
+			if (friend) {
+				return friend.isDnd;
+			}
+			return false;
 		}
 	}
 })

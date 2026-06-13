@@ -22,7 +22,7 @@ import xyz.qy.imcommon.enums.IMTerminalType;
 import xyz.qy.imcommon.model.IMPrivateMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.contant.RedisKey;
-import xyz.qy.implatform.dto.FriendAddDTO;
+import xyz.qy.implatform.dto.FriendDTO;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.FriendRequest;
 import xyz.qy.implatform.entity.PrivateMessage;
@@ -122,7 +122,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Integer addFriend(FriendAddDTO dto) {
+    public Integer addFriend(FriendDTO dto) {
         long userId = SessionContext.getSession().getUserId();
         if (dto.getFriendId().equals(userId)) {
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "不允许添加自己为好友");
@@ -466,6 +466,37 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
 
         // 推给自己
         sendMessage.setRecvId(friendRequest.getSendId());
+        imClient.sendPrivateMessage(sendMessage);
+    }
+
+    @Override
+    public void setFriendMsgDnd(FriendDTO dto) {
+        UserSession session = SessionContext.getSession();
+        LambdaUpdateWrapper<Friend> wrapper = Wrappers.lambdaUpdate();
+        wrapper.eq(Friend::getUserId, session.getUserId());
+        wrapper.eq(Friend::getFriendId, dto.getFriendId());
+        wrapper.set(Friend::getIsDnd, dto.getIsDnd());
+        boolean update = this.update(wrapper);
+        if (update) {
+            // 推送同步消息
+            sendSyncDndMessage(dto.getFriendId(), dto.getIsDnd());
+        }
+    }
+
+    void sendSyncDndMessage(Long friendId, Boolean isDnd) {
+        // 同步免打扰状态到其他终端
+        UserSession session = SessionContext.getSession();
+        PrivateMessageVO msgInfo = new PrivateMessageVO();
+        msgInfo.setSendId(session.getUserId());
+        msgInfo.setRecvId(session.getUserId());
+        msgInfo.setFriendId(friendId);
+        msgInfo.setSendTime(new Date());
+        msgInfo.setType(MessageType.FRIEND_DND.code());
+        msgInfo.setContent(isDnd.toString());
+        IMPrivateMessage<PrivateMessageVO> sendMessage = new IMPrivateMessage<>();
+        sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendResult(false);
         imClient.sendPrivateMessage(sendMessage);
     }
 }

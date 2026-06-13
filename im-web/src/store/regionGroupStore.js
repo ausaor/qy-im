@@ -47,6 +47,14 @@ export default {
 				}
 			})
 		},
+		setRegionGroupDnd(state, { regionGroupId, isDnd }) {
+			state.regionGroups.forEach((g, idx) => {
+				if (g.id == regionGroupId) {
+					console.log("setRegionGroupDnd", regionGroupId, isDnd);
+					state.regionGroups[idx].isDnd = isDnd;
+				}
+			})
+		},
 
 		/*regionGroupChat start*/
 		initRegionChats(state, chatsData) {
