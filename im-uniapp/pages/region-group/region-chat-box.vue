@@ -856,11 +856,11 @@ export default {
     },
     headImage(msgInfo) {
       let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
-      return member ? member.headImage : "";
+      return member && member.headImage ? member.headImage : "";
     },
     showName(msgInfo) {
       let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);
-      return member ? member.aliasName : msgInfo.sendNickName;
+      return member ? member.aliasName : (msgInfo.sendNickName ? msgInfo.sendNickName : "");
     },
     role(msgInfo) {
       let member = this.regionGroupMembers.find((m) => m.userId == msgInfo.sendId);

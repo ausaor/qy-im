@@ -142,7 +142,7 @@ export default {
 			let count = 0;
 			this.chatStore.chats.forEach(chat => {
 				if (!chat.delete) {
-					count += chat.unreadCount;
+					count += chat.unreadMsgCount;
 				}
 			})
 			return count;
@@ -151,7 +151,7 @@ export default {
       let count = 0;
       this.regionStore.regionChats.forEach(chat => {
         if (!chat.delete) {
-          count += chat.unreadCount;
+          count += chat.unreadMsgCount;
         }
       })
       return count;

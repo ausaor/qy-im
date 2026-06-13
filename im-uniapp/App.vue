@@ -260,12 +260,12 @@ export default {
 				return;
 			}
       // 消息免打扰
-      if (msg.type == this.$enums.MESSAGE_TYPE.FRIEND_DND) {
-        this.friendStore.setDnd(friendId, JSON.parse(msg.content));
+      if (msg.type === enums.MESSAGE_TYPE.FRIEND_DND) {
+        this.friendStore.setDnd(msg.friendId, JSON.parse(msg.content));
         return;
       }
 			// 消息回执处理,改消息状态为已读
-			if (msg.type == enums.MESSAGE_TYPE.RECEIPT) {
+			if (msg.type === enums.MESSAGE_TYPE.RECEIPT) {
 				this.chatStore.readedMessage({
 					friendId: msg.sendId
 				})
@@ -348,7 +348,7 @@ export default {
       if (msg.type == enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
         uni.$emit('group-change-event', msg);
       }
-      if (msg.type == this.$enums.MESSAGE_TYPE.WORD_VOICE && this.mine.autoPlay) {
+      if (msg.type == enums.MESSAGE_TYPE.WORD_VOICE && this.mine.autoPlay) {
         uni.$emit('group-audio-event', msg);
       }
 			// 消息已读处理
@@ -411,7 +411,7 @@ export default {
         return;
       }
       // 群消息免打扰
-      if (msg.type == enums.MESSAGE_TYPE.REGION_GROUP_DND) {
+      if (msg.type === enums.MESSAGE_TYPE.REGION_GROUP_DND) {
         this.regionStore.setDnd(msg.regionGroupId, JSON.parse(msg.content));
         return;
       }

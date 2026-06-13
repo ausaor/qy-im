@@ -31,11 +31,11 @@ export default defineStore('friendStore', {
 			f.onlineApp = copy.onlineApp;
 		},
 		setDnd(friendId, isDnd) {
-			console.log('friend setDnd', friendId, isDnd);
 			const index = this.friends.findIndex((f) => f.id == friendId);
 			if (index !== -1) {
 				// 创建新对象以确保响应式更新
 				this.friends[index] = { ...this.friends[index], isDnd };
+				console.log('friend setDnd', friendId, isDnd);
 			}
 		},
 		updateFriendRequest(friendRequest) {

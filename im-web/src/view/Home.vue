@@ -216,7 +216,7 @@
         let chats = this.$store.state.chatStore.chats;
         chats.forEach((chat) => {
           if(!chat.delete){
-            unreadCount += chat.unreadCount
+            unreadCount += chat.unreadMsgCount;
           }
         });
         return unreadCount;
@@ -227,7 +227,7 @@
         if (chats) {
           chats.forEach((chat) => {
             if(!chat.delete){
-              unreadCount += chat.unreadCount
+              unreadCount += chat.unreadMsgCount
             }
           });
         }

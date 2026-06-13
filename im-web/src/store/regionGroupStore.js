@@ -91,6 +91,7 @@ export default {
 					lastContent: "",
 					lastSendTime: new Date().getTime(),
 					unreadCount: 0,
+					unreadMsgCount: 0,
 					messages: [],
 					atMe: false,
 					atAll: false,
@@ -119,6 +120,7 @@ export default {
 				if (chats[idx].type == chatInfo.type &&
 					chats[idx].targetId == chatInfo.targetId) {
 					chats[idx].unreadCount = 0;
+					chats[idx].unreadMsgCount = 0;
 					chats[idx].atMe = false;
 					chats[idx].atAll = false;
 					chats[idx].stored = false;
@@ -222,6 +224,9 @@ export default {
 			// 未读加1
 			if (!msgInfo.selfSend && msgInfo.status != MESSAGE_STATUS.READED && msgInfo.type != MESSAGE_TYPE.TIP_TEXT) {
 				chat.unreadCount++;
+				if (!this.getters.regionGroupMsgDnd(chat.targetId)) {
+					chat.unreadMsgCount++;
+				}
 			}
 			// 是否有人@我
 			if (!msgInfo.selfSend && msgInfo.atUserIds &&

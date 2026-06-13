@@ -3,6 +3,8 @@ import { generateShortId } from '../utils/id-generator.js'
 import { processAtUsers, processTipUsers } from '../api/common.js'
 
 import userStore from './userStore';
+import friendStore from './friendStore';
+import groupStore from './groupStore';
 import localForage from 'localforage';
 
 /* 为了加速拉取离线消息效率，拉取时消息暂时存储到cacheChats,等
@@ -59,6 +61,7 @@ export default {
 					lastContent: "",
 					lastSendTime: new Date().getTime(),
 					unreadCount: 0,
+					unreadMsgCount: 0, // 用于计算未读消息总数使用
 					messages: [],
 					atMe: false,
 					atAll: false,
@@ -78,6 +81,7 @@ export default {
 				if (chats[idx].type == chatInfo.type &&
 					chats[idx].targetId == chatInfo.targetId) {
 					chats[idx].unreadCount = 0;
+					chats[idx].unreadMsgCount = 0;
 					chats[idx].atMe = false;
 					chats[idx].atAll = false;
 					chats[idx].stored = false;
@@ -205,9 +209,24 @@ export default {
 			}
 			chat.lastSendTime = msgInfo.sendTime;
 			chat.sendNickName = msgInfo.sendNickName;
-			// 未读加1
+			// 未读加1（检查免打扰设置）
 			if (!msgInfo.selfSend && msgInfo.status != MESSAGE_STATUS.READED && msgInfo.type != MESSAGE_TYPE.TIP_TEXT) {
 				chat.unreadCount++;
+				let isDnd = false;
+				// 检查私聊免打扰
+				if (chat.type === 'PRIVATE') {
+					const friend = friendStore.state.friends.find(item => item.id === chat.targetId);
+					isDnd = friend ? friend.isDnd : false;
+				}
+				// 检查群聊免打扰
+				else if (chat.type === 'GROUP') {
+					const group = groupStore.state.groups.find(item => item.id === chat.targetId);
+					isDnd = group ? group.isDnd : false;
+				}
+				// 只有未设置免打扰时才增加未读数
+				if (!isDnd) {
+					chat.unreadMsgCount++;
+				}
 			}
 			// 是否有人@我
 			if (!msgInfo.selfSend && chat.type == "GROUP" && msgInfo.atUserIds &&

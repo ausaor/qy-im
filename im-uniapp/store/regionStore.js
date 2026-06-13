@@ -55,12 +55,12 @@ export default defineStore('regionStore', {
                 }
             })
         },
-        setDnd(regionGroupId, dnd) {
-            console.log('region setDnd', regionGroupId, dnd);
+        setDnd(regionGroupId, isDnd) {
             const index = this.regionGroups.findIndex((g) => g.id === regionGroupId);
             if (index !== -1) {
                 // 创建新对象以确保响应式更新
-                this.regionGroups[index] = { ...this.regionGroups[index], dnd };
+                this.regionGroups[index] = { ...this.regionGroups[index], isDnd };
+                console.log('region setDnd', regionGroupId, isDnd);
             }
         },
 
@@ -83,6 +83,7 @@ export default defineStore('regionStore', {
                 for (const idx in chats) {
                     if (chats[idx].targetId == regionGroupId) {
                         chats[idx].unreadCount = 0;
+                        chats[idx].unreadMsgCount = 0;
                     }
                 }
             }
@@ -189,6 +190,7 @@ export default defineStore('regionStore', {
                 if (chats[idx].type == chatInfo.type &&
                     chats[idx].targetId == chatInfo.targetId) {
                     chats[idx].unreadCount = 0;
+                    chats[idx].unreadMsgCount = 0;
                     chats[idx].atMe = false;
                     chats[idx].atAll = false;
                     chats[idx].stored = false;
@@ -243,6 +245,7 @@ export default defineStore('regionStore', {
                     lastContent: "",
                     lastSendTime: new Date().getTime(),
                     unreadCount: 0,
+                    unreadMsgCount: 0,
                     messages: [],
                     atMe: false,
                     atAll: false,
@@ -304,6 +307,11 @@ export default defineStore('regionStore', {
             if (!msgInfo.selfSend && msgInfo.status != MESSAGE_STATUS.READED &&
                 msgInfo.type != MESSAGE_TYPE.TIP_TEXT) {
                 chat.unreadCount++;
+                // 判断是否设置了消息免打扰，未设置才增加未读消息数
+                let isDnd = this.regionGroupMsgDnd(chatInfo.targetId);
+                if (!isDnd) {
+                    chat.unreadMsgCount++;
+                }
             }
             // 是否有人@我
             if (!msgInfo.selfSend && chat.type == "REGION-GROUP" && msgInfo.atUserIds &&

@@ -338,7 +338,7 @@ export default {
 		headImage(msgInfo) {
 			if (this.chat.type == 'GROUP') {
 				let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
-				return member ? member.headImage : "";
+				return member && member.headImage ? member.headImage : "";
 			} else {
 				return msgInfo.selfSend ? this.mine.headImage : this.chat.headImage
 			}
@@ -346,7 +346,7 @@ export default {
 		showName(msgInfo) {
 			if (this.chat.type == 'GROUP') {
 				let member = this.groupMembers.find((m) => m.userId == msgInfo.sendId);
-				return member ? member.aliasName : msgInfo.sendNickName;
+				return member ? member.aliasName : (msgInfo.sendNickName ? msgInfo.sendNickName : "");
 			} else {
 				return msgInfo.selfSend ? this.mine.nickName : this.chat.showName
 			}

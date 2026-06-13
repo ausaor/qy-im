@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import { MESSAGE_TYPE, MESSAGE_STATUS } from '@/common/enums.js';
 import useUserStore from './userStore';
+import useFriendStore from './friendStore';
+import useGroupStore from './groupStore';
 import {processAtUsers, processTipUsers} from "../common/common.js";
 import { v4 as uuidv4 } from 'uuid'
 
@@ -64,6 +66,7 @@ export default defineStore('chatStore', {
 					lastContent: "",
 					lastSendTime: new Date().getTime(),
 					unreadCount: 0,
+					unreadMsgCount: 0,
 					messages: [],
 					atMe: false,
 					atAll: false,
@@ -77,6 +80,7 @@ export default defineStore('chatStore', {
 			let chats = this.curChats;
 			if (idx >= 0) {
 				chats[idx].unreadCount = 0;
+				chats[idx].unreadMsgCount = 0;
 			}
 		},
 		resetUnreadCount(chatInfo) {
@@ -85,6 +89,7 @@ export default defineStore('chatStore', {
 				if (chats[idx].type == chatInfo.type &&
 					chats[idx].targetId == chatInfo.targetId) {
 					chats[idx].unreadCount = 0;
+					chats[idx].unreadMsgCount = 0;
 					chats[idx].atMe = false;
 					chats[idx].atAll = false;
 					chats[idx].stored = false;
@@ -220,6 +225,18 @@ export default defineStore('chatStore', {
 			if (!msgInfo.selfSend && msgInfo.status != MESSAGE_STATUS.READED &&
 				msgInfo.type != MESSAGE_TYPE.TIP_TEXT) {
 				chat.unreadCount++;
+				// 判断是否设置了消息免打扰，未设置才增加未读消息数
+				let isDnd = false;
+				if (type === 'PRIVATE') {
+					const friendStore = useFriendStore();
+					isDnd = friendStore.friendMsgDnd(chatInfo.targetId);
+				} else if (type === 'GROUP') {
+					const groupStore = useGroupStore();
+					isDnd = groupStore.groupMsgDnd(chatInfo.targetId);
+				}
+				if (!isDnd) {
+					chat.unreadMsgCount++;
+				}
 			}
 			// 是否有人@我
 			if (!msgInfo.selfSend && chat.type == "GROUP" && msgInfo.atUserIds &&
