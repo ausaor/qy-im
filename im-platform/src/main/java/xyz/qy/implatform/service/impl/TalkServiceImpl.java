@@ -162,6 +162,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             checkCharacterUser(talkAddDTO.getCharacterId(), talkAddDTO.getGroupTemplateId(), session.getUserId(), talkAddDTO.getCategory());
             // 发布角色空间的动态需要审核
             talk.setStatus(ReviewEnum.REVIEWING.getCode());
+        } else {
+            talk.setStatus(ReviewEnum.REVIEWED.getCode());
         }
 
         if (StringUtils.isBlank(talk.getNickName()) && ObjectUtil.isNull(talkAddDTO.getCharacterId()) && ObjectUtil.isNull(talkAddDTO.getGroupTemplateId())) {
@@ -230,6 +232,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         User user = userService.getById(userId);
 
         Talk talk = this.baseMapper.selectById(talkUpdateDTO.getId());
+        String status = talk.getStatus();
         if (!userId.equals(talk.getUserId())) {
             throw new GlobalException("您没有权限修改该动态");
         }
@@ -244,17 +247,22 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         }
 
         if (!talk.getCategory().equals(talkUpdateDTO.getCategory())) {
-            throw new GlobalException("数据异常");
+            throw new GlobalException("动态分类不能修改");
         }
+
+        BeanUtils.copyProperties(talkUpdateDTO, talk);
+        talk.setUserId(userId);
 
         if (TalkCategoryEnum.CHARACTER.getCode().equals(talkUpdateDTO.getCategory())
                 || (talkUpdateDTO.getCharacterVisible() && TalkCategoryEnum.PRIVATE.getCode().equals(talkUpdateDTO.getCategory()))) {
             checkCharacterUser(talkUpdateDTO.getCharacterId(), talkUpdateDTO.getGroupTemplateId(), session.getUserId(), talk.getCategory());
             // 发布角色空间的动态需要审核
             talk.setStatus(ReviewEnum.REVIEWING.getCode());
+        } else {
+            // 动态状态不能改变
+            talk.setStatus(status);
         }
 
-        BeanUtils.copyProperties(talkUpdateDTO, talk);
 
         if (CollectionUtils.isNotEmpty(talkUpdateDTO.getFiles())) {
             talk.setFiles(talkUpdateDTO.getFiles().toJSONString());
