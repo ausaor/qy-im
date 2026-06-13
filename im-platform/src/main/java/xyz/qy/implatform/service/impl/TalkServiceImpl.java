@@ -515,8 +515,14 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 throw new GlobalException("角色参数异常");
             }
             List<Long> userIdList = characterUserService.getUserIdListByCharacterIds(List.of(queryDTO.getCharacterId()));
+            TemplateCharacter character = characterService.getById(queryDTO.getCharacterId());
             if (CollectionUtils.isNotEmpty(userIdList)) {
                 queryDTO.setCharacterUserIds(userIdList);
+            }
+            if (userIdList.contains(myUserId) || character.getCreateBy().equals(String.valueOf(myUserId))) {
+                queryDTO.setOwnerId(myUserId);
+            } else {
+                queryDTO.setOwnerId(null);
             }
 
             talkPage = this.baseMapper.pageQueryCharacterTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
@@ -540,6 +546,12 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         } else if (SectionEnum.GROUP_TEMPLATE.getCode().equals(queryDTO.getSection())) {
             if (ObjectUtil.isNull(queryDTO.getGroupTemplateId())) {
                 throw new GlobalException("参数异常");
+            }
+            TemplateGroup templateGroup = templateGroupService.getById(queryDTO.getGroupTemplateId());
+            if (templateGroup.getCreateBy().equals(String.valueOf(myUserId))) {
+                queryDTO.setOwnerId(myUserId);
+            } else {
+                queryDTO.setOwnerId(null);
             }
             talkPage = this.baseMapper.pageQueryGroupTemplateTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
             if (ObjectUtil.isNotNull(talkPage)) {
@@ -588,11 +600,11 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             List<Long> myCharacterIds = characterUserService.getMyCharacterIds();
             if (CollectionUtils.isNotEmpty(myCharacterIds)) {
                 queryDTO.setCharacterIds(myCharacterIds);
-                queryDTO.setOwnerId(myUserId);
-                talkPage = this.baseMapper.pageQueryMyCharactersTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
-                if (ObjectUtil.isNotNull(talkPage)) {
-                    records = talkPage.getRecords();
-                }
+            }
+            queryDTO.setOwnerId(myUserId);
+            talkPage = this.baseMapper.pageQueryMyCharactersTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
+            if (ObjectUtil.isNotNull(talkPage)) {
+                records = talkPage.getRecords();
             }
         }
 

@@ -891,9 +891,6 @@ export default {
       }
       this.groupTemplateId = null;
       this.section = this.activeTab === 'myCharacters' ? "my-character" : "character";
-      if (templateCharacter.createBy == this.mine.id) { // 是角色创建者
-        this.section = "my-character";
-      }
       this.characterId = templateCharacter.id;
       this.spaceName = templateCharacter.name + "•星空间";
       this.isOwner = templateCharacter.isOwner;

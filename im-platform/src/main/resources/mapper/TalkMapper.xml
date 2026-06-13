@@ -183,6 +183,26 @@
                 and r.status = '2'
             </if>
         </where>
+        <if test="queryDTO.ownerId != null">
+            union all
+            <include refid="taskQueryBase"/> m
+            <where>
+                m.character_id = #{queryDTO.characterId}
+                and m.user_id = #{queryDTO.ownerId}
+                <if test="true">
+                    and m.category = 'character'
+                </if>
+                <if test="true">
+                    and m.scope = 9
+                </if>
+                <if test="true">
+                    and m.deleted = 0
+                </if>
+                <if test="true">
+                    and m.status != '2'
+                </if>
+            </where>
+        </if>
         <if test="queryDTO.characterUserIds != null and queryDTO.characterUserIds.size() > 0">
             union all
             <include refid="taskQueryBase"/> u
@@ -245,6 +265,26 @@
                 and g.status = '2'
             </if>
         </where>
+        <if test="queryDTO.ownerId != null">
+            union all
+            <include refid="taskQueryBase"/> m
+            <where>
+                m.group_template_id = #{queryDTO.groupTemplateId}
+                and m.user_id = #{queryDTO.ownerId}
+                <if test="true">
+                    and m.category = 'character'
+                </if>
+                <if test="true">
+                    and m.scope = 9
+                </if>
+                <if test="true">
+                    and m.deleted = 0
+                </if>
+                <if test="true">
+                    and m.status != '2'
+                </if>
+            </where>
+        </if>
         order by create_time desc
     </select>
 
@@ -417,10 +457,6 @@
         <include refid="taskQueryBase"/> c
         <where>
             c.user_id = #{queryDTO.ownerId}
-            and c.character_id in
-            <foreach collection="queryDTO.characterIds" item="characterId" index="index" separator="," open="(" close=")">
-                #{characterId}
-            </foreach>
             <if test="true">
                 and c.category = 'character'
             </if>
@@ -431,27 +467,29 @@
                 and c.deleted = 0
             </if>
         </where>
-        union all
-        <include refid="taskQueryBase"/> u
-        <where>
-            u.user_id = #{queryDTO.ownerId}
-            and u.character_id in
-            <foreach collection="queryDTO.characterIds" item="characterId" index="index" separator="," open="(" close=")">
-                #{characterId}
-            </foreach>
-            <if test="true">
-                and u.category = 'private'
-            </if>
-            <if test="true">
-                and u.deleted = 0
-            </if>
-            <if test="true">
-                and u.character_visible = 1
-            </if>
-            <if test="true">
-                and u.scope = 9
-            </if>
-        </where>
+        <if test="queryDTO.characterIds != null and queryDTO.characterIds.size() > 0">
+            union all
+            <include refid="taskQueryBase"/> u
+            <where>
+                u.user_id = #{queryDTO.ownerId}
+                and u.character_id in
+                <foreach collection="queryDTO.characterIds" item="characterId" index="index" separator="," open="(" close=")">
+                    #{characterId}
+                </foreach>
+                <if test="true">
+                    and u.category = 'private'
+                </if>
+                <if test="true">
+                    and u.deleted = 0
+                </if>
+                <if test="true">
+                    and u.character_visible = 1
+                </if>
+                <if test="true">
+                    and u.scope = 9
+                </if>
+            </where>
+        </if>
         order by create_time desc
     </select>
 </mapper> 
