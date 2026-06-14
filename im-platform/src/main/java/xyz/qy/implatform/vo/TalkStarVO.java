@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
- * @description: 动态赞星
+ * @description: 动态点赞
  * @author: Polaris
  * @create: 2023-12-25 20:19
  **/

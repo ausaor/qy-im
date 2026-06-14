@@ -629,7 +629,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         // 动态id
         List<Long> talkIds = records.stream().map(Talk::getId).collect(Collectors.toList());
 
-        // 动态赞星数据
+        // 动态点赞数据
         List<TalkStar> talkStarList = talkStarService.lambdaQuery().in(TalkStar::getTalkId, talkIds)
                 .eq(TalkStar::getDeleted, false)
                 .orderByAsc(TalkStar::getCreateTime)
@@ -919,6 +919,30 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     }
 
     @Override
+    public TalkVO getTalkDetailById(Long talkId) {
+        Talk talk = this.baseMapper.selectById(talkId);
+        if (Objects.isNull(talk) || talk.getDeleted()) {
+            throw new GlobalException("当前动态已被删除");
+        }
+        TalkVO talkVO = BeanUtils.copyProperties(talk, TalkVO.class);
+        if (StringUtils.isNotBlank(talk.getFiles())) {
+            talkVO.setFileList(JSONArray.parseArray(talk.getFiles()));
+        }
+        // 动态点赞数据
+        List<TalkStar> talkStarList = talkStarService.lambdaQuery().eq(TalkStar::getTalkId, talkId)
+                .eq(TalkStar::getDeleted, false)
+                .orderByAsc(TalkStar::getCreateTime)
+                .list();
+        talkVO.setTalkStarVOS(BeanUtils.copyProperties(talkStarList, TalkStarVO.class));
+
+        List<TalkComment> allTalkCommentList = talkCommentService.lambdaQuery().eq(TalkComment::getTalkId, talkId)
+                .eq(TalkComment::getDeleted, false)
+                .orderByAsc(TalkComment::getCreateTime).list();
+        talkVO.setTalkCommentVOS(BeanUtils.copyProperties(allTalkCommentList, TalkCommentVO.class));
+        return talkVO;
+    }
+
+    @Override
     public boolean verifyTalkCommentCharacter(Long talkId, Long characterId, Long avatarId) {
         if (Objects.isNull(talkId) || Objects.isNull(characterId)) {
             throw new GlobalException("参数异常");
@@ -1159,16 +1183,23 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         LambdaQueryWrapper<Talk> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Talk::getDeleted, false);
         wrapper.eq(Talk::getCategory, queryDTO.getCategory());
+        wrapper.in(Talk::getScope, List.of(ViewScopeEnum.PUBLIC.getCode(), ViewScopeEnum.FRIENDS.getCode()));
         wrapper.eq(StringUtils.isNotBlank(queryDTO.getStatus()), Talk::getStatus, queryDTO.getStatus());
         wrapper.eq(Objects.nonNull(queryDTO.getUserId()), Talk::getUserId, queryDTO.getUserId());
         wrapper.eq(Objects.nonNull(queryDTO.getGroupId()), Talk::getGroupId, queryDTO.getGroupId());
         wrapper.eq(StringUtils.isNotBlank(queryDTO.getRegionCode()), Talk::getRegionCode, queryDTO.getRegionCode());
         wrapper.eq(Objects.nonNull(queryDTO.getCharacterId()), Talk::getCharacterId, queryDTO.getCharacterId());
         wrapper.eq(Objects.nonNull(queryDTO.getGroupTemplateId()), Talk::getGroupTemplateId, queryDTO.getGroupTemplateId());
+        wrapper.orderByDesc(Talk::getCreateTime);
 
         Page<Talk> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
         List<Talk> talkList = page.getRecords();
         List<TalkVO> talkVOS = BeanUtils.copyProperties(talkList, TalkVO.class);
+        talkVOS.forEach(item -> {
+            if (StringUtils.isNotBlank(item.getFiles())) {
+                item.setFileList(JSONArray.parseArray(item.getFiles()));
+            }
+        });
 
         return PageResultVO.<List<TalkVO>>builder().data(talkVOS).total(page.getTotal()).build();
     }

@@ -6,7 +6,7 @@ import xyz.qy.implatform.entity.TalkStar;
 import xyz.qy.implatform.vo.TalkStarVO;
 
 /**
- * @description: 动态赞星
+ * @description: 动态点赞
  * @author: Polaris
  * @create: 2023-12-24 15:37
  **/

@@ -43,7 +43,7 @@ import java.util.Collections;
 import java.util.Objects;
 
 /**
- * @description: 动态赞星
+ * @description: 动态点赞
  * @author: Polaris
  * @create: 2023-12-24 15:39
  **/

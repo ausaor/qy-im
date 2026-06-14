@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * @description: 动态赞星表
+ * @description: 动态点赞表
  * @author: Polaris
  * @create: 2023-12-24 15:04
  **/

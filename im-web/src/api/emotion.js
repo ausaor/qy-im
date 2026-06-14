@@ -15,6 +15,7 @@ const emoTextList = ['emo憨笑', 'emo媚眼', 'emo开心', 'emo坏笑', 'emo可
 ];
 
 let transform = (content) => {
+    if (!content) return '';
     return content.replace(/\#[a-z\u4E00-\u9FA5]{1,6}\;/gi, textToImg);
 }
 

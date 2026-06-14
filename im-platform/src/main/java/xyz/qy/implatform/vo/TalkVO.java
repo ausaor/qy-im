@@ -118,7 +118,7 @@ public class TalkVO {
     @ApiModelProperty(value = "能否选择角色")
     private Boolean enableCharacterChoose = Boolean.FALSE;
 
-    @ApiModelProperty(value = "动态赞星")
+    @ApiModelProperty(value = "动态点赞")
     private List<TalkStarVO> talkStarVOS;
 
     @ApiModelProperty(value = "动态评论")
@@ -137,6 +137,9 @@ public class TalkVO {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
+
+    @ApiModelProperty(value = "文件")
+    private String files;
 
     private JSONArray fileList;
 }

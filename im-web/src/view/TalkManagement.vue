@@ -114,7 +114,7 @@
         <el-table-column label="头像" align="center" width="80">
           <template slot-scope="scope">
             <div class="avatar-cell">
-              <head-image :url="scope.row.avatar" :name="scope.row.nickName" :size="40"></head-image>
+              <head-image :url="scope.row.avatar" :name="scope.row.nickName" :id="scope.row.userId" :size="40"></head-image>
             </div>
           </template>
         </el-table-column>
@@ -177,6 +177,14 @@
             <el-button
                 size="mini"
                 type="text"
+                @click="handleDetail(scope.row)"
+                class="operation-btn detail-btn"
+            >
+              详情
+            </el-button>
+            <el-button
+                size="mini"
+                type="text"
                 @click="handleReject(scope.row)"
                 :loading="scope.row.rejectLoading"
                 class="operation-btn"
@@ -221,15 +229,21 @@
         <el-button type="danger" @click="confirmReject" size="mini" :loading="rejectForm.loading">确 定</el-button>
       </span>
     </el-dialog>
+
+    <talk-detail
+      :visible.sync="talkDetailVisible"
+      :talkId="curDetailTalkId"
+    ></talk-detail>
   </div>
 </template>
 
 <script>
 import HeadImage from "@/components/common/HeadImage";
+import TalkDetail from "@/components/talk/TalkDetail";
 
 export default {
   name: 'TalkManagement',
-  components: {HeadImage},
+  components: {HeadImage, TalkDetail},
   data() {
     return {
       searchForm: {
@@ -267,7 +281,10 @@ export default {
         id: null,
         reason: '',
         loading: false
-      }
+      },
+
+      talkDetailVisible: false,
+      curDetailTalkId: null
     };
   },
   created() {
@@ -388,6 +405,11 @@ export default {
       this.rejectDialogVisible = false;
       this.rejectForm.id = null;
       this.rejectForm.reason = '';
+    },
+
+    handleDetail(row) {
+      this.curDetailTalkId = row.id;
+      this.talkDetailVisible = true;
     },
 
     getCategoryName(category) {
@@ -539,5 +561,13 @@ export default {
 
 ::v-deep .el-tag {
   transition: all 0.2s;
+}
+
+.detail-btn {
+  color: #67c23a !important;
+}
+
+.detail-btn:hover {
+  color: #85ce61 !important;
 }
 </style>

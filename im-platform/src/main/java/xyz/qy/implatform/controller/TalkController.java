@@ -85,6 +85,13 @@ public class TalkController {
         return ResultUtils.success(talkService.getTalkDetail(talkId));
     }
 
+    @RequireRoles(value = {RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN})
+    @ApiOperation(value = "查询动态详情", notes = "查询动态详情")
+    @GetMapping("/getTalkDetailById/{talkId}")
+    public Result<TalkVO> getTalkDetailById(@NotNull(message = "参数异常") @PathVariable Long talkId) {
+        return ResultUtils.success(talkService.getTalkDetailById(talkId));
+    }
+
     @FeatureControl(value = "FEATURE_DYNAMIC_LIKE")
     @ApiOperation(value = "动态点赞", notes = "动态点赞")
     @PostMapping("/like")

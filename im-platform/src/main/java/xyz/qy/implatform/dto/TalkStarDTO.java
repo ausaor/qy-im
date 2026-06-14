@@ -6,7 +6,7 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 /**
- * @description: 动态赞星
+ * @description: 动态点赞
  * @author: Polaris
  * @create: 2023-12-30 14:22
  **/

@@ -31,6 +31,8 @@ public interface ITalkService extends IService<Talk> {
 
     TalkVO getTalkDetail(Long talkId);
 
+    TalkVO getTalkDetailById(Long talkId);
+
     /**
      * 验证用户评论角色是否异常
      *
