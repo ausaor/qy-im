@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.implatform.contant.Constant;
@@ -15,10 +14,12 @@ import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.AuditResultEnum;
+import xyz.qy.implatform.enums.FollowEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TemplateGroupMapper;
+import xyz.qy.implatform.service.IFollowService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.service.ITemplateGroupService;
 import xyz.qy.implatform.service.IUserService;
@@ -29,9 +30,11 @@ import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.vo.ReviewVO;
 import xyz.qy.implatform.vo.TemplateGroupVO;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -43,11 +46,14 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, TemplateGroup> implements ITemplateGroupService {
-    @Autowired
+    @Resource
     private ITemplateCharacterService templateCharacterService;
 
-    @Autowired
+    @Resource
     private IUserService userService;
+
+    @Resource
+    private IFollowService followService;
 
     @Override
     public void addOrModify(TemplateGroupVO vo) {
@@ -134,11 +140,14 @@ public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, T
         List<Long> groupTemplateIds = templateGroupList.stream().map(TemplateGroup::getId).collect(Collectors.toList());
         Map<Long, List<Long>> characterMap = templateCharacterService.getCharacterIdsByGroupTemplateIds(groupTemplateIds);
 
+        Set<Long> followIds = followService.findFollowsTargetIds(FollowEnum.TEMPLATE.getCode());
+
         List<TemplateGroupVO> templateGroupVOS = BeanUtils.copyProperties(templateGroupList, TemplateGroupVO.class);
         templateGroupVOS.forEach(item -> {
             item.setCreator(session.getUserName());
             item.setIsOwner(true);
             item.setCharacterIds(characterMap.getOrDefault(item.getId(), Collections.emptyList()));
+            item.setFollow(followIds.contains(item.getId()));
         });
         return templateGroupVOS;
     }
@@ -163,6 +172,8 @@ public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, T
 
         List<User> userList = userService.listByIds(userIds);
         Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, Function.identity(), (key1, key2) -> key2));
+
+        Set<Long> followIds = followService.findFollowsTargetIds(FollowEnum.TEMPLATE.getCode());
         for (TemplateGroupVO templateGroupVO : templateGroupVOS) {
             if (userMap.containsKey(Long.parseLong(templateGroupVO.getCreateBy()))) {
                 templateGroupVO.setCreator(userMap.get(Long.parseLong(templateGroupVO.getCreateBy()))
@@ -172,6 +183,7 @@ public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, T
                 templateGroupVO.setIsOwner(true);
             }
             templateGroupVO.setCharacterIds(characterMap.getOrDefault(templateGroupVO.getId(), Collections.emptyList()));
+            templateGroupVO.setFollow(followIds.contains(templateGroupVO.getId()));
         }
         return templateGroupVOS;
     }

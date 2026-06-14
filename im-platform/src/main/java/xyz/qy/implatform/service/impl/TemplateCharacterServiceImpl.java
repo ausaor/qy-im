@@ -8,12 +8,14 @@ import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.TemplateGroup;
+import xyz.qy.implatform.enums.FollowEnum;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TemplateCharacterMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
+import xyz.qy.implatform.service.IFollowService;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IGroupService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
@@ -56,6 +58,9 @@ public class TemplateCharacterServiceImpl extends ServiceImpl<TemplateCharacterM
     @Resource
     private ICharacterAvatarService characterAvatarService;
 
+    @Resource
+    private IFollowService followService;
+
     @Override
     public List<TemplateCharacterVO> findTemplateCharactersByGroupId(Long templateGroupId) {
         UserSession session = SessionContext.getSession();
@@ -73,11 +78,14 @@ public class TemplateCharacterServiceImpl extends ServiceImpl<TemplateCharacterM
             return Collections.emptyList();
         }
 
+        Set<Long> targetIds = followService.findFollowsTargetIds(FollowEnum.CHARACTER.getCode());
+
         List<TemplateCharacterVO> templateCharacterVOS = BeanUtils.copyProperties(templateCharacterList, TemplateCharacterVO.class);
         for (TemplateCharacterVO templateCharacterVO : templateCharacterVOS) {
             if (String.valueOf(userId).equals(templateCharacterVO.getCreateBy())) {
                 templateCharacterVO.setIsOwner(true);
             }
+            templateCharacterVO.setFollow(targetIds.contains(templateCharacterVO.getId()));
         }
         return templateCharacterVOS;
     }

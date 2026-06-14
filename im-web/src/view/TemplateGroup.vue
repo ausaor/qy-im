@@ -55,6 +55,9 @@
             <el-button class="operate-button template-group-characters-music" circle icon="icon iconfont icon-Music" size="mini"
                        @click="openGroupTemplateCharactersMusicDialog(templateGroup)">
             </el-button>
+            <el-button class="operate-button guanzhu" :class="templateGroup.follow ? 'followed' : 'unfollowed'" circle :icon="templateGroup.follow ? 'icon iconfont icon-quxiaoguanzhu' : 'icon iconfont icon-guanzhu'" size="mini"
+                      @click="followOperate(templateGroup, 'template')">
+            </el-button>
           </div>
         </div>
         <div>
@@ -153,7 +156,7 @@
     <el-dialog class="edit-template-character"
                :title="curTemplateGroup.groupName"
                :visible.sync="showEditTemplateCharacterDialog"
-               width="580px"
+               width="620px"
                v-dialogDrag
                :before-close="handleEditTemplateCharacterClose">
       <div class="template-group-avatar">
@@ -213,6 +216,9 @@
             <el-button class="edit-character-music" icon="icon iconfont icon-Music" circle size="mini" @click="openCharacterMusicDialog(templateCharacter)"></el-button>
             <el-button class="edit-character-user" type="primary" icon="el-icon-user-solid" circle
                        @click="openCharacterUserDialog(templateCharacter)" size="mini"></el-button>
+            <el-button class="guanzhu" :class="templateCharacter.follow ? 'followed' : 'unfollowed'" circle :icon="templateCharacter.follow ? 'icon iconfont icon-quxiaoguanzhu' : 'icon iconfont icon-guanzhu'" size="mini"
+                       @click="followOperate(templateCharacter, 'character')">
+            </el-button>
             <el-button v-if="curTemplateGroup.isOwner" class="delete-button"
                        type="danger" icon="el-icon-delete" circle size="mini"
                        @click="deleteTemplateCharacter(templateCharacter, index)"></el-button>
@@ -1273,6 +1279,38 @@ export default {
     },
     characterListNotifyCount(characterIds) {
       return this.$store.getters.getCharactersNotifyCount(characterIds)
+    },
+    followOperate(target, type) {
+      if (!target.follow) {
+        this.addFollow(target.id, type).then(() => {
+          target.follow = true;
+        });
+      } else {
+        this.cancelFollow(target.id, type).then(() => {
+          target.follow = false;
+        });
+      }
+    },
+    addFollow(targetId, type) {
+      let param = {
+        targetId: targetId,
+        type: type
+      }
+      return this.$http({
+        url: `/follow/add`,
+        method: 'post',
+        data: param
+      }).then(() => {
+        this.$message.success('关注成功');
+      })
+    },
+    cancelFollow(targetId, type) {
+      return this.$http({
+        url: `/follow/cancel?targetId=${targetId}&type=${type}`,
+        method: 'delete',
+      }).then(() => {
+        this.$message.success('取消关注成功');
+      })
     }
   },
   computed: {
@@ -1312,6 +1350,14 @@ export default {
     padding: 1px 5px;
     font-size: 10px;
   }
+}
+
+.guanzhu.unfollowed {
+  color: #409EFF;
+}
+
+.guanzhu.followed {
+  color: #f56c6c;
 }
 
 .template-group-list {

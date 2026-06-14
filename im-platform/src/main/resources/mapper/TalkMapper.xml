@@ -492,4 +492,34 @@
         </if>
         order by create_time desc
     </select>
+
+    <select id="pageQueryFollowCharactersTalkList" resultType="xyz.qy.implatform.entity.Talk">
+        <include refid="taskQueryBase"/> c
+        <where>
+            c.category = 'character'
+            and c.scope = 9
+            and c.deleted = 0
+            and c.status = '2'
+            <if test="(queryDTO.characterIds != null and queryDTO.characterIds.size() > 0) or (queryDTO.templateGroupIds != null and queryDTO.templateGroupIds.size() > 0)">
+                and (
+                <if test="queryDTO.characterIds != null and queryDTO.characterIds.size() > 0">
+                    c.character_id in
+                    <foreach collection="queryDTO.characterIds" item="characterId" index="index" separator="," open="(" close=")">
+                        #{characterId}
+                    </foreach>
+                </if>
+                <if test="queryDTO.characterIds != null and queryDTO.characterIds.size() > 0 and queryDTO.templateGroupIds != null and queryDTO.templateGroupIds.size() > 0">
+                    or
+                </if>
+                <if test="queryDTO.templateGroupIds != null and queryDTO.templateGroupIds.size() > 0">
+                    c.group_template_id in
+                    <foreach collection="queryDTO.templateGroupIds" item="templateGroupId" index="index" separator="," open="(" close=")">
+                        #{templateGroupId}
+                    </foreach>
+                </if>
+                )
+            </if>
+        </where>
+        order by create_time desc
+    </select>
 </mapper> 

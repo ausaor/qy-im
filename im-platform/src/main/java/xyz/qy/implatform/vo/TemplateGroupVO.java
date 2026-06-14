@@ -66,4 +66,9 @@ public class TemplateGroupVO {
      * 角色ids
      */
     private List<Long> characterIds;
+
+    /**
+     * 是否关注
+     */
+    private Boolean follow = false;
 }

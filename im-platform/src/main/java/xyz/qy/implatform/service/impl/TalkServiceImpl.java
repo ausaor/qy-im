@@ -39,6 +39,7 @@ import xyz.qy.implatform.entity.TalkStar;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.FollowEnum;
 import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.SectionEnum;
@@ -50,6 +51,7 @@ import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.ICharacterUserService;
+import xyz.qy.implatform.service.IFollowService;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
@@ -140,6 +142,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
     @Resource
     private IMClient imClient;
+
+    @Resource
+    private IFollowService followService;
 
     @Transactional
     @Override
@@ -612,6 +617,18 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             }
             queryDTO.setOwnerId(myUserId);
             talkPage = this.baseMapper.pageQueryMyCharactersTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
+            if (ObjectUtil.isNotNull(talkPage)) {
+                records = talkPage.getRecords();
+            }
+        } else if (SectionEnum.FOLLOW_ALL_CHARACTERS.getCode().equals(queryDTO.getSection())) {
+            Set<Long> characterIds = followService.findFollowsTargetIds(FollowEnum.CHARACTER.getCode());
+            Set<Long> templateGroupIds = followService.findFollowsTargetIds(FollowEnum.TEMPLATE.getCode());
+            if (CollectionUtils.isEmpty(characterIds) && CollectionUtils.isEmpty(templateGroupIds)) {
+                throw new GlobalException("您没有关注任何角色或群聊模板");
+            }
+            queryDTO.setCharacterIds(List.copyOf(characterIds));
+            queryDTO.setTemplateGroupIds(List.copyOf(templateGroupIds));
+            talkPage = this.baseMapper.pageQueryFollowCharactersTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), queryDTO);
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
             }

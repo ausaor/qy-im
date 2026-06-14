@@ -12,6 +12,8 @@
             </el-tab-pane>
             <el-tab-pane label="我的" name="myCharacters">
             </el-tab-pane>
+            <el-tab-pane label="关注" name="followAllCharacters">
+            </el-tab-pane>
           </el-tabs>
           <div class="btns">
             <span class="talk-notify-msg" @click="showTalkNotify">

@@ -32,7 +32,9 @@ public enum SectionEnum {
 
     ALL_CHARACTERS("allCharacters"),
 
-    MY_CHARACTERS("myCharacters");
+    MY_CHARACTERS("myCharacters"),
+
+    FOLLOW_ALL_CHARACTERS("followAllCharacters");
 
     private final String code;
 

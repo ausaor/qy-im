@@ -851,6 +851,26 @@ create table im_complaint_record
     comment '投诉记录表';
 
 
+create table im_follow
+(
+    id          bigint      not null comment '主键'
+        primary key,
+    target_id   bigint      not null comment '目标id',
+    type        varchar(20) not null comment '类别',
+    user_id     bigint      not null comment '用户id',
+    create_time datetime    not null comment '创建时间',
+    constraint uidx_1
+        unique (target_id, type, user_id)
+)
+    comment '关注表';
+
+create index idx_1
+    on im_follow (user_id);
+
+create index idx_2
+    on im_follow (target_id);
+
+
 create table ai_chat_message
 (
     id          bigint auto_increment comment '主键'

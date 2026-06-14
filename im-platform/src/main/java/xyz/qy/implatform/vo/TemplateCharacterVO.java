@@ -66,6 +66,11 @@ public class TemplateCharacterVO {
     private Boolean isOwner = false;
 
     /**
+     * 是否关注该模板角色
+     */
+    private Boolean follow = false;
+
+    /**
      * 模板人物头像
      */
     private List<CharacterAvatarVO> characterAvatarVOList;

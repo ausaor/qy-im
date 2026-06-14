@@ -354,7 +354,7 @@ export default {
     &.cols-1 {
       .image-item {
         max-width: 400px;
-        width: 100%;
+        /*width: 100%;*/
         border-radius: 10px;
 
         img {
