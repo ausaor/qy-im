@@ -20,8 +20,11 @@ public class TalkQueryDTO {
     @ApiModelProperty(value = "可见范围")
     private Integer scope;
 
-    @ApiModelProperty(value = "当前用户id")
+    @ApiModelProperty(value = "作者id")
     private Long ownerId;
+
+    @ApiModelProperty(value = "用户id")
+    private Long userId;
 
     @ApiModelProperty(value = "好友id")
     private List<Long> friendIds;
@@ -59,6 +62,9 @@ public class TalkQueryDTO {
     @Size(max = 500)
     @ApiModelProperty("角色id列表")
     private List<Long> characterIds;
+
+    @ApiModelProperty("状态")
+    private String status;
 
     @ApiModelProperty("状态列表")
     private List<String> statusList;

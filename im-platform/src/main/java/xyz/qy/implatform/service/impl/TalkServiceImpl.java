@@ -22,6 +22,7 @@ import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.TalkAddDTO;
 import xyz.qy.implatform.dto.TalkDelDTO;
 import xyz.qy.implatform.dto.TalkQueryDTO;
+import xyz.qy.implatform.dto.TalkReviewDTO;
 import xyz.qy.implatform.dto.TalkUpdateDTO;
 import xyz.qy.implatform.dto.UserDataAuthDTO;
 import xyz.qy.implatform.entity.CharacterAvatar;
@@ -1151,5 +1152,49 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             return true;
         }
         return false;
+    }
+
+    @Override
+    public PageResultVO<List<TalkVO>> pageTalkList(TalkQueryDTO queryDTO) {
+        LambdaQueryWrapper<Talk> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Talk::getDeleted, false);
+        wrapper.eq(Talk::getCategory, queryDTO.getCategory());
+        wrapper.eq(StringUtils.isNotBlank(queryDTO.getStatus()), Talk::getStatus, queryDTO.getStatus());
+        wrapper.eq(Objects.nonNull(queryDTO.getUserId()), Talk::getUserId, queryDTO.getUserId());
+        wrapper.eq(Objects.nonNull(queryDTO.getGroupId()), Talk::getGroupId, queryDTO.getGroupId());
+        wrapper.eq(StringUtils.isNotBlank(queryDTO.getRegionCode()), Talk::getRegionCode, queryDTO.getRegionCode());
+        wrapper.eq(Objects.nonNull(queryDTO.getCharacterId()), Talk::getCharacterId, queryDTO.getCharacterId());
+        wrapper.eq(Objects.nonNull(queryDTO.getGroupTemplateId()), Talk::getGroupTemplateId, queryDTO.getGroupTemplateId());
+
+        Page<Talk> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
+        List<Talk> talkList = page.getRecords();
+        List<TalkVO> talkVOS = BeanUtils.copyProperties(talkList, TalkVO.class);
+
+        return PageResultVO.<List<TalkVO>>builder().data(talkVOS).total(page.getTotal()).build();
+    }
+
+    @Override
+    public void reviewTalk(TalkReviewDTO talkReviewDTO) {
+        Talk talk = this.getById(talkReviewDTO.getId());
+        if (Objects.isNull(talk) || talk.getDeleted()) {
+            throw new GlobalException("动态不存在");
+        }
+        if (ReviewEnum.NO_PASS.getCode().equals(talk.getStatus())) {
+            throw new GlobalException("动态已审核不通过");
+        }
+        if (!StringUtils.equalsAny(talkReviewDTO.getStatus(), ReviewEnum.REVIEWED.getCode(), ReviewEnum.NO_PASS.getCode())) {
+            throw new GlobalException("审核状态错误");
+        }
+        UserSession session = SessionContext.getSession();
+
+        talk.setStatus(talkReviewDTO.getStatus());
+        if (StringUtils.isNotBlank(talkReviewDTO.getReason())) {
+            talk.setReason(talkReviewDTO.getReason());
+        }
+        talk.setReviewUserId(session.getUserId());
+        talk.setUpdateBy(session.getUserId());
+        talk.setUpdateTime(new Date());
+        log.info("审核动态：talkId:{}, userId:{}", talk.getId(), session.getUserId());
+        this.updateById(talk);
     }
 }

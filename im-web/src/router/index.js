@@ -119,6 +119,11 @@ export default new VueRouter({
                   name: "FileInfo",
                   path: "/home/square/fileInfo",
                   component: () => import("../view/FileInfoManage.vue"),
+              },
+              {
+                  name: "TalkManagement",
+                  path: "/home/square/talks",
+                  component: () => import("../view/TalkManagement.vue"),
               }
           ]
         },

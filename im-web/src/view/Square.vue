@@ -20,6 +20,8 @@
                         @click.native="handleActiveItem(communityList[7])"></community-item>
         <community-item v-if="isSuperAdmin" :community="communityList[8]" :active="communityList[8].sort === activeIndex"
                         @click.native="handleActiveItem(communityList[8])"></community-item>
+        <community-item v-if="isAdmin" :community="communityList[9]" :active="communityList[9].sort === activeIndex"
+                        @click.native="handleActiveItem(communityList[9])"></community-item>
       </div>
     </el-aside>
     <el-main class="community-box">
@@ -50,6 +52,7 @@ export default {
         {name: "系统消息", sort: 7, route: '/home/square/sysMsg', iconId: '#icon-xitongxiaoxi'},
         {name: "歌曲管理", sort: 8, route: '/home/square/musics', iconId: '#icon-Music'},
         {name: "文件管理", sort: 9, route: '/home/square/fileInfo', iconId: '#icon-icon-wenjian'},
+        {name: "动态管理", sort: 10, route: '/home/square/talks', iconId: '#icon-shejiaotubiao-40'},
       ],
       activeIndex: -1,
     }

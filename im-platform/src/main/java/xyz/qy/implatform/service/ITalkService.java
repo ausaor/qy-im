@@ -5,11 +5,14 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.qy.implatform.dto.TalkAddDTO;
 import xyz.qy.implatform.dto.TalkDelDTO;
 import xyz.qy.implatform.dto.TalkQueryDTO;
+import xyz.qy.implatform.dto.TalkReviewDTO;
 import xyz.qy.implatform.dto.TalkUpdateDTO;
 import xyz.qy.implatform.dto.UserDataAuthDTO;
 import xyz.qy.implatform.entity.Talk;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.TalkVO;
+
+import java.util.List;
 
 /**
  * @description: 动态
@@ -51,4 +54,19 @@ public interface ITalkService extends IService<Talk> {
      * @return true:有权限，false:无权限
      */
     boolean verifyUserDataAuth(UserDataAuthDTO dto);
+
+    /**
+     * 分页查询动态列表
+     *
+     * @param queryDTO 查询参数
+     * @return 动态列表
+     */
+    PageResultVO<List<TalkVO>> pageTalkList(TalkQueryDTO queryDTO);
+
+    /**
+     * 审核动态
+     *
+     * @param talkReviewDTO 动态审核DTO
+     */
+    void reviewTalk(TalkReviewDTO talkReviewDTO);
 }

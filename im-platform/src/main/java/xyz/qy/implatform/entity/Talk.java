@@ -122,4 +122,16 @@ public class Talk extends BaseEntity{
 
     @TableField("group_template_id")
     private Long groupTemplateId;
+
+    /**
+     * 审核不通过原因
+     */
+    @TableField("reason")
+    private String reason;
+
+    /**
+     * 审核人id
+     */
+    @TableField("review_user_id")
+    private Long reviewUserId;
 }
