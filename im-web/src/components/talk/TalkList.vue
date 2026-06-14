@@ -20,28 +20,20 @@
             </div>
           </div>
           <p class="content" v-highlight v-html="$emo.transform(item.content)"></p>
-          <v-row class="talk-files" v-if="item.fileList">
-            <v-col
-                :cols="8" :sm="6" :md="4"
-                v-for="(fileItem, idx) of item.fileList"
-                :key="idx"
-            >
-              <v-img v-if="fileItem.fileType == 1"
-                  class="file-items"
-                  :src="fileItem.url"
-                  aspect-ratio="1"
-                  max-height="200"
-                  @click.prevent="previewImg(fileItem.url, [fileItem.url])"
-              />
-              <div v-if="fileItem.fileType == 2" class="file-items">
-                <img class="video-image" :src="fileItem.coverUrl" loading="lazy"/>
-                <span class="play-icon el-icon-video-play" @click="playVideo(fileItem.url, fileItem.coverUrl)"></span>
+          <div v-if="item.fileList && item.fileList.length > 0" class="detail-files">
+            <div v-if="getImageFiles(item.fileList).length > 0" :class="['file-image-grid', getImageGridClass(item.fileList)]">
+              <div v-for="(file, idx) in getImageFiles(item.fileList)" :key="'img-' + idx" class="image-item" @click="previewImg(file.url, [file.url])">
+                <img :src="file.url" />
               </div>
-              <vue-audio v-if="fileItem.fileType == 3"
-                         :audio-source="fileItem.url"
-              ></vue-audio>
-            </v-col>
-          </v-row>
+            </div>
+            <div v-if="getVideoFile(item.fileList)" class="file-video" @click="playVideo(getVideoFile(item.fileList).url, getVideoFile(item.fileList).coverUrl)">
+              <img :src="getVideoFile(item.fileList).coverUrl" class="video-cover" />
+              <span class="play-icon-overlay el-icon-video-play"></span>
+            </div>
+            <div v-if="getAudioFile(item.fileList)" class="file-audio">
+              <vue-audio :audio-source="getAudioFile(item.fileList).url"></vue-audio>
+            </div>
+          </div>
           <div class="bottomBox">
             <div v-if="item.address" class="address">
               <a>
@@ -348,6 +340,25 @@ export default {
     },
     collapseComments(talkId) {
       this.$set(this.visibleCommentsCount, talkId, 5)
+    },
+    getImageFiles(fileList) {
+      if (!fileList) return [];
+      return fileList.filter(f => f.fileType === 1);
+    },
+    getVideoFile(fileList) {
+      if (!fileList) return null;
+      return fileList.find(f => f.fileType === 2) || null;
+    },
+    getAudioFile(fileList) {
+      if (!fileList) return null;
+      return fileList.find(f => f.fileType === 3) || null;
+    },
+    getImageGridClass(fileList) {
+      const count = this.getImageFiles(fileList).length;
+      if (count === 0) return '';
+      if (count === 1) return 'cols-1';
+      if (count === 2 || count === 4) return 'cols-2';
+      return 'cols-3';
     },
     sayComment(talk, sendObj) {
       if (!sendObj) {
@@ -802,80 +813,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.col-xl,
-.col-xl-auto,
-.col-xl-12,
-.col-xl-11,
-.col-xl-10,
-.col-xl-9,
-.col-xl-8,
-.col-xl-7,
-.col-xl-6,
-.col-xl-5,
-.col-xl-4,
-.col-xl-3,
-.col-xl-2,
-.col-xl-1,
-.col-lg,
-.col-lg-auto,
-.col-lg-12,
-.col-lg-11,
-.col-lg-10,
-.col-lg-9,
-.col-lg-8,
-.col-lg-7,
-.col-lg-6,
-.col-lg-5,
-.col-lg-4,
-.col-lg-3,
-.col-lg-2,
-.col-lg-1,
-.col-md,
-.col-md-auto,
-.col-md-12,
-.col-md-11,
-.col-md-10,
-.col-md-9,
-.col-md-8,
-.col-md-7,
-.col-md-6,
-.col-md-5,
-.col-md-4,
-.col-md-3,
-.col-md-2,
-.col-md-1,
-.col-sm,
-.col-sm-auto,
-.col-sm-12,
-.col-sm-11,
-.col-sm-10,
-.col-sm-9,
-.col-sm-8,
-.col-sm-7,
-.col-sm-6,
-.col-sm-5,
-.col-sm-4,
-.col-sm-3,
-.col-sm-2,
-.col-sm-1,
-.col,
-.col-auto,
-.col-12,
-.col-11,
-.col-10,
-.col-9,
-.col-8,
-.col-7,
-.col-6,
-.col-5,
-.col-4,
-.col-3,
-.col-2,
-.col-1 {
-  width: 100%;
-  padding: 4px !important;
-}
-
 .talk-list {
 
   .contentBox {
@@ -967,41 +904,108 @@ export default {
           white-space: pre-wrap;
         }
 
-        .talk-files {
+        .detail-files {
           margin-top: 4px;
-          margin-right: 2px;
+        }
 
-          .file-items {
+        .file-image-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+
+          .image-item {
+            overflow: hidden;
+            border-radius: 8px;
             cursor: pointer;
-            border-radius: 4px;
-            height: 100%;
-            width: 100%;
-            position: relative;
+            transition: transform 0.2s;
 
-            .video-image {
-              height: 100%;
-              width: 100%;
+            &:hover {
+              transform: scale(1.02);
             }
 
-            .play-icon {
+            img {
               display: block;
-              position: absolute;
-              font-size: 80px;
-              font-weight: 500;
-              width: 80px;
-              height: 80px;
-              left: 50%;
-              top: 50%;
-              transform: translate(-50%, -50%);
-              cursor: pointer;
-              color: #ffffff;
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
             }
           }
 
-          .vueAudioBetter {
-            height: 100%;
-            width: 100%;
+          &.cols-1 {
+            .image-item {
+              max-width: 400px;
+              width: 100%;
+              border-radius: 10px;
+
+              img {
+                width: 100%;
+                height: auto;
+                object-fit: contain;
+                max-height: 400px;
+              }
+            }
           }
+
+          &.cols-2 {
+            .image-item {
+              width: calc(50% - 4px);
+              aspect-ratio: 1 / 1;
+
+              img {
+                height: 100%;
+                object-fit: cover;
+              }
+            }
+          }
+
+          &.cols-3 {
+            .image-item {
+              width: calc(33.333% - 6px);
+              aspect-ratio: 1 / 1;
+
+              img {
+                height: 100%;
+                object-fit: cover;
+              }
+            }
+          }
+        }
+
+        .file-video {
+          position: relative;
+          display: inline-block;
+          cursor: pointer;
+          border-radius: 8px;
+          overflow: hidden;
+          max-width: 400px;
+          width: 100%;
+
+          .video-cover {
+            width: 100%;
+            display: block;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+          }
+
+          .play-icon-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s, font-size 0.2s;
+          }
+
+          &:hover .play-icon-overlay {
+            font-size: 70px;
+          }
+        }
+
+        .file-audio {
+          max-width: 500px;
+          margin-top: 8px;
         }
 
         .bottomBox {
