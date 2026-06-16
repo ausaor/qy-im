@@ -12,6 +12,8 @@
         </el-tab-pane>
         <el-tab-pane label="我的绑定角色" name="myCharacters">
         </el-tab-pane>
+        <el-tab-pane label="我的关注" name="myFollowCharacters">
+        </el-tab-pane>
         <el-tab-pane name="charactersNotify">
           <span slot="label"><i class="el-icon-chat-dot-round"></i>评论通知<span class="total-characters-notify" v-show="totalCharacterNotifyCount>0">{{totalCharacterNotifyCount}}</span></span>
         </el-tab-pane>
@@ -80,6 +82,7 @@
       </el-card>
     </div>
     <div class="my-characters" v-show="activeTab === 'myCharacters'">
+      <div v-if="myCharacters.length === 0" class="empty-state">暂无绑定角色</div>
       <div class="character-item" v-for="(item,index) in myCharacters" :key="index">
         <div class="character-avatar">
           <head-image :name="item.characterName" :url="item.characterAvatar" :size="60"></head-image>
@@ -113,6 +116,83 @@
             </svg>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="my-follow-characters" v-show="activeTab === 'myFollowCharacters'">
+      <!-- 关注的群聊模板 -->
+      <div v-if="followTemplateGroups.length > 0" class="follow-section">
+        <h3 class="follow-section-title">关注的群聊模板</h3>
+        <div class="follow-items">
+          <div class="character-item" v-for="(item,index) in followTemplateGroups" :key="'ftg-'+index">
+            <div class="character-name-only">{{ item.templateGroup.groupName }}</div>
+            <div class="character-content">
+              <div class="content-item" @click="openGroupTemplateSpaceDialog(item.templateGroup)">
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-kongjian2"></use>
+                </svg>
+              </div>
+              <div class="content-item">
+                <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterWordDialog({templateGroup: {id: item.templateGroup.id}})">
+                  <use xlink:href="#icon-minganci"></use>
+                </svg>
+              </div>
+              <div class="content-item" @click="openCharacterEmoDialog({templateGroup: {id: item.templateGroup.id}})">
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-biaoqing"></use>
+                </svg>
+              </div>
+              <div class="content-item">
+                <svg class="icon svg-icon" aria-hidden="true" @click="openGroupTemplateMusicDialog(item.templateGroup)">
+                  <use xlink:href="#icon-Music"></use>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 关注的角色 -->
+      <div v-if="followCharacters.length > 0" class="follow-section">
+        <h3 class="follow-section-title">关注的角色</h3>
+        <div class="follow-items">
+          <div class="character-item" v-for="(item,index) in followCharacters" :key="'fc-'+index">
+            <div class="character-avatar">
+              <head-image :name="item.character.name" :url="item.character.avatar" :size="60"></head-image>
+              <div class="character-name">{{ item.character.name }}</div>
+            </div>
+            <div class="character-content">
+              <div class="content-item" @click="openCharacterSpaceDialog(item.character)">
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-kongjian2"></use>
+                </svg>
+              </div>
+              <div class="content-item">
+                <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterWordDialog({templateGroup: {id: item.character.templateGroupId}, character: item.character })">
+                  <use xlink:href="#icon-minganci"></use>
+                </svg>
+              </div>
+              <div class="content-item" @click="openCharacterEmoDialog({templateGroup: {id: item.character.templateGroupId}, character: item.character })">
+                <svg class="icon svg-icon" aria-hidden="true">
+                  <use xlink:href="#icon-biaoqing"></use>
+                </svg>
+              </div>
+              <div class="content-item">
+                <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterAvatarDialog(item.character)">
+                  <use xlink:href="#icon-person"></use>
+                </svg>
+              </div>
+              <div class="content-item">
+                <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterMusicDialog(item.character)">
+                  <use xlink:href="#icon-Music"></use>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="followTemplateGroups.length === 0 && followCharacters.length === 0" class="empty-follow">
+        暂无关注内容
       </div>
     </div>
     <div class="page-box" v-show="activeTab === 'allTemplateGroup'">
@@ -532,6 +612,8 @@ export default {
       characterUserTitle: '',
       myCharacters: [],
       showUploadMusic: false,
+      followCharacters: [],
+      followTemplateGroups: [],
     }
   },
   created() {
@@ -841,7 +923,23 @@ export default {
         this.queryMyCharacters();
       } else if (tab.name === 'charactersNotify') {
         this.showTalkNotify();
+      } else if (tab.name === 'myFollowCharacters') {
+        this.activeTab = 'myFollowCharacters';
+        this.queryFollowTarget('character')
+        this.queryFollowTarget('template')
       }
+    },
+    queryFollowTarget(type) {
+      this.$http({
+        url: `/follow/list?type=${type}`,
+        method: 'get',
+      }).then((data) => {
+        if (type === 'character') {
+          this.followCharacters = data;
+        } else if (type === 'template') {
+          this.followTemplateGroups = data;
+        }
+      })
     },
     queryMyCharacters() {
       this.$http({
@@ -1856,4 +1954,91 @@ export default {
   }
 }
 
+.my-follow-characters {
+  padding: 20px;
+
+  .follow-section {
+    margin-bottom: 30px;
+
+    .follow-section-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+    }
+  }
+
+  .follow-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+
+    .character-item {
+      padding: 10px;
+      border-radius: 8px;
+      background-color: var(--bg-color);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .character-avatar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+
+        .character-name {
+          text-align: center;
+          font-size: 14px;
+          font-weight: 500;
+          word-break: break-all;
+          max-width: 100%;
+        }
+      }
+
+      .character-name-only {
+        text-align: center;
+        font-size: 14px;
+        font-weight: 500;
+        word-break: break-all;
+        max-width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .character-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(30%, 1fr));
+        gap: 5px;
+        justify-content: center;
+        width: 100%;
+        margin-top: 10px;
+
+        .content-item {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .icon {
+            display: block;
+            height: 25px;
+            width: 25px;
+            line-height: 25px;
+          }
+        }
+      }
+    }
+  }
+
+  .empty-follow {
+    text-align: center;
+    color: #909399;
+    font-size: 14px;
+    padding: 40px;
+  }
+}
 </style>

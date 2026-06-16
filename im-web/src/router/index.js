@@ -124,6 +124,11 @@ export default new VueRouter({
                   name: "TalkManagement",
                   path: "/home/square/talks",
                   component: () => import("../view/TalkManagement.vue"),
+              },
+              {
+                  name: "FeatureControl",
+                  path: "/home/square/featureControl",
+                  component: () => import("../view/FeatureControl.vue"),
               }
           ]
         },

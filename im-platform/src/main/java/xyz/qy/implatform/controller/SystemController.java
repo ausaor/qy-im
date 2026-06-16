@@ -5,12 +5,17 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import xyz.qy.implatform.annotation.RequireRoles;
+import xyz.qy.implatform.dto.FeatureControlDTO;
 import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IMediaMaterialService;
 import xyz.qy.implatform.service.impl.SystemService;
+import xyz.qy.implatform.vo.FeatureStateVO;
 import xyz.qy.implatform.vo.SystemConfigVO;
+
+import javax.validation.Valid;
+import java.util.List;
 
 @Api(tags = "系统相关")
 @RestController
@@ -43,17 +48,32 @@ public class SystemController {
         return ResultUtils.success();
     }
 
-    @ApiOperation(value = "设置媒体播放素材", notes = "设置媒体播放素材")
-    @RequestMapping("/setPlayMediaMaterial")
-    public Result setPlayMediaMaterial(Integer sort) {
-        return ResultUtils.success(mediaMaterialService.setLoginPagePlayMediaMaterial(sort));
+//    @ApiOperation(value = "设置媒体播放素材", notes = "设置媒体播放素材")
+//    @RequestMapping("/setPlayMediaMaterial")
+//    public Result setPlayMediaMaterial(Integer sort) {
+//        return ResultUtils.success(mediaMaterialService.setLoginPagePlayMediaMaterial(sort));
+//    }
+
+//    @ApiOperation(value = "生成随机排序号", notes = "生成随机排序号")
+//    @RequestMapping("/generateRandomSort")
+//    public Result generateRandomSort() {
+//        mediaMaterialService.generateRandomSort();
+//        return ResultUtils.success();
+//    }
+
+    @ApiOperation(value = "切换功能",notes="切换功能")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
+    @PostMapping("/switchFeature")
+    public Result switchFeature(@RequestBody @Valid FeatureControlDTO dto) {
+        systemService.switchFeature(dto);
+        return ResultUtils.success();
     }
 
-    @ApiOperation(value = "生成随机排序号", notes = "生成随机排序号")
-    @RequestMapping("/generateRandomSort")
-    public Result generateRandomSort() {
-        mediaMaterialService.generateRandomSort();
-        return ResultUtils.success();
+    @ApiOperation(value = "获取所有功能开关状态", notes = "获取所有功能开关状态")
+    @RequireRoles(value = {RoleEnum.SUPER_ADMIN})
+    @GetMapping("/featureStates")
+    public Result<List<FeatureStateVO>> getFeatureStates() {
+        return ResultUtils.success(systemService.getFeatureStates());
     }
 }
 

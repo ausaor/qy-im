@@ -19,11 +19,15 @@ import xyz.qy.implatform.mapper.GroupMapper;
 import xyz.qy.implatform.mapper.TemplateCharacterMapper;
 import xyz.qy.implatform.mapper.TemplateGroupMapper;
 import xyz.qy.implatform.mapper.UserMapper;
+import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.IFollowService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.vo.CharacterAvatarVO;
 import xyz.qy.implatform.vo.FollowVO;
+import xyz.qy.implatform.vo.TemplateCharacterVO;
+import xyz.qy.implatform.vo.TemplateGroupVO;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -46,6 +50,9 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
 
     @Resource
     private TemplateGroupMapper templateGroupMapper;
+
+    @Resource
+    private ICharacterAvatarService characterAvatarService;
 
     @Override
     public void addFollow(FollowDTO dto) {
@@ -130,9 +137,14 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                     });
         }
 
+
         // 批量查询角色
         List<Long> characterIds = typeTargetIdsMap.get(FollowEnum.CHARACTER.getCode());
         if (CollectionUtils.isNotEmpty(characterIds)) {
+            List<CharacterAvatarVO> characterAvatars = characterAvatarService.queryPublishCharacterAvatarByCharacterIds(characterIds);
+            // characterAvatars根据characterId分组得到Map<Long, List<CharacterAvatarVO>>
+            Map<Long, List<CharacterAvatarVO>> characterAvatarMap = characterAvatars.stream().collect(Collectors.groupingBy(CharacterAvatarVO::getTemplateCharacterId));
+
             Map<Long, TemplateCharacter> characterMap = characterMapper.selectBatchIds(characterIds).stream()
                     .collect(Collectors.toMap(TemplateCharacter::getId, c -> c));
             followVOS.stream()
@@ -142,7 +154,10 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                         if (character != null) {
                             vo.setTargetName(character.getName());
                             vo.setTargetAvatar(character.getAvatar());
+                            vo.setCharacter(BeanUtils.copyProperties(character, TemplateCharacterVO.class));
                         }
+                        List<CharacterAvatarVO> characterAvatarVOList = characterAvatarMap.get(vo.getTargetId());
+                        vo.setCharacterAvatars(characterAvatarVOList);
                     });
         }
 
@@ -158,6 +173,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                         if (templateGroup != null) {
                             vo.setTargetName(templateGroup.getGroupName());
                             vo.setTargetAvatar(templateGroup.getAvatar());
+                            vo.setTemplateGroup(BeanUtils.copyProperties(templateGroup, TemplateGroupVO.class));
                         }
                     });
         }
