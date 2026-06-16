@@ -20,5 +20,14 @@ npm run build
 npm run lint
 ```
 
+# macOS / Linux
+nodeJs18
+export NODE_OPTIONS=--openssl-legacy-provider
+npm run serve   # 或 npm run build
+
+# 或一行搞定
+NODE_OPTIONS=--openssl-legacy-provider npm run build
+
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
