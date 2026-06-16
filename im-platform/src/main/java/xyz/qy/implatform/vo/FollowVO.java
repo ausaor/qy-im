@@ -37,4 +37,6 @@ public class FollowVO {
 
     @ApiModelProperty("角色头像信息")
     private List<CharacterAvatarVO> characterAvatars;
+
+    private Boolean followed = true;
 }

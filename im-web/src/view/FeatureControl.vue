@@ -62,8 +62,11 @@
                 inactive-color="#dcdfe6"
                 @change="(val) => handleSwitch(feature, val)"
               ></el-switch>
+              <span v-if="remainingSeconds[feature.code] > 0" class="countdown-timer">
+                {{ formatCountdown(remainingSeconds[feature.code]) }}
+              </span>
               <el-popover
-                v-if="featureStates[feature.code] === false"
+                v-else-if="featureStates[feature.code] === false"
                 placement="bottom"
                 width="280"
                 trigger="click"
@@ -236,8 +239,11 @@
                 inactive-color="#dcdfe6"
                 @change="(val) => handleSwitch(feature, val)"
               ></el-switch>
+              <span v-if="remainingSeconds[feature.code] > 0" class="countdown-timer">
+                {{ formatCountdown(remainingSeconds[feature.code]) }}
+              </span>
               <el-popover
-                v-if="featureStates[feature.code] === false"
+                v-else-if="featureStates[feature.code] === false"
                 placement="bottom"
                 width="280"
                 trigger="click"
@@ -378,6 +384,10 @@ export default {
       ],
       // 功能状态缓存: true=开启, false=关闭
       featureStates: {},
+      // 倒计时剩余秒数
+      remainingSeconds: {},
+      // 定时器句柄
+      intervalHandles: {},
       // 临时时长选择
       tempDuration: {},
       // 时长快捷选项
@@ -410,6 +420,9 @@ export default {
   created() {
     this.initStates();
   },
+  beforeDestroy() {
+    this.clearAllTimers();
+  },
   methods: {
     initStates() {
       this.$http({
@@ -420,6 +433,13 @@ export default {
         list.forEach(item => {
           this.$set(this.featureStates, item.featureCode, item.isOpen);
           this.$set(this.tempDuration, item.featureCode, null);
+          // 处理倒计时
+          if (item.remainingSeconds != null && item.remainingSeconds > 0) {
+            this.$set(this.remainingSeconds, item.featureCode, item.remainingSeconds);
+            this.startCountdown(item.featureCode, item.remainingSeconds);
+          } else {
+            this.$set(this.remainingSeconds, item.featureCode, 0);
+          }
         });
       }).catch(() => {
         // 请求失败，兜底全部默认开启
@@ -432,6 +452,7 @@ export default {
           if (!(f.code in this.featureStates)) {
             this.$set(this.featureStates, f.code, true);
             this.$set(this.tempDuration, f.code, null);
+            this.$set(this.remainingSeconds, f.code, 0);
           }
         });
       });
@@ -447,6 +468,9 @@ export default {
         dto.duration = this.tempDuration[feature.code];
       }
 
+      // 切换前先清除旧计时器
+      this.clearTimer(feature.code);
+
       this.$http({
         url: '/system/switchFeature',
         method: 'post',
@@ -457,6 +481,13 @@ export default {
         this.$message.success(`${feature.name}${action}${durationMsg}`);
         // 重置临时时长
         this.tempDuration[feature.code] = null;
+        // 如果是定时关闭，启动本地倒计时
+        if (!isOpen && dto.duration) {
+          this.$set(this.remainingSeconds, feature.code, dto.duration);
+          this.startCountdown(feature.code, dto.duration);
+        } else {
+          this.$set(this.remainingSeconds, feature.code, 0);
+        }
       }).catch(() => {
         // 请求失败，回滚状态
         this.featureStates[feature.code] = !isOpen;
@@ -476,6 +507,55 @@ export default {
       // 不设时长，永久关闭
       this.tempDuration[feature.code] = null;
       this.handleSwitch(feature, false);
+    },
+    // ==================== 倒计时相关 ====================
+    startCountdown(featureCode, seconds) {
+      this.clearTimer(featureCode);
+      let remaining = seconds;
+      this.$set(this.remainingSeconds, featureCode, remaining);
+
+      const handle = setInterval(() => {
+        remaining--;
+        this.$set(this.remainingSeconds, featureCode, remaining);
+        if (remaining <= 0) {
+          this.clearTimer(featureCode);
+          // 倒计时结束，自动恢复该功能
+          this.$set(this.featureStates, featureCode, true);
+          this.$set(this.remainingSeconds, featureCode, 0);
+          // 同步回后端
+          this.$http({
+            url: '/system/switchFeature',
+            method: 'post',
+            data: { featureCode, isOpen: true, duration: null }
+          }).catch(() => {
+            // 后端同步失败时回滚
+            this.$set(this.featureStates, featureCode, false);
+          });
+        }
+      }, 1000);
+      this.$set(this.intervalHandles, featureCode, handle);
+    },
+    clearTimer(featureCode) {
+      const handle = this.intervalHandles[featureCode];
+      if (handle) {
+        clearInterval(handle);
+        this.$set(this.intervalHandles, featureCode, null);
+      }
+    },
+    clearAllTimers() {
+      Object.keys(this.intervalHandles).forEach(code => {
+        this.clearTimer(code);
+      });
+    },
+    formatCountdown(seconds) {
+      if (seconds == null || seconds <= 0) return '';
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      if (h > 0) {
+        return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
   }
 };
@@ -778,6 +858,20 @@ export default {
     font-size: 10px;
     margin-left: 2px;
   }
+}
+
+// ==================== 倒计时 ====================
+.countdown-timer {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e6a23c;
+  background: linear-gradient(135deg, #fdf6ec 0%, #fef0e6 100%);
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid #faecd8;
+  font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
 }
 
 // ==================== 时长选择弹窗 ====================

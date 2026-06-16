@@ -124,7 +124,12 @@
         <h3 class="follow-section-title">关注的群聊模板</h3>
         <div class="follow-items">
           <div class="character-item" v-for="(item,index) in followTemplateGroups" :key="'ftg-'+index">
-            <div class="character-name-only">{{ item.templateGroup.groupName }}</div>
+            <i v-if="item.followed !== false" class="el-icon-minus cancel-follow-btn" @click="handleCancelFollow(item, 'template')"></i>
+            <i v-else class="el-icon-plus add-follow-btn" @click="handleAddFollow(item, 'template')"></i>
+            <div class="character-avatar">
+              <head-image :name="item.templateGroup.groupName" :url="item.templateGroup.avatar" :size="60"></head-image>
+              <div class="character-name">{{ item.templateGroup.groupName }}</div>
+            </div>
             <div class="character-content">
               <div class="content-item" @click="openGroupTemplateSpaceDialog(item.templateGroup)">
                 <svg class="icon svg-icon" aria-hidden="true">
@@ -156,6 +161,8 @@
         <h3 class="follow-section-title">关注的角色</h3>
         <div class="follow-items">
           <div class="character-item" v-for="(item,index) in followCharacters" :key="'fc-'+index">
+            <i v-if="item.followed !== false" class="el-icon-minus cancel-follow-btn" @click="handleCancelFollow(item, 'character')"></i>
+            <i v-else class="el-icon-plus add-follow-btn" @click="handleAddFollow(item, 'character')"></i>
             <div class="character-avatar">
               <head-image :name="item.character.name" :url="item.character.avatar" :size="60"></head-image>
               <div class="character-name">{{ item.character.name }}</div>
@@ -1409,6 +1416,16 @@ export default {
       }).then(() => {
         this.$message.success('取消关注成功');
       })
+    },
+    handleCancelFollow(item, type) {
+      this.cancelFollow(item.targetId, type).then(() => {
+        this.$set(item, 'followed', false);
+      });
+    },
+    handleAddFollow(item, type) {
+      this.addFollow(item.targetId, type).then(() => {
+        this.$set(item, 'followed', true);
+      });
     }
   },
   computed: {
@@ -1985,6 +2002,42 @@ export default {
       display: flex;
       flex-direction: column;
       align-items: center;
+
+      .cancel-follow-btn {
+        position: absolute;
+        top: 3px;
+        right: 3px;
+        background-color: #f56c6c;
+        color: #fff;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 2;
+      }
+
+      .add-follow-btn {
+        position: absolute;
+        top: 3px;
+        right: 3px;
+        background-color: #67c23a;
+        color: #fff;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 2;
+      }
 
       .character-avatar {
         display: flex;
