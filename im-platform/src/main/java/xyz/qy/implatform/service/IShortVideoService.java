@@ -1,0 +1,26 @@
+package xyz.qy.implatform.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import xyz.qy.implatform.dto.ShortVideoAddDTO;
+import xyz.qy.implatform.dto.ShortVideoDelDTO;
+import xyz.qy.implatform.dto.ShortVideoQueryDTO;
+import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
+import xyz.qy.implatform.entity.ShortVideo;
+import xyz.qy.implatform.vo.PageResultVO;
+import xyz.qy.implatform.vo.ShortVideoVO;
+
+import java.util.List;
+
+public interface IShortVideoService extends IService<ShortVideo> {
+    List<ShortVideoVO> listShortVideos(ShortVideoQueryDTO dto);
+
+    PageResultVO<List<ShortVideoVO>> pageShortVideos(ShortVideoQueryDTO dto);
+
+    ShortVideoVO getShortVideoById(Long id);
+
+    ShortVideoVO addShortVideo(ShortVideoAddDTO dto);
+
+    ShortVideoVO updateShortVideo(ShortVideoUpdateDTO dto);
+
+    void deleteShortVideo(ShortVideoDelDTO dto);
+}

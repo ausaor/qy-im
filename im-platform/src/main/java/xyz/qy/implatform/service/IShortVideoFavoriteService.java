@@ -1,0 +1,26 @@
+package xyz.qy.implatform.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import xyz.qy.implatform.dto.ShortVideoFavoriteAddDTO;
+import xyz.qy.implatform.dto.ShortVideoFavoriteDelDTO;
+import xyz.qy.implatform.dto.ShortVideoFavoriteQueryDTO;
+import xyz.qy.implatform.dto.ShortVideoFavoriteUpdateDTO;
+import xyz.qy.implatform.entity.ShortVideoFavorite;
+import xyz.qy.implatform.vo.PageResultVO;
+import xyz.qy.implatform.vo.ShortVideoFavoriteVO;
+
+import java.util.List;
+
+public interface IShortVideoFavoriteService extends IService<ShortVideoFavorite> {
+    List<ShortVideoFavoriteVO> listShortVideoFavorites(ShortVideoFavoriteQueryDTO dto);
+
+    PageResultVO<List<ShortVideoFavoriteVO>> pageShortVideoFavorites(ShortVideoFavoriteQueryDTO dto);
+
+    ShortVideoFavoriteVO getShortVideoFavoriteById(Long id);
+
+    ShortVideoFavoriteVO addShortVideoFavorite(ShortVideoFavoriteAddDTO dto);
+
+    ShortVideoFavoriteVO updateShortVideoFavorite(ShortVideoFavoriteUpdateDTO dto);
+
+    void deleteShortVideoFavorite(ShortVideoFavoriteDelDTO dto);
+}

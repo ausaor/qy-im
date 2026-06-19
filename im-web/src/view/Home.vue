@@ -52,6 +52,15 @@
                   <div v-show="regionGroupActivity" class="unread-dot"></div>
                 </div>
               </router-link>
+              <router-link class="link" v-bind:to="'/home/shortVideo'">
+                <div class="menu-item">
+                  <span>
+                    <svg class="icon svg-icon" aria-hidden="true">
+                      <use xlink:href="#icon-duanshipin1"></use>
+                    </svg>
+                  </span>
+                </div>
+              </router-link>
               <router-link class="link" v-bind:to="'/home/ai-chat'">
                 <div class="menu-item">
                   <span>

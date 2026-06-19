@@ -123,10 +123,10 @@ public class ShortVideo extends Model<ShortVideo> {
     private Integer commentCount;
 
     /**
-     * 状态：0-审核中；1-已发布；2-已下架
+     * 状态
      */
     @TableField("status")
-    private Integer status;
+    private String status;
 
     /**
      * 创建时间

@@ -56,6 +56,34 @@ export default new VueRouter({
           component: () => import("../view/RegionGroup"),
         },
         {
+          name: "ShortVideo",
+          path: "/home/shortVideo",
+          redirect: "/home/shortVideo/recom",
+          component: () => import("../view/ShortVideo.vue"),
+          children: [
+              {
+                  name: "ShortVideoRecom",
+                  path: "/home/shortVideo/recom",
+                  component: () => import("../view/ShortVideoRecom.vue"),
+              },
+              {
+                  name: "ShortVideoFollow",
+                  path: "/home/shortVideo/follow",
+                  component: () => import("../view/ShortVideoFollow.vue"),
+              },
+              {
+                  name: "ShortVideoFriend",
+                  path: "/home/shortVideo/follow",
+                  component: () => import("../view/ShortVideoFriend.vue"),
+              },
+              {
+                  name: "ShortVideoMy",
+                  path: "/home/shortVideo/my",
+                  component: () => import("../view/ShortVideoMy.vue"),
+              },
+          ]
+        },
+        {
           name: "AIChat",
           path: "/home/ai-chat",
           component: () => import("../view/AIChat"),
@@ -63,6 +91,7 @@ export default new VueRouter({
         {
           name: "Square",
           path: "/home/square",
+          redirect: "/home/square/friendActivity",
           component: () => import("../view/Square"),
           children:[
               {

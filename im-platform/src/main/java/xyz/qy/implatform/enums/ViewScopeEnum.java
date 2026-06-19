@@ -8,6 +8,8 @@ import lombok.Getter;
 public enum ViewScopeEnum {
     PUBLIC(9, "公开"),
 
+    FOLLOW(3, "关注可见"),
+
     FRIENDS(2, "好友可见"),
 
     PRIVATE(1, "私密");
