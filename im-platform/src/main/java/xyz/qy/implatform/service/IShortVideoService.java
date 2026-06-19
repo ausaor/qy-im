@@ -14,6 +14,12 @@ import java.util.List;
 public interface IShortVideoService extends IService<ShortVideo> {
     List<ShortVideoVO> listShortVideos(ShortVideoQueryDTO dto);
 
+    List<ShortVideoVO> myShortVideos(ShortVideoQueryDTO dto);
+
+    List<ShortVideoVO> myLikedShortVideos();
+
+    List<ShortVideoVO> myFavoriteShortVideos();
+
     PageResultVO<List<ShortVideoVO>> pageShortVideos(ShortVideoQueryDTO dto);
 
     ShortVideoVO getShortVideoById(Long id);

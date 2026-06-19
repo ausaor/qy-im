@@ -65,28 +65,14 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
     @Override
     public ShortVideoLikeVO addShortVideoLike(ShortVideoLikeAddDTO dto) {
         Long userId = SessionContext.getSession().getUserId();
-        checkVideo(dto.getVideoId());
+        ShortVideo shortVideo = checkVideo(dto.getVideoId());
         checkDuplicate(userId, dto.getVideoId(), null);
         ShortVideoLike like = new ShortVideoLike();
         like.setUserId(userId);
         like.setVideoId(dto.getVideoId());
+        like.setTargetUserId(shortVideo.getUserId());
         like.setCreateTime(new Date());
         this.save(like);
-        ShortVideoLikeVO vo = BeanUtils.copyProperties(like, ShortVideoLikeVO.class);
-        vo.setIsOwner(Boolean.TRUE);
-        return vo;
-    }
-
-    @Transactional
-    @Override
-    public ShortVideoLikeVO updateShortVideoLike(ShortVideoLikeUpdateDTO dto) {
-        ShortVideoLike like = this.getById(dto.getId());
-        checkExists(like);
-        checkOwner(like);
-        checkVideo(dto.getVideoId());
-        checkDuplicate(like.getUserId(), dto.getVideoId(), dto.getId());
-        like.setVideoId(dto.getVideoId());
-        this.updateById(like);
         ShortVideoLikeVO vo = BeanUtils.copyProperties(like, ShortVideoLikeVO.class);
         vo.setIsOwner(Boolean.TRUE);
         return vo;
@@ -118,11 +104,12 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
         vos.forEach(item -> item.setIsOwner(userId.equals(item.getUserId())));
     }
 
-    private void checkVideo(Long videoId) {
+    private ShortVideo checkVideo(Long videoId) {
         ShortVideo shortVideo = shortVideoMapper.selectById(videoId);
         if (ObjectUtil.isNull(shortVideo) || Boolean.TRUE.equals(shortVideo.getDeleted())) {
             throw new GlobalException("短视频不存在");
         }
+        return shortVideo;
     }
 
     private void checkDuplicate(Long userId, Long videoId, Long currentId) {

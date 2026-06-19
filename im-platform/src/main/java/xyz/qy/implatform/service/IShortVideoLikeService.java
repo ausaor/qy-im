@@ -20,7 +20,5 @@ public interface IShortVideoLikeService extends IService<ShortVideoLike> {
 
     ShortVideoLikeVO addShortVideoLike(ShortVideoLikeAddDTO dto);
 
-    ShortVideoLikeVO updateShortVideoLike(ShortVideoLikeUpdateDTO dto);
-
     void deleteShortVideoLike(ShortVideoLikeDelDTO dto);
 }

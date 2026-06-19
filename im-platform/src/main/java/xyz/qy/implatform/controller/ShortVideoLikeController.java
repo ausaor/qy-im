@@ -39,12 +39,6 @@ public class ShortVideoLikeController {
         return ResultUtils.success(shortVideoLikeService.addShortVideoLike(dto));
     }
 
-    @ApiOperation(value = "更新点赞", notes = "更新点赞")
-    @PostMapping("/update")
-    public Result<ShortVideoLikeVO> update(@Valid @RequestBody ShortVideoLikeUpdateDTO dto) {
-        return ResultUtils.success(shortVideoLikeService.updateShortVideoLike(dto));
-    }
-
     @ApiOperation(value = "删除点赞", notes = "删除点赞")
     @DeleteMapping("/delete")
     public Result delete(@Valid @RequestBody ShortVideoLikeDelDTO dto) {

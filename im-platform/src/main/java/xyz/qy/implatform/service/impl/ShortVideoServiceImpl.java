@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,8 +13,12 @@ import xyz.qy.implatform.dto.ShortVideoDelDTO;
 import xyz.qy.implatform.dto.ShortVideoQueryDTO;
 import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
 import xyz.qy.implatform.entity.ShortVideo;
+import xyz.qy.implatform.entity.ShortVideoFavorite;
+import xyz.qy.implatform.entity.ShortVideoLike;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.exception.GlobalException;
+import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
+import xyz.qy.implatform.mapper.ShortVideoLikeMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.service.IShortVideoService;
 import xyz.qy.implatform.session.SessionContext;
@@ -23,12 +28,66 @@ import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoVO;
 
+import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVideo> implements IShortVideoService {
+    @Resource
+    private ShortVideoLikeMapper shortVideoLikeMapper;
+
+    @Resource
+    private ShortVideoFavoriteMapper shortVideoFavoriteMapper;
+
+    @Override
+    public List<ShortVideoVO> myShortVideos(ShortVideoQueryDTO dto) {
+        UserSession session = SessionContext.getSession();
+        dto.setUserId(session.getUserId());
+        List<ShortVideo> shortVideos = this.list(buildQueryWrapper(dto));
+        return BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+    }
+
+    @Override
+    public List<ShortVideoVO> myLikedShortVideos() {
+        UserSession session = SessionContext.getSession();
+        LambdaQueryWrapper<ShortVideoLike> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShortVideoLike::getUserId, session.getUserId());
+        List<ShortVideoLike> shortVideoLikes = shortVideoLikeMapper.selectList(wrapper);
+
+        if (CollectionUtils.isEmpty(shortVideoLikes)) {
+            return Collections.emptyList();
+        }
+        List<Long> videoIds = shortVideoLikes.stream().map(ShortVideoLike::getVideoId).collect(Collectors.toList());
+        List<ShortVideo> shortVideos = this.lambdaQuery()
+                .in(ShortVideo::getId, videoIds)
+                .eq(ShortVideo::getDeleted, false)
+                .eq(ShortVideo::getStatus, ReviewEnum.REVIEWED.getCode())
+                .list();
+        return BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+    }
+
+    @Override
+    public List<ShortVideoVO> myFavoriteShortVideos() {
+        UserSession session = SessionContext.getSession();
+        LambdaQueryWrapper<ShortVideoFavorite> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShortVideoFavorite::getUserId, session.getUserId());
+        List<ShortVideoFavorite> shortVideoFavorites = shortVideoFavoriteMapper.selectList(wrapper);
+        if (CollectionUtils.isEmpty(shortVideoFavorites)) {
+            return Collections.emptyList();
+        }
+        List<Long> videoIds = shortVideoFavorites.stream().map(ShortVideoFavorite::getVideoId).collect(Collectors.toList());
+        List<ShortVideo> shortVideos = this.lambdaQuery()
+                .in(ShortVideo::getId, videoIds)
+                .eq(ShortVideo::getDeleted, false)
+                .eq(ShortVideo::getStatus, ReviewEnum.REVIEWED.getCode())
+                .list();
+        return BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+    }
+
     @Override
     public List<ShortVideoVO> listShortVideos(ShortVideoQueryDTO dto) {
         LambdaQueryWrapper<ShortVideo> wrapper = buildQueryWrapper(dto);

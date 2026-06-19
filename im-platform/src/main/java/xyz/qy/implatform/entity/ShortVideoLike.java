@@ -26,7 +26,7 @@ public class ShortVideoLike extends Model<ShortVideoLike> {
     /**
      * 主键
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
@@ -34,6 +34,12 @@ public class ShortVideoLike extends Model<ShortVideoLike> {
      */
     @TableField("video_id")
     private Long videoId;
+
+    /**
+     * 点赞目标用户id
+     */
+    @TableField("target_user_id")
+    private Long targetUserId;
 
     /**
      * 点赞用户id

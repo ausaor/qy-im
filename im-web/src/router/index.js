@@ -73,7 +73,7 @@ export default new VueRouter({
               },
               {
                   name: "ShortVideoFriend",
-                  path: "/home/shortVideo/follow",
+                  path: "/home/shortVideo/friend",
                   component: () => import("../view/ShortVideoFriend.vue"),
               },
               {

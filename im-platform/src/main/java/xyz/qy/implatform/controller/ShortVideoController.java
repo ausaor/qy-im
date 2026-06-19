@@ -58,6 +58,24 @@ public class ShortVideoController {
         return ResultUtils.success(shortVideoService.getShortVideoById(id));
     }
 
+    @ApiOperation(value = "我的短视频", notes = "我的短视频")
+    @PostMapping("/my")
+    public Result<List<ShortVideoVO>> myShortVideos(@RequestBody ShortVideoQueryDTO dto) {
+        return ResultUtils.success(shortVideoService.myShortVideos(dto));
+    }
+
+    @ApiOperation(value = "我点赞的短视频", notes = "我点赞的短视频")
+    @PostMapping("/myLiked")
+    public Result<List<ShortVideoVO>> myLikedShortVideos() {
+        return ResultUtils.success(shortVideoService.myLikedShortVideos());
+    }
+
+    @ApiOperation(value = "我收藏的短视频", notes = "我收藏的短视频")
+    @PostMapping("/myFavorite")
+    public Result<List<ShortVideoVO>> myFavoriteShortVideos() {
+        return ResultUtils.success(shortVideoService.myFavoriteShortVideos());
+    }
+
     @ApiOperation(value = "短视频列表", notes = "短视频列表")
     @PostMapping("/list")
     public Result<List<ShortVideoVO>> list(@RequestBody ShortVideoQueryDTO dto) {

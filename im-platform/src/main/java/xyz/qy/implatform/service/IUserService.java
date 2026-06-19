@@ -27,6 +27,8 @@ public interface IUserService extends IService<User> {
 
     void register(RegisterDTO registerDTO);
 
+    UserVO getCurrentUser();
+
     User findUserByUserName(String username);
 
     User findUserByEmail(String email);

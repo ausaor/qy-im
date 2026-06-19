@@ -93,4 +93,13 @@ public class UserVO {
 
     @ApiModelProperty(value = "是否开启消息勿扰")
     private Boolean isDnd = false;
+
+    @ApiModelProperty(value = "关注数")
+    private Integer followCount;
+
+    @ApiModelProperty(value = "粉丝数")
+    private Integer fansCount;
+
+    @ApiModelProperty(value = "短视频获赞数")
+    private Integer shortVideoLikedCount;
 }

@@ -31,11 +31,14 @@ import xyz.qy.implatform.dto.ResetPwdDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.dto.UserUpdateDTO;
+import xyz.qy.implatform.entity.Follow;
 import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.FriendRequest;
 import xyz.qy.implatform.entity.GroupMember;
+import xyz.qy.implatform.entity.ShortVideoLike;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.EmailCategoryEnum;
+import xyz.qy.implatform.enums.FollowEnum;
 import xyz.qy.implatform.enums.FriendRequestStatusEnum;
 import xyz.qy.implatform.enums.LoginTypeEnum;
 import xyz.qy.implatform.enums.MessageType;
@@ -43,11 +46,13 @@ import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.UserMapper;
+import xyz.qy.implatform.service.IFollowService;
 import xyz.qy.implatform.service.IFriendRequestService;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IGroupService;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
+import xyz.qy.implatform.service.IShortVideoLikeService;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
@@ -127,6 +132,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Resource
     private IFriendRequestService friendRequestService;
+
+    @Resource
+    private IFollowService followService;
+
+    @Resource
+    private IShortVideoLikeService shortVideoLikeService;
 
     @Override
     public LoginVO login(LoginDTO dto) {
@@ -299,6 +310,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (SysStringUtils.checkSpecialChar(vo.getNickName())) {
             throw new GlobalException("昵称不能包含特殊字符");
         }
+    }
+
+    @Override
+    public UserVO getCurrentUser() {
+        UserSession session = SessionContext.getSession();
+        User user = this.getById(session.getUserId());
+        UserVO userVO = BeanUtils.copyProperties(user, UserVO.class);
+
+        // 我的关注数
+        Integer followCount = followService.lambdaQuery()
+                .eq(Follow::getUserId, session.getUserId())
+                .count();
+        assert userVO != null;
+        userVO.setFollowCount(followCount);
+
+        // 我的粉丝数
+        Integer fansCount = followService.lambdaQuery()
+                .eq(Follow::getTargetId, session.getUserId())
+                .eq(Follow::getType, FollowEnum.USER.getCode())
+                .count();
+        userVO.setFansCount(fansCount);
+
+        // 短视频获赞数
+        Integer shortVideoLikedCount = shortVideoLikeService.lambdaQuery()
+                .eq(ShortVideoLike::getTargetUserId, session.getUserId())
+                .count();
+        userVO.setShortVideoLikedCount(shortVideoLikedCount);
+        return userVO;
     }
 
     /**
