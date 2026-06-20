@@ -41,7 +41,7 @@ public class ShortVideoVO {
 
     private Integer commentCount;
 
-    private Integer status;
+    private String status;
 
     private Boolean deleted;
 

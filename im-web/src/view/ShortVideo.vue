@@ -137,6 +137,5 @@ export default {
   flex: 1;
   height: 100%;
   overflow-y: auto;
-  padding: 20px;
 }
 </style>
