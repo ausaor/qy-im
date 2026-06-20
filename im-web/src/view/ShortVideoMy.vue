@@ -119,9 +119,9 @@
               <span><i class="el-icon-view"></i> {{ video.playCount || 0 }}</span>
               <span><i class="el-icon-star-on"></i> {{ video.likeCount || 0 }}</span>
             </div>
-          </div>
-          <div class="edit-btn" v-if="activeTab === 'works'" @click.stop="handleEditVideo(video)">
-            <i class="el-icon-edit"></i>
+            <div class="edit-btn" v-if="activeTab === 'works'" @click.stop="handleEditVideo(video)">
+              <i class="el-icon-edit"></i>
+            </div>
           </div>
         </div>
         
@@ -159,7 +159,12 @@
       </span>
     </el-dialog>
 
-    <video-play ref="videoPlay" :videoUrl="videoUrl" :posterUrl="posterUrl" @close="closeVideoPlay"></video-play>
+    <video-play ref="videoPlay"
+                :videoUrl="videoUrl"
+                :posterUrl="posterUrl"
+                :video-height="videoHeight"
+                :video-width="videoWidth"
+                @close="closeVideoPlay"></video-play>
   </div>
 </template>
 
@@ -190,6 +195,8 @@ export default {
       selectedVideos: [],
       videoUrl: '',
       posterUrl: '',
+      videoWidth: 0,
+      videoHeight: 0,
       scopeVisible: false,
       selectedScope: 9,
     }
@@ -219,11 +226,9 @@ export default {
         method: 'get'
       }).then((user) => {
         this.userInfo = user
-        // TODO: 这里需要调用关注、粉丝、获赞数量的接口
-        // 暂时设置为0，后续需要根据实际接口调整
-        this.followCount = 0
-        this.fansCount = 0
-        this.likeCount = 0
+        this.followCount = this.userInfo.followCount || 0
+        this.fansCount = this.userInfo.fansCount || 0
+        this.likeCount = this.userInfo.likeCount || 0
       })
     },
     
@@ -307,6 +312,8 @@ export default {
       console.log('点击视频:', video)
       this.videoUrl = video.videoUrl;
       this.posterUrl = video.coverUrl;
+      this.videoWidth = video.width;
+      this.videoHeight = video.height;
       this.$refs.videoPlay.onPlayVideo()
     },
 
@@ -750,6 +757,7 @@ export default {
     .video-info {
       padding: 8px 10px 10px;
       background: white;
+      position: relative;
       
       .video-title {
         font-size: 13px;
@@ -794,8 +802,9 @@ export default {
 
   .edit-btn {
     position: absolute;
-    bottom: 8px;
+    top: 50%;
     right: 8px;
+    transform: translateY(-50%);
     z-index: 5;
     width: 28px;
     height: 28px;

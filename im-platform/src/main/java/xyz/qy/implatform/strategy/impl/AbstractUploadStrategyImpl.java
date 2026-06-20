@@ -20,6 +20,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 /**
  * 图片检测模板
@@ -99,7 +100,7 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             }
     
             // 获取文件 md5 值
-            String md5 = FileUtils.getMd5(file.getInputStream());
+            String md5 = UUID.randomUUID().toString().replace("-", "");
             // 获取文件扩展名
             String extName = FileUtils.getExtName(file.getOriginalFilename());
             // 获取文件名称
@@ -109,17 +110,12 @@ public abstract class AbstractUploadStrategyImpl implements UploadStrategy {
             // 添加日期路径
             String datePath = getDatePath();
             String fullPath = path + datePath;
-            // 判断文件是否已存在
-            if (!exists(fullPath + fileName)) {
-                // 不存在则继续上传
-                uploadVideoVO = uploadVideo(fullPath, fileName, file);
 
-                // 保存文件信息到数据库
-                saveFileRecord(originalName + extName, "VIDEO", extName, file.getSize(),
-                        uploadVideoVO.getVideoUrl(), fullPath + fileName, getStorageType());
-            } else {
-                uploadVideoVO = getVideoInfo(fullPath, fileName);
-            }
+            uploadVideoVO = uploadVideo(fullPath, fileName, file);
+
+            // 保存文件信息到数据库
+            saveFileRecord(originalName + extName, "VIDEO", extName, file.getSize(),
+                    uploadVideoVO.getVideoUrl(), fullPath + fileName, getStorageType());
             // 返回文件访问路径
             return uploadVideoVO;
         } catch (Exception e) {

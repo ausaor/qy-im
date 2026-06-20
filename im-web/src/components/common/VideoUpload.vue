@@ -77,6 +77,9 @@ export default {
         this.$emit('upload-success', {
           videoUrl: this.videoUrl,
           coverUrl: this.coverUrl,
+          width: data.width,
+          height: data.height,
+          duration: data.duration,
           name: file.file.name,
           size: file.file.size
         })

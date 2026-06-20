@@ -3,16 +3,11 @@
       title="视频播放"
       v-dialogDrag
       :visible.sync="dialogVisible"
-      width="40%"
+      :width="dialogWidth"
       :modal="false"
       :before-close="handleClose"
       class="tech-video-dialog">
-    <div class="video-container">
-<!--      <video-player
-          ref="videoPlayer"
-          :options="playerOptions"
-          @ready="onPlayerReady"
-      />-->
+    <div class="video-container" :style="containerStyle">
         <video ref="videoPlayer" class="video-obj" controls="controls" preload="none" :src="videoUrl" :poster="posterUrl"></video>
     </div>
   </el-dialog>
@@ -31,47 +26,52 @@ export default {
     posterUrl: {
       type: String,
       default: ''
+    },
+    videoWidth: {
+      type: Number,
+      default: 0
+    },
+    videoHeight: {
+      type: Number,
+      default: 0
     }
   },
   data() {
     return {
-      dialogVisible: false,
-      // 视频配置项
-      playerOptions: {
-        autoplay: false,
-        muted: true,
-        preload: 'auto',
-        language: 'en',
-        // 屏幕自适应
-        fluid: true,
-        // 倍速
-        playbackRates: [0.7, 1.0, 1.5, 2.0],
-        // 视频
-        sources: [
-          {
-            type: 'video/mp4',
-            src: ''
-          }
-        ],
-        // 封面
-        poster: '',
-        notSupportedMessage: '此视频暂无法播放，请稍后再试',
-        // 控制界面
-        controlBar: {
-          // 剩余时间
-          remainingTimeDisplay: false,
-          // 全屏按钮
-          fullscreenToggle: true,
-          // 当前时间
-          currentTimeDisplay: true,
-          // 声音控制键
-          volumeControl: false,
-          // 暂停和播放键
-          playToggle: true,
-          // 进度条
-          progressControl: true
+      dialogVisible: false
+    }
+  },
+  computed: {
+    containerStyle() {
+      if (this.videoWidth > 0 && this.videoHeight > 0) {
+        return {
+          width: `calc(70vh * ${this.videoWidth} / ${this.videoHeight})`,
+          maxWidth: '100%',
+          maxHeight: '70vh',
+          aspectRatio: `${this.videoWidth} / ${this.videoHeight}`,
+          paddingTop: '0',
+          margin: '0 auto'
         }
       }
+      return {
+        width: '640px',
+        height: '360px',
+        paddingTop: '0',
+        maxWidth: '100%'
+      }
+    },
+    dialogWidth() {
+      if (this.videoWidth > 0 && this.videoHeight > 0) {
+        const ratio = this.videoWidth / this.videoHeight
+        // 横屏视频：宽弹窗
+        if (ratio >= 1.5) return '60%'
+        // 接近方形或略宽
+        if (ratio >= 1.0) return '45%'
+        // 竖屏视频：窄弹窗
+        return '32%'
+      }
+      // 默认：容纳 640px 容器 + 弹窗内边距
+      return '700px'
     }
   },
   watch: {
@@ -98,17 +98,10 @@ export default {
   methods: {
     handleClose(done) {
       this.dialogVisible = false
-      this.playerOptions.sources[0].src = '';
-      this.playerOptions.poster = '';
       this.$emit('close')
     },
     onPlayVideo() {
-      this.playerOptions.sources[0].src = this.videoUrl;
-      this.playerOptions.poster = this.posterUrl;
       this.dialogVisible = true
-    },
-    onPlayerReady(player) {
-      console.log('播放器已加载', player)
     }
   },
 }
@@ -116,6 +109,8 @@ export default {
 
 <style scoped>
 .tech-video-dialog ::v-deep .el-dialog {
+  max-height: 90vh;
+  margin-top: 5vh !important;
   background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(15, 15, 30, 0.95));
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
@@ -123,6 +118,9 @@ export default {
               0 0 20px rgba(64, 158, 255, 0.2);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .tech-video-dialog ::v-deep .el-dialog__header {
@@ -154,9 +152,6 @@ export default {
 
 .video-container {
   position: relative;
-  width: 100%; /* 容器宽度自适应父级 */
-  height: 0; /* 高度由 padding 撇开 */
-  padding-top: 56.25%;   /* 16:9 比例（9/16=56.25%） */
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -164,9 +159,7 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.05);
 
   .video-obj {
-    position: absolute;
-    top: 0;
-    left: 0;
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: contain; /* 保持比例填充，两侧留黑边 */

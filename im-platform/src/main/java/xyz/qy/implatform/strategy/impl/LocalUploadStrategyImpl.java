@@ -90,8 +90,8 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
         if (targetFile.createNewFile()) {
             FileUtils.writeByteArrayToFile(targetFile, file.getBytes());
             String url = localUrl + path + fileName;
-            // 获取封面图片
-            String coverUrl = randomGrabberFFmpegImage(targetFile, fileName, path);
+            // 获取封面图片及视频元数据（宽高、时长）
+            String coverUrl = randomGrabberFFmpegImage(targetFile, fileName, path, uploadVideoVO);
             uploadVideoVO.setVideoUrl(url);
             uploadVideoVO.setCoverUrl(coverUrl);
         }
@@ -141,6 +141,30 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
         String coverUrl = localUrl + FilePathEnum.IMAGE.getPath() + path.substring(path.indexOf("/") + 1) + fileName + ".jpg";
         uploadVideoVO.setVideoUrl(url);
         uploadVideoVO.setCoverUrl(coverUrl);
+
+        // 尝试从已存在的视频文件中提取元数据
+        File videoFile = new File(localPath + path + fileName);
+        if (videoFile.exists()) {
+            FFmpegFrameGrabber grabber = null;
+            try {
+                grabber = new FFmpegFrameGrabber(videoFile);
+                grabber.start();
+                uploadVideoVO.setWidth(grabber.getImageWidth());
+                uploadVideoVO.setHeight(grabber.getImageHeight());
+                uploadVideoVO.setDuration(grabber.getLengthInTime() / 1000000);
+            } catch (Exception e) {
+                log.warn("获取已存在视频元数据失败: {}", e.getMessage());
+            } finally {
+                try {
+                    if (grabber != null) {
+                        grabber.stop();
+                        grabber.release();
+                    }
+                } catch (FFmpegFrameGrabber.Exception e) {
+                    log.warn("释放视频grabber失败: {}", e.getMessage());
+                }
+            }
+        }
         return uploadVideoVO;
     }
 
@@ -167,25 +191,29 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
     }
 
     /**
-     * 随机获取视频截图
+     * 随机获取视频截图并提取视频元数据（宽高、时长）
      *
      * @param videFile 视频文件
      * @param fileName 文件名
      * @param path 路径（包含日期）
-     * @return 截图列表
+     * @param uploadVideoVO 视频VO，用于设置宽高和时长
+     * @return 封面图片URL
      * */
-    public String randomGrabberFFmpegImage(File videFile, String fileName, String path) {
+    public String randomGrabberFFmpegImage(File videFile, String fileName, String path, UploadVideoVO uploadVideoVO) {
         FFmpegFrameGrabber grabber = null;
         try (ByteArrayOutputStream outStream =new ByteArrayOutputStream();) {
             grabber = new FFmpegFrameGrabber(videFile);
             grabber.start();
-            // 获取视频总帧数
-            // int lengthInVideoFrames = grabber.getLengthInVideoFrames();
+
+            // 获取视频元数据：宽高
+            uploadVideoVO.setWidth(grabber.getImageWidth());
+            uploadVideoVO.setHeight(grabber.getImageHeight());
             // 获取视频时长，/ 1000000 将单位转换为秒
             long delayedTime = grabber.getLengthInTime() / 1000000;
+            uploadVideoVO.setDuration(delayedTime);
 
             Random random = new Random();
-            // 跳转到响应时间
+            // 跳转到相应时间
             grabber.setTimestamp((random.nextInt((int)delayedTime - 1) + 1) * 1000000L);
             Frame f = grabber.grabImage();
             Java2DFrameConverter converter = new Java2DFrameConverter();

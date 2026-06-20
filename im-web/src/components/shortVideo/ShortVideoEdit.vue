@@ -193,6 +193,9 @@ export default {
       if (data.size) {
         this.form.size = data.size
       }
+      this.form.duration = data.duration
+      this.form.width = data.width
+      this.form.height = data.height
     },
     handleVideoRemove() {
       this.form.videoUrl = ''
@@ -201,6 +204,7 @@ export default {
     },
     handleCoverUploadSuccess(data) {
       this.form.coverUrl = data.originUrl
+      this.form.width = data.width
     },
     handleCoverRemove() {
       this.form.coverUrl = ''
