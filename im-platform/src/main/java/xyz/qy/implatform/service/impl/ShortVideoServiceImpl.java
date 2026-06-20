@@ -17,12 +17,14 @@ import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoFavorite;
 import xyz.qy.implatform.entity.ShortVideoLike;
+import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
 import xyz.qy.implatform.mapper.ShortVideoLikeMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.service.IShortVideoService;
+import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
@@ -34,7 +36,9 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +48,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
     @Resource
     private ShortVideoFavoriteMapper shortVideoFavoriteMapper;
+
+    @Resource
+    private IUserService userService;
 
     @Override
     public List<ShortVideoVO> myShortVideos(ShortVideoQueryDTO dto) {
@@ -107,6 +114,54 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         Page<ShortVideo> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
         List<ShortVideoVO> vos = BeanUtils.copyPropertiesList(page.getRecords(), ShortVideoVO.class);
         fillOwnerFlag(vos);
+        return PageResultVO.<List<ShortVideoVO>>builder().data(vos).total(page.getTotal()).build();
+    }
+
+    @Override
+    public PageResultVO<List<ShortVideoVO>> getRecommendShortVideos(ShortVideoQueryDTO dto) {
+        Page<ShortVideo> page = this.baseMapper.getRecommendShortVideos(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), dto);
+
+        if (CollectionUtils.isEmpty(page.getRecords())) {
+            return PageResultVO.<List<ShortVideoVO>>builder().data(Collections.emptyList()).total(0).build();
+        }
+
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        List<ShortVideo> shortVideos = page.getRecords();
+        List<ShortVideoVO> vos = BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+        fillOwnerFlag(vos);
+
+        List<Long> userIds = shortVideos.stream().map(ShortVideo::getUserId).distinct().collect(Collectors.toList());
+        List<Long> videoIds = shortVideos.stream().map(ShortVideo::getId).collect(Collectors.toList());
+
+        // 批量查询当前用户是否点赞
+        List<ShortVideoLike> likes = shortVideoLikeMapper.selectList(
+                new LambdaQueryWrapper<ShortVideoLike>()
+                        .eq(ShortVideoLike::getUserId, userId)
+                        .in(ShortVideoLike::getVideoId, videoIds));
+        Set<Long> likedVideoIds = likes.stream().map(ShortVideoLike::getVideoId).collect(Collectors.toSet());
+
+        // 批量查询当前用户是否收藏
+        List<ShortVideoFavorite> favorites = shortVideoFavoriteMapper.selectList(
+                new LambdaQueryWrapper<ShortVideoFavorite>()
+                        .eq(ShortVideoFavorite::getUserId, userId)
+                        .in(ShortVideoFavorite::getVideoId, videoIds));
+        Set<Long> favoritedVideoIds = favorites.stream().map(ShortVideoFavorite::getVideoId).collect(Collectors.toSet());
+
+        List<User> userList = userService.findUserByIds(userIds);
+        // userList根据id分组得到Map<Long, User>
+        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, user -> user));
+        for (ShortVideoVO vo : vos) {
+            User user = userMap.get(vo.getUserId());
+            if (ObjectUtil.isNotNull(user)) {
+                vo.setNickName(user.getNickName());
+                vo.setHeadImage(user.getHeadImage());
+                vo.setAuthorName(user.getNickName());
+            }
+            vo.setLiked(likedVideoIds.contains(vo.getId()));
+            vo.setFavorited(favoritedVideoIds.contains(vo.getId()));
+        }
+
         return PageResultVO.<List<ShortVideoVO>>builder().data(vos).total(page.getTotal()).build();
     }
 

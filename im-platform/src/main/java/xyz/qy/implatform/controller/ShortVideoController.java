@@ -90,6 +90,12 @@ public class ShortVideoController {
         return ResultUtils.success(shortVideoService.pageShortVideos(dto));
     }
 
+    @ApiOperation(value = "推荐短视频", notes = "推荐短视频")
+    @PostMapping("/recommend")
+    public Result<PageResultVO<List<ShortVideoVO>>> getRecommendShortVideos(@RequestBody ShortVideoQueryDTO dto) {
+        return ResultUtils.success(shortVideoService.getRecommendShortVideos(dto));
+    }
+
     @ApiOperation(value = "批量删除短视频", notes = "批量删除短视频")
     @PostMapping("/batchDelete")
     public Result batchDelete(@Valid @RequestBody ShortVideoBatchDelDTO dto) {

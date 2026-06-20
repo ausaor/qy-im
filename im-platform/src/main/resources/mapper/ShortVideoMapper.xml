@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.qy.implatform.mapper.ShortVideoMapper">
+
+    <sql id="queryBase">
+        SELECT id,
+               user_id,
+               object_id,
+               category,
+               scope,
+               title,
+               description,
+               video_url,
+               cover_url,
+               duration,
+               width,
+               height,
+               size,
+               play_count,
+               like_count,
+               favorite_count,
+               comment_count,
+               status,
+               create_time,
+               update_time,
+               deleted
+        FROM im_short_video
+    </sql>
+
+    <select id="getRecommendShortVideos" resultType="xyz.qy.implatform.entity.ShortVideo">
+        <include refid="queryBase"/> t1
+        WHERE t1.deleted = 0
+        AND t1.status = '2'
+        AND t1.scope = 9
+        <if test="dto.userId != null">
+            AND t1.user_id = #{dto.userId}
+        </if>
+        <if test="dto.objectId != null">
+            AND t1.object_id = #{dto.objectId}
+        </if>
+        <if test="dto.category != null and dto.category != ''">
+            AND t1.category = #{dto.category}
+        </if>
+        ORDER BY t1.create_time DESC
+    </select>
+</mapper>

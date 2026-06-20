@@ -24,6 +24,8 @@ public interface IShortVideoService extends IService<ShortVideo> {
 
     PageResultVO<List<ShortVideoVO>> pageShortVideos(ShortVideoQueryDTO dto);
 
+    PageResultVO<List<ShortVideoVO>> getRecommendShortVideos(ShortVideoQueryDTO dto);
+
     ShortVideoVO getShortVideoById(Long id);
 
     ShortVideoVO addShortVideo(ShortVideoAddDTO dto);

@@ -11,6 +11,12 @@ public class ShortVideoVO {
 
     private Long userId;
 
+    private String nickName;
+
+    private String authorName;
+
+    private String headImage;
+
     private Long objectId;
 
     private String category;
@@ -51,5 +57,12 @@ public class ShortVideoVO {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date updateTime;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date publishTime;
+
     private Boolean isOwner = Boolean.FALSE;
+
+    private Boolean liked = Boolean.FALSE;
+
+    private Boolean favorited = Boolean.FALSE;
 }
