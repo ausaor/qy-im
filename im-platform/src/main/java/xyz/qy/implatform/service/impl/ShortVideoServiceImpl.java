@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.implatform.dto.ShortVideoAddDTO;
+import xyz.qy.implatform.dto.ShortVideoBatchDelDTO;
+import xyz.qy.implatform.dto.ShortVideoBatchScopeDTO;
 import xyz.qy.implatform.dto.ShortVideoDelDTO;
 import xyz.qy.implatform.dto.ShortVideoQueryDTO;
 import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
@@ -193,6 +195,46 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         shortVideo.setDeleted(true);
         shortVideo.setUpdateTime(new Date());
         this.updateById(shortVideo);
+    }
+
+    @Transactional
+    @Override
+    public void batchDeleteShortVideo(ShortVideoBatchDelDTO dto) {
+        Long userId = SessionContext.getSession().getUserId();
+        List<ShortVideo> shortVideos = this.lambdaQuery()
+                .in(ShortVideo::getId, dto.getIds())
+                .eq(ShortVideo::getDeleted, false)
+                .list();
+        for (ShortVideo shortVideo : shortVideos) {
+            if (!userId.equals(shortVideo.getUserId())) {
+                throw new GlobalException("无权操作");
+            }
+            shortVideo.setDeleted(true);
+            shortVideo.setUpdateTime(new Date());
+        }
+        if (CollectionUtils.isNotEmpty(shortVideos)) {
+            this.updateBatchById(shortVideos);
+        }
+    }
+
+    @Transactional
+    @Override
+    public void batchUpdateScope(ShortVideoBatchScopeDTO dto) {
+        Long userId = SessionContext.getSession().getUserId();
+        List<ShortVideo> shortVideos = this.lambdaQuery()
+                .in(ShortVideo::getId, dto.getIds())
+                .eq(ShortVideo::getDeleted, false)
+                .list();
+        for (ShortVideo shortVideo : shortVideos) {
+            if (!userId.equals(shortVideo.getUserId())) {
+                throw new GlobalException("无权操作");
+            }
+            shortVideo.setScope(dto.getScope());
+            shortVideo.setUpdateTime(new Date());
+        }
+        if (CollectionUtils.isNotEmpty(shortVideos)) {
+            this.updateBatchById(shortVideos);
+        }
     }
 
     private LambdaQueryWrapper<ShortVideo> buildQueryWrapper(ShortVideoQueryDTO dto) {

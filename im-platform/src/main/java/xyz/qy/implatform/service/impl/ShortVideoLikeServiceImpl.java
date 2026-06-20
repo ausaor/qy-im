@@ -87,6 +87,22 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
         this.removeById(dto.getId());
     }
 
+    @Transactional
+    @Override
+    public void deleteShortVideoLikes(List<Long> ids) {
+        Long userId = SessionContext.getSession().getUserId();
+        for (Long id : ids) {
+            ShortVideoLike like = this.getById(id);
+            if (ObjectUtil.isNull(like)) {
+                throw new GlobalException("点赞记录不存在");
+            }
+            if (!userId.equals(like.getUserId())) {
+                throw new GlobalException("无权操作");
+            }
+        }
+        this.removeByIds(ids);
+    }
+
     private LambdaQueryWrapper<ShortVideoLike> buildQueryWrapper(ShortVideoLikeQueryDTO dto) {
         Long queryUserId = ObjectUtil.isNotNull(dto.getUserId()) ? dto.getUserId() : SessionContext.getSession().getUserId();
         LambdaQueryWrapper<ShortVideoLike> wrapper = new LambdaQueryWrapper<>();

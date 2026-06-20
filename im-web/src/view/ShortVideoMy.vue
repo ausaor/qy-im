@@ -69,6 +69,27 @@
       </div>
     </div>
 
+    <!-- 批量管理操作栏 -->
+    <div class="batch-action-bar" v-if="batchMode">
+      <div class="batch-select-all">
+        <el-checkbox :value="isAllSelected" :indeterminate="isIndeterminate" @change="handleSelectAll" />
+        <span>全选</span>
+      </div>
+      <div class="batch-selected-count">已选{{ selectedVideos.length }}个{{ getBatchCountText() }}</div>
+      <div class="batch-actions">
+        <template v-if="activeTab === 'works'">
+          <span class="batch-action-btn" @click="handleScopeSetting"><i class="el-icon-setting"></i>权限设置</span>
+          <span class="batch-action-btn danger" @click="handleBatchDelete"><i class="el-icon-delete-solid"></i>删除</span>
+        </template>
+        <template v-if="activeTab === 'liked'">
+          <span class="batch-action-btn danger" @click="handleBatchUnlike"><i class="el-icon-delete-solid"></i>取消喜欢</span>
+        </template>
+        <template v-if="activeTab === 'favorite'">
+          <span class="batch-action-btn danger" @click="handleBatchUnfavorite"><i class="el-icon-delete-solid"></i>取消收藏</span>
+        </template>
+      </div>
+    </div>
+
     <!-- 内容区域 -->
     <div class="video-list">
       <div v-loading="loading" class="video-grid">
@@ -118,6 +139,26 @@
         @close="handleEditClose"
         @refresh="handleRefresh"
     />
+
+    <!-- 权限设置弹窗 -->
+    <el-dialog
+      title="权限设置"
+      :visible.sync="scopeVisible"
+      width="400px"
+      :close-on-click-modal="false"
+    >
+      <el-radio-group v-model="selectedScope" class="scope-radio-group">
+        <el-radio :label="9">公开</el-radio>
+        <el-radio :label="3">关注可见</el-radio>
+        <el-radio :label="2">好友可见</el-radio>
+        <el-radio :label="1">私密</el-radio>
+      </el-radio-group>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="scopeVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleScopeConfirm">确定</el-button>
+      </span>
+    </el-dialog>
+
     <video-play ref="videoPlay" :videoUrl="videoUrl" :posterUrl="posterUrl" @close="closeVideoPlay"></video-play>
   </div>
 </template>
@@ -149,6 +190,8 @@ export default {
       selectedVideos: [],
       videoUrl: '',
       posterUrl: '',
+      scopeVisible: false,
+      selectedScope: 9,
     }
   },
   created() {
@@ -158,6 +201,14 @@ export default {
   watch: {
     activeTab() {
       this.loadVideoList()
+    }
+  },
+  computed: {
+    isAllSelected() {
+      return this.videoList.length > 0 && this.selectedVideos.length === this.videoList.length
+    },
+    isIndeterminate() {
+      return this.selectedVideos.length > 0 && this.selectedVideos.length < this.videoList.length
     }
   },
   methods: {
@@ -289,6 +340,119 @@ export default {
       this.editVideoId = video.id
       this.editVisible = true
     },
+
+    // 全选/取消全选
+    handleSelectAll(checked) {
+      if (checked) {
+        this.selectedVideos = this.videoList.map(v => v.id)
+      } else {
+        this.selectedVideos = []
+      }
+    },
+
+    // 获取批量计数文本
+    getBatchCountText() {
+      switch(this.activeTab) {
+        case 'works': return '作品'
+        case 'liked': return '喜欢的作品'
+        case 'favorite': return '收藏的作品'
+        default: return ''
+      }
+    },
+
+    // 批量删除作品
+    handleBatchDelete() {
+      if (this.selectedVideos.length === 0) {
+        this.$message.warning('请先选择作品')
+        return
+      }
+      this.$confirm(`确定要删除选中的${this.selectedVideos.length}个作品吗？删除后不可恢复。`, '删除确认', {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$http({
+          url: '/shortVideo/batchDelete',
+          method: 'post',
+          data: { ids: this.selectedVideos }
+        }).then(() => {
+          this.$message.success('删除成功')
+          this.selectedVideos = []
+          this.loadVideoList()
+        })
+      }).catch(() => {})
+    },
+
+    // 批量取消喜欢
+    handleBatchUnlike() {
+      if (this.selectedVideos.length === 0) {
+        this.$message.warning('请先选择作品')
+        return
+      }
+      this.$confirm(`确定要取消喜欢选中的${this.selectedVideos.length}个作品吗？`, '取消喜欢确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$http({
+          url: '/shortVideoLike/batchDelete',
+          method: 'delete',
+          data: { ids: this.selectedVideos }
+        }).then(() => {
+          this.$message.success('已取消喜欢')
+          this.selectedVideos = []
+          this.loadVideoList()
+        })
+      }).catch(() => {})
+    },
+
+    // 批量取消收藏
+    handleBatchUnfavorite() {
+      if (this.selectedVideos.length === 0) {
+        this.$message.warning('请先选择作品')
+        return
+      }
+      this.$confirm(`确定要取消收藏选中的${this.selectedVideos.length}个作品吗？`, '取消收藏确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$http({
+          url: '/shortVideoFavorite/batchDelete',
+          method: 'delete',
+          data: { ids: this.selectedVideos }
+        }).then(() => {
+          this.$message.success('已取消收藏')
+          this.selectedVideos = []
+          this.loadVideoList()
+        })
+      }).catch(() => {})
+    },
+
+    // 打开权限设置弹窗
+    handleScopeSetting() {
+      if (this.selectedVideos.length === 0) {
+        this.$message.warning('请先选择作品')
+        return
+      }
+      this.selectedScope = 9
+      this.scopeVisible = true
+    },
+
+    // 确认权限设置
+    handleScopeConfirm() {
+      this.$http({
+        url: '/shortVideo/batchUpdateScope',
+        method: 'post',
+        data: { ids: this.selectedVideos, scope: this.selectedScope }
+      }).then(() => {
+        this.$message.success('权限设置成功')
+        this.scopeVisible = false
+        this.selectedVideos = []
+        this.loadVideoList()
+      })
+    },
+
     closeVideoPlay() {
       this.videoUrl = '';
       this.posterUrl = '';
@@ -425,6 +589,72 @@ export default {
       color: #66b1ff;
     }
   }
+}
+
+// 批量管理操作栏
+.batch-action-bar {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 10px 16px;
+  border-bottom: 1px solid #ebeef5;
+  
+  .batch-select-all {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #303133;
+    flex-shrink: 0;
+  }
+  
+  .batch-selected-count {
+    font-size: 13px;
+    color: #909399;
+    padding-left: 16px;
+  }
+  
+  .batch-actions {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+    margin-left: 16px;
+    
+    .batch-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: #606266;
+      cursor: pointer;
+      white-space: nowrap;
+      
+      i {
+        font-size: 14px;
+      }
+      
+      &:hover {
+        color: #409eff;
+      }
+      
+      &.danger {
+        color: #f56c6c;
+        
+        &:hover {
+          color: #f89898;
+        }
+      }
+    }
+  }
+}
+
+// 权限弹窗
+.scope-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 10px 0;
 }
 
 // 视频列表

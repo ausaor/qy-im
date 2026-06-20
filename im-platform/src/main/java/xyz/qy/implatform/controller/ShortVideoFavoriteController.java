@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.dto.ShortVideoFavoriteAddDTO;
+import xyz.qy.implatform.dto.ShortVideoFavoriteBatchDelDTO;
 import xyz.qy.implatform.dto.ShortVideoFavoriteDelDTO;
 import xyz.qy.implatform.dto.ShortVideoFavoriteQueryDTO;
 import xyz.qy.implatform.dto.ShortVideoFavoriteUpdateDTO;
@@ -49,6 +50,13 @@ public class ShortVideoFavoriteController {
     @DeleteMapping("/delete")
     public Result delete(@Valid @RequestBody ShortVideoFavoriteDelDTO dto) {
         shortVideoFavoriteService.deleteShortVideoFavorite(dto);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "批量删除收藏", notes = "批量删除收藏")
+    @DeleteMapping("/batchDelete")
+    public Result batchDelete(@Valid @RequestBody ShortVideoFavoriteBatchDelDTO dto) {
+        shortVideoFavoriteService.deleteShortVideoFavorites(dto.getIds());
         return ResultUtils.success();
     }
 

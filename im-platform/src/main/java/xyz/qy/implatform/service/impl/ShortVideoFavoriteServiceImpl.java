@@ -101,6 +101,22 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
         this.removeById(dto.getId());
     }
 
+    @Transactional
+    @Override
+    public void deleteShortVideoFavorites(List<Long> ids) {
+        Long userId = SessionContext.getSession().getUserId();
+        for (Long id : ids) {
+            ShortVideoFavorite favorite = this.getById(id);
+            if (ObjectUtil.isNull(favorite)) {
+                throw new GlobalException("收藏记录不存在");
+            }
+            if (!userId.equals(favorite.getUserId())) {
+                throw new GlobalException("无权操作");
+            }
+        }
+        this.removeByIds(ids);
+    }
+
     private LambdaQueryWrapper<ShortVideoFavorite> buildQueryWrapper(ShortVideoFavoriteQueryDTO dto) {
         Long queryUserId = ObjectUtil.isNotNull(dto.getUserId()) ? dto.getUserId() : SessionContext.getSession().getUserId();
         LambdaQueryWrapper<ShortVideoFavorite> wrapper = new LambdaQueryWrapper<>();

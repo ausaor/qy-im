@@ -2,6 +2,8 @@ package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.qy.implatform.dto.ShortVideoAddDTO;
+import xyz.qy.implatform.dto.ShortVideoBatchDelDTO;
+import xyz.qy.implatform.dto.ShortVideoBatchScopeDTO;
 import xyz.qy.implatform.dto.ShortVideoDelDTO;
 import xyz.qy.implatform.dto.ShortVideoQueryDTO;
 import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
@@ -29,4 +31,8 @@ public interface IShortVideoService extends IService<ShortVideo> {
     ShortVideoVO updateShortVideo(ShortVideoUpdateDTO dto);
 
     void deleteShortVideo(ShortVideoDelDTO dto);
+
+    void batchDeleteShortVideo(ShortVideoBatchDelDTO dto);
+
+    void batchUpdateScope(ShortVideoBatchScopeDTO dto);
 }

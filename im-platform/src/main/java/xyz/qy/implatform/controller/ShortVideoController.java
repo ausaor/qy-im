@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.dto.ShortVideoAddDTO;
+import xyz.qy.implatform.dto.ShortVideoBatchDelDTO;
+import xyz.qy.implatform.dto.ShortVideoBatchScopeDTO;
 import xyz.qy.implatform.dto.ShortVideoDelDTO;
 import xyz.qy.implatform.dto.ShortVideoQueryDTO;
 import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
@@ -86,5 +88,19 @@ public class ShortVideoController {
     @PostMapping("/pageList")
     public Result<PageResultVO<List<ShortVideoVO>>> pageList(@RequestBody ShortVideoQueryDTO dto) {
         return ResultUtils.success(shortVideoService.pageShortVideos(dto));
+    }
+
+    @ApiOperation(value = "批量删除短视频", notes = "批量删除短视频")
+    @PostMapping("/batchDelete")
+    public Result batchDelete(@Valid @RequestBody ShortVideoBatchDelDTO dto) {
+        shortVideoService.batchDeleteShortVideo(dto);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "批量修改公布范围", notes = "批量修改短视频公布范围")
+    @PostMapping("/batchUpdateScope")
+    public Result batchUpdateScope(@Valid @RequestBody ShortVideoBatchScopeDTO dto) {
+        shortVideoService.batchUpdateScope(dto);
+        return ResultUtils.success();
     }
 }

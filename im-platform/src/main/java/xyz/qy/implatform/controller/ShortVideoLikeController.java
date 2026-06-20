@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.implatform.dto.ShortVideoLikeAddDTO;
+import xyz.qy.implatform.dto.ShortVideoLikeBatchDelDTO;
 import xyz.qy.implatform.dto.ShortVideoLikeDelDTO;
 import xyz.qy.implatform.dto.ShortVideoLikeQueryDTO;
 import xyz.qy.implatform.dto.ShortVideoLikeUpdateDTO;
@@ -43,6 +44,13 @@ public class ShortVideoLikeController {
     @DeleteMapping("/delete")
     public Result delete(@Valid @RequestBody ShortVideoLikeDelDTO dto) {
         shortVideoLikeService.deleteShortVideoLike(dto);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "批量删除点赞", notes = "批量删除点赞")
+    @DeleteMapping("/batchDelete")
+    public Result batchDelete(@Valid @RequestBody ShortVideoLikeBatchDelDTO dto) {
+        shortVideoLikeService.deleteShortVideoLikes(dto.getIds());
         return ResultUtils.success();
     }
 

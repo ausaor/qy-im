@@ -23,4 +23,6 @@ public interface IShortVideoFavoriteService extends IService<ShortVideoFavorite>
     ShortVideoFavoriteVO updateShortVideoFavorite(ShortVideoFavoriteUpdateDTO dto);
 
     void deleteShortVideoFavorite(ShortVideoFavoriteDelDTO dto);
+
+    void deleteShortVideoFavorites(List<Long> ids);
 }
