@@ -23,8 +23,11 @@ import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoFavoriteVO;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavoriteMapper, ShortVideoFavorite> implements IShortVideoFavoriteService {
@@ -72,21 +75,7 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
         favorite.setVideoId(dto.getVideoId());
         favorite.setCreateTime(new Date());
         this.save(favorite);
-        ShortVideoFavoriteVO vo = BeanUtils.copyProperties(favorite, ShortVideoFavoriteVO.class);
-        vo.setIsOwner(Boolean.TRUE);
-        return vo;
-    }
-
-    @Transactional
-    @Override
-    public ShortVideoFavoriteVO updateShortVideoFavorite(ShortVideoFavoriteUpdateDTO dto) {
-        ShortVideoFavorite favorite = this.getById(dto.getId());
-        checkExists(favorite);
-        checkOwner(favorite);
-        checkVideo(dto.getVideoId());
-        checkDuplicate(favorite.getUserId(), dto.getVideoId(), dto.getId());
-        favorite.setVideoId(dto.getVideoId());
-        this.updateById(favorite);
+        updateVideoFavoriteCount(dto.getVideoId());
         ShortVideoFavoriteVO vo = BeanUtils.copyProperties(favorite, ShortVideoFavoriteVO.class);
         vo.setIsOwner(Boolean.TRUE);
         return vo;
@@ -95,26 +84,41 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
     @Transactional
     @Override
     public void deleteShortVideoFavorite(ShortVideoFavoriteDelDTO dto) {
-        ShortVideoFavorite favorite = this.getById(dto.getId());
+        Long userId = SessionContext.getSession().getUserId();
+        Long videoId = dto.getVideoId();
+        LambdaQueryWrapper<ShortVideoFavorite> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShortVideoFavorite::getUserId, userId)
+                .eq(ShortVideoFavorite::getVideoId, videoId);
+        ShortVideoFavorite favorite = this.getOne(wrapper);
         checkExists(favorite);
-        checkOwner(favorite);
-        this.removeById(dto.getId());
+        this.removeById(favorite.getId());
+        updateVideoFavoriteCount(videoId);
     }
 
     @Transactional
     @Override
-    public void deleteShortVideoFavorites(List<Long> ids) {
+    public void deleteShortVideoFavorites(List<Long> videoIds) {
         Long userId = SessionContext.getSession().getUserId();
-        for (Long id : ids) {
-            ShortVideoFavorite favorite = this.getById(id);
+        Set<Long> toDeleteVideoIds = new HashSet<>();
+        List<Long> favoriteIds = new ArrayList<>();
+        for (Long videoId : videoIds) {
+            LambdaQueryWrapper<ShortVideoFavorite> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(ShortVideoFavorite::getUserId, userId)
+                    .eq(ShortVideoFavorite::getVideoId, videoId);
+            ShortVideoFavorite favorite = this.getOne(wrapper);
             if (ObjectUtil.isNull(favorite)) {
-                throw new GlobalException("收藏记录不存在");
+                continue;
             }
             if (!userId.equals(favorite.getUserId())) {
-                throw new GlobalException("无权操作");
+                continue;
             }
+            favoriteIds.add(favorite.getId());
+            toDeleteVideoIds.add(videoId);
         }
-        this.removeByIds(ids);
+        this.removeByIds(favoriteIds);
+        for (Long videoId : toDeleteVideoIds) {
+            updateVideoFavoriteCount(videoId);
+        }
     }
 
     private LambdaQueryWrapper<ShortVideoFavorite> buildQueryWrapper(ShortVideoFavoriteQueryDTO dto) {
@@ -163,5 +167,18 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
         if (!SessionContext.getSession().getUserId().equals(favorite.getUserId())) {
             throw new GlobalException("无权操作");
         }
+    }
+
+    /**
+     * 更新短视频收藏数（重新查询）
+     */
+    private void updateVideoFavoriteCount(Long videoId) {
+        LambdaQueryWrapper<ShortVideoFavorite> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShortVideoFavorite::getVideoId, videoId);
+        long count = this.count(wrapper);
+        ShortVideo video = new ShortVideo();
+        video.setId(videoId);
+        video.setFavoriteCount((int) count);
+        shortVideoMapper.updateById(video);
     }
 }

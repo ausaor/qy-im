@@ -50,7 +50,7 @@ public class ShortVideoLikeController {
     @ApiOperation(value = "批量删除点赞", notes = "批量删除点赞")
     @DeleteMapping("/batchDelete")
     public Result batchDelete(@Valid @RequestBody ShortVideoLikeBatchDelDTO dto) {
-        shortVideoLikeService.deleteShortVideoLikes(dto.getIds());
+        shortVideoLikeService.deleteShortVideoLikes(dto.getVideoIds());
         return ResultUtils.success();
     }
 

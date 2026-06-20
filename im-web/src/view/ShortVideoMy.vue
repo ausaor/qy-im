@@ -97,13 +97,11 @@
           v-for="video in videoList" 
           :key="video.id" 
           class="video-item"
-          :class="{ 'batch-mode': batchMode, 'checked': isVideoSelected(video.id) }"
-          @click="handleVideoClick(video)"
-        >
+          :class="{ 'batch-mode': batchMode, 'checked': isVideoSelected(video.id) }">
           <div v-if="batchMode" class="video-checkbox" @click.stop="handleCheckChange(video)">
             <el-checkbox :value="isVideoSelected(video.id)" />
           </div>
-          <div class="video-cover">
+          <div class="video-cover" @click="handleVideoClick(video)">
             <img :src="video.coverUrl" alt="视频封面" />
             <div class="status-badge" v-if="video.status !== 2">
               {{ getStatusText(video.status) }}
@@ -117,7 +115,9 @@
             <div class="video-title" :title="video.title">{{ video.title || '未命名' }}</div>
             <div class="video-stats">
               <span><i class="el-icon-view"></i> {{ video.playCount || 0 }}</span>
-              <span><i class="el-icon-star-on"></i> {{ video.likeCount || 0 }}</span>
+              <span><i class="iconfont icon-aixin"></i> {{ video.likeCount || 0 }}</span>
+              <span><i class="el-icon-star-on"></i> {{ video.favoriteCount || 0 }}</span>
+              <span><i class="iconfont icon-xiaoxi"></i> {{ video.commentCount || 0 }}</span>
             </div>
             <div class="edit-btn" v-if="activeTab === 'works'" @click.stop="handleEditVideo(video)">
               <i class="el-icon-edit"></i>
@@ -404,7 +404,7 @@ export default {
         this.$http({
           url: '/shortVideoLike/batchDelete',
           method: 'delete',
-          data: { ids: this.selectedVideos }
+          data: { videoIds: this.selectedVideos }
         }).then(() => {
           this.$message.success('已取消喜欢')
           this.selectedVideos = []
@@ -427,7 +427,7 @@ export default {
         this.$http({
           url: '/shortVideoFavorite/batchDelete',
           method: 'delete',
-          data: { ids: this.selectedVideos }
+          data: { videoIds: this.selectedVideos }
         }).then(() => {
           this.$message.success('已取消收藏')
           this.selectedVideos = []

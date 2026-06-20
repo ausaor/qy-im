@@ -23,8 +23,11 @@ import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoLikeVO;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper, ShortVideoLike> implements IShortVideoLikeService {
@@ -73,6 +76,7 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
         like.setTargetUserId(shortVideo.getUserId());
         like.setCreateTime(new Date());
         this.save(like);
+        updateVideoLikeCount(dto.getVideoId());
         ShortVideoLikeVO vo = BeanUtils.copyProperties(like, ShortVideoLikeVO.class);
         vo.setIsOwner(Boolean.TRUE);
         return vo;
@@ -81,26 +85,41 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
     @Transactional
     @Override
     public void deleteShortVideoLike(ShortVideoLikeDelDTO dto) {
-        ShortVideoLike like = this.getById(dto.getId());
+        Long userId = SessionContext.getSession().getUserId();
+        Long videoId = dto.getVideoId();
+        LambdaQueryWrapper<ShortVideoLike> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShortVideoLike::getUserId, userId)
+                .eq(ShortVideoLike::getVideoId, videoId);
+        ShortVideoLike like = this.getOne(wrapper);
         checkExists(like);
-        checkOwner(like);
-        this.removeById(dto.getId());
+        this.removeById(like.getId());
+        updateVideoLikeCount(videoId);
     }
 
     @Transactional
     @Override
-    public void deleteShortVideoLikes(List<Long> ids) {
+    public void deleteShortVideoLikes(List<Long> videoIds) {
         Long userId = SessionContext.getSession().getUserId();
-        for (Long id : ids) {
-            ShortVideoLike like = this.getById(id);
+        Set<Long> toDeleteVideoIds = new HashSet<>();
+        List<Long> likeIds = new ArrayList<>();
+        for (Long videoId : videoIds) {
+            LambdaQueryWrapper<ShortVideoLike> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(ShortVideoLike::getUserId, userId)
+                    .eq(ShortVideoLike::getVideoId, videoId);
+            ShortVideoLike like = this.getOne(wrapper);
             if (ObjectUtil.isNull(like)) {
-                throw new GlobalException("点赞记录不存在");
+                continue;
             }
             if (!userId.equals(like.getUserId())) {
-                throw new GlobalException("无权操作");
+                continue;
             }
+            likeIds.add(like.getId());
+            toDeleteVideoIds.add(videoId);
         }
-        this.removeByIds(ids);
+        this.removeByIds(likeIds);
+        for (Long videoId : toDeleteVideoIds) {
+            updateVideoLikeCount(videoId);
+        }
     }
 
     private LambdaQueryWrapper<ShortVideoLike> buildQueryWrapper(ShortVideoLikeQueryDTO dto) {
@@ -150,5 +169,18 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
         if (!SessionContext.getSession().getUserId().equals(like.getUserId())) {
             throw new GlobalException("无权操作");
         }
+    }
+
+    /**
+     * 更新短视频点赞数（重新查询）
+     */
+    private void updateVideoLikeCount(Long videoId) {
+        LambdaQueryWrapper<ShortVideoLike> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShortVideoLike::getVideoId, videoId);
+        long count = this.count(wrapper);
+        ShortVideo video = new ShortVideo();
+        video.setId(videoId);
+        video.setLikeCount((int) count);
+        shortVideoMapper.updateById(video);
     }
 }

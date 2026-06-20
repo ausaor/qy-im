@@ -29,6 +29,8 @@ import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
+import xyz.qy.implatform.contant.RedisKey;
+import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoVO;
 
@@ -39,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,6 +54,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
     @Resource
     private IUserService userService;
+
+    @Resource
+    private RedisCache redisCache;
 
     @Override
     public List<ShortVideoVO> myShortVideos(ShortVideoQueryDTO dto) {
@@ -290,6 +296,24 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         if (CollectionUtils.isNotEmpty(shortVideos)) {
             this.updateBatchById(shortVideos);
         }
+    }
+
+    @Override
+    public void addPlayCount(Long videoId) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        String key = RedisKey.IM_SHORT_VIDEO_PLAY + videoId + ":" + userId;
+        // 24h内已播放则不再计数
+        if (redisCache.hasKey(key)) {
+            return;
+        }
+        // 播放次数+1
+        this.lambdaUpdate()
+                .setSql("play_count = play_count + 1")
+                .eq(ShortVideo::getId, videoId)
+                .update();
+        // 标记已播放，24h过期
+        redisCache.setCacheObject(key, "1", 24, TimeUnit.HOURS);
     }
 
     private LambdaQueryWrapper<ShortVideo> buildQueryWrapper(ShortVideoQueryDTO dto) {

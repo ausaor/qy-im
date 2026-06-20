@@ -40,12 +40,6 @@ public class ShortVideoFavoriteController {
         return ResultUtils.success(shortVideoFavoriteService.addShortVideoFavorite(dto));
     }
 
-    @ApiOperation(value = "更新收藏", notes = "更新收藏")
-    @PostMapping("/update")
-    public Result<ShortVideoFavoriteVO> update(@Valid @RequestBody ShortVideoFavoriteUpdateDTO dto) {
-        return ResultUtils.success(shortVideoFavoriteService.updateShortVideoFavorite(dto));
-    }
-
     @ApiOperation(value = "删除收藏", notes = "删除收藏")
     @DeleteMapping("/delete")
     public Result delete(@Valid @RequestBody ShortVideoFavoriteDelDTO dto) {
@@ -56,7 +50,7 @@ public class ShortVideoFavoriteController {
     @ApiOperation(value = "批量删除收藏", notes = "批量删除收藏")
     @DeleteMapping("/batchDelete")
     public Result batchDelete(@Valid @RequestBody ShortVideoFavoriteBatchDelDTO dto) {
-        shortVideoFavoriteService.deleteShortVideoFavorites(dto.getIds());
+        shortVideoFavoriteService.deleteShortVideoFavorites(dto.getVideoIds());
         return ResultUtils.success();
     }
 

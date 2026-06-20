@@ -50,15 +50,15 @@
             ></head-image>
           </div>
           <div class="action-item" :class="{ active: currentVideo.liked }" @click.stop="handleLike">
-            <i :class="currentVideo.liked ? 'el-icon-star-on' : 'el-icon-star-off'"></i>
+            <i :class="currentVideo.liked ? 'iconfont icon-aixin' : 'iconfont icon-hongxin1'"></i>
             <span class="action-count">{{ currentVideo.likeCount || 0 }}</span>
           </div>
           <div class="action-item" @click.stop="handleComment">
             <i class="el-icon-chat-line-round"></i>
             <span class="action-count">{{ currentVideo.commentCount || 0 }}</span>
           </div>
-          <div class="action-item" :class="{ active: currentVideo.favorited }" @click.stop="handleFavorite">
-            <i class="el-icon-collection-tag"></i>
+          <div class="action-item favorite-item" :class="{ active: currentVideo.favorited }" @click.stop="handleFavorite">
+            <i :class="currentVideo.favorited ? 'el-icon-star-on' : 'el-icon-star-off'"></i>
             <span class="action-count">{{ currentVideo.favoriteCount || 0 }}</span>
           </div>
         </div>
@@ -192,6 +192,27 @@ export default {
           this.isPlaying = true
         }).catch(() => {})
       }
+      // 记录播放次数（同一视频仅记录一次）
+      this.recordPlayCount()
+    },
+
+    recordPlayCount() {
+      const videoId = this.currentVideo.id
+      if (!videoId) return
+      // 已在播放中等待响应，避免重复调用
+      if (this._pendingPlayCount === videoId) return
+      // 已记录过播放，跳过
+      if (this.$store.getters.hasPlayed(videoId)) return
+
+      this._pendingPlayCount = videoId
+      this.$http({
+        url: `/shortVideo/addPlayCount/${videoId}`,
+        method: 'post'
+      }).then(() => {
+        this.$store.commit('markPlayed', videoId)
+      }).finally(() => {
+        this._pendingPlayCount = null
+      })
     },
 
     pauseVideo() {
@@ -442,6 +463,10 @@ export default {
 
     &.active i {
       color: #FF5E5B;
+    }
+
+    &.favorite-item.active i {
+      color: #FFD700;
     }
 
     &.avatar-item {

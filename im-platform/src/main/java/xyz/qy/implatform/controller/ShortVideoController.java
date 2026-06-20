@@ -109,4 +109,11 @@ public class ShortVideoController {
         shortVideoService.batchUpdateScope(dto);
         return ResultUtils.success();
     }
+
+    @ApiOperation(value = "增加播放次数", notes = "增加播放次数")
+    @PostMapping("/addPlayCount/{videoId}")
+    public Result addPlayCount(@NotNull(message = "videoId不能为空") @PathVariable Long videoId) {
+        shortVideoService.addPlayCount(videoId);
+        return ResultUtils.success();
+    }
 }

@@ -120,4 +120,9 @@ public final class RedisKey {
      * 功能项禁用
      */
     public static final String IM_FEATURE_BAN = IM_CACHE + "feature-ban:";
+
+    /**
+     * 短视频播放记录（24h内同一用户不重复计数）
+     */
+    public static final String IM_SHORT_VIDEO_PLAY = IM_CACHE + "short-video:play:";
 }

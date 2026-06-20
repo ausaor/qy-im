@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 public class ShortVideoFavoriteBatchDelDTO {
     @NotEmpty(message = "ids不能为空")
-    private List<Long> ids;
+    private List<Long> videoIds;
 }

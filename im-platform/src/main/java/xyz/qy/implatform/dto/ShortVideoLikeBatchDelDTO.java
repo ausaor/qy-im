@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 public class ShortVideoLikeBatchDelDTO {
-    @NotEmpty(message = "ids不能为空")
-    private List<Long> ids;
+    @NotEmpty(message = "videoIds不能为空")
+    private List<Long> videoIds;
 }
