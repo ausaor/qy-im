@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.qy.implatform.dto.ShortVideoCommentAddDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentDelDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentQueryDTO;
-import xyz.qy.implatform.dto.ShortVideoCommentUpdateDTO;
 import xyz.qy.implatform.entity.ShortVideoComment;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoCommentVO;
@@ -16,11 +15,7 @@ public interface IShortVideoCommentService extends IService<ShortVideoComment> {
 
     PageResultVO<List<ShortVideoCommentVO>> pageShortVideoComments(ShortVideoCommentQueryDTO dto);
 
-    ShortVideoCommentVO getShortVideoCommentById(Long id);
-
     ShortVideoCommentVO addShortVideoComment(ShortVideoCommentAddDTO dto);
-
-    ShortVideoCommentVO updateShortVideoComment(ShortVideoCommentUpdateDTO dto);
 
     void deleteShortVideoComment(ShortVideoCommentDelDTO dto);
 }

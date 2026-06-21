@@ -40,4 +40,14 @@ public interface IFollowService extends IService<Follow> {
       * @return 关注id集合
      */
     Set<Long> findFollowsTargetIds(String type);
+
+    /**
+     * 判断当前用户是否关注了某个目标对象
+     *
+     * @param userId 当前用户id
+     * @param targetId 目标对象id
+     * @param type 类别
+     * @return 是否关注
+     */
+    Boolean isFollow(Long userId, Long targetId, String type);
 }

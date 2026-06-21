@@ -39,23 +39,11 @@ public class ShortVideoCommentController {
         return ResultUtils.success(shortVideoCommentService.addShortVideoComment(dto));
     }
 
-    @ApiOperation(value = "更新评论", notes = "更新评论")
-    @PostMapping("/update")
-    public Result<ShortVideoCommentVO> update(@Valid @RequestBody ShortVideoCommentUpdateDTO dto) {
-        return ResultUtils.success(shortVideoCommentService.updateShortVideoComment(dto));
-    }
-
     @ApiOperation(value = "删除评论", notes = "删除评论")
     @DeleteMapping("/delete")
     public Result delete(@Valid @RequestBody ShortVideoCommentDelDTO dto) {
         shortVideoCommentService.deleteShortVideoComment(dto);
         return ResultUtils.success();
-    }
-
-    @ApiOperation(value = "评论详情", notes = "评论详情")
-    @GetMapping("/detail/{id}")
-    public Result<ShortVideoCommentVO> detail(@NotNull(message = "id不能为空") @PathVariable Long id) {
-        return ResultUtils.success(shortVideoCommentService.getShortVideoCommentById(id));
     }
 
     @ApiOperation(value = "评论列表", notes = "评论列表")

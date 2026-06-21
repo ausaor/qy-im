@@ -1,18 +1,14 @@
 package xyz.qy.implatform.dto;
 
 import lombok.Data;
+import javax.validation.constraints.NotNull;
 
 @Data
 public class ShortVideoCommentQueryDTO {
-    private Long id;
-
+    @NotNull
     private Long videoId;
 
     private Long userId;
 
-    private Long replyCommentId;
-
-    private Long replyToUserId;
-
-    private String content;
+    private Long topReplyCommentId;
 }

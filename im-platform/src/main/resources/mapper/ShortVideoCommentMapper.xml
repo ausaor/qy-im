@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.qy.implatform.mapper.ShortVideoCommentMapper">
+
+    <select id="countChildByTopCommentIds" resultType="java.util.Map">
+        SELECT
+            top_reply_comment_id AS topReplyCommentId,
+            COUNT(*) AS childCount
+        FROM im_short_video_comment
+        WHERE top_reply_comment_id IN
+        <foreach collection="topCommentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+        GROUP BY top_reply_comment_id
+    </select>
+
+</mapper>

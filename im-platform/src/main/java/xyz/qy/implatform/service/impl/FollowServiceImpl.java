@@ -191,4 +191,13 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                 .map(FollowVO::getTargetId)
                 .collect(Collectors.toSet());
     }
+
+    @Override
+    public Boolean isFollow(Long userId, Long targetId, String type) {
+        return this.lambdaQuery()
+                .eq(Follow::getUserId, userId)
+                .eq(Follow::getTargetId, targetId)
+                .eq(Follow::getType, type)
+                .count() > 0;
+    }
 }

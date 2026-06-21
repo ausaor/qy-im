@@ -18,11 +18,16 @@ import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoFavorite;
 import xyz.qy.implatform.entity.ShortVideoLike;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.FollowEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
+import xyz.qy.implatform.enums.TalkCategoryEnum;
+import xyz.qy.implatform.enums.ViewScopeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
 import xyz.qy.implatform.mapper.ShortVideoLikeMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
+import xyz.qy.implatform.service.IFollowService;
+import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IShortVideoService;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
@@ -57,6 +62,12 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
     @Resource
     private RedisCache redisCache;
+
+    @Resource
+    private IFriendService friendService;
+
+    @Resource
+    private IFollowService followService;
 
     @Override
     public List<ShortVideoVO> myShortVideos(ShortVideoQueryDTO dto) {
@@ -314,6 +325,35 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                 .update();
         // 标记已播放，24h过期
         redisCache.setCacheObject(key, "1", 24, TimeUnit.HOURS);
+    }
+
+    @Override
+    public void verifyUserDataAuth(ShortVideo shortVideo) {
+        Long userId = SessionContext.getSession().getUserId();
+        if (TalkCategoryEnum.PRIVATE.getCode().equals(shortVideo.getCategory())) {
+            if (!userId.equals(shortVideo.getUserId()) && ViewScopeEnum.PRIVATE.getCode().equals(shortVideo.getScope())) {
+                throw new GlobalException("私密作品无法评论或点赞");
+            }
+
+            // 好友可见判断是否是好友
+            if (ViewScopeEnum.FRIENDS.getCode().equals(shortVideo.getScope())) {
+                if (!userId.equals(shortVideo.getUserId())) {
+                    Boolean isFriend = friendService.isFriend(shortVideo.getUserId(), userId);
+                    if (!isFriend) {
+                        throw new GlobalException("无权操作");
+                    }
+                }
+            }
+            // 关注可见判断是否是关注者
+            else if (ViewScopeEnum.FOLLOW.getCode().equals(shortVideo.getScope())) {
+                if (!userId.equals(shortVideo.getUserId())) {
+                    Boolean isFollow = followService.isFollow(userId, shortVideo.getUserId(), FollowEnum.USER.getCode());
+                    if (!isFollow) {
+                        throw new GlobalException("无权操作");
+                    }
+                }
+            }
+        }
     }
 
     private LambdaQueryWrapper<ShortVideo> buildQueryWrapper(ShortVideoQueryDTO dto) {

@@ -66,13 +66,13 @@ public class ShortVideoComment extends Model<ShortVideoComment> {
     private Long avatarId;
 
     /**
-     * 父评论id，0表示顶级评论
+     * 父评论id
      */
     @TableField("reply_comment_id")
     private Long replyCommentId;
 
     /**
-     * 顶级回复的评论id
+     * 顶级回复的评论id,0表示顶级评论
      */
     @TableField("top_reply_comment_id")
     private Long topReplyCommentId;

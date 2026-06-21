@@ -39,4 +39,6 @@ public interface IShortVideoService extends IService<ShortVideo> {
     void batchUpdateScope(ShortVideoBatchScopeDTO dto);
 
     void addPlayCount(Long videoId);
+
+    void verifyUserDataAuth(ShortVideo shortVideo);
 }
