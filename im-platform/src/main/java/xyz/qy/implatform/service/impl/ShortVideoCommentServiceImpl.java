@@ -91,9 +91,9 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
             checkVideo(dto.getVideoId());
             comment.setVideoId(dto.getVideoId());
         }
-        if (ObjectUtil.isNotNull(dto.getParentId())) {
-            checkParent(ObjectUtil.isNotNull(dto.getVideoId()) ? dto.getVideoId() : comment.getVideoId(), dto.getParentId());
-            comment.setParentId(dto.getParentId());
+        if (ObjectUtil.isNotNull(dto.getReplyCommentId())) {
+            checkParent(ObjectUtil.isNotNull(dto.getVideoId()) ? dto.getVideoId() : comment.getVideoId(), dto.getReplyCommentId());
+            comment.setReplyCommentId(dto.getReplyCommentId());
         }
         if (dto.getReplyToUserId() != null) {
             comment.setReplyToUserId(dto.getReplyToUserId());
@@ -123,7 +123,7 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
         wrapper.eq(ObjectUtil.isNotNull(dto.getId()), ShortVideoComment::getId, dto.getId());
         wrapper.eq(ObjectUtil.isNotNull(dto.getVideoId()), ShortVideoComment::getVideoId, dto.getVideoId());
         wrapper.eq(ObjectUtil.isNotNull(dto.getUserId()), ShortVideoComment::getUserId, dto.getUserId());
-        wrapper.eq(ObjectUtil.isNotNull(dto.getParentId()), ShortVideoComment::getParentId, dto.getParentId());
+        wrapper.eq(ObjectUtil.isNotNull(dto.getReplyCommentId()), ShortVideoComment::getReplyCommentId, dto.getReplyCommentId());
         wrapper.eq(ObjectUtil.isNotNull(dto.getReplyToUserId()), ShortVideoComment::getReplyToUserId, dto.getReplyToUserId());
         wrapper.like(StringUtils.isNotBlank(dto.getContent()), ShortVideoComment::getContent, dto.getContent());
         return wrapper;

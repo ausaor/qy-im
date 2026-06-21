@@ -4,7 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.imclient.IMClient;
@@ -22,9 +21,11 @@ import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
 import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
+import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkCommentMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
+import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.ITalkCommentService;
 import xyz.qy.implatform.service.ITalkNotifyService;
 import xyz.qy.implatform.service.ITalkService;
@@ -50,13 +51,13 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkComment> implements ITalkCommentService {
-    @Autowired
+    @Resource
     private ITalkService talkService;
 
-    @Autowired
+    @Resource
     private IUserService userService;
 
-    @Autowired
+    @Resource
     private ITemplateCharacterService templateCharacterService;
 
     @Resource
@@ -67,6 +68,9 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
 
     @Resource
     private IMClient imClient;
+
+    @Resource
+    private ICommentCharacterService commentCharacterService;
 
     @Transactional
     @Lock(prefix = "im:talk:comment", key = "#talkCommentDTO.getTalkId()")
@@ -83,9 +87,7 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
             throw new GlobalException("当前动态已被删除");
         }
         if (!Objects.isNull(talkCommentDTO.getCharacterId())) {
-            if (talkService.verifyTalkCommentCharacter(talkId, talkCommentDTO.getCharacterId(), talkCommentDTO.getAvatarId())) {
-                throw new GlobalException("只能使用选择过的角色或角色已被使用");
-            }
+            commentCharacterService.verifyCommentCharacter(myUserId, talkId, TargetTypeEnum.TALK.getCode(), talkCommentDTO.getCharacterId(), talkCommentDTO.getAvatarId());
         }
 
         UserDataAuthDTO userDataAuthDTO = UserDataAuthDTO.builder()

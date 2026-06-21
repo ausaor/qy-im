@@ -42,16 +42,70 @@ public class ShortVideoComment extends Model<ShortVideoComment> {
     private Long userId;
 
     /**
+     * 用户昵称
+     */
+    @TableField("user_nickname")
+    private String userNickname;
+
+    /**
+     * 用户头像
+     */
+    @TableField("user_avatar")
+    private String userAvatar;
+
+    /**
+     * 角色id
+     */
+    @TableField("character_id")
+    private Long characterId;
+
+    /**
+     * 头像id
+     */
+    @TableField("avatar_id")
+    private Long avatarId;
+
+    /**
      * 父评论id，0表示顶级评论
      */
-    @TableField("parent_id")
-    private Long parentId;
+    @TableField("reply_comment_id")
+    private Long replyCommentId;
+
+    /**
+     * 顶级回复的评论id
+     */
+    @TableField("top_reply_comment_id")
+    private Long topReplyCommentId;
 
     /**
      * 被回复的用户id
      */
     @TableField("reply_to_user_id")
     private Long replyToUserId;
+
+    /**
+     * 被回复用户头像
+     */
+    @TableField("reply_to_user_avatar")
+    private String replyToUserAvatar;
+
+    /**
+     * 被回复用户角色id
+     */
+    @TableField("reply_to_user_character_id")
+    private Long replyToUserCharacterId;
+
+    /**
+     * 被回复用户昵称
+     */
+    @TableField("reply_to_user_nickname")
+    private String replyToUserNickname;
+
+    /**
+     * 消息类型 0:文字 1:图片 5:语音台词
+     */
+    @TableField("type")
+    private Integer type;
 
     /**
      * 评论内容
@@ -64,6 +118,18 @@ public class ShortVideoComment extends Model<ShortVideoComment> {
      */
     @TableField("like_count")
     private Integer likeCount;
+
+    /**
+     * 数字IP地址
+     */
+    @TableField("ip")
+    private String ip;
+
+    /**
+     * IP来源
+     */
+    @TableField("ip_address")
+    private String ipAddress;
 
     /**
      * 创建时间

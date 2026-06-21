@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.imclient.IMClient;
@@ -23,9 +22,11 @@ import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
 import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
+import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkStarMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
+import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.ITalkNotifyService;
 import xyz.qy.implatform.service.ITalkService;
 import xyz.qy.implatform.service.ITalkStarService;
@@ -49,13 +50,13 @@ import java.util.Objects;
  **/
 @Service
 public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> implements ITalkStarService {
-    @Autowired
+    @Resource
     private ITalkService talkService;
 
-    @Autowired
+    @Resource
     private IUserService userService;
 
-    @Autowired
+    @Resource
     private ITemplateCharacterService templateCharacterService;
 
     @Resource
@@ -66,6 +67,9 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
 
     @Resource
     private IMClient imClient;
+
+    @Resource
+    private ICommentCharacterService commentCharacterService;
 
     @Transactional
     @Lock(prefix = "im:talk:comment", key = "#talkStarDTO.getTalkId()")
@@ -92,9 +96,7 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
             throw new GlobalException("当前动态已被删除");
         }
         if (!Objects.isNull(talkStarDTO.getCharacterId())) {
-            if (talkService.verifyTalkCommentCharacter(talkId, talkStarDTO.getCharacterId(), talkStarDTO.getAvatarId())) {
-                throw new GlobalException("只能使用选择过的角色或所选角色已被使用");
-            }
+            commentCharacterService.verifyCommentCharacter(myUserId, talkId, TargetTypeEnum.TALK.getCode(), talkStarDTO.getCharacterId(), talkStarDTO.getAvatarId());
         }
 
         UserDataAuthDTO userDataAuthDTO = UserDataAuthDTO.builder()

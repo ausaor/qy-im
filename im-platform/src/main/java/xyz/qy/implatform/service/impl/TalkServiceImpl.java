@@ -46,11 +46,13 @@ import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
 import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
+import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.enums.ViewScopeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.ICharacterUserService;
+import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.IFollowService;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
@@ -146,6 +148,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     @Resource
     private IFollowService followService;
 
+    @Resource
+    private ICommentCharacterService commentCharacterService;
+
     @Transactional
     @Override
     public void addTalk(TalkAddDTO talkAddDTO) {
@@ -183,6 +188,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             talk.setFiles(talkAddDTO.getFiles().toJSONString());
         }
         this.baseMapper.insert(talk);
+        if (talk.getCharacterId() != null) {
+            commentCharacterService.saveCommentCharacter(user.getId(), talk.getId(), TargetTypeEnum.TALK.getCode(), talk.getCharacterId(), talk.getAvatarId());
+        }
 
         // 自己可见的不通知
         if (!talk.getScope().equals(ViewScopeEnum.PRIVATE.getCode())) {
@@ -246,10 +254,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             throw new GlobalException("该动态存在违规内容，不能修改");
         }
         if (ObjectUtil.isNotNull(talkUpdateDTO.getCharacterId())) {
-            boolean conflicted = verifyTalkCommentCharacter(talk.getId(), talkUpdateDTO.getCharacterId(), talkUpdateDTO.getAvatarId());
-            if (conflicted) {
-                throw new GlobalException("所选角色不允许");
-            }
+            commentCharacterService.verifyCommentCharacter(userId, talk.getId(), TargetTypeEnum.TALK.getCode(), talkUpdateDTO.getCharacterId(), talkUpdateDTO.getAvatarId());
         }
 
         if (!talk.getCategory().equals(talkUpdateDTO.getCategory())) {

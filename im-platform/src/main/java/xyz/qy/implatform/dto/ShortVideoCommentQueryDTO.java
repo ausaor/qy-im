@@ -10,7 +10,7 @@ public class ShortVideoCommentQueryDTO {
 
     private Long userId;
 
-    private Long parentId;
+    private Long replyCommentId;
 
     private Long replyToUserId;
 
