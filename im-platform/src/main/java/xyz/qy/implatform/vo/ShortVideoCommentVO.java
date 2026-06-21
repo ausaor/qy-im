@@ -1,12 +1,15 @@
 package xyz.qy.implatform.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
 public class ShortVideoCommentVO {
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     /**
@@ -42,11 +45,13 @@ public class ShortVideoCommentVO {
     /**
      * 父评论id，0表示顶级评论
      */
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long replyCommentId;
 
     /**
      * 顶级回复的评论id
      */
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long topReplyCommentId;
 
     /**

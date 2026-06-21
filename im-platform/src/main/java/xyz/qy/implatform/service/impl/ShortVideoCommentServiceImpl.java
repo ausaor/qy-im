@@ -14,6 +14,7 @@ import xyz.qy.implatform.dto.ShortVideoCommentQueryDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentUpdateDTO;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoComment;
+import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
@@ -22,12 +23,15 @@ import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.IShortVideoCommentService;
 import xyz.qy.implatform.service.IShortVideoService;
+import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
+import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoCommentVO;
+import xyz.qy.implatform.vo.UserVO;
 
 import javax.annotation.Resource;
 import java.util.Collections;
@@ -50,6 +54,9 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
 
     @Resource
     private IShortVideoService shortVideoService;
+
+    @Resource
+    private IUserService userService;
 
     @Override
     public List<ShortVideoCommentVO> listShortVideoComments(ShortVideoCommentQueryDTO dto) {
@@ -120,7 +127,11 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
             // 校验角色权限
             commentCharacterService.verifyCommentCharacter(userId, dto.getVideoId(), TargetTypeEnum.SHORT_VIDEO.getCode(), dto.getCharacterId(), dto.getAvatarId());
         }
+
+        User user = userService.getById(userId);
+
         ShortVideoComment comment = BeanUtils.copyProperties(dto, ShortVideoComment.class);
+
         if (parentComment != null) {
             comment.setReplyCommentId(parentComment.getId());
             if (parentComment.getTopReplyCommentId() != null) {
@@ -133,8 +144,13 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
             comment.setReplyToUserCharacterId(parentComment.getCharacterId());
             comment.setReplyToUserAvatar(parentComment.getUserAvatar());
         }
-        comment.setUserId(SessionContext.getSession().getUserId());
+        comment.setContent(SensitiveUtil.filter(comment.getContent()));
+        comment.setUserNickname(user.getNickName());
+        comment.setUserAvatar(user.getHeadImage());
+        comment.setUserId(userId);
         comment.setLikeCount(0);
+        comment.setIp(user.getIpAddress());
+        comment.setIpAddress(user.getProvince());
         comment.setCreateTime(new Date());
         comment.setUpdateTime(new Date());
         comment.setDeleted(false);

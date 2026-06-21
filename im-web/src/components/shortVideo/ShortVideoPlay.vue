@@ -1,102 +1,112 @@
 <template>
-  <div class="short-video-play" @wheel="handleWheel">
-    <!-- 加载状态 -->
-    <div v-if="loading && videoList.length === 0" class="loading-container">
-      <i class="el-icon-loading"></i>
-      <span>加载中...</span>
-    </div>
-
-    <!-- 空状态 -->
-    <div v-else-if="!loading && videoList.length === 0" class="empty-container">
-      <i class="el-icon-video-camera"></i>
-      <p>暂无推荐视频</p>
-    </div>
-
-    <!-- 视频播放区 -->
-    <template v-else>
-      <div class="video-wrapper">
-        <video
-          ref="videoPlayer"
-          :key="currentVideo.id"
-          :src="currentVideo.videoUrl"
-          :poster="currentVideo.coverUrl"
-          class="video-player"
-          loop
-          playsinline
-          webkit-playsinline
-          @loadedmetadata="onVideoLoaded"
-          @click="togglePlay"
-        ></video>
-
-        <!-- 播放/暂停遮罩 -->
-        <div v-if="!isPlaying" class="play-overlay" @click="togglePlay">
-          <i class="el-icon-video-play"></i>
-        </div>
-
-        <!-- 左下角信息区 -->
-        <div class="video-info-left">
-          <div class="author-name">@{{ currentVideo.nickName || currentVideo.authorName || '用户' + currentVideo.userId }}</div>
-          <div class="publish-date">{{ formatDate(currentVideo.createTime) }}</div>
-          <div class="video-title">{{ currentVideo.title || '无标题' }}</div>
-        </div>
-
-        <!-- 右侧操作区 -->
-        <div class="video-actions-right">
-          <div class="action-item avatar-item" @click.stop>
-            <head-image
-              :url="currentVideo.headImage"
-              :name="currentVideo.nickName || '?'"
-              :size="48"
-            ></head-image>
-          </div>
-          <div class="action-item" :class="{ active: currentVideo.liked }" @click.stop="handleLike">
-            <i :class="currentVideo.liked ? 'iconfont icon-aixin' : 'iconfont icon-hongxin1'"></i>
-            <span class="action-count">{{ currentVideo.likeCount || 0 }}</span>
-          </div>
-          <div class="action-item" @click.stop="handleComment">
-            <i class="el-icon-chat-line-round"></i>
-            <span class="action-count">{{ currentVideo.commentCount || 0 }}</span>
-          </div>
-          <div class="action-item favorite-item" :class="{ active: currentVideo.favorited }" @click.stop="handleFavorite">
-            <i :class="currentVideo.favorited ? 'el-icon-star-on' : 'el-icon-star-off'"></i>
-            <span class="action-count">{{ currentVideo.favoriteCount || 0 }}</span>
-          </div>
-        </div>
-
-        <!-- 上下切换按钮 -->
-        <div class="nav-buttons">
-          <div
-            class="nav-btn nav-prev"
-            :class="{ disabled: currentIndex <= 0 }"
-            @click="prevVideo"
-          >
-            <i class="el-icon-arrow-up"></i>
-          </div>
-          <div
-            class="nav-btn nav-next"
-            :class="{ disabled: currentIndex >= videoList.length - 1 && !hasMore }"
-            @click="nextVideo"
-          >
-            <i class="el-icon-arrow-down"></i>
-          </div>
-        </div>
-
-        <!-- 底部加载提示 -->
-        <div v-if="loadingMore" class="loading-more">
-          <i class="el-icon-loading"></i>
-        </div>
+  <div class="short-video-play-container">
+    <div class="short-video-play" @wheel="handleWheel">
+      <!-- 加载状态 -->
+      <div v-if="loading && videoList.length === 0" class="loading-container">
+        <i class="el-icon-loading"></i>
+        <span>加载中...</span>
       </div>
-    </template>
+
+      <!-- 空状态 -->
+      <div v-else-if="!loading && videoList.length === 0" class="empty-container">
+        <i class="el-icon-video-camera"></i>
+        <p>暂无推荐视频</p>
+      </div>
+
+      <!-- 视频播放区 -->
+      <template v-else>
+        <div class="video-wrapper">
+          <video
+              ref="videoPlayer"
+              :key="currentVideo.id"
+              :src="currentVideo.videoUrl"
+              :poster="currentVideo.coverUrl"
+              class="video-player"
+              loop
+              playsinline
+              webkit-playsinline
+              @loadedmetadata="onVideoLoaded"
+              @click="togglePlay"
+          ></video>
+
+          <!-- 播放/暂停遮罩 -->
+          <div v-if="!isPlaying" class="play-overlay" @click="togglePlay">
+            <i class="el-icon-video-play"></i>
+          </div>
+
+          <!-- 左下角信息区 -->
+          <div class="video-info-left">
+            <div class="author-name">@{{ currentVideo.nickName || currentVideo.authorName || '用户' + currentVideo.userId }}</div>
+            <div class="publish-date">{{ formatDate(currentVideo.createTime) }}</div>
+            <div class="video-title">{{ currentVideo.title || '无标题' }}</div>
+          </div>
+
+          <!-- 右侧操作区 -->
+          <div class="video-actions-right">
+            <div class="action-item avatar-item" @click.stop>
+              <head-image
+                  :url="currentVideo.headImage"
+                  :name="currentVideo.nickName || '?'"
+                  :size="48"
+              ></head-image>
+            </div>
+            <div class="action-item" :class="{ active: currentVideo.liked }" @click.stop="handleLike">
+              <i :class="currentVideo.liked ? 'iconfont icon-aixin' : 'iconfont icon-hongxin1'"></i>
+              <span class="action-count">{{ currentVideo.likeCount || 0 }}</span>
+            </div>
+            <div class="action-item" @click.stop="handleComment">
+              <i class="el-icon-chat-line-round"></i>
+              <span class="action-count">{{ currentVideo.commentCount || 0 }}</span>
+            </div>
+            <div class="action-item favorite-item" :class="{ active: currentVideo.favorited }" @click.stop="handleFavorite">
+              <i :class="currentVideo.favorited ? 'el-icon-star-on' : 'el-icon-star-off'"></i>
+              <span class="action-count">{{ currentVideo.favoriteCount || 0 }}</span>
+            </div>
+          </div>
+
+          <!-- 上下切换按钮 -->
+          <div class="nav-buttons">
+            <div
+                class="nav-btn nav-prev"
+                :class="{ disabled: currentIndex <= 0 }"
+                @click="prevVideo"
+            >
+              <i class="el-icon-arrow-up"></i>
+            </div>
+            <div
+                class="nav-btn nav-next"
+                :class="{ disabled: currentIndex >= videoList.length - 1 && !hasMore }"
+                @click="nextVideo"
+            >
+              <i class="el-icon-arrow-down"></i>
+            </div>
+          </div>
+
+          <!-- 底部加载提示 -->
+          <div v-if="loadingMore" class="loading-more">
+            <i class="el-icon-loading"></i>
+          </div>
+        </div>
+      </template>
+    </div>
+    <transition name="slide-right">
+      <div v-if="showInfo" class="short-video-info">
+        <short-video-info :video="currentVideo" @close="showInfo = false"></short-video-info>
+      </div>
+    </transition>
   </div>
+
 </template>
 
 <script>
 import HeadImage from '@/components/common/HeadImage.vue'
+import ShortVideoInfo from '@/components/shortVideo/ShortVideoInfo.vue'
 
 export default {
   name: 'ShortVideoPlay',
   components: {
-    HeadImage
+    HeadImage,
+    ShortVideoInfo
   },
   props: {
     category: {
@@ -122,7 +132,8 @@ export default {
       loading: false,
       loadingMore: false,
       hasMore: true,
-      isPlaying: false
+      isPlaying: false,
+      showInfo: false
     }
   },
   computed: {
@@ -296,7 +307,7 @@ export default {
     },
 
     handleComment() {
-      this.$message.info('评论功能暂未开放')
+      this.showInfo = true
     },
 
     handleFavorite() {
@@ -337,8 +348,14 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.short-video-play {
+.short-video-play-container {
+  display: flex;
   width: 100%;
+  height: 100%;
+}
+
+.short-video-play {
+  flex: 1;
   height: 100%;
   background: #000;
   position: relative;
@@ -346,6 +363,26 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.short-video-info {
+  width: 380px;
+  min-width: 380px;
+  height: 100%;
+  background: #fff;
+  overflow-y: auto;
+  border-left: 1px solid #e8e8e8;
+}
+
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-right-enter,
+.slide-right-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
 }
 
 .loading-container,
