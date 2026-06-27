@@ -1,7 +1,9 @@
 export default {
 	state: {
 		// 已记录播放次数的视频 ID 集合
-		playedVideoIds: []
+		playedVideoIds: [],
+		// 已点赞的评论 ID 集合
+		likedCommentIds: []
 	},
 
 	mutations: {
@@ -19,6 +21,15 @@ export default {
 		 */
 		clearPlayed(state) {
 			state.playedVideoIds = []
+		},
+
+		/**
+		 * 记录评论已点赞
+		 */
+		markCommentLiked(state, commentId) {
+			if (!state.likedCommentIds.includes(commentId)) {
+				state.likedCommentIds.push(commentId)
+			}
 		}
 	},
 
@@ -28,6 +39,13 @@ export default {
 		 */
 		hasPlayed: (state) => (videoId) => {
 			return state.playedVideoIds.includes(videoId)
+		},
+
+		/**
+		 * 判断评论是否已点赞
+		 */
+		isCommentLiked: (state) => (commentId) => {
+			return state.likedCommentIds.includes(commentId)
 		}
 	}
 }

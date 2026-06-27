@@ -57,4 +57,11 @@ public class ShortVideoCommentController {
     public Result<PageResultVO<List<ShortVideoCommentVO>>> pageList(@RequestBody ShortVideoCommentQueryDTO dto) {
         return ResultUtils.success(shortVideoCommentService.pageShortVideoComments(dto));
     }
+
+    @ApiOperation(value = "添加评论点赞", notes = "添加评论点赞")
+    @PostMapping("/addCommentLike/{commentId}")
+    public Result addCommentLike(@PathVariable Long commentId) {
+        shortVideoCommentService.addCommentLike(commentId);
+        return ResultUtils.success();
+    }
 }

@@ -125,4 +125,9 @@ public final class RedisKey {
      * 短视频播放记录（24h内同一用户不重复计数）
      */
     public static final String IM_SHORT_VIDEO_PLAY = IM_CACHE + "short-video:play:";
+
+    /**
+     * 短视频评论点赞记录（24h内同一用户不重复计数）
+     */
+    public static final String IM_SHORT_COMMENT_LIKE = IM_CACHE + "short-video:comment:like:";
 }

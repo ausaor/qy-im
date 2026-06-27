@@ -53,7 +53,7 @@
     <div v-if="activeTab === 'comment'" class="tab-content comment-tab">
       <!-- 文字评论按钮 -->
       <div v-if="!showCommentInput" class="comment-btn-wrapper">
-        <div class="comment-text-btn" @click="openCommentInput">开始评论</div>
+        <div class="comment-text-btn" @click="openCommentInput">发表评论</div>
       </div>
 
       <!-- 评论输入框 -->
@@ -100,8 +100,8 @@
                 <img :src="item.content.originUrl || item.content" class="comment-image" @click="previewImage(item.content.originUrl || item.content)" />
               </div>
               <div class="comment-actions">
-                <span class="action-like">
-                  <i class="iconfont icon-hongxin1"></i>
+                <span class="action-like" :class="{ liked: $store.getters.isCommentLiked(item.id) }" @click="handleCommentLike(item)">
+                  <i :class="['iconfont', $store.getters.isCommentLiked(item.id) ? 'icon-aixin' : 'icon-hongxin1']"></i>
                   <span v-if="item.likeCount > 0">{{ item.likeCount }}</span>
                 </span>
                 <span class="action-reply" @click="toggleReply(item)">回复</span>
@@ -148,8 +148,8 @@
                         <img :src="child.content.originUrl || child.content" class="comment-image" @click="previewImage(child.content.originUrl || child.content)" />
                       </div>
                       <div class="comment-actions">
-                        <span class="action-like">
-                          <i class="iconfont icon-hongxin1"></i>
+                        <span class="action-like" :class="{ liked: $store.getters.isCommentLiked(child.id) }" @click="handleCommentLike(child)">
+                          <i :class="['iconfont', $store.getters.isCommentLiked(child.id) ? 'icon-aixin' : 'icon-hongxin1']"></i>
                           <span v-if="child.likeCount > 0">{{ child.likeCount }}</span>
                         </span>
                         <span class="action-reply" @click="toggleReply(child)">回复</span>
@@ -480,6 +480,20 @@ export default {
       })
     },
 
+    // 评论点赞
+    handleCommentLike(comment) {
+      if (this.$store.getters.isCommentLiked(comment.id)) {
+        return
+      }
+      this.$http({
+        url: `/shortVideoComment/addCommentLike/${comment.id}`,
+        method: 'post'
+      }).then(() => {
+        this.$store.commit('markCommentLiked', comment.id)
+        comment.likeCount = (comment.likeCount || 0) + 1
+      })
+    },
+
     // 预览图片
     previewImage(url) {
       this.$store.commit('showFullImageBox', url)
@@ -771,13 +785,23 @@ export default {
   .action-like {
     font-size: 12px;
     color: #999;
-    cursor: default;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 4px;
+    user-select: none;
 
     i {
       font-size: 13px;
+    }
+
+    &.liked {
+      color: #f56c6c;
+      cursor: default;
+
+      i {
+        color: #f56c6c;
+      }
     }
   }
 

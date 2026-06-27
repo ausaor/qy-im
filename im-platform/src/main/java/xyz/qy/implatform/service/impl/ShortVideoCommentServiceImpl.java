@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.ShortVideoCommentAddDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentDelDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentQueryDTO;
@@ -26,6 +27,7 @@ import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
+import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoCommentVO;
@@ -36,6 +38,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,6 +58,9 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
     @Resource
     private IUserService userService;
 
+    @Resource
+    private RedisCache redisCache;
+
     @Override
     public List<ShortVideoCommentVO> listShortVideoComments(ShortVideoCommentQueryDTO dto) {
         LambdaQueryWrapper<ShortVideoComment> wrapper = buildQueryWrapper(dto);
@@ -69,14 +75,17 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
         LambdaQueryWrapper<ShortVideoComment> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ShortVideoComment::getDeleted, false);
         wrapper.eq(ShortVideoComment::getVideoId, dto.getVideoId());
+
+        wrapper.eq(ObjectUtil.isNotNull(dto.getUserId()), ShortVideoComment::getUserId, dto.getUserId());
         if (Objects.isNull(dto.getTopReplyCommentId())) {
             wrapper.eq(ShortVideoComment::getTopReplyCommentId, 0);
+            wrapper.orderByDesc(ShortVideoComment::getCreateTime);
         } else {
-            wrapper.eq(ShortVideoComment::getReplyCommentId, dto.getTopReplyCommentId());
+            wrapper.eq(ShortVideoComment::getTopReplyCommentId, dto.getTopReplyCommentId());
+            wrapper.orderByAsc(ShortVideoComment::getCreateTime);
         }
-        wrapper.eq(ObjectUtil.isNotNull(dto.getUserId()), ShortVideoComment::getUserId, dto.getUserId());
 
-        wrapper.orderByDesc(ShortVideoComment::getCreateTime);
+
         Page<ShortVideoComment> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
         List<ShortVideoComment> videoComments = page.getRecords();
         if (CollectionUtils.isEmpty(videoComments)) {
@@ -183,6 +192,19 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
         wrapper.eq(ShortVideoComment::getVideoId, videoId);
         wrapper.eq(ShortVideoComment::getDeleted, false);
         return this.count(wrapper);
+    }
+
+    @Override
+    public void addCommentLike(Long commentId) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        if (redisCache.hasKey(RedisKey.IM_SHORT_COMMENT_LIKE + userId + ":" + commentId)) {
+            throw new GlobalException("您已点赞过该评论");
+        }
+        ShortVideoComment comment = this.getById(commentId);
+        redisCache.setCacheObject(RedisKey.IM_SHORT_COMMENT_LIKE + userId + ":" + commentId, "1",  24, TimeUnit.HOURS);
+        comment.setLikeCount(comment.getLikeCount() + 1);
+        this.updateById(comment);
     }
 
     private LambdaQueryWrapper<ShortVideoComment> buildQueryWrapper(ShortVideoCommentQueryDTO dto) {
