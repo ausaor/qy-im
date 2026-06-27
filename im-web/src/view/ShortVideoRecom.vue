@@ -1,6 +1,6 @@
 <template>
   <div class="short-video-recom">
-    <short-video-play></short-video-play>
+    <short-video-play ref="videoPlayer"></short-video-play>
   </div>
 </template>
 
@@ -11,6 +11,11 @@ export default {
   name: 'ShortVideoRecom',
   components: {
     ShortVideoPlay
+  },
+  mounted() {
+    this.$nextTick(() => {
+      this.$refs.videoPlayer.fetchVideos()
+    })
   }
 }
 </script>

@@ -155,7 +155,7 @@ export default {
     }
   },
   created() {
-    this.fetchVideos()
+    //this.fetchVideos()
   },
   methods: {
     async fetchVideos() {
