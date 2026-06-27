@@ -92,7 +92,7 @@ public class ShortVideoController {
 
     @ApiOperation(value = "推荐短视频", notes = "推荐短视频")
     @PostMapping("/recommend")
-    public Result<PageResultVO<List<ShortVideoVO>>> getRecommendShortVideos(@RequestBody ShortVideoQueryDTO dto) {
+    public Result<PageResultVO<List<ShortVideoVO>>> getRecommendShortVideos(@RequestBody @Valid ShortVideoQueryDTO dto) {
         return ResultUtils.success(shortVideoService.getRecommendShortVideos(dto));
     }
 

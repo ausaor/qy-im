@@ -127,6 +127,10 @@ export default {
     userId: {
       type: Number,
       default: null
+    },
+    section: {
+      type: String,
+      default: null
     }
   },
   data() {
@@ -181,6 +185,9 @@ export default {
       }
       if (this.userId) {
         data.userId = this.userId
+      }
+      if (this.section) {
+        data.section = this.section
       }
 
       this.$http({

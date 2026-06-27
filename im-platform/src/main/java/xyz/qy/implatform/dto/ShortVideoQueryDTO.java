@@ -1,6 +1,8 @@
 package xyz.qy.implatform.dto;
 
 import lombok.Data;
+import xyz.qy.implatform.enums.SectionEnum;
+import xyz.qy.implatform.enums.ValidEnum;
 
 @Data
 public class ShortVideoQueryDTO {
@@ -17,4 +19,7 @@ public class ShortVideoQueryDTO {
     private String title;
 
     private Integer status;
+
+    @ValidEnum(enumClass = SectionEnum.class, property = "code", message = "无效的查询参数")
+    private String section;
 }

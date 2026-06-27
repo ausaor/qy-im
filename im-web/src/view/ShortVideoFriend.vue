@@ -56,6 +56,7 @@
       <short-video-play
         ref="videoPlayer"
         :userId="currentFriend.id"
+        :section="'friend'"
         :key="friendVideoKey"
       ></short-video-play>
       <div v-if="!currentFriend.id" class="no-selection-hint">

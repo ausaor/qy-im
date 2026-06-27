@@ -34,7 +34,9 @@ public enum SectionEnum {
 
     MY_CHARACTERS("myCharacters"),
 
-    FOLLOW_ALL_CHARACTERS("followAllCharacters");
+    FOLLOW_ALL_CHARACTERS("followAllCharacters"),
+
+    FOLLOW("follow");
 
     private final String code;
 

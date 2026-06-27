@@ -58,6 +58,7 @@
         ref="videoPlayer"
         :type="currentFollow.type"
         :objectId="currentFollow.objectId"
+        :section="'follow'"
         :key="followVideoKey"
       ></short-video-play>
       <div v-if="!currentFollow.objectId" class="no-selection-hint">

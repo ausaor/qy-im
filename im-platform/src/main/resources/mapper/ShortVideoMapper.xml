@@ -33,7 +33,17 @@
         <include refid="queryBase"/> t1
         WHERE t1.deleted = 0
         AND t1.status = '2'
-        AND t1.scope = 9
+        <choose>
+            <when test='dto.section != null and dto.section.equals("follow")'>
+                AND t1.scope in (3, 9)
+            </when>
+            <when test='dto.section != null and dto.section.equals("friend")'>
+                AND t1.scope in (2, 9)
+            </when>
+            <otherwise>
+                AND t1.scope = 9
+            </otherwise>
+        </choose>
         <if test="dto.userId != null">
             AND t1.user_id = #{dto.userId}
         </if>
