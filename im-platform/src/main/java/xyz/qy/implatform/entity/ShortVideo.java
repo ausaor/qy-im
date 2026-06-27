@@ -41,8 +41,8 @@ public class ShortVideo extends Model<ShortVideo> {
     /**
      * 分类
      */
-    @TableField("category")
-    private String category;
+    @TableField("type")
+    private String type;
 
     /**
      * 公布范围

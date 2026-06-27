@@ -19,7 +19,7 @@ public class ShortVideoVO {
 
     private Long objectId;
 
-    private String category;
+    private String type;
 
     private Integer scope;
 
@@ -65,4 +65,6 @@ public class ShortVideoVO {
     private Boolean liked = Boolean.FALSE;
 
     private Boolean favorited = Boolean.FALSE;
+
+    private Boolean followed = Boolean.FALSE;
 }

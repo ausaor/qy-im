@@ -8,7 +8,7 @@
         SELECT id,
                user_id,
                object_id,
-               category,
+               type,
                scope,
                title,
                description,
@@ -40,8 +40,8 @@
         <if test="dto.objectId != null">
             AND t1.object_id = #{dto.objectId}
         </if>
-        <if test="dto.category != null and dto.category != ''">
-            AND t1.category = #{dto.category}
+        <if test="dto.type != null and dto.type != ''">
+            AND t1.type = #{dto.type}
         </if>
         ORDER BY t1.create_time DESC
     </select>

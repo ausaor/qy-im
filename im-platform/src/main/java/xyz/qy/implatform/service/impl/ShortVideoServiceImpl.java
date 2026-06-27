@@ -20,7 +20,6 @@ import xyz.qy.implatform.entity.ShortVideoLike;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.FollowEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
-import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.ViewScopeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
@@ -165,6 +164,8 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                         .in(ShortVideoFavorite::getVideoId, videoIds));
         Set<Long> favoritedVideoIds = favorites.stream().map(ShortVideoFavorite::getVideoId).collect(Collectors.toSet());
 
+        Set<String> allFollows = followService.findAllFollows();
+
         List<User> userList = userService.findUserByIds(userIds);
         // userList根据id分组得到Map<Long, User>
         Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, user -> user));
@@ -177,6 +178,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
             }
             vo.setLiked(likedVideoIds.contains(vo.getId()));
             vo.setFavorited(favoritedVideoIds.contains(vo.getId()));
+            if (allFollows.contains(vo.getObjectId() + ":" + vo.getType())) {
+                vo.setFollowed(true);
+            }
         }
 
         return PageResultVO.<List<ShortVideoVO>>builder().data(vos).total(page.getTotal()).build();
@@ -203,6 +207,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         shortVideo.setUpdateTime(new Date());
         shortVideo.setDeleted(false);
         shortVideo.setStatus(ReviewEnum.REVIEWING.getCode());
+        setObjectId(shortVideo);
         this.save(shortVideo);
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
         vo.setIsOwner(Boolean.TRUE);
@@ -218,8 +223,8 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         if (Objects.nonNull(dto.getObjectId())) {
             shortVideo.setObjectId(dto.getObjectId());
         }
-        if (StringUtils.isNotBlank(dto.getCategory())) {
-            shortVideo.setCategory(dto.getCategory());
+        if (StringUtils.isNotBlank(dto.getType())) {
+            shortVideo.setType(dto.getType());
         }
         if (Objects.nonNull(dto.getScope())) {
             shortVideo.setScope(dto.getScope());
@@ -256,6 +261,12 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
         vo.setIsOwner(Boolean.TRUE);
         return vo;
+    }
+
+    private void setObjectId(ShortVideo shortVideo) {
+        if (FollowEnum.USER.getCode().equals(shortVideo.getType())) {
+            shortVideo.setObjectId(shortVideo.getUserId());
+        }
     }
 
     @Transactional
@@ -330,7 +341,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
     @Override
     public void verifyUserDataAuth(ShortVideo shortVideo) {
         Long userId = SessionContext.getSession().getUserId();
-        if (TalkCategoryEnum.PRIVATE.getCode().equals(shortVideo.getCategory())) {
+        if (FollowEnum.USER.getCode().equals(shortVideo.getType())) {
             if (!userId.equals(shortVideo.getUserId()) && ViewScopeEnum.PRIVATE.getCode().equals(shortVideo.getScope())) {
                 throw new GlobalException("私密作品无法评论或点赞");
             }
@@ -362,7 +373,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         wrapper.eq(ObjectUtil.isNotNull(dto.getId()), ShortVideo::getId, dto.getId());
         wrapper.eq(ObjectUtil.isNotNull(dto.getUserId()), ShortVideo::getUserId, dto.getUserId());
         wrapper.eq(ObjectUtil.isNotNull(dto.getObjectId()), ShortVideo::getObjectId, dto.getObjectId());
-        wrapper.eq(StringUtils.isNotBlank(dto.getCategory()), ShortVideo::getCategory, dto.getCategory());
+        wrapper.eq(StringUtils.isNotBlank(dto.getType()), ShortVideo::getType, dto.getType());
         wrapper.eq(ObjectUtil.isNotNull(dto.getScope()), ShortVideo::getScope, dto.getScope());
         wrapper.eq(ObjectUtil.isNotNull(dto.getStatus()), ShortVideo::getStatus, dto.getStatus());
         wrapper.like(StringUtils.isNotBlank(dto.getTitle()), ShortVideo::getTitle, dto.getTitle());

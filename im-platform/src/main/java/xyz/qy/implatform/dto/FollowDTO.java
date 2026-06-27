@@ -3,6 +3,8 @@ package xyz.qy.implatform.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import xyz.qy.implatform.enums.FollowEnum;
+import xyz.qy.implatform.enums.ValidEnum;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -17,5 +19,6 @@ public class FollowDTO {
 
     @ApiModelProperty("类别")
     @NotBlank(message = "类别不能为空")
+    @ValidEnum(enumClass = FollowEnum.class, property = "code", message = "无效的类别")
     private String type;
 }

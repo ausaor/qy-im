@@ -85,7 +85,7 @@ export default {
       type: Number,
       default: null
     },
-    category: {
+    type: {
       type: String,
       required: true
     }
@@ -218,7 +218,7 @@ export default {
         const isEdit = this.form.id != null
         const url = isEdit ? '/shortVideo/update' : '/shortVideo/add'
         const params = {
-          category: this.category,
+          type: this.type,
           scope: this.form.scope,
           title: this.form.title,
           coverUrl: this.form.coverUrl,

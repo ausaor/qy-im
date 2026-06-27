@@ -49,6 +49,13 @@
                   :name="currentVideo.nickName || '?'"
                   :size="48"
               ></head-image>
+              <div
+                class="follow-btn"
+                :class="{ followed: videoFollowed }"
+                @click.stop="videoFollowed ? cancelFollow(currentVideo) : addFollow(currentVideo)"
+              >
+                {{ videoFollowed ? '-' : '+' }}
+              </div>
             </div>
             <div class="action-item" :class="{ active: currentVideo.liked }" @click.stop="handleLike">
               <i :class="currentVideo.liked ? 'iconfont icon-aixin' : 'iconfont icon-hongxin1'"></i>
@@ -109,7 +116,7 @@ export default {
     ShortVideoInfo
   },
   props: {
-    category: {
+    type: {
       type: String,
       default: null
     },
@@ -139,6 +146,12 @@ export default {
   computed: {
     currentVideo() {
       return this.videoList[this.currentIndex] || {}
+    },
+    videoFollowed() {
+      const video = this.currentVideo
+      if (!video || !video.id) return false
+      const key = `${video.objectId}:${video.type}`
+      return video.followed || this.$store.getters.isFollowed(key)
     }
   },
   created() {
@@ -160,8 +173,8 @@ export default {
       }
 
       const data = {}
-      if (this.category) {
-        data.category = this.category
+      if (this.type) {
+        data.type = this.type
       }
       if (this.objectId) {
         data.objectId = this.objectId
@@ -342,6 +355,25 @@ export default {
       const m = String(d.getMonth() + 1).padStart(2, '0')
       const day = String(d.getDate()).padStart(2, '0')
       return `${y}-${m}-${day}`
+    },
+    addFollow(shortVideo) {
+      this.$http({
+        url: '/follow/add',
+        method: 'post',
+        data: { targetId: shortVideo.objectId, type: shortVideo.type}
+      }).then(() => {
+        shortVideo.followed = true;
+        this.$store.commit('markFollowed', `${shortVideo.objectId}:${shortVideo.type}`)
+      })
+    },
+    cancelFollow(shortVideo) {
+      this.$http({
+        url: `/follow/cancel?targetId=${shortVideo.objectId}&type=${shortVideo.type}`,
+        method: 'delete',
+      }).then(() => {
+        shortVideo.followed = false;
+        this.$store.commit('unmarkFollowed', `${shortVideo.objectId}:${shortVideo.type}`)
+      })
     }
   }
 }
@@ -508,9 +540,32 @@ export default {
 
     &.avatar-item {
       cursor: default;
+      position: relative;
 
       &:hover i {
         transform: none;
+      }
+    }
+
+    .follow-btn {
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #67c23a;
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 20px;
+      text-align: center;
+      cursor: pointer;
+      z-index: 1;
+
+      &.followed {
+        background: #f56c6c;
       }
     }
   }

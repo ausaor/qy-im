@@ -10,7 +10,7 @@ public class ShortVideoQueryDTO {
 
     private Long objectId;
 
-    private String category;
+    private String type;
 
     private Integer scope;
 
