@@ -9,13 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.implatform.dto.ShortVideoLikeAddDTO;
 import xyz.qy.implatform.dto.ShortVideoLikeDelDTO;
 import xyz.qy.implatform.dto.ShortVideoLikeQueryDTO;
-import xyz.qy.implatform.dto.ShortVideoLikeUpdateDTO;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoLike;
+import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoLikeMapper;
-import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.service.IShortVideoLikeService;
+import xyz.qy.implatform.service.IShortVideoService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
@@ -31,8 +31,9 @@ import java.util.Set;
 
 @Service
 public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper, ShortVideoLike> implements IShortVideoLikeService {
+
     @Resource
-    private ShortVideoMapper shortVideoMapper;
+    private IShortVideoService shortVideoService;
 
     @Override
     public List<ShortVideoLikeVO> listShortVideoLikes(ShortVideoLikeQueryDTO dto) {
@@ -69,6 +70,13 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
     public ShortVideoLikeVO addShortVideoLike(ShortVideoLikeAddDTO dto) {
         Long userId = SessionContext.getSession().getUserId();
         ShortVideo shortVideo = checkVideo(dto.getVideoId());
+        if (!shortVideo.getStatus().equals(ReviewEnum.REVIEWED.getCode())) {
+            throw new GlobalException("视频未审核通过，请稍后再试");
+        }
+
+        // 验证用户数据权限
+        shortVideoService.verifyUserDataAuth(shortVideo);
+
         checkDuplicate(userId, dto.getVideoId(), null);
         ShortVideoLike like = new ShortVideoLike();
         like.setUserId(userId);
@@ -140,7 +148,7 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
     }
 
     private ShortVideo checkVideo(Long videoId) {
-        ShortVideo shortVideo = shortVideoMapper.selectById(videoId);
+        ShortVideo shortVideo = shortVideoService.getById(videoId);
         if (ObjectUtil.isNull(shortVideo) || Boolean.TRUE.equals(shortVideo.getDeleted())) {
             throw new GlobalException("短视频不存在");
         }
@@ -181,6 +189,6 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
         ShortVideo video = new ShortVideo();
         video.setId(videoId);
         video.setLikeCount((int) count);
-        shortVideoMapper.updateById(video);
+        shortVideoService.updateById(video);
     }
 }

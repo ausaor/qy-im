@@ -51,8 +51,17 @@
 
     <!-- 评论 Tab -->
     <div v-if="activeTab === 'comment'" class="tab-content comment-tab">
+      <!-- 文字评论按钮 -->
+      <div v-if="!showCommentInput" class="comment-btn-wrapper">
+        <div class="comment-text-btn" @click="openCommentInput">开始评论</div>
+      </div>
+
       <!-- 评论输入框 -->
-      <div class="comment-input-wrapper">
+      <div v-if="showCommentInput" class="comment-input-wrapper">
+        <div class="input-header">
+          <span class="input-title">发表评论</span>
+          <span class="input-close" @click="showCommentInput = false">收起 <i class="el-icon-arrow-up"></i></span>
+        </div>
         <input-box ref="commentInput" width="100%" @send="handleSendComment"></input-box>
       </div>
 
@@ -100,7 +109,7 @@
 
               <!-- 子评论数入口 -->
               <div
-                v-if="!item.topReplyCommentId && item.childCommentCount > 0"
+                v-if="item.topReplyCommentId === '0' && item.childCommentCount > 0"
                 class="child-comment-entry"
                 @click="toggleChildComments(item)"
               >
@@ -149,8 +158,8 @@
                   </div>
 
                   <!-- 子评论的回复输入框 -->
-                  <div v-if="child._showReply" class="reply-input-wrapper">
-                    <input-box ref="replyInput" width="100%" :placeholder="'回复 ' + child.userNickname" @send="(sendObj) => handleSendReply(child, sendObj)"></input-box>
+                  <div v-show="child._showReply" class="reply-input-wrapper">
+                    <input-box :ref="'replyInput_' + child.id" width="100%" :placeholder="'回复 ' + child.userNickname" @send="(sendObj) => handleSendReply(child, sendObj)"></input-box>
                   </div>
                 </div>
               </div>
@@ -158,8 +167,8 @@
           </div>
 
           <!-- 顶级评论的回复输入框 -->
-          <div v-if="item._showReply && (!item.topReplyCommentId || item.topReplyCommentId === 0)" class="reply-input-wrapper">
-            <input-box ref="replyInput" width="100%" :placeholder="'回复 ' + item.userNickname" @send="(sendObj) => handleSendReply(item, sendObj)"></input-box>
+          <div v-show="item._showReply && item.topReplyCommentId === '0'" class="reply-input-wrapper">
+            <input-box :ref="'replyInput_' + item.id" width="100%" :placeholder="'回复 ' + item.userNickname" @send="(sendObj) => handleSendReply(item, sendObj)"></input-box>
           </div>
         </div>
 
@@ -197,6 +206,7 @@ export default {
   data() {
     return {
       activeTab: 'detail',
+      showCommentInput: false,
       commentList: [],
       commentPageNo: 1,
       commentPageSize: 50,
@@ -224,6 +234,7 @@ export default {
       this.commentPageNo = 1
       this.commentTotal = 0
       this.commentHasMore = true
+      this.showCommentInput = false
       this.activeTab = 'detail'
     }
   },
@@ -306,6 +317,24 @@ export default {
       })
     },
 
+    openCommentInput() {
+      this.showCommentInput = true
+      // 关闭所有回复输入框
+      this.commentList.forEach(c => {
+        if (c._showReply) this.$set(c, '_showReply', false)
+        if (c._children) {
+          c._children.forEach(child => {
+            if (child._showReply) this.$set(child, '_showReply', false)
+          })
+        }
+      })
+      this.$nextTick(() => {
+        if (this.$refs.commentInput) {
+          this.$refs.commentInput.view()
+        }
+      })
+    },
+
     // 发送顶级评论
     handleSendComment(sendObj) {
       this.$http({
@@ -339,12 +368,19 @@ export default {
         }
       }).then((res) => {
         this.$message.success('回复成功')
-        if (parentComment._showChildren && parentComment._children) {
+        if (parentComment.topReplyCommentId === '0') {
           parentComment._children.push({ ...res, isOwner: true })
           parentComment.childCommentCount = (parentComment.childCommentCount || 0) + 1
+          parentComment._showChildren = true;
         } else {
-          parentComment.childCommentCount = (parentComment.childCommentCount || 0) + 1
+          const topComment = this.commentList.find(c => c.id === parentComment.topReplyCommentId)
+          if (topComment) {
+            topComment._children.push({ ...res, isOwner: true })
+            topComment.childCommentCount = (parentComment.childCommentCount || 0) + 1
+            topComment._showChildren = true;
+          }
         }
+
         parentComment._showReply = false
       })
     },
@@ -384,13 +420,32 @@ export default {
 
     // 切换回复输入框
     toggleReply(comment) {
-      this.$set(comment, '_showReply', !comment._showReply)
-      if (comment._showReply) {
+      const willShow = !comment._showReply
+      console.log('willShow', willShow)
+      // 关闭其他打开的回复输入框和顶部评论输入框
+      this.showCommentInput = false
+      this.commentList.forEach(c => {
+        if (c !== comment && c._showReply) {
+          this.$set(c, '_showReply', false)
+        }
+        if (c._children) {
+          c._children.forEach(child => {
+            if (child !== comment && child._showReply) {
+              this.$set(child, '_showReply', false)
+            }
+          })
+        }
+      })
+      this.$set(comment, '_showReply', willShow)
+      if (willShow) {
+        const refKey = 'replyInput_' + comment.id
         this.$nextTick(() => {
-          const refs = this.$refs.replyInput
-          if (refs) {
-            const target = Array.isArray(refs) ? refs[refs.length - 1] : refs
-            if (target) target.view()
+          console.log('refKey', refKey)
+          const inst = this.$refs[refKey]
+          console.log('inst', inst)
+          if (inst) {
+            const target = Array.isArray(inst) ? inst[0] : inst
+            if (target && target.view) target.view()
           }
         })
       }
@@ -553,10 +608,63 @@ export default {
   flex-direction: column;
   padding: 0;
 
+  .comment-btn-wrapper {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    flex-shrink: 0;
+
+    .comment-text-btn {
+      width: 100%;
+      text-align: center;
+      padding: 10px 0;
+      background: #f5f7fa;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      color: #606266;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+
+      &:hover {
+        color: #409eff;
+        border-color: #c6e2ff;
+        background: #ecf5ff;
+      }
+    }
+  }
+
   .comment-input-wrapper {
     padding: 12px;
     border-bottom: 1px solid #f0f0f0;
     flex-shrink: 0;
+
+    .input-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+
+      .input-title {
+        font-size: 13px;
+        color: #333;
+        font-weight: 500;
+      }
+
+      .input-close {
+        font-size: 12px;
+        color: #999;
+        cursor: pointer;
+
+        &:hover {
+          color: #409eff;
+        }
+
+        i {
+          font-size: 12px;
+        }
+      }
+    }
   }
 
   .comment-list {

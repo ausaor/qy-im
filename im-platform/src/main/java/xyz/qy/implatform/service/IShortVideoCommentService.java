@@ -18,4 +18,6 @@ public interface IShortVideoCommentService extends IService<ShortVideoComment> {
     ShortVideoCommentVO addShortVideoComment(ShortVideoCommentAddDTO dto);
 
     void deleteShortVideoComment(ShortVideoCommentDelDTO dto);
+
+    Integer getCommentCountByVideoId(Long videoId);
 }

@@ -5,13 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.implatform.dto.ShortVideoCommentAddDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentDelDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentQueryDTO;
-import xyz.qy.implatform.dto.ShortVideoCommentUpdateDTO;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoComment;
 import xyz.qy.implatform.entity.User;
@@ -31,7 +29,6 @@ import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoCommentVO;
-import xyz.qy.implatform.vo.UserVO;
 
 import javax.annotation.Resource;
 import java.util.Collections;
@@ -134,10 +131,10 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
 
         if (parentComment != null) {
             comment.setReplyCommentId(parentComment.getId());
-            if (parentComment.getTopReplyCommentId() != null) {
-                comment.setTopReplyCommentId(parentComment.getTopReplyCommentId());
-            } else {
+            if (parentComment.getTopReplyCommentId() == 0L) {
                 comment.setTopReplyCommentId(parentComment.getId());
+            } else {
+                comment.setTopReplyCommentId(parentComment.getTopReplyCommentId());
             }
             comment.setReplyToUserId(parentComment.getUserId());
             comment.setReplyToUserNickname(parentComment.getUserNickname());
@@ -157,6 +154,11 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
         this.save(comment);
         ShortVideoCommentVO vo = BeanUtils.copyProperties(comment, ShortVideoCommentVO.class);
         vo.setIsOwner(Boolean.TRUE);
+
+        Integer commentCount = this.getCommentCountByVideoId(shortVideo.getId());
+        shortVideo.setCommentCount(commentCount);
+        shortVideoMapper.updateById(shortVideo);
+
         return vo;
     }
 
@@ -169,6 +171,18 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
         comment.setDeleted(true);
         comment.setUpdateTime(new Date());
         this.updateById(comment);
+
+        ShortVideo shortVideo = shortVideoMapper.selectById(comment.getVideoId());
+        shortVideo.setCommentCount(this.getCommentCountByVideoId(shortVideo.getId()));
+        shortVideoMapper.updateById(shortVideo);
+    }
+
+    @Override
+    public Integer getCommentCountByVideoId(Long videoId) {
+        LambdaQueryWrapper<ShortVideoComment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShortVideoComment::getVideoId, videoId);
+        wrapper.eq(ShortVideoComment::getDeleted, false);
+        return this.count(wrapper);
     }
 
     private LambdaQueryWrapper<ShortVideoComment> buildQueryWrapper(ShortVideoCommentQueryDTO dto) {
