@@ -161,6 +161,18 @@ export default {
   created() {
     //this.fetchVideos()
   },
+  beforeDestroy() {
+    // 组件销毁前停止视频播放并清理资源
+    const video = this.$refs.videoPlayer
+    if (video) {
+      video.pause()
+      // 移除 src 防止后台继续加载
+      video.removeAttribute('src')
+      video.load()
+    }
+    this.isPlaying = false
+    this._pendingPlayCount = null
+  },
   methods: {
     async fetchVideos() {
       if (this.loading || this.loadingMore) return
