@@ -15,19 +15,17 @@ import xyz.qy.implatform.annotation.RequireRoles;
 import xyz.qy.implatform.dto.EmailBindDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
 import xyz.qy.implatform.dto.ResetPwdDTO;
+import xyz.qy.implatform.dto.TargetQueryDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.dto.UserUpdateDTO;
-import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IUserService;
-import xyz.qy.implatform.session.SessionContext;
-import xyz.qy.implatform.session.UserSession;
-import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.vo.OnlineTerminalVO;
 import xyz.qy.implatform.vo.PasswordVO;
+import xyz.qy.implatform.vo.TargetVO;
 import xyz.qy.implatform.vo.UserVO;
 
 import javax.annotation.Resource;
@@ -67,6 +65,12 @@ public class UserController {
     @ApiOperation(value = "查找用户", notes = "根据id查找用户")
     public Result<UserVO> findById(@PathVariable("id") Long id){
         return ResultUtils.success(userService.findUserById(id));
+    }
+
+    @ApiOperation(value = "查找目标对象信息", notes = "查找目标对象信息")
+    @GetMapping("/findTargetInfo")
+    public Result<TargetVO> findTargetInfo(@RequestBody @Valid TargetQueryDTO dto) {
+        return ResultUtils.success(userService.findTargetInfo(dto));
     }
 
     @ApiOperation(value = "超级管理员修改用户信息", notes = "超级管理员修改用户信息")

@@ -46,7 +46,7 @@
             <div class="action-item avatar-item" @click.stop>
               <head-image
                   :url="currentVideo.headImage"
-                  :name="currentVideo.nickName || '?'"
+                  :name="currentVideo.authorName || '?'"
                   :size="48"
               ></head-image>
               <div

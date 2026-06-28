@@ -54,12 +54,6 @@ public class ShortVideoLikeController {
         return ResultUtils.success();
     }
 
-    @ApiOperation(value = "点赞详情", notes = "点赞详情")
-    @GetMapping("/detail/{id}")
-    public Result<ShortVideoLikeVO> detail(@NotNull(message = "id不能为空") @PathVariable Long id) {
-        return ResultUtils.success(shortVideoLikeService.getShortVideoLikeById(id));
-    }
-
     @ApiOperation(value = "点赞列表", notes = "点赞列表")
     @PostMapping("/list")
     public Result<List<ShortVideoLikeVO>> list(@RequestBody ShortVideoLikeQueryDTO dto) {

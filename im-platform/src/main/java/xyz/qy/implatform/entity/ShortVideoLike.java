@@ -36,10 +36,16 @@ public class ShortVideoLike extends Model<ShortVideoLike> {
     private Long videoId;
 
     /**
-     * 点赞目标用户id
+     * 点赞目标对象id
      */
-    @TableField("target_user_id")
-    private Long targetUserId;
+    @TableField("target_id")
+    private Long targetId;
+
+    /**
+     * 点赞目标对象类型
+     */
+    @TableField("type")
+    private String type;
 
     /**
      * 点赞用户id

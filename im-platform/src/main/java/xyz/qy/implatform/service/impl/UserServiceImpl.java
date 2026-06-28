@@ -28,6 +28,7 @@ import xyz.qy.implatform.dto.LoginDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
 import xyz.qy.implatform.dto.RegisterDTO;
 import xyz.qy.implatform.dto.ResetPwdDTO;
+import xyz.qy.implatform.dto.TargetQueryDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.dto.UserUpdateDTO;
@@ -71,6 +72,7 @@ import xyz.qy.implatform.vo.OnlineTerminalVO;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.PasswordVO;
 import xyz.qy.implatform.vo.SystemMessageVO;
+import xyz.qy.implatform.vo.TargetVO;
 import xyz.qy.implatform.vo.UserVO;
 
 import javax.annotation.Resource;
@@ -334,7 +336,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         // 短视频获赞数
         Integer shortVideoLikedCount = shortVideoLikeService.lambdaQuery()
-                .eq(ShortVideoLike::getTargetUserId, session.getUserId())
+                .eq(ShortVideoLike::getTargetId, session.getUserId())
+                .eq(ShortVideoLike::getType, FollowEnum.USER.getCode())
                 .count();
         userVO.setShortVideoLikedCount(shortVideoLikedCount);
         return userVO;
@@ -455,6 +458,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         vo.setOnline(imClient.isOnline(id));
         return vo;
+    }
+
+    @Override
+    public TargetVO findTargetInfo(TargetQueryDTO dto) {
+        TargetVO targetVO = new TargetVO();
+        if (FollowEnum.USER.getCode().equals(dto.getType())) {
+            User user = this.getById(dto.getTargetId());
+            if (user.getIsDeleted()) {
+                throw new GlobalException(ResultCode.PROGRAM_ERROR, "用户不存在");
+            }
+            targetVO.setUserId(user.getId());
+            targetVO.setUserName(user.getUserName());
+            targetVO.setNickName(user.getNickName());
+            targetVO.setHeadImage(user.getHeadImage());
+        }
+
+        // 目标对象的粉丝数
+        Integer fansCount = followService.lambdaQuery()
+                .eq(Follow::getTargetId, dto.getTargetId())
+                .eq(Follow::getType, FollowEnum.USER.getCode())
+                .count();
+        targetVO.setFansCount(fansCount);
+
+        // 目标对象的短视频获赞数
+        Integer shortVideoLikedCount = shortVideoLikeService.lambdaQuery()
+                .eq(ShortVideoLike::getTargetId, dto.getTargetId())
+                .eq(ShortVideoLike::getType, dto.getType())
+                .count();
+        targetVO.setShortVideoLikedCount(shortVideoLikedCount);
+
+        return targetVO;
     }
 
     @Override

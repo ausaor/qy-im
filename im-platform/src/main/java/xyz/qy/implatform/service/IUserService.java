@@ -6,6 +6,7 @@ import xyz.qy.implatform.dto.LoginDTO;
 import xyz.qy.implatform.dto.ModifyPwdDTO;
 import xyz.qy.implatform.dto.RegisterDTO;
 import xyz.qy.implatform.dto.ResetPwdDTO;
+import xyz.qy.implatform.dto.TargetQueryDTO;
 import xyz.qy.implatform.dto.UserBanDTO;
 import xyz.qy.implatform.dto.UserQueryDTO;
 import xyz.qy.implatform.dto.UserUpdateDTO;
@@ -14,6 +15,7 @@ import xyz.qy.implatform.vo.LoginVO;
 import xyz.qy.implatform.vo.OnlineTerminalVO;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.PasswordVO;
+import xyz.qy.implatform.vo.TargetVO;
 import xyz.qy.implatform.vo.UserVO;
 
 import java.util.List;
@@ -38,6 +40,8 @@ public interface IUserService extends IService<User> {
     void update(UserVO vo);
 
     UserVO findUserById(Long id);
+
+    TargetVO findTargetInfo(TargetQueryDTO dto);
 
     List<User> findUserByIds(List<Long> ids);
 

@@ -29,11 +29,11 @@
       <div class="detail-author">
         <head-image
           :url="video.headImage"
-          :name="video.nickName || '?'"
+          :name="video.authorName || '?'"
           :size="48"
           radius="50%"
         ></head-image>
-        <span class="author-name">@{{ video.nickName || video.authorName || '用户' + video.userId }}</span>
+        <span class="author-name">@{{ video.authorName || '用户' + video.userId }}</span>
       </div>
       <div class="detail-item" v-if="video.title">
         <div class="detail-label">标题</div>

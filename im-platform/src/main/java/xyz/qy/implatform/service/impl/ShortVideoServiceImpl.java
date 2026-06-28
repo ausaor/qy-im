@@ -14,9 +14,12 @@ import xyz.qy.implatform.dto.ShortVideoBatchScopeDTO;
 import xyz.qy.implatform.dto.ShortVideoDelDTO;
 import xyz.qy.implatform.dto.ShortVideoQueryDTO;
 import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
+import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoFavorite;
 import xyz.qy.implatform.entity.ShortVideoLike;
+import xyz.qy.implatform.entity.TemplateCharacter;
+import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.FollowEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
@@ -27,7 +30,10 @@ import xyz.qy.implatform.mapper.ShortVideoLikeMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.service.IFollowService;
 import xyz.qy.implatform.service.IFriendService;
+import xyz.qy.implatform.service.IGroupService;
 import xyz.qy.implatform.service.IShortVideoService;
+import xyz.qy.implatform.service.ITemplateCharacterService;
+import xyz.qy.implatform.service.ITemplateGroupService;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
@@ -41,6 +47,7 @@ import xyz.qy.implatform.vo.ShortVideoVO;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -67,6 +74,15 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
     @Resource
     private IFollowService followService;
+
+    @Resource
+    private ITemplateGroupService templateGroupService;
+
+    @Resource
+    private ITemplateCharacterService templateCharacterService;
+
+    @Resource
+    private IGroupService  groupService;
 
     @Override
     public List<ShortVideoVO> myShortVideos(ShortVideoQueryDTO dto) {
@@ -149,7 +165,30 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
         List<Long> userIds = shortVideos.stream().map(ShortVideo::getUserId).distinct().collect(Collectors.toList());
         List<Long> videoIds = shortVideos.stream().map(ShortVideo::getId).collect(Collectors.toList());
+        // shortVideos根据type 进行分组, 获取objectId，得到Map<String, List<Long>>
+        Map<String, List<Long>> objectIdMap = shortVideos.stream().collect(Collectors.groupingBy(ShortVideo::getType, Collectors.mapping(ShortVideo::getObjectId, Collectors.toList())));
 
+        Map<Long, Group> groupMap = new HashMap<>();
+        if (objectIdMap.containsKey(FollowEnum.GROUP.getCode())) {
+            List<Long> groupIds = objectIdMap.get(FollowEnum.GROUP.getCode());
+            List<Group> groups = groupService.listByIds(groupIds);
+            groupMap = groups.stream().collect(Collectors.toMap(Group::getId, group -> group));
+        }
+
+        Map<Long, TemplateGroup> templateGroupMap = new HashMap<>();
+        if (objectIdMap.containsKey(FollowEnum.TEMPLATE.getCode())) {
+            List<Long> templateIds = objectIdMap.get(FollowEnum.TEMPLATE.getCode());
+            List<TemplateGroup> templateGroups = templateGroupService.listByIds(templateIds);
+            templateGroupMap = templateGroups.stream().collect(Collectors.toMap(TemplateGroup::getId, templateGroup -> templateGroup));
+        }
+
+        Map<Long, TemplateCharacter> characterMap = new HashMap<>();
+        if (objectIdMap.containsKey(FollowEnum.CHARACTER.getCode())) {
+            List<Long> characterIds = objectIdMap.get(FollowEnum.CHARACTER.getCode());
+            List<TemplateCharacter> templateCharacters = templateCharacterService.listByIds(characterIds);
+            characterMap = templateCharacters.stream().collect(Collectors.toMap(TemplateCharacter::getId, templateCharacter -> templateCharacter));
+        }
+        
         // 批量查询当前用户是否点赞
         List<ShortVideoLike> likes = shortVideoLikeMapper.selectList(
                 new LambdaQueryWrapper<ShortVideoLike>()
@@ -171,10 +210,25 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, user -> user));
         for (ShortVideoVO vo : vos) {
             User user = userMap.get(vo.getUserId());
-            if (ObjectUtil.isNotNull(user)) {
+            if (FollowEnum.USER.getCode().equals(vo.getType()) && ObjectUtil.isNotNull(user)) {
                 vo.setNickName(user.getNickName());
                 vo.setHeadImage(user.getHeadImage());
                 vo.setAuthorName(user.getNickName());
+            } else if (FollowEnum.GROUP.getCode().equals(vo.getType()) && ObjectUtil.isNotNull(groupMap.get(vo.getObjectId()))) {
+                Group group = groupMap.get(vo.getObjectId());
+                vo.setNickName(group.getName());
+                vo.setHeadImage(group.getHeadImage());
+                vo.setAuthorName(group.getName());
+            } else if (FollowEnum.TEMPLATE.getCode().equals(vo.getType()) && ObjectUtil.isNotNull(templateGroupMap.get(vo.getObjectId()))) {
+                TemplateGroup templateGroup = templateGroupMap.get(vo.getObjectId());
+                vo.setNickName(templateGroup.getGroupName());
+                vo.setHeadImage(templateGroup.getAvatar());
+                vo.setAuthorName(templateGroup.getGroupName());
+            } else if (FollowEnum.CHARACTER.getCode().equals(vo.getType()) && ObjectUtil.isNotNull(characterMap.get(vo.getObjectId()))) {
+                TemplateCharacter templateCharacter = characterMap.get(vo.getObjectId());
+                vo.setNickName(templateCharacter.getName());
+                vo.setHeadImage(templateCharacter.getAvatar());
+                vo.setAuthorName(templateCharacter.getName());
             }
             vo.setLiked(likedVideoIds.contains(vo.getId()));
             vo.setFavorited(favoritedVideoIds.contains(vo.getId()));

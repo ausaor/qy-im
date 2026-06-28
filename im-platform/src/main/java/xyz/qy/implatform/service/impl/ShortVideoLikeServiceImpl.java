@@ -54,17 +54,6 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
         return PageResultVO.<List<ShortVideoLikeVO>>builder().data(vos).total(page.getTotal()).build();
     }
 
-    @Override
-    public ShortVideoLikeVO getShortVideoLikeById(Long id) {
-        ShortVideoLike like = this.getById(id);
-        if (ObjectUtil.isNull(like)) {
-            return null;
-        }
-        ShortVideoLikeVO vo = BeanUtils.copyProperties(like, ShortVideoLikeVO.class);
-        vo.setIsOwner(SessionContext.getSession().getUserId().equals(like.getUserId()));
-        return vo;
-    }
-
     @Transactional
     @Override
     public ShortVideoLikeVO addShortVideoLike(ShortVideoLikeAddDTO dto) {
@@ -81,7 +70,8 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
         ShortVideoLike like = new ShortVideoLike();
         like.setUserId(userId);
         like.setVideoId(dto.getVideoId());
-        like.setTargetUserId(shortVideo.getUserId());
+        like.setTargetId(shortVideo.getObjectId());
+        like.setType(shortVideo.getType());
         like.setCreateTime(new Date());
         this.save(like);
         updateVideoLikeCount(dto.getVideoId());
