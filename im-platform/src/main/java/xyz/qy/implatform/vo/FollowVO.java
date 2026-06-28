@@ -26,6 +26,15 @@ public class FollowVO {
     @ApiModelProperty(value = "类别")
     private String type;
 
+    @ApiModelProperty(value = "用户id")
+    private Long userId;
+
+    @ApiModelProperty(value = "昵称")
+    private String nickName;
+
+    @ApiModelProperty(value = "用户头像")
+    private String headImage;
+
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 

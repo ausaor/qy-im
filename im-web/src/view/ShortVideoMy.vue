@@ -26,11 +26,11 @@
       </div>
       
       <div class="stats-row">
-        <div class="stat-item">
+        <div class="stat-item stat-clickable" @click="openFollowDialog('follow')">
           <div class="stat-value">{{ followCount }}</div>
           <div class="stat-label">关注</div>
         </div>
-        <div class="stat-item">
+        <div class="stat-item stat-clickable" @click="openFollowDialog('fans')">
           <div class="stat-value">{{ fansCount }}</div>
           <div class="stat-label">粉丝</div>
         </div>
@@ -135,7 +135,7 @@
     <ShortVideoEdit
         :visible="editVisible"
         :video-id="editVideoId"
-        category="private"
+        type="user"
         @close="handleEditClose"
         @refresh="handleRefresh"
     />
@@ -157,6 +157,92 @@
         <el-button @click="scopeVisible = false">取消</el-button>
         <el-button type="primary" @click="handleScopeConfirm">确定</el-button>
       </span>
+    </el-dialog>
+
+    <!-- 关注/粉丝弹窗 -->
+    <el-dialog
+      :title="followDialogTitle"
+      :visible.sync="followDialogVisible"
+      width="480px"
+      :close-on-click-modal="true"
+      @close="handleFollowDialogClose"
+    >
+      <div class="follow-tabs">
+        <div
+          class="follow-tab-item"
+          :class="{ active: followTabActive === 'follow' }"
+          @click="switchFollowTab('follow')"
+        >关注 {{ this.followCount }}</div>
+        <div
+          class="follow-tab-item"
+          :class="{ active: followTabActive === 'fans' }"
+          @click="switchFollowTab('fans')"
+        >粉丝 {{ fansDialogList.length }}</div>
+      </div>
+
+      <div class="follow-list-content" v-loading="followLoading">
+        <!-- 关注列表 -->
+        <template v-if="followTabActive === 'follow'">
+          <div
+            v-for="item in followDialogList"
+            :key="item.id"
+            class="follow-list-item"
+          >
+            <head-image :url="item.targetAvatar" :name="item.targetName" :size="44"></head-image>
+            <div class="follow-item-info">
+              <div class="follow-item-name">
+                <span class="type-star" :style="{ color: getStarColor(item.type) }">★</span>
+                {{ item.targetName }}
+              </div>
+              <div class="follow-item-type">{{ getTypeName(item.type) }}</div>
+            </div>
+            <el-button
+              v-if="item.followed"
+              size="small"
+              type="default"
+              @click="handleCancelFollowInDialog(item, 'follow')"
+            >已关注</el-button>
+            <el-button
+              v-else
+              size="small"
+              type="primary"
+              @click="handleAddFollowInDialog(item, 'follow')"
+            >关注</el-button>
+          </div>
+          <div v-if="followDialogList.length === 0" class="empty-follow">
+            <p>暂无关注</p>
+          </div>
+        </template>
+
+        <!-- 粉丝列表 -->
+        <template v-if="followTabActive === 'fans'">
+          <div
+            v-for="item in fansDialogList"
+            :key="item.id"
+            class="follow-list-item"
+          >
+            <head-image :url="item.headImage" :name="item.nickName" :size="44"></head-image>
+            <div class="follow-item-info">
+              <div class="follow-item-name">{{ item.nickName }}</div>
+            </div>
+            <el-button
+              v-if="item.followed"
+              size="small"
+              type="default"
+              @click="handleCancelFollowInDialog(item, 'fans')"
+            >已关注</el-button>
+            <el-button
+              v-else
+              size="small"
+              type="primary"
+              @click="handleAddFollowInDialog(item, 'fans')"
+            >回关</el-button>
+          </div>
+          <div v-if="fansDialogList.length === 0" class="empty-follow">
+            <p>暂无粉丝</p>
+          </div>
+        </template>
+      </div>
     </el-dialog>
 
     <video-play ref="videoPlay"
@@ -199,6 +285,11 @@ export default {
       videoHeight: 0,
       scopeVisible: false,
       selectedScope: 9,
+      followDialogVisible: false,
+      followTabActive: 'follow',
+      followDialogList: [],
+      fansDialogList: [],
+      followLoading: false,
     }
   },
   created() {
@@ -216,6 +307,9 @@ export default {
     },
     isIndeterminate() {
       return this.selectedVideos.length > 0 && this.selectedVideos.length < this.videoList.length
+    },
+    followDialogTitle() {
+      return this.followTabActive === 'follow' ? '我的关注' : '我的粉丝'
     }
   },
   methods: {
@@ -464,6 +558,127 @@ export default {
       this.videoUrl = '';
       this.posterUrl = '';
     },
+
+    // ========== 关注/粉丝弹窗相关方法 ==========
+    openFollowDialog(tab) {
+      this.followTabActive = tab
+      this.followDialogVisible = true
+      this.loadFollowDialogData()
+    },
+    switchFollowTab(tab) {
+      this.followTabActive = tab
+      if (tab === 'follow' && this.followDialogList.length === 0) {
+        this.fetchFollowDialogList()
+      } else if (tab === 'fans' && this.fansDialogList.length === 0) {
+        this.fetchFansDialogList()
+      }
+    },
+    loadFollowDialogData() {
+      this.fetchFollowDialogList()
+      this.fetchFansDialogList()
+    },
+    fetchFollowDialogList() {
+      this.followLoading = true
+      this.$http({
+        url: '/follow/list',
+        method: 'get'
+      }).then((data) => {
+        this.followDialogList = data || []
+      }).catch(() => {
+        this.followDialogList = []
+      }).finally(() => {
+        this.followLoading = false
+      })
+    },
+    fetchFansDialogList() {
+      this.followLoading = true
+      this.$http({
+        url: '/follow/myFans',
+        method: 'get'
+      }).then((data) => {
+        this.fansDialogList = data || []
+      }).catch(() => {
+        this.fansDialogList = []
+      }).finally(() => {
+        this.followLoading = false
+      })
+    },
+    handleAddFollowInDialog(item, source) {
+      let targetId = null;
+      let type = null;
+      if (source === 'follow') {
+        targetId = item.targetId
+        type = item.type
+      } else if (source === 'fans') {
+        targetId = item.userId
+        type = 'user'
+      }
+      this.$http({
+        url: '/follow/add',
+        method: 'post',
+        data: { targetId: targetId, type: type }
+      }).then(() => {
+        this.$message.success('关注成功')
+        item.followed = true
+        if (source === 'fans') {
+          this.followDialogList = []
+          this.fetchFollowDialogList()
+          this.followCount++
+        } else if (source === 'follow') {
+          this.followCount++
+        }
+      })
+    },
+    handleCancelFollowInDialog(item, source) {
+      let targetId = null;
+      let type = null;
+      if (source === 'follow') {
+        targetId = item.targetId
+        type = item.type
+      } else if (source === 'fans') {
+        targetId = item.userId
+        type = 'user'
+      }
+      this.$http({
+        url: '/follow/cancel',
+        method: 'delete',
+        params: { targetId: targetId, type: type }
+      }).then(() => {
+        this.$message.success('已取消关注')
+        item.followed = false
+        if (source === 'follow') {
+          let newFollowCount = this.followDialogList.filter(i => i.followed).length
+          console.log('newFollowCount', newFollowCount)
+          this.followCount = newFollowCount
+        } else if (source === 'fans') {
+          this.followDialogList = []
+          this.fetchFollowDialogList()
+          this.followCount = Math.max(0, this.followCount - 1)
+        }
+      })
+    },
+    getStarColor(type) {
+      const colorMap = {
+        user: '#409EFF',
+        group: '#67C23A',
+        character: '#E6A23C',
+        template: '#9B59B6'
+      }
+      return colorMap[type] || '#999'
+    },
+    getTypeName(type) {
+      const nameMap = {
+        user: '用户',
+        group: '群组',
+        character: '角色',
+        template: '群聊模板'
+      }
+      return nameMap[type] || type
+    },
+    handleFollowDialogClose() {
+      this.followDialogVisible = false
+      this.followTabActive = 'follow'
+    },
   }
 }
 </script>
@@ -535,6 +750,17 @@ export default {
       .stat-label {
         font-size: 13px;
         color: #909399;
+      }
+
+      &.stat-clickable {
+        cursor: pointer;
+        border-radius: 8px;
+        padding: 8px 0;
+        transition: background 0.2s;
+
+        &:hover {
+          background: #f5f7fa;
+        }
       }
     }
   }
@@ -844,6 +1070,103 @@ export default {
     
     p {
       font-size: 14px;
+      margin: 0;
+    }
+  }
+}
+
+// 关注/粉丝弹窗样式
+.follow-tabs {
+  display: flex;
+  border-bottom: 1px solid #ebeef5;
+  margin-bottom: 12px;
+
+  .follow-tab-item {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 15px;
+    color: #909399;
+    cursor: pointer;
+    position: relative;
+    font-weight: 500;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #303133;
+    }
+
+    &.active {
+      color: #303133;
+      font-weight: 600;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 32px;
+        height: 3px;
+        background: #333;
+        border-radius: 2px;
+      }
+    }
+  }
+}
+
+.follow-list-content {
+  max-height: 400px;
+  overflow-y: auto;
+
+  .follow-list-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    gap: 12px;
+
+    & + .follow-list-item {
+      border-top: 1px solid #f5f5f5;
+    }
+
+    .follow-item-info {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+
+      .follow-item-name {
+        font-size: 14px;
+        color: #303133;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        .type-star {
+          font-size: 14px;
+          flex-shrink: 0;
+        }
+      }
+
+      .follow-item-type {
+        font-size: 12px;
+        color: #999;
+        margin-top: 2px;
+      }
+    }
+  }
+
+  .empty-follow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: #c0c4cc;
+    font-size: 14px;
+
+    p {
       margin: 0;
     }
   }

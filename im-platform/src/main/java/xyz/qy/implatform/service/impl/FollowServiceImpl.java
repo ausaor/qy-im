@@ -182,6 +182,41 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     }
 
     @Override
+    public List<FollowVO> findMyFans() {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
+        LambdaQueryWrapper<Follow> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Follow::getTargetId, userId)
+                .eq(Follow::getType, FollowEnum.USER.getCode())
+                .orderByDesc(Follow::getCreateTime);
+        List<Follow> list = this.list(queryWrapper);
+        List<FollowVO> followVOS = BeanUtils.copyProperties(list, FollowVO.class);
+
+        LambdaQueryWrapper<Follow> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Follow::getUserId, userId)
+                .eq(Follow::getType, FollowEnum.USER.getCode());
+        List<Follow> myFollows = this.list(wrapper);
+        Set<Long> myFollowIds = myFollows.stream().map(Follow::getTargetId).collect(Collectors.toSet());
+
+
+        List<Long> userIds = followVOS.stream().map(FollowVO::getUserId).collect(Collectors.toList());
+        Map<Long, User> userMap = userMapper.selectBatchIds(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+        followVOS.forEach(vo -> {
+            User user = userMap.get(vo.getUserId());
+            if (user != null) {
+                vo.setNickName(user.getNickName());
+                vo.setHeadImage(user.getHeadImage());
+            }
+
+            // 判断是否已关注粉丝
+            vo.setFollowed(myFollowIds.contains(vo.getUserId()));
+        });
+        return followVOS;
+    }
+
+    @Override
     public Set<String> findAllFollows() {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();

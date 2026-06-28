@@ -49,4 +49,10 @@ public class FollowController {
     public Result<List<FollowVO>> findFollows(String type) {
         return ResultUtils.success(followService.findFollows(type));
     }
+
+    @GetMapping("/myFans")
+    @ApiOperation(value = "我的粉丝", notes = "获取当前用户的所有粉丝")
+    public Result<List<FollowVO>> findMyFans() {
+        return ResultUtils.success(followService.findMyFans());
+    }
 }

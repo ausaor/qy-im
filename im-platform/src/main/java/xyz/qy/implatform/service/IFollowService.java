@@ -2,6 +2,7 @@ package xyz.qy.implatform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.qy.implatform.dto.FollowDTO;
+import xyz.qy.implatform.dto.TargetQueryDTO;
 import xyz.qy.implatform.entity.Follow;
 import xyz.qy.implatform.vo.FollowVO;
 
@@ -32,6 +33,13 @@ public interface IFollowService extends IService<Follow> {
      * @return 关注列表
      */
     List<FollowVO> findFollows(String type);
+
+    /**
+     * 查询当前用户所有粉丝
+     *
+     * @return 粉丝列表
+     */
+    List<FollowVO> findMyFans();
 
     /**
      * 查询当前用户的所有关注
