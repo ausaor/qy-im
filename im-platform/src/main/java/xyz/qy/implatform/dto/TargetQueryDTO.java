@@ -7,12 +7,13 @@ import xyz.qy.implatform.enums.FollowEnum;
 import xyz.qy.implatform.enums.ValidEnum;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
 @ApiModel(description = "目标查询DTO")
 public class TargetQueryDTO {
 
-    @NotBlank
+    @NotNull
     @ApiModelProperty(value = "目标id")
     private Long targetId;
 

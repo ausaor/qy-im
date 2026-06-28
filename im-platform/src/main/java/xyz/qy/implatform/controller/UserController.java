@@ -68,7 +68,7 @@ public class UserController {
     }
 
     @ApiOperation(value = "查找目标对象信息", notes = "查找目标对象信息")
-    @GetMapping("/findTargetInfo")
+    @PostMapping("/findTargetInfo")
     public Result<TargetVO> findTargetInfo(@RequestBody @Valid TargetQueryDTO dto) {
         return ResultUtils.success(userService.findTargetInfo(dto));
     }

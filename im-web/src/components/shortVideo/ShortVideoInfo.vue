@@ -182,7 +182,47 @@
 
     <!-- TA的作品 Tab -->
     <div v-if="activeTab === 'works'" class="tab-content works-tab">
-      <div class="no-content">暂无作品</div>
+      <!-- 加载中 -->
+      <div v-if="worksLoading" class="works-loading">
+        <i class="el-icon-loading"></i>
+      </div>
+
+      <template v-else>
+        <!-- 作者信息 -->
+        <div class="works-author-info">
+          <div class="works-author-name">@{{ video.authorName || '用户' + video.userId }}</div>
+          <div class="works-author-stats">
+            <span class="stat-item">粉丝 {{ authorInfo ? authorInfo.fansCount : 0 }}</span>
+            <span class="stat-divider">|</span>
+            <span class="stat-item">获赞 {{ authorInfo ? authorInfo.shortVideoLikedCount : 0 }}</span>
+          </div>
+        </div>
+
+        <!-- 作品网格 -->
+        <div v-if="worksList.length > 0" class="works-grid">
+          <div
+            v-for="work in worksList"
+            :key="work.id"
+            class="work-item"
+            @click="playWork(work)"
+          >
+            <div class="work-cover-wrapper">
+              <img :src="work.coverUrl" class="work-cover" />
+              <!-- 播放中图标 -->
+              <div v-if="isCurrentWork(work.id)" class="work-playing-overlay">
+                <i class="el-icon-video-play"></i>
+              </div>
+            </div>
+            <div class="work-like-count">
+              <i class="iconfont icon-hongxin1"></i>
+              <span>{{ work.likeCount || 0 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else class="no-content">暂无作品</div>
+      </template>
     </div>
   </div>
 </template>
@@ -213,7 +253,15 @@ export default {
       commentTotal: 0,
       commentLoading: false,
       commentLoadingMore: false,
-      commentHasMore: true
+      commentHasMore: true,
+      // 作品Tab
+      worksList: [],
+      worksLoading: false,
+      worksPageNo: 1,
+      worksPageSize: 12,
+      worksHasMore: true,
+      worksTotal: 0,
+      authorInfo: null
     }
   },
   watch: {
@@ -228,6 +276,9 @@ export default {
           }
         })
       }
+      if (val === 'works' && this.worksList.length === 0) {
+        this.fetchWorks()
+      }
     },
     video() {
       this.commentList = []
@@ -236,6 +287,12 @@ export default {
       this.commentHasMore = true
       this.showCommentInput = false
       this.activeTab = 'detail'
+      // 重置作品数据
+      this.worksList = []
+      this.worksPageNo = 1
+      this.worksTotal = 0
+      this.worksHasMore = true
+      this.authorInfo = null
     }
   },
   methods: {
@@ -497,6 +554,56 @@ export default {
     // 预览图片
     previewImage(url) {
       this.$store.commit('showFullImageBox', url)
+    },
+
+    // ==================== 作品相关 ====================
+    fetchAuthorInfo() {
+      if (!this.video.objectId || !this.video.type) return
+      this.$http({
+        url: '/user/findTargetInfo',
+        method: 'post',
+        data: {
+          targetId: this.video.objectId,
+          type: this.video.type
+        }
+      }).then((res) => {
+        this.authorInfo = res
+      }).catch(() => {})
+    },
+
+    fetchWorks() {
+      if (this.worksLoading) return
+      this.worksLoading = true
+
+      this.$http({
+        url: '/shortVideo/recommend',
+        method: 'post',
+        params: {
+          pageNo: this.worksPageNo,
+          pageSize: this.worksPageSize
+        },
+        data: {
+          objectId: this.video.objectId,
+          type: this.video.type
+        }
+      }).then((res) => {
+        this.worksList = res.data || []
+        this.worksTotal = res.total || 0
+        this.worksHasMore = this.worksList.length < this.worksTotal
+      }).finally(() => {
+        this.worksLoading = false
+      })
+
+      // 同时获取作者信息
+      this.fetchAuthorInfo()
+    },
+
+    isCurrentWork(workId) {
+      return this.video && this.video.id === workId
+    },
+
+    playWork(work) {
+      this.$emit('play-video', work)
     }
   }
 }
@@ -860,6 +967,109 @@ export default {
 
 // ==================== TA的作品 Tab ====================
 .works-tab {
+  .works-loading {
+    text-align: center;
+    padding: 60px 0;
+    color: #999;
+
+    i {
+      font-size: 24px;
+    }
+  }
+
+  .works-author-info {
+    padding-bottom: 16px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+
+    .works-author-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .works-author-stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+
+      .stat-item {
+        color: #666;
+      }
+
+      .stat-divider {
+        color: #ddd;
+      }
+    }
+  }
+
+  .works-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .work-item {
+    cursor: pointer;
+    border-radius: 6px;
+    overflow: hidden;
+    transition: transform 0.15s;
+
+    &:hover {
+      transform: scale(1.03);
+    }
+  }
+
+  .work-cover-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 133%;
+    background: #f0f0f0;
+    border-radius: 6px;
+    overflow: hidden;
+
+    .work-cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .work-playing-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      i {
+        font-size: 28px;
+        color: #fff;
+      }
+    }
+  }
+
+  .work-like-count {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 2px 8px;
+    font-size: 12px;
+    color: #999;
+
+    i {
+      font-size: 12px;
+    }
+  }
+
   .no-content {
     text-align: center;
     color: #ccc;

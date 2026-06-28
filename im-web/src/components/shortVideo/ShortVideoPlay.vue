@@ -98,7 +98,7 @@
     </div>
     <transition name="slide-right">
       <div v-if="showInfo" class="short-video-info">
-        <short-video-info :video="currentVideo" @close="showInfo = false"></short-video-info>
+        <short-video-info :video="currentVideo" @close="showInfo = false" @play-video="onPlayVideo"></short-video-info>
       </div>
     </transition>
   </div>
@@ -392,6 +392,24 @@ export default {
       }).then(() => {
         shortVideo.followed = false;
         this.$store.commit('unmarkFollowed', `${shortVideo.objectId}:${shortVideo.type}`)
+      })
+    },
+
+    onPlayVideo(work) {
+      if (!work || !work.id) return
+      // 检查视频列表中是否已存在该作品
+      const existIndex = this.videoList.findIndex(v => v.id === work.id)
+      if (existIndex >= 0) {
+        this.switchVideo(existIndex)
+        return
+      }
+      // 插入到当前索引之后并切换到它
+      this.pauseVideo()
+      const insertIndex = this.currentIndex + 1
+      this.videoList.splice(insertIndex, 0, { ...work })
+      this.currentIndex = insertIndex
+      this.$nextTick(() => {
+        this.playVideo()
       })
     }
   }
