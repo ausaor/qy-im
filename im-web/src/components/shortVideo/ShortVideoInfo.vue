@@ -54,6 +54,15 @@
       <!-- 文字评论按钮 -->
       <div v-if="!showCommentInput" class="comment-btn-wrapper">
         <div class="comment-text-btn" @click="openCommentInput">发表评论</div>
+        <span v-if="!commentForm.characterId" class="comment-setting-btn" @click="chooseCharacterDialogVisible = true">
+          <i class="el-icon-setting"></i>
+        </span>
+        <div v-else class="comment-character-info">
+          <head-image :url="commentForm.avatar" :name="commentForm.nickName" :size="24" radius="50%"></head-image>
+          <span class="character-clear" @click="clearCommentForm">
+            <i class="el-icon-close"></i>
+          </span>
+        </div>
       </div>
 
       <!-- 评论输入框 -->
@@ -62,7 +71,9 @@
           <span class="input-title">发表评论</span>
           <span class="input-close" @click="showCommentInput = false">收起 <i class="el-icon-arrow-up"></i></span>
         </div>
-        <input-box ref="commentInput" width="100%" @send="handleSendComment"></input-box>
+        <input-box ref="commentInput" width="100%" :character-id="commentForm.characterId"
+                   @send="handleSendComment"
+                   @sendWord="handleSendCommentWord"></input-box>
       </div>
 
       <!-- 评论列表 -->
@@ -95,9 +106,13 @@
               <div v-if="item.replyToUserId" class="comment-reply-to">
                 回复 <span class="reply-nickname">@{{ item.replyToUserNickname }}</span>
               </div>
-              <div class="comment-content" v-if="item.type === 0" v-html="$emo.transform(item.content)"></div>
-              <div class="comment-content" v-else-if="item.type === 1">
-                <img :src="item.content.originUrl || item.content" class="comment-image" @click="previewImage(item.content.originUrl || item.content)" />
+              <div class="comment-content" v-if="item.type === $enums.MESSAGE_TYPE.TEXT" v-html="$emo.transform(item.content)"></div>
+              <div class="comment-content" v-else-if="item.type === $enums.MESSAGE_TYPE.IMAGE">
+                <img :src="JSON.parse(item.content).originUrl" class="comment-image" @click="previewImage(JSON.parse(item.content).originUrl)" />
+              </div>
+              <div class="comment-content" v-else-if="item.type === $enums.MESSAGE_TYPE.WORD_VOICE">
+                <span class="word" :title="JSON.parse(item.content).word" >{{JSON.parse(item.content).word}}</span>
+                <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(item.content))"></span>
               </div>
               <div class="comment-actions">
                 <span class="action-like" :class="{ liked: $store.getters.isCommentLiked(item.id) }" @click="handleCommentLike(item)">
@@ -143,9 +158,13 @@
                       <div v-if="child.replyToUserId" class="comment-reply-to">
                         回复 <span class="reply-nickname">@{{ child.replyToUserNickname }}</span>
                       </div>
-                      <div class="comment-content" v-if="child.type === 0" v-html="$emo.transform(child.content)"></div>
-                      <div class="comment-content" v-else-if="child.type === 1">
-                        <img :src="child.content.originUrl || child.content" class="comment-image" @click="previewImage(child.content.originUrl || child.content)" />
+                      <div class="comment-content" v-if="child.type === $enums.MESSAGE_TYPE.TEXT" v-html="$emo.transform(child.content)"></div>
+                      <div class="comment-content" v-else-if="child.type === $enums.MESSAGE_TYPE.IMAGE">
+                        <img :src="JSON.parse(child.content).originUrl" class="comment-image" @click="previewImage(JSON.parse(child.content).originUrl)" />
+                      </div>
+                      <div class="comment-content" v-else-if="child.type === $enums.MESSAGE_TYPE.WORD_VOICE">
+                        <span class="word" :title="JSON.parse(child.content).word" >{{JSON.parse(child.content).word}}</span>
+                        <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(child.content))"></span>
                       </div>
                       <div class="comment-actions">
                         <span class="action-like" :class="{ liked: $store.getters.isCommentLiked(child.id) }" @click="handleCommentLike(child)">
@@ -159,7 +178,9 @@
 
                   <!-- 子评论的回复输入框 -->
                   <div v-show="child._showReply" class="reply-input-wrapper">
-                    <input-box :ref="'replyInput_' + child.id" width="100%" :placeholder="'回复 ' + child.userNickname" @send="(sendObj) => handleSendReply(child, sendObj)"></input-box>
+                    <input-box :ref="'replyInput_' + child.id" width="100%" :placeholder="'回复 ' + child.userNickname" :character-id="commentForm.characterId"
+                               @send="(sendObj) => handleSendReply(child, sendObj)"
+                               @sendWord="(sendObj) => handleSendWordReply(child, sendObj)"></input-box>
                   </div>
                 </div>
               </div>
@@ -168,7 +189,9 @@
 
           <!-- 顶级评论的回复输入框 -->
           <div v-show="item._showReply && item.topReplyCommentId === '0'" class="reply-input-wrapper">
-            <input-box :ref="'replyInput_' + item.id" width="100%" :placeholder="'回复 ' + item.userNickname" @send="(sendObj) => handleSendReply(item, sendObj)"></input-box>
+            <input-box :ref="'replyInput_' + item.id" width="100%" :placeholder="'回复 ' + item.userNickname" :character-id="commentForm.characterId"
+                       @send="(sendObj) => handleSendReply(item, sendObj)"
+                       @sendWord="(sendObj) => handleSendWordReply(item, sendObj)"></input-box>
           </div>
         </div>
 
@@ -224,18 +247,25 @@
         <div v-else class="no-content">暂无作品</div>
       </template>
     </div>
+    <template-character-choose
+        :visible.sync="chooseCharacterDialogVisible"
+        @close="closeChooseCharacterDialog"
+        @confirm="confirmChooseCharacter">
+    </template-character-choose>
   </div>
 </template>
 
 <script>
 import HeadImage from '@/components/common/HeadImage.vue'
 import InputBox from '@/components/common/InputBox.vue'
+import TemplateCharacterChoose from "@/components/template/TemplateCharacterChoose";
 
 export default {
   name: 'ShortVideoInfo',
   components: {
     HeadImage,
-    InputBox
+    InputBox,
+    TemplateCharacterChoose
   },
   props: {
     video: {
@@ -261,7 +291,16 @@ export default {
       worksPageSize: 12,
       worksHasMore: true,
       worksTotal: 0,
-      authorInfo: null
+      authorInfo: null,
+      chooseCharacterDialogVisible: false,
+      commentForm: {
+        characterAvatarId: null,
+        characterId: null,
+        nickName: '',
+        avatar: '',
+      },
+      audio: null,
+      audioSrc: '',
     }
   },
   watch: {
@@ -394,13 +433,55 @@ export default {
 
     // 发送顶级评论
     handleSendComment(sendObj) {
+      if (!sendObj) {
+        return
+      }
+      let content = null;
+      if (sendObj.type === this.$enums.MESSAGE_TYPE.IMAGE) {
+        content = JSON.stringify(sendObj.content)
+      } else {
+        content = sendObj.content
+      }
       this.$http({
         url: '/shortVideoComment/add',
         method: 'post',
         data: {
           videoId: this.video.id,
-          content: typeof sendObj.content === 'string' ? sendObj.content : JSON.stringify(sendObj.content),
-          type: sendObj.type
+          content: content,
+          type: sendObj.type,
+          characterId: this.commentForm.characterId,
+          avatarId: this.commentForm.characterAvatarId
+        }
+      }).then((res) => {
+        this.$message.success('评论成功')
+        // 重新加载评论列表
+        this.commentList = []
+        this.commentPageNo = 1
+        this.commentHasMore = true
+        this.fetchComments()
+      })
+    },
+    handleSendCommentWord(data) {
+      if (!data) {
+        return
+      }
+      let content = JSON.stringify({
+        id: data.id,
+        templateGroupId: data.templateGroupId,
+        characterId: data.characterId,
+        characterName: data.characterName,
+        word: data.word,
+        voice: data.voice
+      })
+      this.$http({
+        url: '/shortVideoComment/add',
+        method: 'post',
+        data: {
+          videoId: this.video.id,
+          content: content,
+          type: this.$enums.MESSAGE_TYPE.WORD_VOICE,
+          characterId: this.commentForm.characterId,
+          avatarId: this.commentForm.characterAvatarId
         }
       }).then((res) => {
         this.$message.success('评论成功')
@@ -414,14 +495,63 @@ export default {
 
     // 发送回复
     handleSendReply(parentComment, sendObj) {
+      let content = null;
+      if (sendObj.type === this.$enums.MESSAGE_TYPE.IMAGE) {
+        content = JSON.stringify(sendObj.content)
+      } else {
+        content = sendObj.content
+      }
       this.$http({
         url: '/shortVideoComment/add',
         method: 'post',
         data: {
           videoId: this.video.id,
-          content: typeof sendObj.content === 'string' ? sendObj.content : JSON.stringify(sendObj.content),
+          content: content,
           type: sendObj.type,
-          replyCommentId: parentComment.id
+          replyCommentId: parentComment.id,
+          characterId: this.commentForm.characterId,
+          avatarId: this.commentForm.characterAvatarId
+        }
+      }).then((res) => {
+        this.$message.success('回复成功')
+        if (parentComment.topReplyCommentId === '0') {
+          parentComment._children.push({ ...res, isOwner: true })
+          parentComment.childCommentCount = (parentComment.childCommentCount || 0) + 1
+          parentComment._showChildren = true;
+        } else {
+          const topComment = this.commentList.find(c => c.id === parentComment.topReplyCommentId)
+          if (topComment) {
+            topComment._children.push({ ...res, isOwner: true })
+            topComment.childCommentCount = (parentComment.childCommentCount || 0) + 1
+            topComment._showChildren = true;
+          }
+        }
+
+        parentComment._showReply = false
+      })
+    },
+    handleSendWordReply(parentComment, data) {
+      if (!data) {
+        return
+      }
+      let content = JSON.stringify({
+        id: data.id,
+        templateGroupId: data.templateGroupId,
+        characterId: data.characterId,
+        characterName: data.characterName,
+        word: data.word,
+        voice: data.voice
+      })
+      this.$http({
+        url: '/shortVideoComment/add',
+        method: 'post',
+        data: {
+          videoId: this.video.id,
+          content: content,
+          type: this.$enums.MESSAGE_TYPE.WORD_VOICE,
+          replyCommentId: parentComment.id,
+          characterId: this.commentForm.characterId,
+          avatarId: this.commentForm.characterAvatarId
         }
       }).then((res) => {
         this.$message.success('回复成功')
@@ -602,8 +732,72 @@ export default {
       return this.video && this.video.id === workId
     },
 
+    clearCommentForm() {
+      this.commentForm = {
+        characterAvatarId: null,
+        characterId: null,
+        nickName: '',
+        avatar: '',
+      }
+    },
+
     playWork(work) {
       this.$emit('play-video', work)
+    },
+    closeChooseCharacterDialog() {
+      this.chooseCharacterDialogVisible = false;
+    },
+    confirmChooseCharacter(resultData) {
+      if (resultData?.characterAvatar?.id) {
+        this.commentForm.characterAvatarId = resultData.characterAvatar.id;
+        this.commentForm.nickName = resultData.characterAvatar.level === 0 ? resultData.templateCharacter.name : resultData.characterAvatar.name;
+        this.commentForm.avatar = resultData.characterAvatar.avatar;
+        this.commentForm.characterId = resultData.templateCharacter.id;
+      } else {
+        this.commentForm.nickName = resultData.templateCharacter.name;
+        this.commentForm.avatar = resultData.templateCharacter.avatar;
+        this.commentForm.characterId = resultData.templateCharacter.id;
+      }
+
+      this.chooseCharacterDialogVisible = false;
+    },
+    playVoice(word) {
+      // 如果当前有正在播放的 audio，先清理
+      if (this.audio) {
+        this.audio.pause();
+        this.audio = null;
+        this.audioSrc = '';
+      }
+
+      this.audio = new Audio();
+      this.audioSrc = word.voice;
+      this.audio.src = word.voice;
+
+      // 监听播放完成事件
+      const handleEnded = () => {
+        if (this.audio) {
+          this.audio.pause();
+          this.audio = null;
+          this.audioSrc = '';
+        }
+        // 移除事件监听器
+        if (this.audio) {
+          this.audio.removeEventListener('ended', handleEnded);
+        }
+      };
+
+      // 添加 ended 事件监听
+      this.audio.addEventListener('ended', handleEnded);
+
+      // 开始播放
+      this.audio.play().catch(err => {
+        console.error('音频播放失败:', err);
+        // 播放失败时清理
+        if (this.audio) {
+          this.audio = null;
+          this.audioSrc = '';
+        }
+      });
     }
   }
 }
@@ -733,9 +927,12 @@ export default {
     padding: 12px;
     border-bottom: 1px solid #f0f0f0;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
     .comment-text-btn {
-      width: 100%;
+      flex: 1;
       text-align: center;
       padding: 10px 0;
       background: #f5f7fa;
@@ -751,6 +948,76 @@ export default {
         color: #409eff;
         border-color: #c6e2ff;
         background: #ecf5ff;
+      }
+    }
+
+    .comment-setting-btn {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      border: 1px solid #dcdfe6;
+      background: #f5f7fa;
+      color: #999;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        color: #409eff;
+        border-color: #c6e2ff;
+        background: #ecf5ff;
+      }
+
+      i {
+        font-size: 16px;
+      }
+    }
+
+    .comment-character-info {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 8px 0 4px;
+      height: 36px;
+      border-radius: 4px;
+      border: 1px solid #dcdfe6;
+      background: #ecf5ff;
+      position: relative;
+
+      .character-name {
+        font-size: 12px;
+        color: #409eff;
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .character-clear {
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #ccc;
+        color: #fff;
+        cursor: pointer;
+        font-size: 10px;
+        transition: all 0.2s;
+
+        &:hover {
+          background: #f56c6c;
+        }
+
+        i {
+          font-size: 10px;
+          font-weight: bold;
+        }
       }
     }
   }

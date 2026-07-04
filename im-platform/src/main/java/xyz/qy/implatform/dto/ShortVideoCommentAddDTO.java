@@ -13,7 +13,7 @@ public class ShortVideoCommentAddDTO {
     private Long videoId;
 
     @NotBlank(message = "评论内容不能为空")
-    @Length(min = 1, max = 200, message = "评论内容长度不能超过200")
+    @Length(min = 1, max = 1000, message = "评论内容长度不能超过200")
     private String content;
 
     @ApiModelProperty(value = "用户昵称")

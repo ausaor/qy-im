@@ -11,17 +11,21 @@ import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.ShortVideoCommentAddDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentDelDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentQueryDTO;
+import xyz.qy.implatform.entity.CharacterAvatar;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoComment;
+import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoCommentMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
+import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.IShortVideoCommentService;
 import xyz.qy.implatform.service.IShortVideoService;
+import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
@@ -60,6 +64,12 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
 
     @Resource
     private RedisCache redisCache;
+
+    @Resource
+    private ITemplateCharacterService characterService;
+
+    @Resource
+    private ICharacterAvatarService characterAvatarService;
 
     @Override
     public List<ShortVideoCommentVO> listShortVideoComments(ShortVideoCommentQueryDTO dto) {
@@ -138,6 +148,34 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
 
         ShortVideoComment comment = BeanUtils.copyProperties(dto, ShortVideoComment.class);
 
+        if (ObjectUtil.isNotNull(dto.getCharacterId())) {
+            TemplateCharacter templateCharacter = characterService.getById(dto.getCharacterId());
+            if (Objects.isNull(templateCharacter)) {
+                throw new GlobalException("当前角色不存在");
+            }
+            comment.setCharacterId(templateCharacter.getId());
+            comment.setUserNickname(templateCharacter.getName());
+            comment.setUserAvatar(templateCharacter.getAvatar());
+
+            if (ObjectUtil.isNotNull(dto.getAvatarId())) {
+                CharacterAvatar characterAvatar = characterAvatarService.getById(dto.getAvatarId());
+                if (ObjectUtil.isNotNull(characterAvatar)) {
+                    if (!characterAvatar.getTemplateCharacterId().equals(templateCharacter.getId())) {
+                        throw new GlobalException("所选角色头像不属于当前角色");
+                    }
+
+                    comment.setAvatarId(characterAvatar.getId());
+                    comment.setUserAvatar(characterAvatar.getAvatar());
+                    if (!characterAvatar.getLevel().equals(0)) {
+                        comment.setUserNickname(characterAvatar.getName());
+                    }
+                }
+            }
+        } else {
+            comment.setUserNickname(user.getNickName());
+            comment.setUserAvatar(user.getHeadImage());
+        }
+
         if (parentComment != null) {
             comment.setReplyCommentId(parentComment.getId());
             if (parentComment.getTopReplyCommentId() == 0L) {
@@ -151,8 +189,6 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
             comment.setReplyToUserAvatar(parentComment.getUserAvatar());
         }
         comment.setContent(SensitiveUtil.filter(comment.getContent()));
-        comment.setUserNickname(user.getNickName());
-        comment.setUserAvatar(user.getHeadImage());
         comment.setUserId(userId);
         comment.setLikeCount(0);
         comment.setIp(user.getIpAddress());
