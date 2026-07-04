@@ -435,7 +435,7 @@ export default {
 }
 
 .short-video-info {
-  width: 380px;
+  width: 420px;
   min-width: 380px;
   height: 100%;
   background: #fff;

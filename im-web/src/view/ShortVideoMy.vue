@@ -117,7 +117,7 @@
               <span><i class="el-icon-view"></i> {{ video.playCount || 0 }}</span>
               <span><i class="iconfont icon-aixin"></i> {{ video.likeCount || 0 }}</span>
               <span><i class="el-icon-star-on"></i> {{ video.favoriteCount || 0 }}</span>
-              <span><i class="iconfont icon-xiaoxi"></i> {{ video.commentCount || 0 }}</span>
+              <span @click="viewVideoComment(video)"><i class="iconfont icon-xiaoxi"></i> {{ video.commentCount || 0 }}</span>
             </div>
             <div class="edit-btn" v-if="activeTab === 'works'" @click.stop="handleEditVideo(video)">
               <i class="el-icon-edit"></i>
@@ -251,6 +251,13 @@
                 :video-height="videoHeight"
                 :video-width="videoWidth"
                 @close="closeVideoPlay"></video-play>
+    <el-drawer
+        v-if="drawerVisible"
+        title=""
+        :visible.sync="drawerVisible"
+        :with-header="false">
+      <ShortVideoCommentList ref="commentListRef" :video="curVideo" :commentForm="commentForm" @closeCommentInput="showCommentInput = false" />
+    </el-drawer>
   </div>
 </template>
 
@@ -258,13 +265,15 @@
 import HeadImage from '@/components/common/HeadImage.vue'
 import ShortVideoEdit from '@/components/shortVideo/ShortVideoEdit.vue'
 import VideoPlay from '@/components/common/VideoPlay.vue'
+import ShortVideoCommentList from '@/components/shortVideo/ShortVideoCommentList.vue'
 
 export default {
   name: 'ShortVideoMy',
   components: {
     HeadImage,
     ShortVideoEdit,
-    VideoPlay
+    VideoPlay,
+    ShortVideoCommentList,
   },
   data() {
     return {
@@ -290,6 +299,15 @@ export default {
       followDialogList: [],
       fansDialogList: [],
       followLoading: false,
+      drawerVisible: false,
+      curVideo: {},
+      commentForm: {
+        characterAvatarId: null,
+        characterId: null,
+        nickName: '',
+        avatar: '',
+      },
+      showCommentInput: false,
     }
   },
   created() {
@@ -679,6 +697,22 @@ export default {
       this.followDialogVisible = false
       this.followTabActive = 'follow'
     },
+    viewVideoComment(video) {
+      this.curVideo = video
+      this.getCommentCharacter();
+      this.drawerVisible = true;
+    },
+    getCommentCharacter() {
+      this.$http({
+        url: `/commentCharacter/getCommentCharacter?targetId=${this.curVideo.id}&targetType=shortVideo`,
+        method: 'get',
+      }).then((res) => {
+        this.commentForm.characterAvatarId = res.avatarId;
+        this.commentForm.nickName = res.characterName;
+        this.commentForm.avatar = res.avatar;
+        this.commentForm.characterId = res.characterId;
+      })
+    }
   }
 }
 </script>
