@@ -94,6 +94,7 @@
               :url="item.userAvatar"
               :name="item.userNickname || '?'"
               :size="32"
+              :id="item.userId"
               radius="50%"
             ></head-image>
             <div class="comment-body">
@@ -110,9 +111,9 @@
               <div class="comment-content" v-else-if="item.type === $enums.MESSAGE_TYPE.IMAGE">
                 <img :src="JSON.parse(item.content).originUrl" class="comment-image" @click="previewImage(JSON.parse(item.content).originUrl)" />
               </div>
-              <div class="comment-content" v-else-if="item.type === $enums.MESSAGE_TYPE.WORD_VOICE">
-                <span class="word" :title="JSON.parse(item.content).word" >{{JSON.parse(item.content).word}}</span>
-                <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(item.content))"></span>
+              <div class="comment-content comment-word-voice" v-else-if="item.type === $enums.MESSAGE_TYPE.WORD_VOICE">
+                <span class="word" :title="JSON.parse(item.content).word" @click.stop="playVoice(JSON.parse(item.content))">{{JSON.parse(item.content).word}}</span>
+                <span class="icon iconfont icon-xitongxiaoxi" @click.stop="playVoice(JSON.parse(item.content))"></span>
               </div>
               <div class="comment-actions">
                 <span class="action-like" :class="{ liked: $store.getters.isCommentLiked(item.id) }" @click="handleCommentLike(item)">
@@ -146,6 +147,7 @@
                     <head-image
                       :url="child.userAvatar"
                       :name="child.userNickname || '?'"
+                      :id="child.userId"
                       :size="28"
                       radius="50%"
                     ></head-image>
@@ -162,9 +164,9 @@
                       <div class="comment-content" v-else-if="child.type === $enums.MESSAGE_TYPE.IMAGE">
                         <img :src="JSON.parse(child.content).originUrl" class="comment-image" @click="previewImage(JSON.parse(child.content).originUrl)" />
                       </div>
-                      <div class="comment-content" v-else-if="child.type === $enums.MESSAGE_TYPE.WORD_VOICE">
-                        <span class="word" :title="JSON.parse(child.content).word" >{{JSON.parse(child.content).word}}</span>
-                        <span class="icon iconfont icon-xitongxiaoxi" style="color: orange;" @click.stop="playVoice(JSON.parse(child.content))"></span>
+                      <div class="comment-content comment-word-voice" v-else-if="child.type === $enums.MESSAGE_TYPE.WORD_VOICE">
+                        <span class="word" :title="JSON.parse(child.content).word" @click.stop="playVoice(JSON.parse(child.content))">{{JSON.parse(child.content).word}}</span>
+                        <span class="icon iconfont icon-xitongxiaoxi" @click.stop="playVoice(JSON.parse(child.content))"></span>
                       </div>
                       <div class="comment-actions">
                         <span class="action-like" :class="{ liked: $store.getters.isCommentLiked(child.id) }" @click="handleCommentLike(child)">
@@ -177,7 +179,7 @@
                   </div>
 
                   <!-- 子评论的回复输入框 -->
-                  <div v-show="child._showReply" class="reply-input-wrapper">
+                  <div v-if="child._showReply" class="reply-input-wrapper">
                     <input-box :ref="'replyInput_' + child.id" width="100%" :placeholder="'回复 ' + child.userNickname" :character-id="commentForm.characterId"
                                @send="(sendObj) => handleSendReply(child, sendObj)"
                                @sendWord="(sendObj) => handleSendWordReply(child, sendObj)"></input-box>
@@ -188,7 +190,7 @@
           </div>
 
           <!-- 顶级评论的回复输入框 -->
-          <div v-show="item._showReply && item.topReplyCommentId === '0'" class="reply-input-wrapper">
+          <div v-if="item._showReply && item.topReplyCommentId === '0'" class="reply-input-wrapper">
             <input-box :ref="'replyInput_' + item.id" width="100%" :placeholder="'回复 ' + item.userNickname" :character-id="commentForm.characterId"
                        @send="(sendObj) => handleSendReply(item, sendObj)"
                        @sendWord="(sendObj) => handleSendWordReply(item, sendObj)"></input-box>
@@ -1142,9 +1144,43 @@ export default {
     margin: 0 2px;
   }
 
+  &.comment-word-voice {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+
+    .word {
+      cursor: pointer;
+      color: #409eff;
+      font-weight: 500;
+      border-bottom: 1px dashed #409eff;
+      padding-bottom: 1px;
+      transition: color 0.2s;
+
+      &:hover {
+        color: #66b1ff;
+      }
+    }
+
+    .icon-xitongxiaoxi {
+      cursor: pointer;
+      color: #e6a23c;
+      font-size: 16px;
+      transition: color 0.2s;
+
+      &:hover {
+        color: #f3d19e;
+      }
+    }
+  }
+
   .comment-image {
-    max-width: 120px;
-    max-height: 120px;
+    min-width: 90px;
+    min-height: 90px;
+    max-width: 180px;
+    max-height: 180px;
     border-radius: 4px;
     cursor: pointer;
   }
