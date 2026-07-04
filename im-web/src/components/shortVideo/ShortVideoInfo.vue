@@ -308,7 +308,8 @@ export default {
   watch: {
     activeTab(val) {
       if (val === 'comment' && this.commentList.length === 0) {
-        this.fetchComments()
+        this.fetchComments();
+        this.getCommentCharacter();
       }
       if (val === 'comment') {
         this.$nextTick(() => {
@@ -800,6 +801,17 @@ export default {
           this.audioSrc = '';
         }
       });
+    },
+    getCommentCharacter() {
+      this.$http({
+        url: `/commentCharacter/getCommentCharacter?targetId=${this.video.id}&targetType=shortVideo`,
+        method: 'get',
+      }).then((res) => {
+        this.commentForm.characterAvatarId = res.avatarId;
+        this.commentForm.nickName = res.characterName;
+        this.commentForm.avatar = res.avatar;
+        this.commentForm.characterId = res.characterId;
+      })
     }
   }
 }

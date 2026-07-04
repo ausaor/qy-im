@@ -10,9 +10,13 @@ import xyz.qy.implatform.mapper.CommentCharacterMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
+import xyz.qy.implatform.session.SessionContext;
+import xyz.qy.implatform.session.UserSession;
+import xyz.qy.implatform.vo.CommentCharacterVO;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Service
 public class CommentCharacterServiceImpl extends ServiceImpl<CommentCharacterMapper, CommentCharacter> implements ICommentCharacterService {
@@ -93,5 +97,43 @@ public class CommentCharacterServiceImpl extends ServiceImpl<CommentCharacterMap
             commentCharacter.setAvatarId(avatarId);
             this.updateCommentCharacter(commentCharacter);
         }
+    }
+
+    @Override
+    public CommentCharacterVO getCommentCharacter(Long targetId, String targetType) {
+        UserSession session = SessionContext.getSession();
+        CommentCharacterVO  commentCharacterVO = new CommentCharacterVO();
+        CommentCharacter commentCharacter = this.lambdaQuery()
+                .eq(CommentCharacter::getUserId, session.getUserId())
+                .eq(CommentCharacter::getTargetId, targetId)
+                .eq(CommentCharacter::getTargetType, targetType)
+                .one();
+        if (Objects.isNull(commentCharacter)) {
+            return commentCharacterVO;
+        }
+
+        if (commentCharacter.getAvatarId() != null) {
+            CharacterAvatar characterAvatar = characterAvatarService.findPublishedCharacterAvatarById(commentCharacter.getAvatarId());
+            if (characterAvatar == null) {
+                return commentCharacterVO;
+            }
+            commentCharacterVO.setAvatar(characterAvatar.getAvatar());
+            if (characterAvatar.getLevel().equals(0)) {
+                commentCharacterVO.setCharacterName(characterAvatar.getTemplateCharacterName());
+            } else {
+                commentCharacterVO.setCharacterName(characterAvatar.getName());
+            }
+        } else {
+            TemplateCharacter templateCharacter = characterService.findPublishedById(commentCharacter.getCharacterId());
+            if (templateCharacter == null) {
+                return commentCharacterVO;
+            }
+            commentCharacterVO.setCharacterName(templateCharacter.getName());
+            commentCharacterVO.setAvatar(templateCharacter.getAvatar());
+        }
+        commentCharacterVO.setCharacterId(commentCharacter.getCharacterId());
+        commentCharacterVO.setAvatarId(commentCharacter.getAvatarId());
+
+        return commentCharacterVO;
     }
 }
