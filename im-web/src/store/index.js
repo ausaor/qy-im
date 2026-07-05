@@ -9,7 +9,7 @@ import configStore from './configStore.js';
 import uiStore from './uiStore.js';
 import talkStore from './talkStore.js';
 import musicStore from "./musicStore.js";
-import shortVideo from "./shortVideoStore"
+import shortVideoStore from "./shortVideoStore"
 // import VuexPersistence from 'vuex-persist'
 //
 //
@@ -21,7 +21,7 @@ import shortVideo from "./shortVideoStore"
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-	modules: {chatStore,friendStore,userStore,groupStore,regionGroupStore,configStore,uiStore,talkStore,musicStore,shortVideo},
+	modules: {chatStore,friendStore,userStore,groupStore,regionGroupStore,configStore,uiStore,talkStore,musicStore,shortVideoStore},
 	state: {},
 	//plugins: [vuexLocal.plugin],
 	mutations: {

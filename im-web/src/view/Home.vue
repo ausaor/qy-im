@@ -59,6 +59,11 @@
                       <use xlink:href="#icon-duanshipin1"></use>
                     </svg>
                   </span>
+                  <span class="phone-float-trigger" @click.prevent.stop="openFloatShortVideo" title="悬浮播放">
+                    <svg class="icon svg-icon" aria-hidden="true">
+                      <use xlink:href="#icon-phone"></use>
+                    </svg>
+                  </span>
                 </div>
               </router-link>
               <router-link class="link" v-bind:to="'/home/ai-chat'">
@@ -145,6 +150,7 @@
     <rtc-private-video ref="rtcPrivateVideo"></rtc-private-video>
     <rtc-group-video ref="rtcGroupVideo" ></rtc-group-video>
     <music-player v-show="showFloatMusic" :show-float-music="showFloatMusic" :musics="musics"></music-player>
+    <short-video-float :show-float="showFloatShortVideo" @close="closeFloatShortVideo"></short-video-float>
 <!--    <aplayer v-if="showFloatMusic"
             :music="musics[0]"
              :list="musics"
@@ -171,8 +177,9 @@
 	import Operation from "@/components/operation/Operation";
   import RtcGroupVideo from '../components/rtc/RtcGroupVideo.vue';
   import RtcGroupJoin from '../components/rtc/RtcGroupJoin.vue';
-  import Aplayer from 'vue-aplayer'
+  //import Aplayer from 'vue-aplayer'
   import MusicPlayer from "@/components/music/MusicPlayer.vue";
+  import ShortVideoFloat from "@components/shortVideo/ShortVideoFloat.vue";
 
 	export default {
 		components: {
@@ -186,7 +193,8 @@
       RtcGroupVideo,
       RtcGroupJoin,
       Operation,
-      Aplayer
+      //Aplayer
+      ShortVideoFloat,
 		},
 		data() {
 			return {
@@ -256,6 +264,9 @@
       },
       musics() {
         return this.$store.state.musicStore.musics;
+      },
+      showFloatShortVideo() {
+        return this.$store.state.shortVideoStore.showFloat;
       },
       groupActivity() {
         let talkMap =this.$store.state.talkStore.groupsTalks;
@@ -913,6 +924,12 @@
       },
       toggleFloatMusic() {
         this.$store.commit("toggleFloatMusic");
+      },
+      openFloatShortVideo() {
+        this.$store.commit('openShortVideoFloat');
+      },
+      closeFloatShortVideo() {
+        this.$store.commit('closeShortVideoFloat');
       }
     },
 		mounted() {
@@ -1095,6 +1112,49 @@
           background-color: #f56c6c;
           z-index: 2;
         }
+      }
+
+      .phone-float-trigger {
+        position: absolute;
+        left: calc(100% + 8px);
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        z-index: 100;
+        background: #fff;
+        border-radius: 50%;
+        padding: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        transition: all 0.2s ease;
+
+        // 透明扩展区域，弥合菜单项与图标之间的hover间隙
+        &::before {
+          content: '';
+          position: absolute;
+          right: 100%;
+          top: -8px;
+          width: 12px;
+          height: calc(100% + 16px);
+        }
+
+        .icon {
+          color: #20C997;
+          font-size: 20px;
+        }
+
+        &:hover {
+          transform: translateY(-50%) scale(1.15);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+
+          .icon {
+            color: #66b1ff;
+          }
+        }
+      }
+
+      .menu-item:hover .phone-float-trigger,
+      .phone-float-trigger:hover {
+        display: block;
       }
     }
 

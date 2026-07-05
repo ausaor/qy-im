@@ -1,11 +1,11 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4728505 */
-  src: url('iconfont.eot?t=1781854241007'); /* IE9 */
-  src: url('iconfont.eot?t=1781854241007#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1781854241007') format('woff2'),
-       url('iconfont.woff?t=1781854241007') format('woff'),
-       url('iconfont.ttf?t=1781854241007') format('truetype'),
-       url('iconfont.svg?t=1781854241007#iconfont') format('svg');
+  src: url('iconfont.eot?t=1783236592699'); /* IE9 */
+  src: url('iconfont.eot?t=1783236592699#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1783236592699') format('woff2'),
+       url('iconfont.woff?t=1783236592699') format('woff'),
+       url('iconfont.ttf?t=1783236592699') format('truetype'),
+       url('iconfont.svg?t=1783236592699#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,6 +14,14 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-tuijian:before {
+  content: "\e60a";
+}
+
+.icon-phone:before {
+  content: "\e70b";
 }
 
 .icon-duanshipin1:before {

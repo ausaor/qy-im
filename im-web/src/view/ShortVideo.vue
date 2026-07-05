@@ -7,7 +7,7 @@
         :key="item.path"
         class="menu-item"
         :class="{ active: currentPath === item.path }"
-        @click="navigateTo(item.path)"
+        @click="navigateTo(item)"
       >
         <span
           class="menu-icon"
@@ -32,24 +32,28 @@ export default {
     return {
       menuItems: [
         {
+          key: 'recom',
           label: '推荐',
           path: '/home/shortVideo/recom',
-          icon: 'iconfont icon-duanshipin1',
+          icon: 'iconfont icon-tuijian',
           color: '#FF5E5B'
         },
         {
+          key: 'follow',
           label: '关注',
           path: '/home/shortVideo/follow',
           icon: 'iconfont icon-guanzhu',
           color: '#FF9F43'
         },
         {
+          key: 'friend',
           label: '朋友',
           path: '/home/shortVideo/friend',
           icon: 'iconfont icon-friend',
           color: '#0ABDE3'
         },
         {
+          key: 'my',
           label: '我的',
           path: '/home/shortVideo/my',
           icon: 'iconfont icon-person',
@@ -61,14 +65,14 @@ export default {
   computed: {
     currentPath() {
       return this.$route.path
-    }
+    },
   },
   methods: {
-    navigateTo(path) {
-      if (this.$route.path !== path) {
-        this.$router.push(path)
+    navigateTo(item) {
+      if (this.$route.path !== item.path) {
+        this.$router.push(item.path)
       }
-    }
+    },
   }
 }
 </script>

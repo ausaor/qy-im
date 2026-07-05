@@ -5,7 +5,8 @@ export default {
 		// 已点赞的评论 ID 集合
 		likedCommentIds: [],
 		// 已关注的用户记录（格式：objectId:type）
-		followedKeys: []
+		followedKeys: [],
+		showFloat: false,
 	},
 
 	mutations: {
@@ -51,7 +52,13 @@ export default {
 			if (idx !== -1) {
 				state.followedKeys.splice(idx, 1)
 			}
-		}
+		},
+		openShortVideoFloat(state) {
+			state.showFloat = true
+		},
+		closeShortVideoFloat(state) {
+			state.showFloat = false
+		},
 	},
 
 	getters: {

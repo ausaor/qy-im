@@ -1,36 +1,35 @@
 <template>
-  <div v-if="visible" class="short-video-float-overlay" @click.self="close">
-    <div class="short-video-float-panel">
-      <!-- 关闭按钮 -->
-      <div class="float-close-btn" @click="close">
-        <i class="el-icon-close"></i>
-      </div>
+  <div v-if="visible" class="short-video-float-panel" :style="panelStyle">
+    <!-- 关闭按钮 -->
+    <div class="float-close-btn" @click="close">
+      <i class="el-icon-close"></i>
+    </div>
 
-      <!-- 顶部标签栏，z-index置于视频之上 -->
-      <div class="float-tabs">
-        <div
-          class="float-tab-item"
-          :class="{ active: activeTab === 'follow' }"
-          @click="switchTab('follow')"
-        >关注</div>
-        <div
-          class="float-tab-item"
-          :class="{ active: activeTab === 'friend' }"
-          @click="switchTab('friend')"
-        >好友</div>
-        <div
-          class="float-tab-item"
-          :class="{ active: activeTab === 'recom' }"
-          @click="switchTab('recom')"
-        >推荐</div>
-        <div
-          class="float-tab-item"
-          :class="{ active: activeTab === 'mine' }"
-          @click="switchTab('mine')"
-        >我的</div>
-      </div>
+    <!-- 顶部标签栏，z-index置于视频之上，可作为拖拽手柄 -->
+    <div class="float-tabs" @mousedown="startDrag">
+      <div
+        class="float-tab-item"
+        :class="{ active: activeTab === 'follow' }"
+        @click.stop="switchTab('follow')"
+      >关注</div>
+      <div
+        class="float-tab-item"
+        :class="{ active: activeTab === 'friend' }"
+        @click.stop="switchTab('friend')"
+      >好友</div>
+      <div
+        class="float-tab-item"
+        :class="{ active: activeTab === 'recom' }"
+        @click.stop="switchTab('recom')"
+      >推荐</div>
+      <div
+        class="float-tab-item"
+        :class="{ active: activeTab === 'mine' }"
+        @click.stop="switchTab('mine')"
+      >我的</div>
+    </div>
 
-      <!-- 视频播放区域 -->
+    <!-- 视频播放区域 -->
       <div class="float-video-area" @wheel.prevent="handleWheel">
         <!-- 加载状态 -->
         <div v-if="loading && videoList.length === 0" class="float-loading">
@@ -125,7 +124,6 @@
           </div>
         </template>
       </div>
-    </div>
   </div>
 </template>
 
@@ -170,7 +168,12 @@ export default {
       loadingMore: false,
       hasMore: true,
       isPlaying: false,
-      activeTab: this.tab
+      activeTab: this.tab,
+      // 拖拽相关
+      dragging: false,
+      hasDragged: false,
+      panelX: null,
+      panelY: null
     }
   },
   computed: {
@@ -185,6 +188,12 @@ export default {
       if (!video || !video.id) return false
       const key = `${video.objectId}:${video.type}`
       return video.followed || this.$store.getters.isFollowed(key)
+    },
+    panelStyle() {
+      if (this.panelX !== null && this.panelY !== null) {
+        return { top: this.panelY + 'px', left: this.panelX + 'px', transform: 'none' }
+      }
+      return {}
     }
   },
   watch: {
@@ -204,10 +213,50 @@ export default {
   },
   methods: {
     close() {
-      this.$emit('update:showFloat', false)
+      this.$emit('close', false)
     },
 
+    // ========== 拖拽相关 ==========
+    startDrag(e) {
+      // 只有按下鼠标左键才触发拖拽
+      if (e.button !== 0) return
+      this.dragging = true
+      this.hasDragged = false
+
+      const panel = this.$el
+      const rect = panel.getBoundingClientRect()
+      this._dragStartX = e.clientX
+      this._dragStartY = e.clientY
+      this._panelStartX = rect.left
+      this._panelStartY = rect.top
+
+      document.addEventListener('mousemove', this.onDrag)
+      document.addEventListener('mouseup', this.stopDrag)
+    },
+
+    onDrag(e) {
+      if (!this.dragging) return
+      const dx = e.clientX - this._dragStartX
+      const dy = e.clientY - this._dragStartY
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        this.hasDragged = true
+      }
+
+      this.panelX = this._panelStartX + dx
+      this.panelY = this._panelStartY + dy
+    },
+
+    stopDrag() {
+      this.dragging = false
+      document.removeEventListener('mousemove', this.onDrag)
+      document.removeEventListener('mouseup', this.stopDrag)
+    },
+    // ========== 拖拽相关结束 ==========
+
     switchTab(tab) {
+      // 如果正在拖拽中，不触发切换
+      if (this.hasDragged) return
       this.activeTab = tab
       if (tab === 'recom') {
         this.resetAndFetch()
@@ -454,27 +503,21 @@ export default {
       }
       this.isPlaying = false
       this._pendingPlayCount = null
+      // 重置拖拽位置，下次打开时重新居中
+      this.panelX = null
+      this.panelY = null
+      this.hasDragged = false
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
-.short-video-float-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .short-video-float-panel {
-  position: relative;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 400px;
   height: 75vh;
   max-height: 720px;
@@ -482,6 +525,7 @@ export default {
   overflow: hidden;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
   background: #000;
+  z-index: 2000;
 }
 
 // 关闭按钮
@@ -510,7 +554,7 @@ export default {
   }
 }
 
-// 顶部标签栏 - z-index置于视频之上
+// 顶部标签栏 - z-index置于视频之上，可拖拽
 .float-tabs {
   position: absolute;
   top: 0;
@@ -523,6 +567,8 @@ export default {
   gap: 20px;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
   z-index: 10;
+  cursor: move;
+  user-select: none;
 }
 
 .float-tab-item {
