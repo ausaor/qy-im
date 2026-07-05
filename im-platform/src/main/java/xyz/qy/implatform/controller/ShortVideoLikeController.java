@@ -54,15 +54,21 @@ public class ShortVideoLikeController {
         return ResultUtils.success();
     }
 
-    @ApiOperation(value = "点赞列表", notes = "点赞列表")
-    @PostMapping("/list")
-    public Result<List<ShortVideoLikeVO>> list(@RequestBody ShortVideoLikeQueryDTO dto) {
-        return ResultUtils.success(shortVideoLikeService.listShortVideoLikes(dto));
-    }
+//    @ApiOperation(value = "点赞列表", notes = "点赞列表")
+//    @PostMapping("/list")
+//    public Result<List<ShortVideoLikeVO>> list(@RequestBody ShortVideoLikeQueryDTO dto) {
+//        return ResultUtils.success(shortVideoLikeService.listShortVideoLikes(dto));
+//    }
+//
+//    @ApiOperation(value = "点赞分页列表", notes = "点赞分页列表")
+//    @PostMapping("/pageList")
+//    public Result<PageResultVO<List<ShortVideoLikeVO>>> pageList(@RequestBody ShortVideoLikeQueryDTO dto) {
+//        return ResultUtils.success(shortVideoLikeService.pageShortVideoLikes(dto));
+//    }
 
-    @ApiOperation(value = "点赞分页列表", notes = "点赞分页列表")
-    @PostMapping("/pageList")
-    public Result<PageResultVO<List<ShortVideoLikeVO>>> pageList(@RequestBody ShortVideoLikeQueryDTO dto) {
-        return ResultUtils.success(shortVideoLikeService.pageShortVideoLikes(dto));
+    @ApiOperation(value = "分页查询短视频点赞用户", notes = "分页查询短视频点赞用户")
+    @PostMapping("/pageShortVideoLikeUser")
+    public Result<PageResultVO<List<ShortVideoLikeVO>>> pageShortVideoLikeUser(@RequestBody ShortVideoLikeQueryDTO dto) {
+        return ResultUtils.success(shortVideoLikeService.pageShortVideoLikeUser(dto));
     }
 }

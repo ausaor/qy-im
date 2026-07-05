@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.implatform.dto.ShortVideoLikeAddDTO;
@@ -11,11 +12,13 @@ import xyz.qy.implatform.dto.ShortVideoLikeDelDTO;
 import xyz.qy.implatform.dto.ShortVideoLikeQueryDTO;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoLike;
+import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoLikeMapper;
 import xyz.qy.implatform.service.IShortVideoLikeService;
 import xyz.qy.implatform.service.IShortVideoService;
+import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
@@ -27,13 +30,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper, ShortVideoLike> implements IShortVideoLikeService {
 
     @Resource
     private IShortVideoService shortVideoService;
+
+    @Resource
+    private IUserService userService;
 
     @Override
     public List<ShortVideoLikeVO> listShortVideoLikes(ShortVideoLikeQueryDTO dto) {
@@ -118,6 +126,45 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
         for (Long videoId : toDeleteVideoIds) {
             updateVideoLikeCount(videoId);
         }
+    }
+
+    @Override
+    public PageResultVO<List<ShortVideoLikeVO>> pageShortVideoLikeUser(ShortVideoLikeQueryDTO dto) {
+        if (ObjectUtil.isNull(dto.getVideoId())) {
+            throw new GlobalException("请选择视频");
+        }
+        Long userId = SessionContext.getSession().getUserId();
+
+        ShortVideo shortVideo = shortVideoService.getById(dto.getVideoId());
+        if (!userId.equals(shortVideo.getUserId())) {
+            throw new GlobalException("无权操作");
+        }
+
+        LambdaQueryWrapper<ShortVideoLike> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShortVideoLike::getVideoId, dto.getVideoId());
+        wrapper.orderByDesc(ShortVideoLike::getCreateTime);
+        Page<ShortVideoLike> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
+        if (CollectionUtils.isEmpty(page.getRecords())) {
+            return PageResultVO.<List<ShortVideoLikeVO>>builder().data(new ArrayList<>()).total(0).build();
+        }
+        List<ShortVideoLike> videoLikes = page.getRecords();
+        List<Long> userIds = videoLikes.stream().map(ShortVideoLike::getUserId).collect(Collectors.toList());
+        List<User> userList = userService.lambdaQuery()
+                .select(User::getId, User::getNickName, User::getHeadImage)
+                .in(User::getId, userIds)
+                .list();
+        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, userItem -> userItem));
+
+        List<ShortVideoLikeVO> shortVideoLikeVOS = BeanUtils.copyProperties(videoLikes, ShortVideoLikeVO.class);
+        shortVideoLikeVOS.forEach(item -> {
+            User user = userMap.get(item.getUserId());
+            if (user != null) {
+                item.setNickName(user.getNickName());
+                item.setHeadImage(user.getHeadImage());
+            }
+        });
+
+        return PageResultVO.<List<ShortVideoLikeVO>>builder().data(shortVideoLikeVOS).total(page.getTotal()).build();
     }
 
     private LambdaQueryWrapper<ShortVideoLike> buildQueryWrapper(ShortVideoLikeQueryDTO dto) {

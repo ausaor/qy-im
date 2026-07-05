@@ -89,7 +89,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         UserSession session = SessionContext.getSession();
         dto.setUserId(session.getUserId());
         List<ShortVideo> shortVideos = this.list(buildQueryWrapper(dto));
-        return BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+        List<ShortVideoVO> shortVideoVOS = BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+        fillOwnerFlag(shortVideoVOS);
+        return shortVideoVOS;
     }
 
     @Override
@@ -108,7 +110,10 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                 .eq(ShortVideo::getDeleted, false)
                 .eq(ShortVideo::getStatus, ReviewEnum.REVIEWED.getCode())
                 .list();
-        return BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+
+        List<ShortVideoVO> shortVideoVOS = BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+        fillOwnerFlag(shortVideoVOS);
+        return shortVideoVOS;
     }
 
     @Override
@@ -126,7 +131,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                 .eq(ShortVideo::getDeleted, false)
                 .eq(ShortVideo::getStatus, ReviewEnum.REVIEWED.getCode())
                 .list();
-        return BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+        List<ShortVideoVO> shortVideoVOS = BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+        fillOwnerFlag(shortVideoVOS);
+        return shortVideoVOS;
     }
 
     @Override

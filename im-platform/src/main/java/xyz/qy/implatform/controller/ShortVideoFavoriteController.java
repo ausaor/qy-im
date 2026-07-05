@@ -71,4 +71,10 @@ public class ShortVideoFavoriteController {
     public Result<PageResultVO<List<ShortVideoFavoriteVO>>> pageList(@RequestBody ShortVideoFavoriteQueryDTO dto) {
         return ResultUtils.success(shortVideoFavoriteService.pageShortVideoFavorites(dto));
     }
+
+    @ApiOperation(value = "分页查询短视频收藏用户", notes = "分页查询短视频收藏用户")
+    @PostMapping("/pageShortVideoFavoritesUser")
+    public Result<PageResultVO<List<ShortVideoFavoriteVO>>> pageShortVideoFavoritesUser(@RequestBody ShortVideoFavoriteQueryDTO dto) {
+        return ResultUtils.success(shortVideoFavoriteService.pageShortVideoFavoritesUser(dto));
+    }
 }

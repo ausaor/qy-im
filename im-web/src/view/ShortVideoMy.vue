@@ -115,8 +115,8 @@
             <div class="video-title" :title="video.title">{{ video.title || '未命名' }}</div>
             <div class="video-stats">
               <span><i class="el-icon-view"></i> {{ video.playCount || 0 }}</span>
-              <span><i class="iconfont icon-aixin"></i> {{ video.likeCount || 0 }}</span>
-              <span><i class="el-icon-star-on"></i> {{ video.favoriteCount || 0 }}</span>
+              <span @click="viewLikedUsers(video)"><i class="iconfont icon-aixin"></i> {{ video.likeCount || 0 }}</span>
+              <span @click="viewFavoriteUsers(video)"><i class="el-icon-star-on"></i> {{ video.favoriteCount || 0 }}</span>
               <span @click="viewVideoComment(video)"><i class="iconfont icon-xiaoxi"></i> {{ video.commentCount || 0 }}</span>
             </div>
             <div class="edit-btn" v-if="activeTab === 'works'" @click.stop="handleEditVideo(video)">
@@ -258,6 +258,39 @@
         :with-header="false">
       <ShortVideoCommentList ref="commentListRef" :video="curVideo" :commentForm="commentForm" @closeCommentInput="showCommentInput = false" />
     </el-drawer>
+
+    <!-- 点赞/收藏用户列表抽屉 -->
+    <el-drawer
+        title=""
+        :visible.sync="userListDrawerVisible"
+        :with-header="false"
+        :size="'20%'"
+        @close="userListData = []">
+      <div class="user-list-drawer">
+        <div class="user-list-header">
+          <i class="el-icon-arrow-left back-btn" @click="userListDrawerVisible = false"></i>
+          <span class="user-list-title">{{ userListTitle }}</span>
+        </div>
+        <div class="user-list-content" v-loading="userListLoading">
+          <div
+            v-for="item in userListData"
+            :key="item.id"
+            class="user-list-item"
+          >
+            <head-image :url="item.headImage" :name="item.nickName" :size="44"></head-image>
+            <div class="user-list-item-info">
+              <div class="user-list-item-name">{{ item.nickName }}</div>
+            </div>
+          </div>
+          <div v-if="!userListLoading && userListData.length === 0" class="empty-user-list">
+            <p>暂无数据</p>
+          </div>
+          <div v-if="!userListLoading && userListData.length > 0 && userListData.length < userListTotal" class="load-more-wrapper" @click="loadMoreUsers">
+            <span>加载更多</span>
+          </div>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
@@ -308,6 +341,14 @@ export default {
         avatar: '',
       },
       showCommentInput: false,
+      userListDrawerVisible: false,
+      userListTitle: '',
+      userListData: [],
+      userListLoading: false,
+      userListPageNo: 1,
+      userListTotal: 0,
+      userListVideoId: null,
+      userListType: '',
     }
   },
   created() {
@@ -712,7 +753,80 @@ export default {
         this.commentForm.avatar = res.avatar;
         this.commentForm.characterId = res.characterId;
       })
-    }
+    },
+    viewLikedUsers(video) {
+      if (!video.isOwner) {
+        return
+      }
+      this.userListTitle = '点赞用户'
+      this.userListType = 'like'
+      this.userListVideoId = video.id
+      this.userListPageNo = 1
+      this.userListData = []
+      this.userListLoading = true
+      this.$http({
+        url: '/shortVideoLike/pageShortVideoLikeUser',
+        method: 'post',
+        data: { videoId: video.id },
+        params: { pageSize: 50, currentPage: 1 }
+      }).then((res) => {
+        this.userListData = res.data || []
+        this.userListTotal = res.total || 0
+      }).catch(() => {
+        this.userListData = []
+        this.userListTotal = 0
+      }).finally(() => {
+        this.userListLoading = false
+      })
+      this.userListDrawerVisible = true
+    },
+    viewFavoriteUsers(video) {
+      if (!video.isOwner) {
+        return
+      }
+      this.userListTitle = '收藏用户'
+      this.userListType = 'favorite'
+      this.userListVideoId = video.id
+      this.userListPageNo = 1
+      this.userListData = []
+      this.userListLoading = true
+      this.$http({
+        url: '/shortVideoFavorite/pageShortVideoFavoritesUser',
+        method: 'post',
+        data: { videoId: video.id },
+        params: { pageSize: 50, currentPage: 1 }
+      }).then((res) => {
+        this.userListData = res.data || []
+        this.userListTotal = res.total || 0
+      }).catch(() => {
+        this.userListData = []
+        this.userListTotal = 0
+      }).finally(() => {
+        this.userListLoading = false
+      })
+      this.userListDrawerVisible = true
+    },
+    loadMoreUsers() {
+      if (this.userListLoading) return
+      this.userListPageNo++
+      this.userListLoading = true
+      const url = this.userListType === 'like'
+        ? '/shortVideoLike/pageShortVideoLikeUser'
+        : '/shortVideoFavorite/pageShortVideoFavoritesUser'
+      this.$http({
+        url: url,
+        method: 'post',
+        data: { videoId: this.userListVideoId },
+        params: { pageSize: 50, currentPage: this.userListPageNo }
+      }).then((res) => {
+        this.userListData = this.userListData.concat(res.data || [])
+        this.userListTotal = res.total || 0
+      }).catch(() => {
+        this.userListPageNo--
+      }).finally(() => {
+        this.userListLoading = false
+      })
+    },
   }
 }
 </script>
@@ -1202,6 +1316,89 @@ export default {
 
     p {
       margin: 0;
+    }
+  }
+}
+
+// 用户列表抽屉样式
+.user-list-drawer {
+  .user-list-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #ebeef5;
+    
+    .back-btn {
+      font-size: 20px;
+      cursor: pointer;
+      color: #303133;
+      margin-right: 12px;
+      
+      &:hover {
+        color: #409EFF;
+      }
+    }
+    
+    .user-list-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+    }
+  }
+  
+  .user-list-content {
+    max-height: 500px;
+    overflow-y: auto;
+    
+    .user-list-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      gap: 12px;
+      
+      & + .user-list-item {
+        border-top: 1px solid #f5f5f5;
+      }
+      
+      .user-list-item-info {
+        flex: 1;
+        min-width: 0;
+        
+        .user-list-item-name {
+          font-size: 14px;
+          color: #303133;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
+    
+    .empty-user-list {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: #c0c4cc;
+      font-size: 14px;
+      
+      p {
+        margin: 0;
+      }
+    }
+    
+    .load-more-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 20px;
+      cursor: pointer;
+      color: #409eff;
+      font-size: 14px;
+      
+      &:hover {
+        color: #66b1ff;
+      }
     }
   }
 }

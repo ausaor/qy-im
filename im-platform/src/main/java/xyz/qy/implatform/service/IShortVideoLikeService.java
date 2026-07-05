@@ -20,4 +20,6 @@ public interface IShortVideoLikeService extends IService<ShortVideoLike> {
     void deleteShortVideoLike(ShortVideoLikeDelDTO dto);
 
     void deleteShortVideoLikes(List<Long> videoIds);
+
+    PageResultVO<List<ShortVideoLikeVO>> pageShortVideoLikeUser(ShortVideoLikeQueryDTO dto);
 }

@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.implatform.dto.ShortVideoFavoriteAddDTO;
@@ -12,10 +13,12 @@ import xyz.qy.implatform.dto.ShortVideoFavoriteQueryDTO;
 import xyz.qy.implatform.dto.ShortVideoFavoriteUpdateDTO;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoFavorite;
+import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.service.IShortVideoFavoriteService;
+import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
@@ -27,12 +30,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavoriteMapper, ShortVideoFavorite> implements IShortVideoFavoriteService {
     @Resource
     private ShortVideoMapper shortVideoMapper;
+
+    @Resource
+    private IUserService userService;
 
     @Override
     public List<ShortVideoFavoriteVO> listShortVideoFavorites(ShortVideoFavoriteQueryDTO dto) {
@@ -119,6 +127,42 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
         for (Long videoId : toDeleteVideoIds) {
             updateVideoFavoriteCount(videoId);
         }
+    }
+
+    @Override
+    public PageResultVO<List<ShortVideoFavoriteVO>> pageShortVideoFavoritesUser(ShortVideoFavoriteQueryDTO dto) {
+        if (ObjectUtil.isNull(dto.getVideoId())) {
+            throw new GlobalException("请选择视频");
+        }
+        Long userId = SessionContext.getSession().getUserId();
+
+        ShortVideo shortVideo = shortVideoMapper.selectById(dto.getVideoId());
+        if (!userId.equals(shortVideo.getUserId())) {
+            throw new GlobalException("无权操作");
+        }
+        LambdaQueryWrapper<ShortVideoFavorite> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShortVideoFavorite::getVideoId, dto.getVideoId());
+        wrapper.orderByDesc(ShortVideoFavorite::getCreateTime);
+        Page<ShortVideoFavorite> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
+        if (CollectionUtils.isEmpty(page.getRecords())) {
+            return PageResultVO.<List<ShortVideoFavoriteVO>>builder().data(new ArrayList<>()).total(0).build();
+        }
+
+        List<ShortVideoFavorite> videoFavorites = page.getRecords();
+        List<Long> userIds = videoFavorites.stream().map(ShortVideoFavorite::getUserId).collect(Collectors.toList());
+        List<User> userList = userService.findUserByIds(userIds);
+        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, userItem -> userItem));
+        List<ShortVideoFavoriteVO> shortVideoFavoriteVOS = BeanUtils.copyProperties(videoFavorites, ShortVideoFavoriteVO.class);
+
+        shortVideoFavoriteVOS.forEach(item -> {
+            User user = userMap.get(item.getUserId());
+            if (user != null) {
+                item.setNickName(user.getNickName());
+                item.setHeadImage(user.getHeadImage());
+            }
+        });
+
+        return PageResultVO.<List<ShortVideoFavoriteVO>>builder().data(shortVideoFavoriteVOS).total(page.getTotal()).build();
     }
 
     private LambdaQueryWrapper<ShortVideoFavorite> buildQueryWrapper(ShortVideoFavoriteQueryDTO dto) {
