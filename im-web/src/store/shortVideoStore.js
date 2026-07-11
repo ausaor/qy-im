@@ -8,9 +8,11 @@ export default {
 		followedKeys: [],
 		showFloat: false,
 		character: {},
+		template: {},
 		shortVideoPublishType: '',
 		floatPanelActiveTab: 'recom',
 		showCharacterTab: false,
+		showTemplateTab: false,
 	},
 
 	mutations: {
@@ -69,6 +71,12 @@ export default {
 		clearShortVideoCharacter(state) {
 			state.character = {}
 		},
+		setShortVideoTemplate(state, template) {
+			state.template = template
+		},
+		clearShortVideoTemplate(state) {
+			state.template = {}
+		},
 		setShortVideoPublishType(state, type) {
 			state.shortVideoPublishType = type
 		},
@@ -80,7 +88,10 @@ export default {
 		},
 		setShowCharacterTab(state, flag) {
 			state.showCharacterTab = flag
-		}
+		},
+		setShowTemplateTab(state, flag) {
+			state.showTemplateTab = flag
+		},
 	},
 
 	getters: {

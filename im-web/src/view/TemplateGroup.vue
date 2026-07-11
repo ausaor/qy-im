@@ -51,6 +51,7 @@
             <el-button class="operate-button template-group-characters-space" circle icon="icon iconfont icon-shejiaotubiao-40" size="mini"
                        @click="openGroupTemplateCharactersSpaceDialog(templateGroup)">
             </el-button>
+            <el-button class="operate-button edit-template-short-video" icon="el-icon-camera-solid" circle size="mini" @click="openTemplateShortVideoDialog(templateGroup)"></el-button>
             <el-button class="operate-button template-group-music" circle icon="icon iconfont icon-Music" size="mini"
                        @click="openGroupTemplateMusicDialog(templateGroup)">
             </el-button>
@@ -1043,11 +1044,20 @@ export default {
         this.refreshTalkList();
       })
     },
+    openTemplateShortVideoDialog(template) {
+      this.$store.commit("setShortVideoTemplate", template);
+      this.$store.commit("setShortVideoPublishType", 'template');
+      this.$store.commit("setFloatPanelActiveTab", "template");
+      this.$store.commit("setShowTemplateTab", true);
+      this.$store.commit("setShowCharacterTab", false);
+      this.$store.commit("openShortVideoFloat");
+    },
     openCharacterShortVideoDialog(character) {
         this.$store.commit("setShortVideoCharacter", character);
         this.$store.commit("setShortVideoPublishType", 'character');
         this.$store.commit("setFloatPanelActiveTab", "character");
         this.$store.commit("setShowCharacterTab", true);
+        this.$store.commit("setShowTemplateTab", false);
         this.$store.commit("openShortVideoFloat");
     },
     openCharacterUserDialog(character) {

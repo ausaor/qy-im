@@ -26,6 +26,14 @@
         <head-image :size="24" :name="character.name" :url="character.avatar"></head-image>
       </div>
       <div
+          v-if="showTemplateTab"
+          class="float-tab-item"
+          :class="{ active: activeTab === 'template' }"
+          @click.stop="switchTab('template')"
+      >
+        <head-image :size="24" :name="template.groupName" :url="template.avatar"></head-image>
+      </div>
+      <div
         class="float-tab-item"
         :class="{ active: activeTab === 'recom' }"
         @click.stop="switchTab('recom')"
@@ -50,14 +58,13 @@
           </div>
           <div class="publish-field">
             <label class="publish-label">可见范围</label>
-            <el-select v-model="publishForm.scope" placeholder="请选择可见范围" size="small" class="publish-select">
-              <el-option
-                v-for="item in scopeOptions"
+            <el-radio-group v-model="publishForm.scope" class="publish-scope-radios">
+              <el-radio
+                v-for="item in filteredScopeOptions"
                 :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
+                :label="item.value"
+              >{{ item.label }}</el-radio>
+            </el-radio-group>
           </div>
           <div class="publish-field">
             <label class="publish-label">标题</label>
@@ -71,6 +78,9 @@
           </div>
           <div class="publish-field" v-if="character && character.id">
             <head-image :size="40" :url="character.avatar" :name="character.name"></head-image>
+          </div>
+          <div class="publish-field" v-if="template && template.id">
+            <head-image :size="40" :url="template.avatar" :name="template.groupName"></head-image>
           </div>
           <div class="publish-form-footer">
             <el-button
@@ -281,8 +291,20 @@ export default {
     character() {
       return this.$store.state.shortVideoStore.character
     },
+    template() {
+      return this.$store.state.shortVideoStore.template
+    },
     showCharacterTab() {
       return this.$store.state.shortVideoStore.showCharacterTab
+    },
+    showTemplateTab() {
+      return this.$store.state.shortVideoStore.showTemplateTab
+    },
+    filteredScopeOptions() {
+      if (this.publishType === 'character' || this.publishType === 'template') {
+        return [{ value: 9, label: '公开' }]
+      }
+      return this.scopeOptions
     }
   },
   watch: {
@@ -300,9 +322,11 @@ export default {
   methods: {
     close() {
       this.$store.commit("clearShortVideoCharacter")
+      this.$store.commit("clearShortVideoTemplate")
       this.$store.commit("clearShortVideoPublishType")
       this.$store.commit("setFloatPanelActiveTab", "recom")
       this.$store.commit("setShowCharacterTab", false);
+      this.$store.commit("setShowTemplateTab", false);
       this.$emit('close', false)
     },
 
@@ -348,7 +372,8 @@ export default {
       // 如果正在拖拽中，不触发切换
       if (this.hasDragged) return
       this.$store.commit("setFloatPanelActiveTab", tab)
-      if (this.activeTab === 'recom' || this.activeTab === 'friend' || this.activeTab === 'follow' || this.activeTab === 'character') {
+      if (this.activeTab === 'recom' || this.activeTab === 'friend' || this.activeTab === 'follow'
+          || this.activeTab === 'character' || this.activeTab === 'template') {
         this.resetAndFetch()
       }
     },
@@ -393,8 +418,10 @@ export default {
       if (this.activeTab === 'character') {
         data.type = 'character';
         data.objectId = this.character.id
-      }
-      if (this.activeTab === 'friend') {
+      } else if (this.activeTab === 'template') {
+        data.type = 'template';
+        data.objectId = this.template.id
+      } else if (this.activeTab === 'friend') {
         data.section = 'friends'
       } else if (this.activeTab === 'follow') {
         data.section = 'follows'
@@ -637,6 +664,8 @@ export default {
       let objectId = null;
       if (this.character && this.character.id) {
         objectId = this.character.id;
+      } else if (this.template && this.template.id) {
+        objectId = this.template.id;
       }
       this.$http({
         url: '/shortVideo/add',
@@ -1026,8 +1055,37 @@ export default {
       margin-bottom: 6px;
     }
 
-    .publish-select {
-      width: 100%;
+    .publish-scope-radios {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+
+      ::v-deep .el-radio {
+        margin-right: 0;
+
+        .el-radio__label {
+          font-size: 13px;
+          color: #ccc;
+        }
+
+        .el-radio__input.is-checked + .el-radio__label {
+          color: #67c23a;
+        }
+
+        .el-radio__inner {
+          border-color: #666;
+          background: transparent;
+
+          &::after {
+            background-color: #67c23a;
+          }
+        }
+
+        .el-radio__input.is-checked .el-radio__inner {
+          border-color: #67c23a;
+          background: transparent;
+        }
+      }
     }
   }
 
