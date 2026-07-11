@@ -290,6 +290,8 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         setObjectId(shortVideo);
         this.save(shortVideo);
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
+        vo.setAuthorName(session.getNickName());
+        vo.setNickName(session.getNickName());
         vo.setIsOwner(Boolean.TRUE);
         return vo;
     }

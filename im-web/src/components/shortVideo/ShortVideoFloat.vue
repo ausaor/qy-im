@@ -18,33 +18,86 @@
         @click.stop="switchTab('friend')"
       >好友</div>
       <div
+          v-if="showCharacterTab"
+          class="float-tab-item"
+          :class="{ active: activeTab === 'character' }"
+          @click.stop="switchTab('character')"
+      ><head-image :size="24" :name="'A'" :url="''"></head-image></div>
+      <div
         class="float-tab-item"
         :class="{ active: activeTab === 'recom' }"
         @click.stop="switchTab('recom')"
       >推荐</div>
       <div
         class="float-tab-item"
-        :class="{ active: activeTab === 'mine' }"
-        @click.stop="switchTab('mine')"
-      >我的</div>
+        :class="{ active: activeTab === 'publish' }"
+        @click.stop="switchTab('publish')"
+      ><i class="el-icon-camera" style="font-size: 16px;"/></div>
     </div>
 
     <!-- 视频播放区域 -->
-      <div class="float-video-area" @wheel.prevent="handleWheel">
-        <!-- 加载状态 -->
-        <div v-if="loading && videoList.length === 0" class="float-loading">
-          <i class="el-icon-loading"></i>
-          <span>加载中...</span>
+      <div class="float-video-area" @wheel.prevent="onWheel">
+        <!-- 发布模式 -->
+        <div v-if="activeTab === 'publish'" class="float-publish-form">
+          <div class="publish-section">
+            <VideoUpload
+              ref="publishVideoUpload"
+              @upload-success="onPublishVideoSuccess"
+              @upload-remove="onPublishVideoRemove"
+            />
+          </div>
+          <div class="publish-field">
+            <label class="publish-label">可见范围</label>
+            <el-select v-model="publishForm.scope" placeholder="请选择可见范围" size="small" class="publish-select">
+              <el-option
+                v-for="item in scopeOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </div>
+          <div class="publish-field">
+            <label class="publish-label">标题</label>
+            <el-input
+              v-model="publishForm.title"
+              placeholder="请输入视频标题"
+              maxlength="100"
+              show-word-limit
+              size="small"
+            />
+          </div>
+          <div class="publish-form-footer">
+            <el-button
+              type="primary"
+              size="small"
+              @click="submitPublish"
+              :loading="publishSubmitting"
+            >发布</el-button>
+          </div>
         </div>
 
-        <!-- 空状态 -->
-        <div v-else-if="!loading && videoList.length === 0" class="float-empty">
-          <i class="el-icon-video-camera"></i>
-          <p>暂无视频</p>
-        </div>
-
-        <!-- 视频播放 -->
+        <!-- 常规视频内容 -->
         <template v-else>
+          <!-- 审核中标识 -->
+          <div v-if="currentVideo.status === '1'" class="float-review-badge">
+            审核中
+          </div>
+
+          <!-- 加载状态 -->
+          <div v-if="loading && videoList.length === 0" class="float-loading">
+            <i class="el-icon-loading"></i>
+            <span>加载中...</span>
+          </div>
+
+          <!-- 空状态 -->
+          <div v-else-if="!loading && videoList.length === 0" class="float-empty">
+            <i class="el-icon-video-camera"></i>
+            <p>暂无视频</p>
+          </div>
+
+          <!-- 视频播放 -->
+          <template v-else>
           <video
             ref="videoPlayer"
             :key="currentVideo.id"
@@ -123,17 +176,20 @@
             <i class="el-icon-loading"></i>
           </div>
         </template>
+        </template>
       </div>
   </div>
 </template>
 
 <script>
 import HeadImage from '@/components/common/HeadImage.vue'
+import VideoUpload from '@/components/common/VideoUpload.vue'
 
 export default {
   name: 'ShortVideoFloat',
   components: {
-    HeadImage
+    HeadImage,
+    VideoUpload
   },
   props: {
     showFloat: {
@@ -143,6 +199,10 @@ export default {
     type: {
       type: String,
       default: null
+    },
+    publishType: {
+      type: String,
+      default: 'user'
     },
     objectId: {
       type: Number,
@@ -173,7 +233,25 @@ export default {
       dragging: false,
       hasDragged: false,
       panelX: null,
-      panelY: null
+      panelY: null,
+      showCharacterTab: false,
+      publishForm: {
+        scope: 9,
+        title: '',
+        videoUrl: '',
+        coverUrl: '',
+        duration: 0,
+        width: 0,
+        height: 0,
+        size: 0
+      },
+      publishSubmitting: false,
+      scopeOptions: [
+        { value: 9, label: '公开' },
+        { value: 3, label: '关注可见' },
+        { value: 2, label: '好友可见' },
+        { value: 1, label: '私密' }
+      ],
     }
   },
   computed: {
@@ -255,8 +333,9 @@ export default {
       // 如果正在拖拽中，不触发切换
       if (this.hasDragged) return
       this.activeTab = tab
-      this.resetAndFetch()
-      // 关注、好友、我的 三个页签功能先闲置
+      if (this.activeTab === 'recom' || this.activeTab === 'friend' || this.activeTab === 'follow') {
+        this.resetAndFetch()
+      }
     },
 
     resetAndFetch() {
@@ -402,7 +481,9 @@ export default {
       }
     },
 
-    handleWheel(event) {
+    // 重命名 handleWheel 为 onWheel 并添加 publish 页签守卫
+    onWheel(event) {
+      if (this.activeTab === 'publish') return
       if (event.deltaY > 0) {
         this.nextVideo()
       } else {
@@ -507,7 +588,83 @@ export default {
       this.panelX = null
       this.panelY = null
       this.hasDragged = false
+    },
+
+    // ========== 发布相关 ==========
+    onPublishVideoSuccess(data) {
+      this.publishForm.videoUrl = data.videoUrl
+      this.publishForm.coverUrl = data.coverUrl
+      this.publishForm.duration = data.duration
+      this.publishForm.width = data.width
+      this.publishForm.height = data.height
+      this.publishForm.size = data.size
+    },
+
+    onPublishVideoRemove() {
+      this.publishForm.videoUrl = ''
+      this.publishForm.coverUrl = ''
+    },
+
+    submitPublish() {
+      if (!this.publishForm.videoUrl) {
+        this.$message.warning('请先上传视频')
+        return
+      }
+      if (!this.publishForm.title.trim()) {
+        this.$message.warning('请输入标题')
+        return
+      }
+      this.publishSubmitting = true
+      this.$http({
+        url: '/shortVideo/add',
+        method: 'post',
+        data: {
+          type: this.publishType,
+          scope: this.publishForm.scope,
+          title: this.publishForm.title,
+          coverUrl: this.publishForm.coverUrl,
+          videoUrl: this.publishForm.videoUrl,
+          duration: this.publishForm.duration,
+          width: this.publishForm.width,
+          height: this.publishForm.height,
+          size: this.publishForm.size
+        }
+      }).then((video) => {
+        this.$message.success('发布成功，视频审核中')
+        this.resetPublishForm()
+        this.activeTab = 'recom'
+        // 将新视频添加到播放列表顶部并播放
+        if (video && video.id) {
+          this.videoList.unshift(video)
+          this.currentIndex = 0
+          this.total++
+          this.$nextTick(() => {
+            this.playVideo()
+          })
+        }
+      }).catch(() => {
+        this.$message.error('发布失败')
+      }).finally(() => {
+        this.publishSubmitting = false
+      })
+    },
+
+    resetPublishForm() {
+      this.publishForm = {
+        scope: 9,
+        title: '',
+        videoUrl: '',
+        coverUrl: '',
+        duration: 0,
+        width: 0,
+        height: 0,
+        size: 0
+      }
+      if (this.$refs.publishVideoUpload) {
+        this.$refs.publishVideoUpload.handleRemove()
+      }
     }
+    // ========== 发布相关结束 ==========
   }
 }
 </script>
@@ -821,5 +978,54 @@ export default {
     font-size: 18px;
     color: #fff;
   }
+}
+
+// ========== 发布表单样式 ==========
+.float-publish-form {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 52px 16px 16px;
+  box-sizing: border-box;
+
+  .publish-section {
+    margin-bottom: 14px;
+  }
+
+  .publish-field {
+    margin-bottom: 14px;
+
+    .publish-label {
+      display: block;
+      font-size: 13px;
+      color: #444;
+      margin-bottom: 6px;
+    }
+
+    .publish-select {
+      width: 100%;
+    }
+  }
+
+  .publish-form-footer {
+    text-align: right;
+    padding-top: 8px;
+  }
+}
+// ========== 发布表单样式结束 ==========
+
+// 审核中标识
+.float-review-badge {
+  position: absolute;
+  top: 52px;
+  left: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #E6A23C;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  z-index: 5;
+  font-weight: 500;
+  pointer-events: none;
 }
 </style>
