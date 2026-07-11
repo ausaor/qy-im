@@ -34,10 +34,10 @@
         WHERE t1.deleted = 0
         AND t1.status = '2'
         <choose>
-            <when test='dto.section != null and dto.section.equals("follow")'>
+            <when test='dto.section != null and (dto.section.equals("follow") or dto.section.equals("follows"))'>
                 AND t1.scope in (3, 9)
             </when>
-            <when test='dto.section != null and dto.section.equals("friend")'>
+            <when test='dto.section != null and (dto.section.equals("friend") or dto.section.equals("friends"))'>
                 AND t1.scope in (2, 9)
             </when>
             <otherwise>
@@ -52,6 +52,18 @@
         </if>
         <if test="dto.type != null and dto.type != ''">
             AND t1.type = #{dto.type}
+        </if>
+        <if test="dto.friendIds != null and dto.friendIds.size() > 0">
+            AND t1.user_id IN
+            <foreach collection="dto.friendIds" item="friendId" index="index" separator="," open="(" close=")">
+                #{friendId}
+            </foreach>
+        </if>
+        <if test="dto.follows != null and dto.follows.size() > 0">
+            AND (t1.object_id, t1.type) IN
+            <foreach collection="dto.follows" item="follow" index="index" separator="," open="(" close=")">
+                (#{follow.targetId}, #{follow.type})
+            </foreach>
         </if>
         ORDER BY t1.create_time DESC
     </select>

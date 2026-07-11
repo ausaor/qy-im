@@ -36,7 +36,11 @@ public enum SectionEnum {
 
     FOLLOW_ALL_CHARACTERS("followAllCharacters"),
 
-    FOLLOW("follow");
+    FOLLOW("follow"),
+
+    FOLLOWS("follows"),
+
+    ;
 
     private final String code;
 

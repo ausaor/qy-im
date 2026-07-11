@@ -49,6 +49,13 @@ public interface IFollowService extends IService<Follow> {
     Set<String> findAllFollows();
 
     /**
+     * 查询当前用户所有关注
+     *
+     * @return 关注列表
+     */
+    List<FollowVO> findMyFollows();
+
+    /**
      * 查询当前用户某个类别的所有关注id
      *
       * @param type 类别

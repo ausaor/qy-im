@@ -4,6 +4,8 @@ import lombok.Data;
 import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.ValidEnum;
 
+import java.util.List;
+
 @Data
 public class ShortVideoQueryDTO {
     private Long id;
@@ -22,4 +24,8 @@ public class ShortVideoQueryDTO {
 
     @ValidEnum(enumClass = SectionEnum.class, property = "code", message = "无效的查询参数")
     private String section;
+
+    private List<FollowDTO> follows;
+
+    private List<Long> friendIds;
 }

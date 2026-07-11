@@ -229,6 +229,18 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     }
 
     @Override
+    public List<FollowVO> findMyFollows() {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
+        LambdaQueryWrapper<Follow> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Follow::getUserId, userId);
+        queryWrapper.select(Follow::getTargetId, Follow::getType);
+        List<Follow> list = this.list(queryWrapper);
+        return BeanUtils.copyProperties(list, FollowVO.class);
+    }
+
+    @Override
     public Set<Long> findFollowsTargetIds(String type) {
         if (StringUtils.isBlank(type)) {
             return Set.of();

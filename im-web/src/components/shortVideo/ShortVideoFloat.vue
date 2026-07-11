@@ -168,7 +168,7 @@ export default {
       loadingMore: false,
       hasMore: true,
       isPlaying: false,
-      activeTab: this.tab,
+      activeTab: 'recom',
       // 拖拽相关
       dragging: false,
       hasDragged: false,
@@ -199,10 +199,7 @@ export default {
   watch: {
     showFloat(val) {
       if (val) {
-        this.activeTab = this.tab
-        if (this.activeTab === 'recom') {
-          this.resetAndFetch()
-        }
+        this.resetAndFetch()
       } else {
         this.cleanup()
       }
@@ -258,9 +255,7 @@ export default {
       // 如果正在拖拽中，不触发切换
       if (this.hasDragged) return
       this.activeTab = tab
-      if (tab === 'recom') {
-        this.resetAndFetch()
-      }
+      this.resetAndFetch()
       // 关注、好友、我的 三个页签功能先闲置
     },
 
@@ -300,6 +295,11 @@ export default {
       }
       if (this.section) {
         data.section = this.section
+      }
+      if (this.activeTab === 'friend') {
+        data.section = 'friends'
+      } else if (this.activeTab === 'follow') {
+        data.section = 'follows'
       }
 
       this.$http({

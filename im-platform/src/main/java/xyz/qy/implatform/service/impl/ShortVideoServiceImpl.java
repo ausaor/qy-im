@@ -8,6 +8,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xyz.qy.implatform.dto.FollowDTO;
 import xyz.qy.implatform.dto.ShortVideoAddDTO;
 import xyz.qy.implatform.dto.ShortVideoBatchDelDTO;
 import xyz.qy.implatform.dto.ShortVideoBatchScopeDTO;
@@ -23,6 +24,7 @@ import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.FollowEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
+import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.ViewScopeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
@@ -41,6 +43,7 @@ import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.util.RedisCache;
+import xyz.qy.implatform.vo.FollowVO;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoVO;
 
@@ -158,14 +161,30 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
     @Override
     public PageResultVO<List<ShortVideoVO>> getRecommendShortVideos(ShortVideoQueryDTO dto) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        
+        if (SectionEnum.FOLLOWS.getCode().equals(dto.getSection())) {
+            List<FollowVO> myFollows = followService.findMyFollows();
+            if (CollectionUtils.isEmpty(myFollows)) {
+                return PageResultVO.<List<ShortVideoVO>>builder().data(Collections.emptyList()).total(0).build();
+            }
+            dto.setFollows(BeanUtils.copyProperties(myFollows, FollowDTO.class));
+        } else if (SectionEnum.FRIENDS.getCode().equals(dto.getSection())) {
+            List<Long> friendIds = friendService.getFriendIdsByUserId(userId);
+            if (CollectionUtils.isEmpty(friendIds)) {
+                return PageResultVO.<List<ShortVideoVO>>builder().data(Collections.emptyList()).total(0).build();
+            }
+            dto.setFriendIds(friendIds);
+        }
+
         Page<ShortVideo> page = this.baseMapper.getRecommendShortVideos(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), dto);
 
         if (CollectionUtils.isEmpty(page.getRecords())) {
             return PageResultVO.<List<ShortVideoVO>>builder().data(Collections.emptyList()).total(0).build();
         }
 
-        UserSession session = SessionContext.getSession();
-        Long userId = session.getUserId();
+
         List<ShortVideo> shortVideos = page.getRecords();
         List<ShortVideoVO> vos = BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
         fillOwnerFlag(vos);
