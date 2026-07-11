@@ -243,7 +243,7 @@
     <el-dialog class="edit-template-character"
                :title="curTemplateGroup.groupName"
                :visible.sync="showEditTemplateCharacterDialog"
-               width="620px"
+               width="650px"
                v-dialogDrag
                :before-close="handleEditTemplateCharacterClose">
       <div class="template-group-avatar">
@@ -300,6 +300,7 @@
               <el-button class="edit-character-space"
                          icon="icon iconfont icon-shejiaotubiao-40" circle size="mini" @click="openCharacterSpaceDialog(templateCharacter)"></el-button>
             </div>
+            <el-button class="edit-character-short-video" icon="el-icon-camera-solid" circle size="mini" @click="openCharacterShortVideoDialog(templateCharacter)"></el-button>
             <el-button class="edit-character-music" icon="icon iconfont icon-Music" circle size="mini" @click="openCharacterMusicDialog(templateCharacter)"></el-button>
             <el-button class="edit-character-user" type="primary" icon="el-icon-user-solid" circle
                        @click="openCharacterUserDialog(templateCharacter)" size="mini"></el-button>
@@ -1041,6 +1042,13 @@ export default {
       this.$nextTick(() => {
         this.refreshTalkList();
       })
+    },
+    openCharacterShortVideoDialog(character) {
+        this.$store.commit("setShortVideoCharacter", character);
+        this.$store.commit("setShortVideoPublishType", 'character');
+        this.$store.commit("setFloatPanelActiveTab", "character");
+        this.$store.commit("setShowCharacterTab", true);
+        this.$store.commit("openShortVideoFloat");
     },
     openCharacterUserDialog(character) {
       this.curTemplateCharacter = character;

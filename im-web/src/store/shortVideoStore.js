@@ -7,6 +7,10 @@ export default {
 		// 已关注的用户记录（格式：objectId:type）
 		followedKeys: [],
 		showFloat: false,
+		character: {},
+		shortVideoPublishType: '',
+		floatPanelActiveTab: 'recom',
+		showCharacterTab: false,
 	},
 
 	mutations: {
@@ -59,6 +63,24 @@ export default {
 		closeShortVideoFloat(state) {
 			state.showFloat = false
 		},
+		setShortVideoCharacter(state, character) {
+			state.character = character
+		},
+		clearShortVideoCharacter(state) {
+			state.character = {}
+		},
+		setShortVideoPublishType(state, type) {
+			state.shortVideoPublishType = type
+		},
+		clearShortVideoPublishType(state) {
+			state.shortVideoPublishType = ''
+		},
+		setFloatPanelActiveTab(state, tab) {
+			state.floatPanelActiveTab = tab
+		},
+		setShowCharacterTab(state, flag) {
+			state.showCharacterTab = flag
+		}
 	},
 
 	getters: {

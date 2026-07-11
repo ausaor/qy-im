@@ -13,12 +13,6 @@ public class ShortVideoUpdateDTO {
     @NotNull(message = "id不能为空")
     private Long id;
 
-    private Long objectId;
-
-    @NotBlank(message = "分类不能为空")
-    @ValidEnum(enumClass = FollowEnum.class, property = "code", message = "无效的分类")
-    private String type;
-
     @NotNull(message = "未选择公布范围")
     @ValidEnum(enumClass = ViewScopeEnum.class, property = "code", message = "无效的公布范围")
     private Integer scope;

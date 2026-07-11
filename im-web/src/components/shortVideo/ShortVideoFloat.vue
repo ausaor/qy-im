@@ -22,7 +22,9 @@
           class="float-tab-item"
           :class="{ active: activeTab === 'character' }"
           @click.stop="switchTab('character')"
-      ><head-image :size="24" :name="'A'" :url="''"></head-image></div>
+      >
+        <head-image :size="24" :name="character.name" :url="character.avatar"></head-image>
+      </div>
       <div
         class="float-tab-item"
         :class="{ active: activeTab === 'recom' }"
@@ -66,6 +68,9 @@
               show-word-limit
               size="small"
             />
+          </div>
+          <div class="publish-field" v-if="character && character.id">
+            <head-image :size="40" :url="character.avatar" :name="character.name"></head-image>
           </div>
           <div class="publish-form-footer">
             <el-button
@@ -200,10 +205,6 @@ export default {
       type: String,
       default: null
     },
-    publishType: {
-      type: String,
-      default: 'user'
-    },
     objectId: {
       type: Number,
       default: null
@@ -228,13 +229,11 @@ export default {
       loadingMore: false,
       hasMore: true,
       isPlaying: false,
-      activeTab: 'recom',
       // 拖拽相关
       dragging: false,
       hasDragged: false,
       panelX: null,
       panelY: null,
-      showCharacterTab: false,
       publishForm: {
         scope: 9,
         title: '',
@@ -255,6 +254,9 @@ export default {
     }
   },
   computed: {
+    activeTab() {
+      return this.$store.state.shortVideoStore.floatPanelActiveTab;
+    },
     visible() {
       return this.showFloat
     },
@@ -272,6 +274,15 @@ export default {
         return { top: this.panelY + 'px', left: this.panelX + 'px', transform: 'none' }
       }
       return {}
+    },
+    publishType() {
+      return this.$store.state.shortVideoStore.shortVideoPublishType || 'user'
+    },
+    character() {
+      return this.$store.state.shortVideoStore.character
+    },
+    showCharacterTab() {
+      return this.$store.state.shortVideoStore.showCharacterTab
     }
   },
   watch: {
@@ -288,6 +299,10 @@ export default {
   },
   methods: {
     close() {
+      this.$store.commit("clearShortVideoCharacter")
+      this.$store.commit("clearShortVideoPublishType")
+      this.$store.commit("setFloatPanelActiveTab", "recom")
+      this.$store.commit("setShowCharacterTab", false);
       this.$emit('close', false)
     },
 
@@ -332,8 +347,8 @@ export default {
     switchTab(tab) {
       // 如果正在拖拽中，不触发切换
       if (this.hasDragged) return
-      this.activeTab = tab
-      if (this.activeTab === 'recom' || this.activeTab === 'friend' || this.activeTab === 'follow') {
+      this.$store.commit("setFloatPanelActiveTab", tab)
+      if (this.activeTab === 'recom' || this.activeTab === 'friend' || this.activeTab === 'follow' || this.activeTab === 'character') {
         this.resetAndFetch()
       }
     },
@@ -374,6 +389,10 @@ export default {
       }
       if (this.section) {
         data.section = this.section
+      }
+      if (this.activeTab === 'character') {
+        data.type = 'character';
+        data.objectId = this.character.id
       }
       if (this.activeTab === 'friend') {
         data.section = 'friends'
@@ -614,11 +633,16 @@ export default {
         this.$message.warning('请输入标题')
         return
       }
-      this.publishSubmitting = true
+      this.publishSubmitting = true;
+      let objectId = null;
+      if (this.character && this.character.id) {
+        objectId = this.character.id;
+      }
       this.$http({
         url: '/shortVideo/add',
         method: 'post',
         data: {
+          objectId: objectId,
           type: this.publishType,
           scope: this.publishForm.scope,
           title: this.publishForm.title,
@@ -632,7 +656,7 @@ export default {
       }).then((video) => {
         this.$message.success('发布成功，视频审核中')
         this.resetPublishForm()
-        this.activeTab = 'recom'
+        this.$store.commit("setFloatPanelActiveTab", 'recom')
         // 将新视频添加到播放列表顶部并播放
         if (video && video.id) {
           this.videoList.unshift(video)
@@ -682,7 +706,7 @@ export default {
   overflow: hidden;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
   background: #000;
-  z-index: 2000;
+  z-index: 3000;
 }
 
 // 关闭按钮

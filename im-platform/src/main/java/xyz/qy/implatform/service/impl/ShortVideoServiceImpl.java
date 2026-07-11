@@ -15,6 +15,7 @@ import xyz.qy.implatform.dto.ShortVideoBatchScopeDTO;
 import xyz.qy.implatform.dto.ShortVideoDelDTO;
 import xyz.qy.implatform.dto.ShortVideoQueryDTO;
 import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
+import xyz.qy.implatform.entity.CharacterUser;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoFavorite;
@@ -25,11 +26,13 @@ import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.FollowEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.SectionEnum;
+import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.ViewScopeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
 import xyz.qy.implatform.mapper.ShortVideoLikeMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
+import xyz.qy.implatform.service.ICharacterUserService;
 import xyz.qy.implatform.service.IFollowService;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupService;
@@ -86,6 +89,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
     @Resource
     private IGroupService  groupService;
+
+    @Resource
+    private ICharacterUserService characterUserService;
 
     @Override
     public List<ShortVideoVO> myShortVideos(ShortVideoQueryDTO dto) {
@@ -281,6 +287,13 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
     @Override
     public ShortVideoVO addShortVideo(ShortVideoAddDTO dto) {
         UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
+            checkCharacterUser(dto.getObjectId(), null, userId);
+        } else if (FollowEnum.TEMPLATE.getCode().equals(dto.getType())) {
+            checkCharacterUser(null, dto.getObjectId(), userId);
+        }
+
         ShortVideo shortVideo = BeanUtils.copyProperties(dto, ShortVideo.class);
         shortVideo.setUserId(session.getUserId());
         shortVideo.setCreateTime(new Date());
@@ -302,12 +315,6 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         ShortVideo shortVideo = this.getById(dto.getId());
         checkExists(shortVideo);
         checkOwner(shortVideo);
-        if (Objects.nonNull(dto.getObjectId())) {
-            shortVideo.setObjectId(dto.getObjectId());
-        }
-        if (StringUtils.isNotBlank(dto.getType())) {
-            shortVideo.setType(dto.getType());
-        }
         if (Objects.nonNull(dto.getScope())) {
             shortVideo.setScope(dto.getScope());
         }
@@ -343,6 +350,45 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
         vo.setIsOwner(Boolean.TRUE);
         return vo;
+    }
+
+    private void checkCharacterUser(Long characterId, Long groupTemplateId, Long userId) {
+        if (ObjectUtil.isNull(characterId) && ObjectUtil.isNull(groupTemplateId)) {
+            throw new GlobalException("参数异常");
+        }
+        if (ObjectUtil.isNotNull(characterId) && ObjectUtil.isNotNull(groupTemplateId)) {
+            throw new GlobalException("参数异常");
+        }
+        if (ObjectUtil.isNotNull(characterId)) {
+            TemplateCharacter character = templateCharacterService.getById(characterId);
+            if (Objects.isNull(character)) {
+                throw new GlobalException("角色不存在");
+            }
+
+            // 角色的创建者可以发布
+            if (character.getCreateBy().equals(String.valueOf(userId))) {
+                return;
+            }
+
+            CharacterUser characterUser = characterUserService.lambdaQuery()
+                    .eq(CharacterUser::getCharacterId, characterId)
+                    .eq(CharacterUser::getUserId, userId)
+                    .eq(CharacterUser::getDeleted, false).one();
+            if (Objects.isNull(characterUser)) {
+                throw new GlobalException("您没有权限发布该角色的短视频");
+            }
+        } else if (ObjectUtil.isNotNull(groupTemplateId)) {
+            TemplateGroup templateGroup = templateGroupService.getById(groupTemplateId);
+            if (Objects.isNull(templateGroup)) {
+                throw new GlobalException("群聊模板不存在");
+            }
+
+            // 群聊模板的创建者可以发布群聊模板动态
+            if (!templateGroup.getCreateBy().equals(String.valueOf(userId))) {
+                throw new GlobalException("您没有权限发布该群聊模板的短视频");
+            }
+        }
+
     }
 
     private void setObjectId(ShortVideo shortVideo) {
