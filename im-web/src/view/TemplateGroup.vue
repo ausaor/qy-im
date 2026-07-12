@@ -116,6 +116,11 @@
               <use xlink:href="#icon-Music"></use>
             </svg>
           </div>
+          <div class="content-item">
+            <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterShortVideoDialog(item.character)">
+              <use xlink:href="#icon-duanshipin1"></use>
+            </svg>
+          </div>
         </div>
       </div>
     </div>
@@ -150,6 +155,11 @@
               <div class="content-item">
                 <svg class="icon svg-icon" aria-hidden="true" @click="openGroupTemplateMusicDialog(item.templateGroup)">
                   <use xlink:href="#icon-Music"></use>
+                </svg>
+              </div>
+              <div class="content-item">
+                <svg class="icon svg-icon" aria-hidden="true" @click="openTemplateShortVideoDialog(item.templateGroup)">
+                  <use xlink:href="#icon-duanshipin1"></use>
                 </svg>
               </div>
             </div>
@@ -192,6 +202,11 @@
               <div class="content-item">
                 <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterMusicDialog(item.character)">
                   <use xlink:href="#icon-Music"></use>
+                </svg>
+              </div>
+              <div class="content-item">
+                <svg class="icon svg-icon" aria-hidden="true" @click="openCharacterShortVideoDialog(item.character)">
+                  <use xlink:href="#icon-duanshipin1"></use>
                 </svg>
               </div>
             </div>
@@ -1534,6 +1549,10 @@ export default {
           flex-shrink: 0;
         }
 
+        .edit-template-short-video {
+          color: #ff6b81;
+        }
+
         .template-group-space {
           color: orange;
         }
@@ -1751,6 +1770,10 @@ export default {
 
       .delete-button {
         margin-left: 8px;
+      }
+
+      .edit-character-short-video {
+        color: #ff6b81;
       }
 
       .edit-character-space {

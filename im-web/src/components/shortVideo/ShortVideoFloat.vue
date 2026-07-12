@@ -45,55 +45,54 @@
       ><i class="el-icon-camera" style="font-size: 16px;"/></div>
     </div>
 
-    <!-- 视频播放区域 -->
-      <div class="float-video-area" @wheel.prevent="onWheel">
-        <!-- 发布模式 -->
-        <div v-if="activeTab === 'publish'" class="float-publish-form">
-          <div class="publish-section">
-            <VideoUpload
-              ref="publishVideoUpload"
-              @upload-success="onPublishVideoSuccess"
-              @upload-remove="onPublishVideoRemove"
-            />
-          </div>
-          <div class="publish-field">
-            <label class="publish-label">可见范围</label>
-            <el-radio-group v-model="publishForm.scope" class="publish-scope-radios">
-              <el-radio
-                v-for="item in filteredScopeOptions"
-                :key="item.value"
-                :label="item.value"
-              >{{ item.label }}</el-radio>
-            </el-radio-group>
-          </div>
-          <div class="publish-field">
-            <label class="publish-label">标题</label>
-            <el-input
-              v-model="publishForm.title"
-              placeholder="请输入视频标题"
-              maxlength="100"
-              show-word-limit
-              size="small"
-            />
-          </div>
-          <div class="publish-field" v-if="character && character.id">
-            <head-image :size="40" :url="character.avatar" :name="character.name"></head-image>
-          </div>
-          <div class="publish-field" v-if="template && template.id">
-            <head-image :size="40" :url="template.avatar" :name="template.groupName"></head-image>
-          </div>
-          <div class="publish-form-footer">
-            <el-button
-              type="primary"
-              size="small"
-              @click="submitPublish"
-              :loading="publishSubmitting"
-            >发布</el-button>
-          </div>
-        </div>
+    <!-- 发布模式 -->
+    <div v-if="activeTab === 'publish'" class="float-publish-form">
+      <div class="publish-section">
+        <VideoUpload
+          ref="publishVideoUpload"
+          @upload-success="onPublishVideoSuccess"
+          @upload-remove="onPublishVideoRemove"
+        />
+      </div>
+      <div class="publish-field">
+        <label class="publish-label">可见范围</label>
+        <el-radio-group v-model="publishForm.scope" class="publish-scope-radios">
+          <el-radio
+            v-for="item in filteredScopeOptions"
+            :key="item.value"
+            :label="item.value"
+          >{{ item.label }}</el-radio>
+        </el-radio-group>
+      </div>
+      <div class="publish-field">
+        <label class="publish-label">标题</label>
+        <el-input
+          v-model="publishForm.title"
+          placeholder="请输入视频标题"
+          maxlength="100"
+          show-word-limit
+          size="small"
+        />
+      </div>
+      <div class="publish-field" v-if="character && character.id">
+        <head-image :size="40" :url="character.avatar" :name="character.name"></head-image>
+      </div>
+      <div class="publish-field" v-if="template && template.id">
+        <head-image :size="40" :url="template.avatar" :name="template.groupName"></head-image>
+      </div>
+      <div class="publish-form-footer">
+        <el-button
+          type="primary"
+          size="small"
+          @click="submitPublish"
+          :loading="publishSubmitting"
+        >发布</el-button>
+      </div>
+    </div>
 
+    <!-- 视频播放区域 -->
+      <div v-else class="float-video-area" @wheel.prevent="onWheel">
         <!-- 常规视频内容 -->
-        <template v-else>
           <!-- 审核中标识 -->
           <div v-if="currentVideo.status === '1'" class="float-review-badge">
             审核中
@@ -190,7 +189,6 @@
           <div v-if="loadingMore" class="float-loading-more">
             <i class="el-icon-loading"></i>
           </div>
-        </template>
         </template>
       </div>
 
