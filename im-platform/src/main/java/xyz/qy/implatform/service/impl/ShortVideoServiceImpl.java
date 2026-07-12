@@ -24,6 +24,7 @@ import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.FollowEnum;
+import xyz.qy.implatform.enums.GroupTypeEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
@@ -35,6 +36,7 @@ import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.service.ICharacterUserService;
 import xyz.qy.implatform.service.IFollowService;
 import xyz.qy.implatform.service.IFriendService;
+import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IGroupService;
 import xyz.qy.implatform.service.IShortVideoService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
@@ -47,6 +49,7 @@ import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.vo.FollowVO;
+import xyz.qy.implatform.vo.GroupVO;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoVO;
 
@@ -89,6 +92,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
     @Resource
     private IGroupService  groupService;
+
+    @Resource
+    private IGroupMemberService groupMemberService;
 
     @Resource
     private ICharacterUserService characterUserService;
@@ -169,13 +175,14 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
     public PageResultVO<List<ShortVideoVO>> getRecommendShortVideos(ShortVideoQueryDTO dto) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
-        
+        Page<ShortVideo> page = null;
         if (SectionEnum.FOLLOWS.getCode().equals(dto.getSection())) {
             List<FollowVO> myFollows = followService.findMyFollows();
             if (CollectionUtils.isEmpty(myFollows)) {
                 return PageResultVO.<List<ShortVideoVO>>builder().data(Collections.emptyList()).total(0).build();
             }
             dto.setFollows(BeanUtils.copyProperties(myFollows, FollowDTO.class));
+
         } else if (SectionEnum.FRIENDS.getCode().equals(dto.getSection())) {
             List<Long> friendIds = friendService.getFriendIdsByUserId(userId);
             if (CollectionUtils.isEmpty(friendIds)) {
@@ -184,12 +191,36 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
             dto.setFriendIds(friendIds);
         }
 
-        Page<ShortVideo> page = this.baseMapper.getRecommendShortVideos(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), dto);
+        if (SectionEnum.ALL_CHARACTERS.getCode().equals(dto.getSection())) {
+            if (ObjectUtil.isNotNull(dto.getGroupId())) {
+                GroupVO groupVO = groupService.findById(dto.getGroupId());
+                if (GroupTypeEnum.COMMON.getCode().equals(groupVO.getGroupType())) {
+                    throw new GlobalException("当前群聊是普通群聊");
+                }
+                List<Long> characterIds = null;
+                if (GroupTypeEnum.MULT_CHARTER.getCode().equals(groupVO.getGroupType()) || GroupTypeEnum.CHARTERS.getCode().equals(groupVO.getGroupType())) {
+                    characterIds = groupMemberService.getGroupCharacterIds(dto.getGroupId());
+                    dto.setCharacterIds(characterIds);
+                } else {
+                    characterIds = templateCharacterService.findPublishedCharacterIdsByGroupId(groupVO.getTemplateGroupId());
+                    dto.setCharacterIds(characterIds);
+                    dto.setGroupTemplateId(groupVO.getTemplateGroupId());
+                }
+                if (CollectionUtils.isEmpty(characterIds) && ObjectUtil.isNull(groupVO.getTemplateGroupId())) {
+                    throw new GlobalException("群聊角色数据为空");
+                }
+                page = this.baseMapper.getGroupCharacterShortVideos(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), dto);
+            } else {
+                page = this.baseMapper.getAllCharacterShortVideos(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), dto);
+            }
+        } else {
+            page = this.baseMapper.getRecommendShortVideos(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), dto);
+        }
 
+        assert page != null;
         if (CollectionUtils.isEmpty(page.getRecords())) {
             return PageResultVO.<List<ShortVideoVO>>builder().data(Collections.emptyList()).total(0).build();
         }
-
 
         List<ShortVideo> shortVideos = page.getRecords();
         List<ShortVideoVO> vos = BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);

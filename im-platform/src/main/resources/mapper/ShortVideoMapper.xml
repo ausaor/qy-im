@@ -67,4 +67,41 @@
         </if>
         ORDER BY t1.create_time DESC
     </select>
+    <select id="getAllCharacterShortVideos" resultType="xyz.qy.implatform.entity.ShortVideo">
+        <include refid="queryBase"/> t1
+        WHERE t1.deleted = 0
+        AND t1.status = '2'
+        AND t1.scope = 9
+        AND (t1.type = 'character' OR t1.type = 'template')
+        ORDER BY t1.create_time DESC
+    </select>
+
+    <select id="getGroupCharacterShortVideos" resultType="xyz.qy.implatform.entity.ShortVideo">
+        <include refid="queryBase"/>
+        WHERE deleted = 0
+        AND status = '2'
+        AND scope = 9
+        AND (
+            <if test="dto.groupTemplateId != null">
+                (
+                    type = 'template'
+                    AND object_id = #{dto.groupTemplateId}
+                )
+            </if>
+
+            <if test="dto.groupTemplateId != null and dto.characterIds != null and dto.characterIds.size() > 0">
+                OR
+            </if>
+            <if test="dto.characterIds != null and dto.characterIds.size() > 0">
+                (
+                    type = 'character'
+                    AND object_id IN
+                    <foreach collection="dto.characterIds" item="characterId" index="index" separator="," open="(" close=")">
+                        #{characterId}
+                    </foreach>
+                )
+            </if>
+        )
+        ORDER BY create_time DESC
+    </select>
 </mapper>

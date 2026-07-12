@@ -35,8 +35,15 @@ export default {
           key: 'recom',
           label: '推荐',
           path: '/home/shortVideo/recom',
-          icon: 'iconfont icon-tuijian',
+          icon: 'iconfont icon-tuijian1',
           color: '#FF5E5B'
+        },
+        {
+          key: 'star',
+          label: '星选',
+          path: '/home/shortVideo/star',
+          icon: 'iconfont icon-tuijian',
+          color: '#FFB800'
         },
         {
           key: 'follow',

@@ -15,4 +15,22 @@ public interface ShortVideoMapper extends BaseMapper<ShortVideo> {
      * @return 视频列表
      */
     Page<ShortVideo> getRecommendShortVideos(@Param("page") Page<Object> page, @Param("dto") ShortVideoQueryDTO dto);
+
+    /**
+     * 分页查询所有角色视频
+     *
+     * @param page 分页对象
+     * @param dto 查询DTO
+     * @return 视频列表
+     */
+    Page<ShortVideo> getAllCharacterShortVideos(@Param("page") Page<Object> page, @Param("dto") ShortVideoQueryDTO dto);
+
+    /**
+     * 分页查询群角色短视频
+     *
+     * @param page 分页对象
+     * @param dto 查询DTO
+     * @return 视频列表
+     */
+    Page<ShortVideo> getGroupCharacterShortVideos(@Param("page") Page<Object> page, @Param("dto") ShortVideoQueryDTO dto);
 }

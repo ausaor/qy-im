@@ -28,4 +28,10 @@ public class ShortVideoQueryDTO {
     private List<FollowDTO> follows;
 
     private List<Long> friendIds;
+
+    private Long groupId;
+
+    private List<Long> characterIds;
+
+    private Long groupTemplateId;
 }

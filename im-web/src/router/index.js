@@ -67,6 +67,11 @@ export default new VueRouter({
                   component: () => import("../view/ShortVideoRecom.vue"),
               },
               {
+                  name: "ShortVideoStar",
+                  path: "/home/shortVideo/star",
+                  component: () => import("../view/ShortVideoStar.vue"),
+              },
+              {
                   name: "ShortVideoFollow",
                   path: "/home/shortVideo/follow",
                   component: () => import("../view/ShortVideoFollow.vue"),

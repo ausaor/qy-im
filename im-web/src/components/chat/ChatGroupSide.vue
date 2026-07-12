@@ -57,6 +57,12 @@
         </svg>
         <span style="color: #b7eb81;margin-left: 10px;font-size: 16px;">群歌单</span>
       </div>
+      <div class="group-star-short-video" v-if="!group.quit && group.groupType!==0" @click="openStarShortVideo">
+        <svg class="icon svg-icon" aria-hidden="true">
+          <use xlink:href="#icon-tuijian"></use>
+        </svg>
+        <span style="color: #f7460b;margin-left: 10px;font-size: 16px;">星选</span>
+      </div>
 			<!-- 修改表单部分 -->
 			<div class="group-side-form">
 				<div class="form-item">
@@ -519,6 +525,12 @@
       openGroupMusic() {
         this.$refs.musicPlayRef.show();
       },
+      openStarShortVideo() {
+        this.$store.commit("setStarTabName", '星选【群】');
+        this.$store.commit("setShortVideoGroupId", this.group.id);
+        this.$store.commit("setFloatPanelActiveTab", 'star');
+        this.$store.commit("openShortVideoFloat");
+      },
       closeDrawer() {
         this.groupSpaceVisible = false;
       },
@@ -944,6 +956,36 @@
         line-height: 45px;
         font-size: 28px;
         color: #67c23a;
+        -webkit-transition: font-size 0.25s linear, width 0.25s linear;
+        -moz-transition: font-size 0.25s linear, width 0.25s linear;
+        transition: font-size 0.25s linear, width 0.25s linear;
+      }
+    }
+
+    .group-star-short-video {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      background: linear-gradient(120deg, #f5f7fa, #e4edf9);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin: 15px;
+      padding: 15px 0;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      .icon {
+        display: block;
+        height: 45px;
+        line-height: 45px;
+        font-size: 28px;
+        color: #f7460b;
         -webkit-transition: font-size 0.25s linear, width 0.25s linear;
         -moz-transition: font-size 0.25s linear, width 0.25s linear;
         transition: font-size 0.25s linear, width 0.25s linear;

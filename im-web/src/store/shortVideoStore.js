@@ -13,6 +13,8 @@ export default {
 		floatPanelActiveTab: 'recom',
 		showCharacterTab: false,
 		showTemplateTab: false,
+		starTabName: '星选',
+		groupId: null,
 	},
 
 	mutations: {
@@ -91,6 +93,12 @@ export default {
 		},
 		setShowTemplateTab(state, flag) {
 			state.showTemplateTab = flag
+		},
+		setStarTabName(state, name) {
+			state.starTabName = name
+		},
+		setShortVideoGroupId(state, groupId) {
+			state.groupId = groupId
 		},
 	},
 

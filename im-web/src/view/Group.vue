@@ -288,6 +288,14 @@
 									<div class="function-text">群通知</div>
 									<div v-show="joinGroupRequestCount>0" class="unread-text">{{joinGroupRequestCount}}</div>
 								</div>
+                <div class="group-function-item" v-if="activeGroup.groupType!==0" @click="openStarShortVideo">
+                  <div class="function-icon bg-purple">
+                    <svg class="icon svg-icon" aria-hidden="true">
+                      <use xlink:href="#icon-tuijian"></use>
+                    </svg>
+                  </div>
+                  <div class="function-text">星选</div>
+                </div>
 							</div>
 							
 							<div class="card-footer">
@@ -1175,6 +1183,12 @@
         this.$nextTick(() => {
           this.$refs.starMusicPlayRef.show();
         })
+      },
+      openStarShortVideo() {
+        this.$store.commit("setStarTabName", '星选【群】');
+        this.$store.commit("setShortVideoGroupId", this.activeGroup.id);
+        this.$store.commit("setFloatPanelActiveTab", 'star');
+        this.$store.commit("openShortVideoFloat");
       },
       openGroupRequestPanel() {
         this.$refs.groupRequestPanel.show();

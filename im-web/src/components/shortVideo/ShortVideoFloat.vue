@@ -34,6 +34,11 @@
         <head-image :size="24" :name="template.groupName" :url="template.avatar"></head-image>
       </div>
       <div
+          class="float-tab-item"
+          :class="{ active: activeTab === 'star' }"
+          @click.stop="switchTab('star')"
+      >{{starTabName}}</div>
+      <div
         class="float-tab-item"
         :class="{ active: activeTab === 'recom' }"
         @click.stop="switchTab('recom')"
@@ -353,6 +358,12 @@ export default {
         return [{ value: 9, label: '公开' }]
       }
       return this.scopeOptions
+    },
+    starTabName() {
+      return this.$store.state.shortVideoStore.starTabName;
+    },
+    groupId() {
+      return this.$store.state.shortVideoStore.groupId;
     }
   },
   watch: {
@@ -376,6 +387,8 @@ export default {
       this.$store.commit("setFloatPanelActiveTab", "recom")
       this.$store.commit("setShowCharacterTab", false);
       this.$store.commit("setShowTemplateTab", false);
+      this.$store.commit("setStarTabName", '星选');
+      this.$store.commit("setShortVideoGroupId", null);
       this.$emit('close', false)
     },
 
@@ -422,7 +435,7 @@ export default {
       if (this.hasDragged) return
       this.$store.commit("setFloatPanelActiveTab", tab)
       if (this.activeTab === 'recom' || this.activeTab === 'friend' || this.activeTab === 'follow'
-          || this.activeTab === 'character' || this.activeTab === 'template') {
+          || this.activeTab === 'character' || this.activeTab === 'template' || this.activeTab === 'star') {
         this.resetAndFetch()
       }
     },
@@ -474,6 +487,11 @@ export default {
         data.section = 'friends'
       } else if (this.activeTab === 'follow') {
         data.section = 'follows'
+      } else if (this.activeTab === 'star') {
+        data.section = 'allCharacters'
+        if (this.groupId) {
+          data.groupId = this.groupId;
+        }
       }
 
       this.$http({
