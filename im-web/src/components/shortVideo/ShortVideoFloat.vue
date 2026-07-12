@@ -193,18 +193,59 @@
         </template>
         </template>
       </div>
+
+    <!-- 评论面板 - 从底部滑入，层级高于视频 -->
+    <transition name="comment-slide">
+      <div v-if="showCommentPanel && currentVideo.id" class="float-comment-panel">
+        <!-- 关闭按钮 -->
+        <div class="comment-panel-close" @click="showCommentPanel = false">
+          <i class="el-icon-arrow-down"></i>
+        </div>
+
+        <!-- 评论列表 -->
+        <ShortVideoCommentList
+          ref="commentListRef"
+          :video="currentVideo"
+          :commentForm="commentForm"
+          @closeCommentInput="showCommentInput = false"
+        />
+
+        <!-- 底部评论输入区 -->
+        <div class="comment-panel-footer">
+          <div v-if="!showCommentInput" class="comment-input-btn" @click="openCommentInput">
+            <span>说点什么…</span>
+          </div>
+          <div v-else class="comment-input-expanded">
+            <InputBox
+              ref="commentInput"
+              width="100%"
+              placeholder="输入评论内容"
+              @send="handleSendComment"
+              @sendWord="handleSendCommentWord"
+            />
+            <div class="comment-input-collapse" @click="showCommentInput = false">
+              收起 <i class="el-icon-arrow-down"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
 import HeadImage from '@/components/common/HeadImage.vue'
 import VideoUpload from '@/components/common/VideoUpload.vue'
+import ShortVideoCommentList from '@/components/shortVideo/ShortVideoCommentList.vue'
+import InputBox from '@/components/common/InputBox.vue'
 
 export default {
   name: 'ShortVideoFloat',
   components: {
     HeadImage,
-    VideoUpload
+    VideoUpload,
+    ShortVideoCommentList,
+    InputBox
   },
   props: {
     showFloat: {
@@ -261,6 +302,15 @@ export default {
         { value: 2, label: '好友可见' },
         { value: 1, label: '私密' }
       ],
+      // 评论面板
+      showCommentPanel: false,
+      showCommentInput: false,
+      commentForm: {
+        characterAvatarId: null,
+        characterId: null,
+        nickName: '',
+        avatar: '',
+      },
     }
   },
   computed: {
@@ -321,6 +371,7 @@ export default {
   },
   methods: {
     close() {
+      this.showCommentPanel = false
       this.$store.commit("clearShortVideoCharacter")
       this.$store.commit("clearShortVideoTemplate")
       this.$store.commit("clearShortVideoPublishType")
@@ -503,6 +554,7 @@ export default {
     switchVideo(newIndex) {
       if (newIndex < 0 || newIndex >= this.videoList.length) return
 
+      this.showCommentPanel = false
       this.pauseVideo()
       this.currentIndex = newIndex
       this.$nextTick(() => {
@@ -530,6 +582,7 @@ export default {
     // 重命名 handleWheel 为 onWheel 并添加 publish 页签守卫
     onWheel(event) {
       if (this.activeTab === 'publish') return
+      if (this.showCommentPanel) return
       if (event.deltaY > 0) {
         this.nextVideo()
       } else {
@@ -563,8 +616,78 @@ export default {
     },
 
     handleComment() {
-      // 点击评论数时先不加任何操作
+      this.showCommentPanel = true
     },
+
+    // ========== 评论面板相关 ==========
+    openCommentInput() {
+      this.showCommentInput = true
+      if (this.$refs.commentListRef) {
+        this.$refs.commentListRef.closeAllReplies()
+      }
+      this.$nextTick(() => {
+        if (this.$refs.commentInput) {
+          this.$refs.commentInput.view()
+        }
+      })
+    },
+
+    handleSendComment(sendObj) {
+      if (!sendObj) return
+      let content = null
+      if (sendObj.type === this.$enums.MESSAGE_TYPE.IMAGE) {
+        content = JSON.stringify(sendObj.content)
+      } else {
+        content = sendObj.content
+      }
+      this.$http({
+        url: '/shortVideoComment/add',
+        method: 'post',
+        data: {
+          videoId: this.currentVideo.id,
+          content: content,
+          type: sendObj.type,
+          characterId: this.commentForm.characterId,
+          avatarId: this.commentForm.characterAvatarId
+        }
+      }).then(() => {
+        this.$message.success('评论成功')
+        if (this.$refs.commentListRef) {
+          this.$refs.commentListRef.refresh()
+        }
+        this.currentVideo.commentCount = (this.currentVideo.commentCount || 0) + 1
+      })
+    },
+
+    handleSendCommentWord(data) {
+      if (!data) return
+      let content = JSON.stringify({
+        id: data.id,
+        templateGroupId: data.templateGroupId,
+        characterId: data.characterId,
+        characterName: data.characterName,
+        word: data.word,
+        voice: data.voice
+      })
+      this.$http({
+        url: '/shortVideoComment/add',
+        method: 'post',
+        data: {
+          videoId: this.currentVideo.id,
+          content: content,
+          type: this.$enums.MESSAGE_TYPE.WORD_VOICE,
+          characterId: this.commentForm.characterId,
+          avatarId: this.commentForm.characterAvatarId
+        }
+      }).then(() => {
+        this.$message.success('评论成功')
+        if (this.$refs.commentListRef) {
+          this.$refs.commentListRef.refresh()
+        }
+        this.currentVideo.commentCount = (this.currentVideo.commentCount || 0) + 1
+      })
+    },
+    // ========== 评论面板相关结束 ==========
 
     handleFavorite() {
       const video = this.currentVideo
@@ -1110,4 +1233,98 @@ export default {
   font-weight: 500;
   pointer-events: none;
 }
+
+// ========== 评论面板样式 ==========
+.float-comment-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 75%;
+  background: #fff;
+  border-radius: 12px 12px 0 0;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.comment-panel-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  flex-shrink: 0;
+  cursor: pointer;
+  color: #999;
+  border-bottom: 1px solid #f0f0f0;
+  transition: color 0.2s;
+  user-select: none;
+
+  &:hover {
+    color: #333;
+  }
+
+  i {
+    font-size: 18px;
+  }
+}
+
+.comment-panel-footer {
+  flex-shrink: 0;
+  padding: 10px 12px;
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.comment-input-btn {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: #f5f7fa;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  color: #909399;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s;
+
+  &:hover {
+    color: #409eff;
+    border-color: #c6e2ff;
+    background: #ecf5ff;
+  }
+}
+
+.comment-input-expanded {
+  .comment-input-collapse {
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    cursor: pointer;
+    margin-top: 6px;
+    user-select: none;
+
+    &:hover {
+      color: #409eff;
+    }
+
+    i {
+      font-size: 12px;
+    }
+  }
+}
+
+// 评论面板滑入动画
+.comment-slide-enter-active,
+.comment-slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.comment-slide-enter,
+.comment-slide-leave-to {
+  transform: translateY(100%);
+}
+// ========== 评论面板样式结束 ==========
 </style>
