@@ -539,7 +539,7 @@ export default {
   min-width: 0;
   background-color: #f5f7fa;
   min-height: 100vh;
-  overflow-x: visible;
+  overflow: hidden;
 }
 
 .search-card {
@@ -562,39 +562,40 @@ export default {
 .table-card {
   width: 100%;
   min-width: 0;
-  overflow: visible;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 
 .table-card ::v-deep .el-card__body {
   min-width: 0;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .table-scroll {
   width: 100%;
-  max-width: 100%;
   min-width: 0;
-  overflow: visible;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 
 ::v-deep .short-video-table.el-table {
   width: 100% !important;
-  max-width: 100%;
   min-width: 0;
 }
 
+::v-deep .short-video-table.el-table .el-table__header,
+::v-deep .short-video-table.el-table .el-table__body,
+::v-deep .short-video-table.el-table .el-table__footer {
+  min-width: 1620px;
+}
+
 ::v-deep .short-video-table.el-table .el-table__body-wrapper {
-  width: 100%;
-  max-width: 100%;
   overflow-x: auto !important;
-  overflow-y: hidden;
+  overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
 }
 
 ::v-deep .short-video-table.el-table .el-table__header-wrapper {
-  overflow: hidden;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
 }
 
 .cover-cell {
