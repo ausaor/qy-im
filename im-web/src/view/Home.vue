@@ -1270,8 +1270,10 @@
 
   .content-box {
     flex: 1;
+    min-width: 0;
     padding: 0;
     background-color: #fff;
+    overflow: hidden;
   }
 }
 
