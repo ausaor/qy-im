@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import xyz.qy.implatform.dto.ShortVideoBatchDelDTO;
 import xyz.qy.implatform.dto.ShortVideoBatchScopeDTO;
 import xyz.qy.implatform.dto.ShortVideoDelDTO;
 import xyz.qy.implatform.dto.ShortVideoQueryDTO;
+import xyz.qy.implatform.dto.ShortVideoReviewDTO;
 import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
 import xyz.qy.implatform.entity.CharacterUser;
 import xyz.qy.implatform.entity.Group;
@@ -64,6 +66,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVideo> implements IShortVideoService {
     @Resource
@@ -534,6 +537,28 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                 }
             }
         }
+    }
+
+    @Override
+    public void review(ShortVideoReviewDTO dto) {
+        ShortVideo shortVideo = this.getById(dto.getId());
+        checkExists(shortVideo);
+        if (ReviewEnum.NO_PASS.getCode().equals(shortVideo.getStatus())) {
+            throw new GlobalException("视频已审核未通过");
+        }
+        if (!StringUtils.equalsAny(dto.getStatus(), ReviewEnum.REVIEWED.getCode(), ReviewEnum.NO_PASS.getCode())) {
+            throw new GlobalException("审核状态错误");
+        }
+        UserSession session = SessionContext.getSession();
+
+        shortVideo.setStatus(dto.getStatus());
+        if (StringUtils.isNotBlank(dto.getReason())) {
+            shortVideo.setReason(dto.getReason());
+        }
+        shortVideo.setReviewUserId(session.getUserId());
+        shortVideo.setUpdateTime(new Date());
+        log.info("审核短视频：shortVideo:{}, userId:{}", shortVideo.getId(), session.getUserId());
+        this.updateById(shortVideo);
     }
 
     private LambdaQueryWrapper<ShortVideo> buildQueryWrapper(ShortVideoQueryDTO dto) {

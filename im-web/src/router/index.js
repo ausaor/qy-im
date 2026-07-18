@@ -163,7 +163,12 @@ export default new VueRouter({
                   name: "FeatureControl",
                   path: "/home/square/featureControl",
                   component: () => import("../view/FeatureControl.vue"),
-              }
+              },
+              {
+                  name: "ShortVideoManagement",
+                  path: "/home/square/shortVideos",
+                  component: () => import("../view/ShortVideoManagement.vue"),
+              },
           ]
         },
       {

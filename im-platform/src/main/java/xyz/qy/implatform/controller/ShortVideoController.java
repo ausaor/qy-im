@@ -10,12 +10,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.annotation.RequireRoles;
 import xyz.qy.implatform.dto.ShortVideoAddDTO;
 import xyz.qy.implatform.dto.ShortVideoBatchDelDTO;
 import xyz.qy.implatform.dto.ShortVideoBatchScopeDTO;
 import xyz.qy.implatform.dto.ShortVideoDelDTO;
 import xyz.qy.implatform.dto.ShortVideoQueryDTO;
+import xyz.qy.implatform.dto.ShortVideoReviewDTO;
 import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
+import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IShortVideoService;
@@ -85,6 +88,7 @@ public class ShortVideoController {
     }
 
     @ApiOperation(value = "短视频分页列表", notes = "短视频分页列表")
+    @RequireRoles(value = {RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN})
     @PostMapping("/pageList")
     public Result<PageResultVO<List<ShortVideoVO>>> pageList(@RequestBody ShortVideoQueryDTO dto) {
         return ResultUtils.success(shortVideoService.pageShortVideos(dto));
@@ -114,6 +118,14 @@ public class ShortVideoController {
     @PostMapping("/addPlayCount/{videoId}")
     public Result addPlayCount(@NotNull(message = "videoId不能为空") @PathVariable Long videoId) {
         shortVideoService.addPlayCount(videoId);
+        return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "短视频审核", notes = "短视频审核")
+    @RequireRoles(value = {RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN})
+    @PostMapping("/review")
+    public Result review(@RequestBody @Valid ShortVideoReviewDTO dto) {
+        shortVideoService.review(dto);
         return ResultUtils.success();
     }
 }

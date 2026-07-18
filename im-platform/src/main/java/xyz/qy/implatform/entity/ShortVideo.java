@@ -128,6 +128,12 @@ public class ShortVideo extends Model<ShortVideo> {
     @TableField("status")
     private String status;
 
+    @TableField("review_user_id")
+    private Long reviewUserId;
+
+    @TableField("reason")
+    private String reason;
+
     /**
      * 创建时间
      */

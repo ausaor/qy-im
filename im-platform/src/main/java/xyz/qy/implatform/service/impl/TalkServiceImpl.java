@@ -44,7 +44,7 @@ import xyz.qy.implatform.enums.ResultCode;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
-import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
+import xyz.qy.implatform.enums.NotifyActionTypeEnum;
 import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
 import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.enums.ViewScopeEnum;
@@ -1095,7 +1095,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         wrapper.eq(TalkNotify::getIsRead, false);
         wrapper.eq(TalkNotify::getDeleted, false);
         wrapper.eq(TalkNotify::getCategory, TalkCategoryEnum.PRIVATE.getCode());
-        wrapper.in(TalkNotify::getActionType, Arrays.asList(TalkNotifyActionTypeEnum.COMMENT.getCode(),  TalkNotifyActionTypeEnum.LIKE.getCode()));
+        wrapper.in(TalkNotify::getActionType, Arrays.asList(NotifyActionTypeEnum.COMMENT.getCode(),  NotifyActionTypeEnum.LIKE.getCode()));
 
         int notifyCount = talkNotifyService.count(wrapper);
 

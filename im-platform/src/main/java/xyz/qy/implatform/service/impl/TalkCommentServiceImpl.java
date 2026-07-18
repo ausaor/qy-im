@@ -19,7 +19,7 @@ import xyz.qy.implatform.entity.TalkNotify;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
-import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
+import xyz.qy.implatform.enums.NotifyActionTypeEnum;
 import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
 import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
@@ -174,7 +174,7 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
                 talkNotify.setCharacterId(talk.getCharacterId());
                 talkNotify.setGroupTemplateId(talk.getGroupTemplateId());
             }
-            talkNotify.setActionType(TalkNotifyActionTypeEnum.COMMENT.getCode());
+            talkNotify.setActionType(NotifyActionTypeEnum.COMMENT.getCode());
             talkNotify.setCategory(talk.getCategory());
             talkNotify.setCreateTime(LocalDateTime.now());
             talkNotifyService.save(talkNotify);
@@ -224,7 +224,7 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
         // 删除评论提醒记录
         LambdaUpdateWrapper<TalkNotify> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(TalkNotify::getCommentId, talkComment.getId());
-        updateWrapper.eq(TalkNotify::getActionType, TalkNotifyActionTypeEnum.COMMENT.getCode());
+        updateWrapper.eq(TalkNotify::getActionType, NotifyActionTypeEnum.COMMENT.getCode());
         updateWrapper.eq(TalkNotify::getTalkId, talkComment.getTalkId());
 
         talkNotifyService.remove(updateWrapper);

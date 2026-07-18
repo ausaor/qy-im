@@ -20,7 +20,7 @@ import xyz.qy.implatform.entity.TalkStar;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
-import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
+import xyz.qy.implatform.enums.NotifyActionTypeEnum;
 import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
 import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
@@ -157,7 +157,7 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
                 talkNotify.setCharacterId(talk.getCharacterId());
                 talkNotify.setGroupTemplateId(talk.getGroupTemplateId());
             }
-            talkNotify.setActionType(TalkNotifyActionTypeEnum.LIKE.getCode());
+            talkNotify.setActionType(NotifyActionTypeEnum.LIKE.getCode());
             talkNotify.setCreateTime(LocalDateTime.now());
             talkNotifyService.save(talkNotify);
 
@@ -200,7 +200,7 @@ public class TalkStarServiceImpl extends ServiceImpl<TalkStarMapper, TalkStar> i
         // 删除点赞提醒记录
         LambdaUpdateWrapper<TalkNotify> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(TalkNotify::getStarId, talkStar.getId());
-        updateWrapper.eq(TalkNotify::getActionType, TalkNotifyActionTypeEnum.LIKE.getCode());
+        updateWrapper.eq(TalkNotify::getActionType, NotifyActionTypeEnum.LIKE.getCode());
         updateWrapper.eq(TalkNotify::getTalkId, talkStarDTO.getTalkId());
 
         talkNotifyService.remove(updateWrapper);

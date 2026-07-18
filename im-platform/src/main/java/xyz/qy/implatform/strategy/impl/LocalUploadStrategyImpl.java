@@ -23,7 +23,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
 
 /**
  * 本地上传策略
@@ -201,7 +200,7 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
      * */
     public String randomGrabberFFmpegImage(File videFile, String fileName, String path, UploadVideoVO uploadVideoVO) {
         FFmpegFrameGrabber grabber = null;
-        try (ByteArrayOutputStream outStream =new ByteArrayOutputStream();) {
+        try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
             grabber = new FFmpegFrameGrabber(videFile);
             grabber.start();
 
@@ -209,15 +208,19 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
             uploadVideoVO.setWidth(grabber.getImageWidth());
             uploadVideoVO.setHeight(grabber.getImageHeight());
             // 获取视频时长，/ 1000000 将单位转换为秒
-            long delayedTime = grabber.getLengthInTime() / 1000000;
+            long durationInTime = grabber.getLengthInTime();
+            long delayedTime = durationInTime / 1000000;
             uploadVideoVO.setDuration(delayedTime);
 
-            Random random = new Random();
-            // 跳转到相应时间
-            grabber.setTimestamp((random.nextInt((int)delayedTime - 1) + 1) * 1000000L);
-            Frame f = grabber.grabImage();
+            Frame f = grabVideoImageFrame(grabber, durationInTime);
+            if (f == null) {
+                throw new GlobalException("未获取到视频封面帧");
+            }
             Java2DFrameConverter converter = new Java2DFrameConverter();
             BufferedImage bi = converter.getBufferedImage(f);
+            if (bi == null) {
+                throw new GlobalException("视频封面帧转换失败");
+            }
 
             ImageIO.write(bi, "jpg", outStream);
 
@@ -254,5 +257,25 @@ public class LocalUploadStrategyImpl extends AbstractUploadStrategyImpl {
             }
         }
         return "";
+    }
+
+    private Frame grabVideoImageFrame(FFmpegFrameGrabber grabber, long durationInTime) throws FFmpegFrameGrabber.Exception {
+        if (durationInTime <= 0) {
+            return grabber.grabImage();
+        }
+        long[] timestamps = {
+                Math.min(durationInTime - 1, Math.max(0, durationInTime / 10)),
+                Math.min(durationInTime - 1, Math.max(0, durationInTime / 3)),
+                Math.min(durationInTime - 1, Math.max(0, durationInTime / 2)),
+                0L
+        };
+        for (long timestamp : timestamps) {
+            grabber.setTimestamp(timestamp);
+            Frame frame = grabber.grabImage();
+            if (frame != null) {
+                return frame;
+            }
+        }
+        return null;
     }
 }

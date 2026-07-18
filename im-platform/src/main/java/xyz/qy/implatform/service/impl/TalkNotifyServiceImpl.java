@@ -22,7 +22,7 @@ import xyz.qy.implatform.entity.TalkNotify;
 import xyz.qy.implatform.entity.TalkStar;
 import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
-import xyz.qy.implatform.enums.TalkNotifyActionTypeEnum;
+import xyz.qy.implatform.enums.NotifyActionTypeEnum;
 import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkNotifyMapper;
@@ -281,7 +281,7 @@ public class TalkNotifyServiceImpl extends ServiceImpl<TalkNotifyMapper, TalkNot
         wrapper.eq(TalkNotify::getIsRead, false);
         wrapper.eq(TalkNotify::getDeleted, false);
         wrapper.in(TalkNotify::getCategory, Arrays.asList(TalkCategoryEnum.GROUP.getCode(), TalkCategoryEnum.CHARACTER.getCode(), TalkCategoryEnum.REGION.getCode()));
-        wrapper.in(TalkNotify::getActionType, Arrays.asList(TalkNotifyActionTypeEnum.COMMENT.getCode(),  TalkNotifyActionTypeEnum.LIKE.getCode()));
+        wrapper.in(TalkNotify::getActionType, Arrays.asList(NotifyActionTypeEnum.COMMENT.getCode(),  NotifyActionTypeEnum.LIKE.getCode()));
         wrapper.ge(TalkNotify::getCreateTime, minDate);
 
         List<TalkNotify> talkNotifyList = this.list(wrapper);

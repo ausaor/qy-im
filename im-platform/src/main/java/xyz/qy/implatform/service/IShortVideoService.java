@@ -6,6 +6,7 @@ import xyz.qy.implatform.dto.ShortVideoBatchDelDTO;
 import xyz.qy.implatform.dto.ShortVideoBatchScopeDTO;
 import xyz.qy.implatform.dto.ShortVideoDelDTO;
 import xyz.qy.implatform.dto.ShortVideoQueryDTO;
+import xyz.qy.implatform.dto.ShortVideoReviewDTO;
 import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.vo.PageResultVO;
@@ -41,4 +42,6 @@ public interface IShortVideoService extends IService<ShortVideo> {
     void addPlayCount(Long videoId);
 
     void verifyUserDataAuth(ShortVideo shortVideo);
+
+    void review(ShortVideoReviewDTO dto);
 }
