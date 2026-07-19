@@ -9,6 +9,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xyz.qy.imclient.IMClient;
+import xyz.qy.imcommon.enums.IMTerminalType;
+import xyz.qy.imcommon.model.IMShortVideoMessage;
+import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.dto.FollowDTO;
 import xyz.qy.implatform.dto.ShortVideoAddDTO;
 import xyz.qy.implatform.dto.ShortVideoBatchDelDTO;
@@ -29,7 +33,7 @@ import xyz.qy.implatform.enums.FollowEnum;
 import xyz.qy.implatform.enums.GroupTypeEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.SectionEnum;
-import xyz.qy.implatform.enums.TalkCategoryEnum;
+import xyz.qy.implatform.enums.ShortVideoNotifyMsgTypeEnum;
 import xyz.qy.implatform.enums.ViewScopeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
@@ -53,9 +57,11 @@ import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.vo.FollowVO;
 import xyz.qy.implatform.vo.GroupVO;
 import xyz.qy.implatform.vo.PageResultVO;
+import xyz.qy.implatform.vo.ShortVideoMessageVO;
 import xyz.qy.implatform.vo.ShortVideoVO;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -101,6 +107,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
     @Resource
     private ICharacterUserService characterUserService;
+
+    @Resource
+    private IMClient imClient;
 
     @Override
     public List<ShortVideoVO> myShortVideos(ShortVideoQueryDTO dto) {
@@ -559,6 +568,58 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         shortVideo.setUpdateTime(new Date());
         log.info("审核短视频：shortVideo:{}, userId:{}", shortVideo.getId(), session.getUserId());
         this.updateById(shortVideo);
+
+        // 审核通过发送提醒
+        if (ReviewEnum.REVIEWED.getCode().equals(dto.getStatus())) {
+            List<Long> userIds = new ArrayList<>();
+
+            // 推送给关注的用户和好友
+            if (ViewScopeEnum.PUBLIC.getCode().equals(shortVideo.getScope())) {
+                List<Long> followUserIds = followService.findFansByTargetId(shortVideo.getObjectId(), shortVideo.getType());
+                userIds.addAll(followUserIds);
+
+                List<Long> friendUserIds = friendService.getFriendIdsByUserId(shortVideo.getUserId());
+                userIds.addAll(friendUserIds);
+            } else if (ViewScopeEnum.FRIENDS.getCode().equals(shortVideo.getScope())) {
+                List<Long> friendUserIds = friendService.getFriendIdsByUserId(shortVideo.getUserId());
+                userIds.addAll(friendUserIds);
+            } else if (ViewScopeEnum.FOLLOW.getCode().equals(shortVideo.getScope())) {
+                List<Long> followUserIds = followService.findFansByTargetId(shortVideo.getObjectId(), shortVideo.getType());
+                userIds.addAll(followUserIds);
+            }
+            if (CollectionUtils.isEmpty(userIds)) {
+                return;
+            }
+            userIds = userIds.stream().distinct().collect(Collectors.toList());
+
+            ShortVideoMessageVO msgInfo = new ShortVideoMessageVO();
+            msgInfo.setType(ShortVideoNotifyMsgTypeEnum.SHORT_VIDEO.getCode());
+            ShortVideoVO shortVideoVO = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
+            if (FollowEnum.USER.getCode().equals(shortVideo.getType())) {
+                User user = userService.getById(shortVideo.getUserId());
+                shortVideoVO.setNickName(user.getNickName());
+                shortVideoVO.setHeadImage(user.getHeadImage());
+                shortVideoVO.setAuthorName(user.getNickName());
+            } else if (FollowEnum.CHARACTER.getCode().equals(shortVideo.getType())) {
+                TemplateCharacter character = templateCharacterService.findPublishedById(shortVideo.getObjectId());
+                shortVideoVO.setNickName(character.getName());
+                shortVideoVO.setHeadImage(character.getAvatar());
+                shortVideoVO.setAuthorName(character.getName());
+            } else if (FollowEnum.TEMPLATE.getCode().equals(shortVideo.getType())) {
+                TemplateGroup templateGroup = templateGroupService.findPublishedById(shortVideo.getObjectId());
+                shortVideoVO.setNickName(templateGroup.getGroupName());
+                shortVideoVO.setHeadImage(templateGroup.getAvatar());
+                shortVideoVO.setAuthorName(templateGroup.getGroupName());
+            }
+            msgInfo.setShortVideo(shortVideoVO);
+
+            IMShortVideoMessage<ShortVideoMessageVO> sendMessage = new IMShortVideoMessage<>();
+            sendMessage.setSender(new IMUserInfo(shortVideo.getUserId(), IMTerminalType.WEB.code()));
+            sendMessage.setRecvIds(userIds);
+            sendMessage.setSendResult(false);
+            sendMessage.setData(msgInfo);
+            imClient.sendShortVideoMessage(sendMessage);
+        }
     }
 
     private LambdaQueryWrapper<ShortVideo> buildQueryWrapper(ShortVideoQueryDTO dto) {

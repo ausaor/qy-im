@@ -28,6 +28,9 @@ public class ProcessorFactory {
             case TALK_MESSAGE:
                 processor = SpringContextHolder.getApplicationContext().getBean(TalkMessageProcessor.class);
                 break;
+            case SHORT_VIDEO_MESSAGE:
+                processor = SpringContextHolder.getApplicationContext().getBean(ShortVideoMessageProcessor.class);
+                break;
             default:
                 break;
         }

@@ -192,6 +192,9 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                 .orderByDesc(Follow::getCreateTime);
         List<Follow> list = this.list(queryWrapper);
         List<FollowVO> followVOS = BeanUtils.copyProperties(list, FollowVO.class);
+        if (CollectionUtils.isEmpty(followVOS)) {
+            return followVOS;
+        }
 
         LambdaQueryWrapper<Follow> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Follow::getUserId, userId)
@@ -214,6 +217,15 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
             vo.setFollowed(myFollowIds.contains(vo.getUserId()));
         });
         return followVOS;
+    }
+
+    @Override
+    public List<Long> findFansByTargetId(Long targetId, String type) {
+        List<Follow> followList = this.lambdaQuery().eq(Follow::getTargetId, targetId)
+                .eq(Follow::getType, type)
+                .select(Follow::getUserId)
+                .list();
+        return followList.stream().map(Follow::getUserId).collect(Collectors.toList());
     }
 
     @Override

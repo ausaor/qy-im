@@ -7,6 +7,7 @@ import xyz.qy.imcommon.enums.IMTerminalType;
 import xyz.qy.imcommon.model.IMGroupMessage;
 import xyz.qy.imcommon.model.IMPrivateMessage;
 import xyz.qy.imcommon.model.IMRegionGroupMessage;
+import xyz.qy.imcommon.model.IMShortVideoMessage;
 import xyz.qy.imcommon.model.IMSystemMessage;
 import xyz.qy.imcommon.model.IMTalkMessage;
 
@@ -92,5 +93,9 @@ public class IMClient {
      */
     public<T> void sendTalkMessage(IMTalkMessage<T> message){
         imSender.sendTalkMessage(message);
+    }
+
+    public <T> void sendShortVideoMessage(IMShortVideoMessage<T> message) {
+        imSender.sendShortVideoMessage(message);
     }
 }

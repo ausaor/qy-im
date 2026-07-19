@@ -15,6 +15,7 @@ export default {
 		showTemplateTab: false,
 		starTabName: '星选',
 		groupId: null,
+		shortVideoMap: new Map(),
 	},
 
 	mutations: {
@@ -99,6 +100,16 @@ export default {
 		},
 		setShortVideoGroupId(state, groupId) {
 			state.groupId = groupId
+		},
+		addShortVideo(state, shortVideo) {
+			const newMap = new Map(state.shortVideoMap); // 创建副本
+			if (!newMap.has(shortVideo.objectId + '-' + shortVideo.type)) {
+				newMap.set(shortVideo.objectId + '-' + shortVideo.type, [shortVideo]);
+			} else {
+				let shortVideos = newMap.get(shortVideo.objectId + '-' + shortVideo.type);
+				shortVideos.unshift(shortVideo);
+			}
+			state.shortVideoMap = newMap;
 		},
 	},
 

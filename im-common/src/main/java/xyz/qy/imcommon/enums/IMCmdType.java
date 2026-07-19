@@ -11,6 +11,7 @@ public enum IMCmdType {
     GROUP_MESSAGE(4, "群发消息"),
     SYSTEM_MESSAGE(5,"系统消息"),
     TALK_MESSAGE(6,"动态消息"),
+    SHORT_VIDEO_MESSAGE(7,"短视频消息"),
     REGION_GROUP_MESSAGE(9,"地区群聊消息");
 
     private final Integer code;

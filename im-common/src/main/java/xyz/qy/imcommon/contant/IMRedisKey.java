@@ -26,6 +26,11 @@ public final class IMRedisKey {
      */
     public static final String IM_MESSAGE_TALK_QUEUE = "im:message:talk";
 
+    /**
+     * 短视频消息队列
+     */
+    public static final String IM_MESSAGE_SHORT_VIDEO_QUEUE = "im:message:shortVideo";
+
     // 私聊消息发送结果队列
     public final static String IM_RESULT_PRIVATE_QUEUE = "im:result:private";
     // 群聊消息发送结果队列

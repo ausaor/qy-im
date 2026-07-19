@@ -21,6 +21,9 @@ public final class IMConstant {
     // 动态消息redis主题
     public static final String TALK_MSG_TOPIC = "talk-message-topic";
 
+    // 短视频消息redis主题
+    public static final String SHORT_VIDEO_MSG_TOPIC = "short-video-message-topic";
+
     // 私聊消息发送结果redis主题
     public static final String PRIVATE_MSG_SEND_RESULT_TOPIC = "private-msg-send-result-topic";
     // 群聊消息发送结果redis主题

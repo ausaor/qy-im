@@ -411,6 +411,30 @@ export default {
       this.$nextTick(() => {
         this.playVideo()
       })
+    },
+
+    /**
+     * 接收外部新视频，添加到列表顶部并立即播放
+     * @param {Array} videos - 新视频数组（字段参考 ShortVideoVO）
+     */
+    addNewVideos(videos) {
+      if (!videos || videos.length === 0) return
+
+      // 构建已有视频 id 集合，用于去重
+      const existingIds = new Set(this.videoList.map(v => v.id))
+      const newVideos = videos.filter(v => v && v.id && !existingIds.has(v.id))
+
+      if (newVideos.length === 0) return
+
+      // 将新视频添加到列表头部
+      this.videoList.unshift(...newVideos)
+
+      // 切换到第一个新视频并播放
+      this.pauseVideo()
+      this.currentIndex = 0
+      this.$nextTick(() => {
+        this.playVideo()
+      })
     }
   }
 }

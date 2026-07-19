@@ -42,6 +42,15 @@ public interface IFollowService extends IService<Follow> {
     List<FollowVO> findMyFans();
 
     /**
+     * 查询某个目标对象所有粉丝
+     *
+     * @param targetId 目标对象id
+     * @param type 类别
+     * @return 粉丝列表
+     */
+    List<Long> findFansByTargetId(Long targetId, String type);
+
+    /**
      * 查询当前用户的所有关注
      *
      * @return 关注列表

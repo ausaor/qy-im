@@ -15,6 +15,7 @@ import xyz.qy.imcommon.contant.IMConstant;
 import xyz.qy.imserver.listener.GroupMessageChannelListener;
 import xyz.qy.imserver.listener.PrivateMessageChannelListener;
 import xyz.qy.imserver.listener.RegionGroupMessageChannelListener;
+import xyz.qy.imserver.listener.ShortVideoMessageChannelListener;
 import xyz.qy.imserver.listener.SystemMessageChannelListener;
 import xyz.qy.imserver.listener.TalkMessageChannelListener;
 
@@ -60,6 +61,7 @@ public class RedisConfig {
         container.addMessageListener(regionGroupMessageListenerAdapter(), regionGroupMessageChannelTopic());
         container.addMessageListener(systemMessageListenerAdapter(), systemMessageChannelTopic());
         container.addMessageListener(talkMessageListenerAdapter(), talkMessageChannelTopic());
+        container.addMessageListener(shortVideoMessageListenerAdapter(), shortVideoMessageChannelTopic());
         return container;
     }
 
@@ -89,6 +91,11 @@ public class RedisConfig {
     }
 
     @Bean
+    public MessageListenerAdapter shortVideoMessageListenerAdapter() {
+        return new MessageListenerAdapter(shortVideoMessageChannelListener());
+    }
+
+    @Bean
     public PrivateMessageChannelListener privateMessageChannelListener() {
         return new PrivateMessageChannelListener();
     }
@@ -111,6 +118,11 @@ public class RedisConfig {
     @Bean
     public TalkMessageChannelListener talkMessageChannelListener() {
         return new TalkMessageChannelListener();
+    }
+
+    @Bean
+    public ShortVideoMessageChannelListener shortVideoMessageChannelListener() {
+        return new ShortVideoMessageChannelListener();
     }
 
     /**
@@ -148,5 +160,13 @@ public class RedisConfig {
     @Bean
     ChannelTopic talkMessageChannelTopic() {
         return new ChannelTopic(IMConstant.TALK_MSG_TOPIC);
+    }
+
+    /**
+     * 短视频消息redis主题
+     */
+    @Bean
+    ChannelTopic shortVideoMessageChannelTopic() {
+        return new ChannelTopic(IMConstant.SHORT_VIDEO_MSG_TOPIC);
     }
 }

@@ -373,6 +373,10 @@
             } else if (cmd == 6) {
               // 处理动态消息
               this.handleTalkMessage(msgInfo);
+            } else if (cmd == 7) {
+              // 处理短视频消息
+              console.log("短视频消息", msgInfo)
+              this.handleShortVideoMessage(msgInfo);
             } else if (cmd == 9) {
               // 插入地区群聊消息
               msgInfo.chatType = 'REGION-GROUP'
@@ -754,6 +758,12 @@
         }
         this.insertSystemMessage(msg);
       },
+      handleShortVideoMessage(msg) {
+        if (msg.type === 1) { // 新的短视频通知
+          this.$store.commit("addShortVideo", msg.shortVideo);
+          this.eventNewShortVideo(msg.shortVideo);
+        }
+      },
       handleTalkMessage(msg) {
         if (msg.type === 1) { // 新的动态通知
           if (msg.talk.category === 'private') {
@@ -903,6 +913,10 @@
       },
       eventGroupPlayAudio(msg) {
         this.$eventBus.$emit('play-group-audio', msg);
+      },
+      eventNewShortVideo(shortVideo) {
+        console.log('newShortVideo-event');
+        this.$eventBus.$emit('new-short-video', shortVideo);
       },
       // 切换主题选择器显示状态
       toggleThemeSelector() {
