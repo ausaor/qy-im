@@ -40,8 +40,10 @@ import xyz.qy.implatform.vo.TalkMessageVO;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @description: 动态评论
@@ -184,9 +186,16 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
             msgInfo.setTalk(talk);
             msgInfo.setTalkComment(talkComment);
 
+            List<Long> userIds = new ArrayList<>();
+            userIds.add(talk.getUserId());
+            if (talkComment.getReplyUserId() != null) {
+                userIds.add(talkComment.getReplyUserId());
+            }
+            userIds = userIds.stream().distinct().collect(Collectors.toList());
+
             IMTalkMessage<TalkMessageVO> sendMessage = new IMTalkMessage<>();
             sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
-            sendMessage.setRecvIds(Collections.singletonList(talkComment.getReplyUserId() != null ? talkComment.getReplyUserId() : talk.getUserId()));
+            sendMessage.setRecvIds(userIds);
             sendMessage.setSendResult(false);
             sendMessage.setData(msgInfo);
             imClient.sendTalkMessage(sendMessage);

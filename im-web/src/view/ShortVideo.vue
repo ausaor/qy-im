@@ -3,18 +3,44 @@
     <!-- 左侧菜单栏 -->
     <div class="side-menu">
       <div
-        v-for="item in menuItems"
-        :key="item.path"
         class="menu-item"
-        :class="{ active: currentPath === item.path }"
-        @click="navigateTo(item)"
+        :class="{ active: currentPath === '/home/shortVideo/recom' }"
+        @click="navigateTo('/home/shortVideo/recom')"
       >
-        <span
-          class="menu-icon"
-          :class="item.icon"
-          :style="{ color: item.color }"
-        ></span>
-        <span class="menu-label">{{ item.label }}</span>
+        <span class="menu-icon iconfont icon-tuijian1" style="color: #FF5E5B"></span>
+        <span class="menu-label">推荐</span>
+      </div>
+      <div
+        class="menu-item"
+        :class="{ active: currentPath === '/home/shortVideo/star' }"
+        @click="navigateTo('/home/shortVideo/star')"
+      >
+        <span class="menu-icon iconfont icon-tuijian" style="color: #FFB800"></span>
+        <span class="menu-label">星选</span>
+      </div>
+      <div
+        class="menu-item"
+        :class="{ active: currentPath === '/home/shortVideo/follow' }"
+        @click="navigateTo('/home/shortVideo/follow')"
+      >
+        <span class="menu-icon iconfont icon-guanzhu" style="color: #FF9F43"></span>
+        <span class="menu-label">关注</span>
+      </div>
+      <div
+        class="menu-item"
+        :class="{ active: currentPath === '/home/shortVideo/friend' }"
+        @click="navigateTo('/home/shortVideo/friend')"
+      >
+        <span class="menu-icon iconfont icon-friend" style="color: #0ABDE3"></span>
+        <span class="menu-label">朋友</span>
+      </div>
+      <div
+        class="menu-item"
+        :class="{ active: currentPath === '/home/shortVideo/my' }"
+        @click="navigateTo('/home/shortVideo/my')"
+      >
+        <span class="menu-icon iconfont icon-person" style="color: #A55EEA"></span>
+        <span class="menu-label">我的</span>
       </div>
     </div>
 
@@ -30,43 +56,6 @@ export default {
   name: 'ShortVideo',
   data() {
     return {
-      menuItems: [
-        {
-          key: 'recom',
-          label: '推荐',
-          path: '/home/shortVideo/recom',
-          icon: 'iconfont icon-tuijian1',
-          color: '#FF5E5B'
-        },
-        {
-          key: 'star',
-          label: '星选',
-          path: '/home/shortVideo/star',
-          icon: 'iconfont icon-tuijian',
-          color: '#FFB800'
-        },
-        {
-          key: 'follow',
-          label: '关注',
-          path: '/home/shortVideo/follow',
-          icon: 'iconfont icon-guanzhu',
-          color: '#FF9F43'
-        },
-        {
-          key: 'friend',
-          label: '朋友',
-          path: '/home/shortVideo/friend',
-          icon: 'iconfont icon-friend',
-          color: '#0ABDE3'
-        },
-        {
-          key: 'my',
-          label: '我的',
-          path: '/home/shortVideo/my',
-          icon: 'iconfont icon-person',
-          color: '#A55EEA'
-        }
-      ]
     }
   },
   computed: {
@@ -74,11 +63,22 @@ export default {
       return this.$route.path
     },
   },
+  mounted() {
+    this.fetchFollowList()
+  },
   methods: {
-    navigateTo(item) {
-      if (this.$route.path !== item.path) {
-        this.$router.push(item.path)
+    navigateTo(path) {
+      if (this.$route.path !== path) {
+        this.$router.push(path)
       }
+    },
+    fetchFollowList() {
+      this.$http({
+        url: '/follow/list',
+        method: 'get'
+      }).then((data) => {
+          this.$store.commit('setFollows', data)
+      })
     },
   }
 }

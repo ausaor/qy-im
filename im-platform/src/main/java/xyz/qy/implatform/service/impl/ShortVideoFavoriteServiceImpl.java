@@ -7,23 +7,32 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xyz.qy.imclient.IMClient;
+import xyz.qy.imcommon.model.IMShortVideoMessage;
+import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.dto.ShortVideoFavoriteAddDTO;
 import xyz.qy.implatform.dto.ShortVideoFavoriteDelDTO;
 import xyz.qy.implatform.dto.ShortVideoFavoriteQueryDTO;
-import xyz.qy.implatform.dto.ShortVideoFavoriteUpdateDTO;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoFavorite;
+import xyz.qy.implatform.entity.ShortVideoNotify;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.NotifyActionTypeEnum;
+import xyz.qy.implatform.enums.RecordTypeEnum;
+import xyz.qy.implatform.enums.ShortVideoNotifyMsgTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.service.IShortVideoFavoriteService;
+import xyz.qy.implatform.service.IShortVideoNotifyService;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
+import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoFavoriteVO;
+import xyz.qy.implatform.vo.ShortVideoMessageVO;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -41,6 +50,12 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
 
     @Resource
     private IUserService userService;
+
+    @Resource
+    private IShortVideoNotifyService shortVideoNotifyService;
+
+    @Resource
+    private IMClient imClient;
 
     @Override
     public List<ShortVideoFavoriteVO> listShortVideoFavorites(ShortVideoFavoriteQueryDTO dto) {
@@ -75,8 +90,9 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
     @Transactional
     @Override
     public ShortVideoFavoriteVO addShortVideoFavorite(ShortVideoFavoriteAddDTO dto) {
-        Long userId = SessionContext.getSession().getUserId();
-        checkVideo(dto.getVideoId());
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        ShortVideo shortVideo = checkVideo(dto.getVideoId());
         checkDuplicate(userId, dto.getVideoId(), null);
         ShortVideoFavorite favorite = new ShortVideoFavorite();
         favorite.setUserId(userId);
@@ -86,6 +102,30 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
         updateVideoFavoriteCount(dto.getVideoId());
         ShortVideoFavoriteVO vo = BeanUtils.copyProperties(favorite, ShortVideoFavoriteVO.class);
         vo.setIsOwner(Boolean.TRUE);
+
+        if (!userId.equals(shortVideo.getUserId())) {
+            ShortVideoNotify shortVideoNotify = new ShortVideoNotify();
+            shortVideoNotify.setUserId(shortVideo.getUserId());
+            shortVideoNotify.setVideoId(shortVideo.getId());
+            shortVideoNotify.setTargetId(shortVideo.getObjectId());
+            shortVideoNotify.setTargetType(shortVideo.getType());
+            shortVideoNotify.setActionType(NotifyActionTypeEnum.COLLECT.getCode());
+            shortVideoNotify.setOperateUserId(userId);
+            shortVideoNotify.setRecordId(favorite.getId());
+            shortVideoNotify.setRecordType(RecordTypeEnum.COLLECT.getCode());
+            shortVideoNotifyService.save(shortVideoNotify);
+
+            ShortVideoMessageVO msgInfo = new ShortVideoMessageVO();
+            msgInfo.setType(ShortVideoNotifyMsgTypeEnum.COLLECT.getCode());
+            ShortVideoFavoriteVO shortVideoFavoriteVO = BeanUtils.copyProperties(favorite, ShortVideoFavoriteVO.class);
+            msgInfo.setShortVideoFavorite(shortVideoFavoriteVO);
+            IMShortVideoMessage<ShortVideoMessageVO> sendMessage = new IMShortVideoMessage<>();
+            sendMessage.setData(msgInfo);
+            sendMessage.setRecvIds(List.of(shortVideo.getUserId()));
+            sendMessage.setSendResult(false);
+            sendMessage.setSender(new IMUserInfo(userId, session.getTerminal()));
+            imClient.sendShortVideoMessage(sendMessage);
+        }
         return vo;
     }
 
@@ -182,11 +222,12 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
         vos.forEach(item -> item.setIsOwner(userId.equals(item.getUserId())));
     }
 
-    private void checkVideo(Long videoId) {
+    private ShortVideo checkVideo(Long videoId) {
         ShortVideo shortVideo = shortVideoMapper.selectById(videoId);
         if (ObjectUtil.isNull(shortVideo) || Boolean.TRUE.equals(shortVideo.getDeleted())) {
             throw new GlobalException("短视频不存在");
         }
+        return shortVideo;
     }
 
     private void checkDuplicate(Long userId, Long videoId, Long currentId) {

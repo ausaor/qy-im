@@ -5,14 +5,13 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum NotifyActionTypeEnum {
+public enum RecordTypeEnum {
     COMMENT(1, "评论"),
 
     LIKE(2, "点赞"),
 
     COLLECT(3, "收藏"),
 
-    COMMENT_LIKE(4, "评论点赞"),
     ;
 
     private final Integer code;

@@ -7,23 +7,33 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xyz.qy.imclient.IMClient;
+import xyz.qy.imcommon.model.IMShortVideoMessage;
+import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.dto.ShortVideoLikeAddDTO;
 import xyz.qy.implatform.dto.ShortVideoLikeDelDTO;
 import xyz.qy.implatform.dto.ShortVideoLikeQueryDTO;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoLike;
+import xyz.qy.implatform.entity.ShortVideoNotify;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.NotifyActionTypeEnum;
+import xyz.qy.implatform.enums.RecordTypeEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
+import xyz.qy.implatform.enums.ShortVideoNotifyMsgTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoLikeMapper;
 import xyz.qy.implatform.service.IShortVideoLikeService;
+import xyz.qy.implatform.service.IShortVideoNotifyService;
 import xyz.qy.implatform.service.IShortVideoService;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
+import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoLikeVO;
+import xyz.qy.implatform.vo.ShortVideoMessageVO;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -42,6 +52,12 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
 
     @Resource
     private IUserService userService;
+
+    @Resource
+    private IShortVideoNotifyService shortVideoNotifyService;
+
+    @Resource
+    private IMClient imClient;
 
     @Override
     public List<ShortVideoLikeVO> listShortVideoLikes(ShortVideoLikeQueryDTO dto) {
@@ -65,7 +81,8 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
     @Transactional
     @Override
     public ShortVideoLikeVO addShortVideoLike(ShortVideoLikeAddDTO dto) {
-        Long userId = SessionContext.getSession().getUserId();
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
         ShortVideo shortVideo = checkVideo(dto.getVideoId());
         if (!shortVideo.getStatus().equals(ReviewEnum.REVIEWED.getCode())) {
             throw new GlobalException("视频未审核通过，请稍后再试");
@@ -85,6 +102,30 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
         updateVideoLikeCount(dto.getVideoId());
         ShortVideoLikeVO vo = BeanUtils.copyProperties(like, ShortVideoLikeVO.class);
         vo.setIsOwner(Boolean.TRUE);
+
+        if (!userId.equals(shortVideo.getUserId())) {
+            ShortVideoNotify shortVideoNotify = new ShortVideoNotify();
+            shortVideoNotify.setUserId(shortVideo.getUserId());
+            shortVideoNotify.setVideoId(shortVideo.getId());
+            shortVideoNotify.setTargetId(shortVideo.getObjectId());
+            shortVideoNotify.setTargetType(shortVideo.getType());
+            shortVideoNotify.setActionType(NotifyActionTypeEnum.LIKE.getCode());
+            shortVideoNotify.setOperateUserId(userId);
+            shortVideoNotify.setRecordId(like.getId());
+            shortVideoNotify.setRecordType(RecordTypeEnum.LIKE.getCode());
+            shortVideoNotifyService.save(shortVideoNotify);
+
+            ShortVideoMessageVO msgInfo = new ShortVideoMessageVO();
+            msgInfo.setType(ShortVideoNotifyMsgTypeEnum.LIKE.getCode());
+            ShortVideoLikeVO shortVideoLikeVO = BeanUtils.copyProperties(like, ShortVideoLikeVO.class);
+            msgInfo.setShortVideoLike(shortVideoLikeVO);
+            IMShortVideoMessage<ShortVideoMessageVO> sendMessage = new IMShortVideoMessage<>();
+            sendMessage.setData(msgInfo);
+            sendMessage.setRecvIds(List.of(shortVideo.getUserId()));
+            sendMessage.setSendResult(false);
+            sendMessage.setSender(new IMUserInfo(userId, session.getTerminal()));
+            imClient.sendShortVideoMessage(sendMessage);
+        }
         return vo;
     }
 

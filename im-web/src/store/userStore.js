@@ -10,7 +10,8 @@ export default {
 			friend: {},  // 好友信息
 			mode: "video", // 模式 video:视频 voice:语音
 			state: 	RTC_STATE.FREE // FREE:空闲  WAIT_CALL:呼叫方等待 WAIT_ACCEPT: 被呼叫方等待接听  CHATING:聊天中
-		}
+		},
+		followMap: new Map()
 	},
 
 	mutations: {
@@ -22,6 +23,13 @@ export default {
 		},
 		setRtcState(state,rtcState){
 			state.rtcInfo.state = rtcState;
+		},
+		setFollows(state,follows){
+			const map = new Map()
+			follows.forEach(item => {
+				map.set(item.targetId + '-' + item.type, item)
+			})
+			state.followMap = map
 		},
 		clear(state){
 			state.userInfo = {};

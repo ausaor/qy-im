@@ -34,6 +34,7 @@
               :name="item.targetName"
               :size="sidebarCollapsed ? 42 : 36"
             ></head-image>
+            <span v-if="getNewVideoCount(item) > 0" class="new-badge">{{ getNewVideoCount(item) }}</span>
           </div>
           <div class="follow-info" v-if="!sidebarCollapsed">
             <div class="follow-name">
@@ -160,6 +161,11 @@ export default {
         template: '群聊模板'
       }
       return nameMap[type] || type
+    },
+    getNewVideoCount(item) {
+      const key = item.targetId + '-' + item.type
+      const videos = this.$store.state.shortVideoStore.shortVideoMap.get(key)
+      return videos ? videos.length : 0
     }
   }
 }
@@ -270,6 +276,24 @@ export default {
 
   .follow-avatar {
     flex-shrink: 0;
+    position: relative;
+
+    .new-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      min-width: 18px;
+      height: 18px;
+      line-height: 18px;
+      border-radius: 9px;
+      background: #F56C6C;
+      color: #fff;
+      font-size: 11px;
+      text-align: center;
+      padding: 0 4px;
+      white-space: nowrap;
+      box-shadow: 0 0 0 2px #fff;
+    }
   }
 
   .follow-info {

@@ -17,6 +17,7 @@ public enum ShortVideoNotifyMsgTypeEnum {
 
     COLLECT(4, "收藏"),
 
+    COMMENT_LIKE(5, "评论点赞"),
     ;
 
 

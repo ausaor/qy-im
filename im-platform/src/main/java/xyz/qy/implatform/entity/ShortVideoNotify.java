@@ -34,6 +34,15 @@ public class ShortVideoNotify {
     @TableField("is_read")
     private Boolean isRead;
 
+    @TableField("operate_user_id")
+    private Long operateUserId;
+
+    @TableField("record_id")
+    private Long recordId;
+
+    @TableField("record_type")
+    private Integer recordType;
+
     @TableField("deleted")
     private Boolean deleted;
 

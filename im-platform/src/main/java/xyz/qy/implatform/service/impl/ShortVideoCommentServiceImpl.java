@@ -7,6 +7,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xyz.qy.imclient.IMClient;
+import xyz.qy.imcommon.model.IMShortVideoMessage;
+import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.dto.ShortVideoCommentAddDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentDelDTO;
@@ -14,9 +17,13 @@ import xyz.qy.implatform.dto.ShortVideoCommentQueryDTO;
 import xyz.qy.implatform.entity.CharacterAvatar;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoComment;
+import xyz.qy.implatform.entity.ShortVideoNotify;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.NotifyActionTypeEnum;
+import xyz.qy.implatform.enums.RecordTypeEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
+import xyz.qy.implatform.enums.ShortVideoNotifyMsgTypeEnum;
 import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoCommentMapper;
@@ -24,6 +31,7 @@ import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.IShortVideoCommentService;
+import xyz.qy.implatform.service.IShortVideoNotifyService;
 import xyz.qy.implatform.service.IShortVideoService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.service.IUserService;
@@ -35,8 +43,10 @@ import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.ShortVideoCommentVO;
+import xyz.qy.implatform.vo.ShortVideoMessageVO;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -70,6 +80,12 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
 
     @Resource
     private ICharacterAvatarService characterAvatarService;
+
+    @Resource
+    private IShortVideoNotifyService shortVideoNotifyService;
+
+    @Resource
+    private IMClient imClient;
 
     @Override
     public List<ShortVideoCommentVO> listShortVideoComments(ShortVideoCommentQueryDTO dto) {
@@ -204,6 +220,46 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
         shortVideo.setCommentCount(commentCount);
         shortVideoMapper.updateById(shortVideo);
 
+        // 别人评论作者的作品 || 回复别人的评论 才需要通知
+        if (!userId.equals(shortVideo.getUserId()) || !userId.equals(comment.getReplyToUserId())) {
+            ShortVideoNotify shortVideoNotify = new ShortVideoNotify();
+            shortVideoNotify.setUserId(comment.getReplyToUserId() != null ? comment.getReplyToUserId() : shortVideo.getUserId());
+            shortVideoNotify.setVideoId(shortVideo.getId());
+            shortVideoNotify.setTargetId(shortVideo.getObjectId());
+            shortVideoNotify.setTargetType(shortVideo.getType());
+            shortVideoNotify.setActionType(NotifyActionTypeEnum.COMMENT.getCode());
+            shortVideoNotify.setOperateUserId(userId);
+            shortVideoNotify.setRecordId(comment.getId());
+            shortVideoNotify.setRecordType(RecordTypeEnum.COMMENT.getCode());
+            shortVideoNotifyService.save(shortVideoNotify);
+
+            // 添加作者的评论通知
+            if (!shortVideoNotify.getUserId().equals(shortVideo.getUserId())) {
+                shortVideoNotify.setId(null);
+                shortVideoNotify.setUserId(shortVideo.getUserId());
+                shortVideoNotifyService.save(shortVideoNotify);
+            }
+
+            // 需要通知的用户
+            List<Long> userIds = new ArrayList<>();
+            userIds.add(shortVideo.getUserId());
+            if (comment.getReplyToUserId() != null) {
+                userIds.add(comment.getReplyToUserId());
+            }
+            userIds = userIds.stream().distinct().collect(Collectors.toList());
+
+            ShortVideoMessageVO msgInfo = new ShortVideoMessageVO();
+            msgInfo.setType(ShortVideoNotifyMsgTypeEnum.COMMENT.getCode());
+            ShortVideoCommentVO shortVideoCommentVO = BeanUtils.copyProperties(comment, ShortVideoCommentVO.class);
+            msgInfo.setShortVideoComment(shortVideoCommentVO);
+            IMShortVideoMessage<ShortVideoMessageVO> sendMessage = new IMShortVideoMessage<>();
+            sendMessage.setData(msgInfo);
+            sendMessage.setRecvIds(userIds);
+            sendMessage.setSendResult(false);
+            sendMessage.setSender(new IMUserInfo(userId, session.getTerminal()));
+            imClient.sendShortVideoMessage(sendMessage);
+        }
+
         return vo;
     }
 
@@ -230,6 +286,7 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
         return this.count(wrapper);
     }
 
+    @Transactional
     @Override
     public void addCommentLike(Long commentId) {
         UserSession session = SessionContext.getSession();
@@ -238,9 +295,41 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
             throw new GlobalException("您已点赞过该评论");
         }
         ShortVideoComment comment = this.getById(commentId);
+        if (ObjectUtil.isNull(comment) || comment.getDeleted()) {
+            throw new GlobalException("评论不存在");
+        }
+
+        ShortVideo shortVideo = shortVideoMapper.selectById(comment.getVideoId());
+        if (ObjectUtil.isNull(shortVideo) || shortVideo.getDeleted()) {
+            throw new GlobalException("短视频不存在");
+        }
         redisCache.setCacheObject(RedisKey.IM_SHORT_COMMENT_LIKE + userId + ":" + commentId, "1",  24, TimeUnit.HOURS);
         comment.setLikeCount(comment.getLikeCount() + 1);
         this.updateById(comment);
+
+        if (!userId.equals(comment.getUserId())) {
+            ShortVideoNotify shortVideoNotify = new ShortVideoNotify();
+            shortVideoNotify.setUserId(comment.getUserId());
+            shortVideoNotify.setVideoId(shortVideo.getId());
+            shortVideoNotify.setTargetId(shortVideo.getObjectId());
+            shortVideoNotify.setTargetType(shortVideo.getType());
+            shortVideoNotify.setActionType(NotifyActionTypeEnum.COMMENT_LIKE.getCode());
+            shortVideoNotify.setOperateUserId(userId);
+            shortVideoNotify.setRecordId(comment.getId());
+            shortVideoNotify.setRecordType(RecordTypeEnum.COMMENT.getCode());
+            shortVideoNotifyService.save(shortVideoNotify);
+
+            ShortVideoMessageVO msgInfo = new ShortVideoMessageVO();
+            ShortVideoCommentVO shortVideoCommentVO = BeanUtils.copyProperties(comment, ShortVideoCommentVO.class);
+            msgInfo.setShortVideoComment(shortVideoCommentVO);
+            msgInfo.setType(ShortVideoNotifyMsgTypeEnum.COMMENT_LIKE.getCode());
+            IMShortVideoMessage<ShortVideoMessageVO> sendMessage = new IMShortVideoMessage<>();
+            sendMessage.setData(msgInfo);
+            sendMessage.setRecvIds(List.of(comment.getUserId()));
+            sendMessage.setSendResult(false);
+            sendMessage.setSender(new IMUserInfo(userId, session.getTerminal()));
+            imClient.sendShortVideoMessage(sendMessage);
+        }
     }
 
     private LambdaQueryWrapper<ShortVideoComment> buildQueryWrapper(ShortVideoCommentQueryDTO dto) {
