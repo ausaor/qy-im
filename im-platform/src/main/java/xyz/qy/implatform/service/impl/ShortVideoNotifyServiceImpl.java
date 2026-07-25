@@ -2,20 +2,17 @@ package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import xyz.qy.implatform.dto.ShortVideoNotifyAddDTO;
 import xyz.qy.implatform.dto.ShortVideoNotifyQueryDTO;
-import xyz.qy.implatform.dto.ShortVideoNotifyUpdateDTO;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoComment;
 import xyz.qy.implatform.entity.ShortVideoNotify;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.RecordTypeEnum;
-import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoCommentMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.mapper.ShortVideoNotifyMapper;
@@ -50,19 +47,25 @@ public class ShortVideoNotifyServiceImpl extends ServiceImpl<ShortVideoNotifyMap
     private UserMapper userMapper;
 
     @Override
-    public ShortVideoNotifyVO getShortVideoNotify(Long id) {
-        ShortVideoNotify notify = this.getById(id);
-        if (ObjectUtil.isNull(notify)) {
-            throw new GlobalException("短视频通知不存在");
-        }
-        return BeanUtils.copyProperties(notify, ShortVideoNotifyVO.class);
+    public void readedShortVideoNotify(Long targetId, String targetType) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        LambdaUpdateWrapper<ShortVideoNotify> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ShortVideoNotify::getUserId, userId);
+        updateWrapper.eq(ShortVideoNotify::getTargetId, targetId);
+        updateWrapper.eq(ShortVideoNotify::getTargetType, targetType);
+        updateWrapper.set(ShortVideoNotify::getIsRead, true);
+        this.update(updateWrapper);
     }
 
     @Override
-    public List<ShortVideoNotifyVO> listShortVideoNotify(ShortVideoNotifyQueryDTO dto) {
-        LambdaQueryWrapper<ShortVideoNotify> wrapper = buildQueryWrapper(dto);
-        wrapper.orderByDesc(ShortVideoNotify::getCreateTime);
-        return BeanUtils.copyPropertiesList(this.list(wrapper), ShortVideoNotifyVO.class);
+    public void readedAllShortVideoNotify() {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+        LambdaUpdateWrapper<ShortVideoNotify> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ShortVideoNotify::getUserId, userId);
+        updateWrapper.set(ShortVideoNotify::getIsRead, true);
+        this.update(updateWrapper);
     }
 
     @Override
@@ -133,51 +136,5 @@ public class ShortVideoNotifyServiceImpl extends ServiceImpl<ShortVideoNotifyMap
         }
 
         return PageResultVO.<List<ShortVideoNotifyVO>>builder().data(vos).total(page.getTotal()).build();
-    }
-
-    @Transactional
-    @Override
-    public ShortVideoNotifyVO addShortVideoNotify(ShortVideoNotifyAddDTO dto) {
-        ShortVideoNotify notify = BeanUtils.copyProperties(dto, ShortVideoNotify.class);
-        if (ObjectUtil.isNull(notify.getIsRead())) {
-            notify.setIsRead(Boolean.FALSE);
-        }
-        notify.setDeleted(Boolean.FALSE);
-        this.save(notify);
-        return BeanUtils.copyProperties(notify, ShortVideoNotifyVO.class);
-    }
-
-    @Transactional
-    @Override
-    public ShortVideoNotifyVO updateShortVideoNotify(ShortVideoNotifyUpdateDTO dto) {
-        ShortVideoNotify existed = this.getById(dto.getId());
-        if (ObjectUtil.isNull(existed)) {
-            throw new GlobalException("短视频通知不存在");
-        }
-        ShortVideoNotify notify = BeanUtils.copyProperties(dto, ShortVideoNotify.class);
-        this.updateById(notify);
-        return getShortVideoNotify(dto.getId());
-    }
-
-    @Transactional
-    @Override
-    public void deleteShortVideoNotify(Long id) {
-        ShortVideoNotify notify = this.getById(id);
-        if (ObjectUtil.isNull(notify)) {
-            throw new GlobalException("短视频通知不存在");
-        }
-        this.removeById(id);
-    }
-
-    @Transactional
-    @Override
-    public void batchDeleteShortVideoNotify(List<Long> ids) {
-        this.removeByIds(ids);
-    }
-
-    private LambdaQueryWrapper<ShortVideoNotify> buildQueryWrapper(ShortVideoNotifyQueryDTO dto) {
-        LambdaQueryWrapper<ShortVideoNotify> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ObjectUtil.isNotNull(dto.getRecordType()), ShortVideoNotify::getRecordType, dto.getRecordType());
-        return wrapper;
     }
 }

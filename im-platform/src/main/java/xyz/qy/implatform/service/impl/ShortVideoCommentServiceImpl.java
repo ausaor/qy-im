@@ -298,7 +298,8 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
                 .eq(ShortVideoNotify::getActionType, NotifyActionTypeEnum.COMMENT.getCode())
                 .eq(ShortVideoNotify::getRecordId, commentId)
                 .eq(ShortVideoNotify::getRecordType, RecordTypeEnum.COMMENT.getCode())
-                .set(ShortVideoNotify::getDeleted, true);
+                .set(ShortVideoNotify::getDeleted, true)
+                .set(ShortVideoNotify::getUpdateTime, new Date());
         shortVideoNotifyService.update(wrapper);
     }
 

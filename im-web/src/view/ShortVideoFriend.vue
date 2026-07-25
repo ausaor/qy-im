@@ -138,7 +138,12 @@ export default {
     },
     handleFriendClick(item) {
       this.currentFriend = { ...item }
-    }
+    },
+    getNewVideoCount(item) {
+      const key = item.id + '-user'
+      const videos = this.$store.state.shortVideoStore.shortVideoMap.get(key)
+      return videos ? videos.length : 0
+    },
   }
 }
 

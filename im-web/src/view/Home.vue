@@ -762,6 +762,8 @@
         if (msg.type === 1) { // 新的短视频通知
           this.$store.commit("addShortVideo", msg.shortVideo);
           this.eventNewShortVideo(msg.shortVideo);
+        } else if ([2,3,4,5].includes(msg.type)) {
+          this.$store.commit("addShortVideoNotify", msg)
         }
       },
       handleTalkMessage(msg) {

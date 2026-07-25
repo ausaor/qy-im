@@ -269,7 +269,8 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
                 .eq(ShortVideoNotify::getActionType, NotifyActionTypeEnum.LIKE.getCode())
                 .eq(ShortVideoNotify::getRecordId, likeId)
                 .eq(ShortVideoNotify::getRecordType, RecordTypeEnum.LIKE.getCode())
-                .set(ShortVideoNotify::getDeleted, true);
+                .set(ShortVideoNotify::getDeleted, true)
+                .set(ShortVideoNotify::getUpdateTime, new Date());
         shortVideoNotifyService.update(wrapper);
     }
 
@@ -285,7 +286,8 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
                 .eq(ShortVideoNotify::getActionType, NotifyActionTypeEnum.LIKE.getCode())
                 .in(ShortVideoNotify::getRecordId, likeIds)
                 .eq(ShortVideoNotify::getRecordType, RecordTypeEnum.LIKE.getCode())
-                .set(ShortVideoNotify::getDeleted, true);
+                .set(ShortVideoNotify::getDeleted, true)
+                .set(ShortVideoNotify::getUpdateTime, new Date());
         shortVideoNotifyService.update(wrapper);
     }
 

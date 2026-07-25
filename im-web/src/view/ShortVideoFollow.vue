@@ -139,6 +139,10 @@ export default {
         targetName: item.targetName,
         targetAvatar: item.targetAvatar
       }
+      if (this.getNewVideoCount(item) > 0) {
+        this.readedTargetNotify(item.targetId, item.type);
+      }
+      this.$store.commit('resetShortVideo', item.targetId + '-' + item.type);
     },
     isActiveFollow(item) {
       return this.currentFollow.objectId === item.targetId &&
@@ -166,6 +170,12 @@ export default {
       const key = item.targetId + '-' + item.type
       const videos = this.$store.state.shortVideoStore.shortVideoMap.get(key)
       return videos ? videos.length : 0
+    },
+    readedTargetNotify(targetId, targetType) {
+      this.$http({
+        url: `/shortVideoNotify/readed?targetId=${targetId}&targetType=${targetType}`,
+        method: 'post'
+      })
     }
   }
 }

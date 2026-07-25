@@ -16,6 +16,7 @@ export default {
 		starTabName: '星选',
 		groupId: null,
 		shortVideoMap: new Map(),
+		shortVideoNotify: []
 	},
 
 	mutations: {
@@ -111,6 +112,19 @@ export default {
 			}
 			state.shortVideoMap = newMap;
 		},
+		resetShortVideo(state, key) {
+			const newMap = new Map(state.shortVideoMap);
+			if (newMap.has(key)) {
+				newMap.set(key, []);
+				state.shortVideoMap = newMap;
+			}
+		},
+		addShortVideoNotify(state, msg) {
+			state.shortVideoNotify.push(msg);
+		},
+		resetShortVideoNotify(state) {
+			state.shortVideoNotify = [];
+		}
 	},
 
 	getters: {

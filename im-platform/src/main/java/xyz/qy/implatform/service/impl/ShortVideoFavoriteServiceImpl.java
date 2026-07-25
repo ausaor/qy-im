@@ -266,7 +266,8 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
                 .eq(ShortVideoNotify::getActionType, NotifyActionTypeEnum.COLLECT.getCode())
                 .eq(ShortVideoNotify::getRecordId, favoriteId)
                 .eq(ShortVideoNotify::getRecordType, RecordTypeEnum.COLLECT.getCode())
-                .set(ShortVideoNotify::getDeleted, true);
+                .set(ShortVideoNotify::getDeleted, true)
+                .set(ShortVideoNotify::getUpdateTime, new Date());
         shortVideoNotifyService.update(wrapper);
     }
 
@@ -282,7 +283,8 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
                 .eq(ShortVideoNotify::getActionType, NotifyActionTypeEnum.COLLECT.getCode())
                 .in(ShortVideoNotify::getRecordId, favoriteIds)
                 .eq(ShortVideoNotify::getRecordType, RecordTypeEnum.COLLECT.getCode())
-                .set(ShortVideoNotify::getDeleted, true);
+                .set(ShortVideoNotify::getDeleted, true)
+                .set(ShortVideoNotify::getUpdateTime, new Date());
         shortVideoNotifyService.update(wrapper);
     }
 
