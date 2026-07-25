@@ -1,22 +1,11 @@
 package xyz.qy.implatform.dto;
 
 import lombok.Data;
+import xyz.qy.implatform.enums.RecordTypeEnum;
+import xyz.qy.implatform.enums.ValidEnum;
 
 @Data
 public class ShortVideoNotifyQueryDTO {
-    private Long id;
-
-    private Long userId;
-
-    private Long videoId;
-
-    private Long targetId;
-
-    private String targetType;
-
-    private Integer actionType;
-
-    private Boolean isRead;
-
-    private Boolean deleted;
+    @ValidEnum(enumClass = RecordTypeEnum.class, property = "code", message = "记录类型错误")
+    private Integer recordType;
 }

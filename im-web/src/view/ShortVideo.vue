@@ -42,6 +42,14 @@
         <span class="menu-icon iconfont icon-person" style="color: #A55EEA"></span>
         <span class="menu-label">我的</span>
       </div>
+      <div
+          class="menu-item"
+          :class="{ active: currentPath === '/home/shortVideo/notify' }"
+          @click="navigateTo('/home/shortVideo/notify')"
+      >
+        <span class="menu-icon iconfont icon-xiaoxi" style="color: #1DD1A1"></span>
+        <span class="menu-label">消息</span>
+      </div>
     </div>
 
     <!-- 右侧内容区 -->

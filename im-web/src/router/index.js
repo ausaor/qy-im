@@ -86,6 +86,11 @@ export default new VueRouter({
                   path: "/home/shortVideo/my",
                   component: () => import("../view/ShortVideoMy.vue"),
               },
+              {
+                  name: "ShortVideoNotify",
+                  path: "/home/shortVideo/notify",
+                  component: () => import("../view/ShortVideoNotify.vue"),
+              },
           ]
         },
         {

@@ -75,6 +75,16 @@ public class ShortVideoCommentVO {
     private String replyToUserNickname;
 
     /**
+     * 被回复的评论内容
+     */
+    private String replyToCommentContent;
+
+    /**
+     * 被回复的评论类型 0:文字 1:图片 5:语音台词
+     */
+    private Integer replyToCommentType;
+
+    /**
      * 消息类型 0:文字 1:图片 5:语音台词
      */
     private Integer type;
