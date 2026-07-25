@@ -2,6 +2,7 @@ package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
@@ -266,12 +267,14 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
     @Transactional
     @Override
     public void deleteShortVideoComment(ShortVideoCommentDelDTO dto) {
+        Long userId = SessionContext.getSession().getUserId();
         ShortVideoComment comment = this.getById(dto.getId());
         checkExists(comment);
         checkOwner(comment);
         comment.setDeleted(true);
         comment.setUpdateTime(new Date());
         this.updateById(comment);
+        removeShortVideoNotify(userId, comment.getId());
 
         ShortVideo shortVideo = shortVideoMapper.selectById(comment.getVideoId());
         shortVideo.setCommentCount(this.getCommentCountByVideoId(shortVideo.getId()));
@@ -284,6 +287,19 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
         wrapper.eq(ShortVideoComment::getVideoId, videoId);
         wrapper.eq(ShortVideoComment::getDeleted, false);
         return this.count(wrapper);
+    }
+
+    /**
+     * 删除当前用户产生的短视频评论通知。
+     */
+    private void removeShortVideoNotify(Long userId, Long commentId) {
+        LambdaUpdateWrapper<ShortVideoNotify> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(ShortVideoNotify::getOperateUserId, userId)
+                .eq(ShortVideoNotify::getActionType, NotifyActionTypeEnum.COMMENT.getCode())
+                .eq(ShortVideoNotify::getRecordId, commentId)
+                .eq(ShortVideoNotify::getRecordType, RecordTypeEnum.COMMENT.getCode())
+                .set(ShortVideoNotify::getDeleted, true);
+        shortVideoNotifyService.update(wrapper);
     }
 
     @Transactional

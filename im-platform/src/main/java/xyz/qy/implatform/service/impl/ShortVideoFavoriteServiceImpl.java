@@ -2,6 +2,7 @@ package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
@@ -140,6 +141,7 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
         ShortVideoFavorite favorite = this.getOne(wrapper);
         checkExists(favorite);
         this.removeById(favorite.getId());
+        removeShortVideoNotify(userId, favorite.getId());
         updateVideoFavoriteCount(videoId);
     }
 
@@ -164,6 +166,7 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
             toDeleteVideoIds.add(videoId);
         }
         this.removeByIds(favoriteIds);
+        removeShortVideoNotifies(userId, favoriteIds);
         for (Long videoId : toDeleteVideoIds) {
             updateVideoFavoriteCount(videoId);
         }
@@ -252,6 +255,35 @@ public class ShortVideoFavoriteServiceImpl extends ServiceImpl<ShortVideoFavorit
         if (!SessionContext.getSession().getUserId().equals(favorite.getUserId())) {
             throw new GlobalException("无权操作");
         }
+    }
+
+    /**
+     * 删除当前用户产生的短视频收藏通知。
+     */
+    private void removeShortVideoNotify(Long userId, Long favoriteId) {
+        LambdaUpdateWrapper<ShortVideoNotify> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(ShortVideoNotify::getOperateUserId, userId)
+                .eq(ShortVideoNotify::getActionType, NotifyActionTypeEnum.COLLECT.getCode())
+                .eq(ShortVideoNotify::getRecordId, favoriteId)
+                .eq(ShortVideoNotify::getRecordType, RecordTypeEnum.COLLECT.getCode())
+                .set(ShortVideoNotify::getDeleted, true);
+        shortVideoNotifyService.update(wrapper);
+    }
+
+    /**
+     * 批量删除当前用户产生的短视频收藏通知。
+     */
+    private void removeShortVideoNotifies(Long userId, List<Long> favoriteIds) {
+        if (CollectionUtils.isEmpty(favoriteIds)) {
+            return;
+        }
+        LambdaUpdateWrapper<ShortVideoNotify> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(ShortVideoNotify::getOperateUserId, userId)
+                .eq(ShortVideoNotify::getActionType, NotifyActionTypeEnum.COLLECT.getCode())
+                .in(ShortVideoNotify::getRecordId, favoriteIds)
+                .eq(ShortVideoNotify::getRecordType, RecordTypeEnum.COLLECT.getCode())
+                .set(ShortVideoNotify::getDeleted, true);
+        shortVideoNotifyService.update(wrapper);
     }
 
     /**

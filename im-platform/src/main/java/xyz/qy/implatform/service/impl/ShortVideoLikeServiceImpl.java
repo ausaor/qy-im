@@ -2,6 +2,7 @@ package xyz.qy.implatform.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
@@ -140,6 +141,7 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
         ShortVideoLike like = this.getOne(wrapper);
         checkExists(like);
         this.removeById(like.getId());
+        removeShortVideoNotify(userId, like.getId());
         updateVideoLikeCount(videoId);
     }
 
@@ -164,6 +166,7 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
             toDeleteVideoIds.add(videoId);
         }
         this.removeByIds(likeIds);
+        removeShortVideoNotifies(userId, likeIds);
         for (Long videoId : toDeleteVideoIds) {
             updateVideoLikeCount(videoId);
         }
@@ -255,6 +258,35 @@ public class ShortVideoLikeServiceImpl extends ServiceImpl<ShortVideoLikeMapper,
         if (!SessionContext.getSession().getUserId().equals(like.getUserId())) {
             throw new GlobalException("无权操作");
         }
+    }
+
+    /**
+     * 删除当前用户产生的短视频点赞通知。
+     */
+    private void removeShortVideoNotify(Long userId, Long likeId) {
+        LambdaUpdateWrapper<ShortVideoNotify> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(ShortVideoNotify::getOperateUserId, userId)
+                .eq(ShortVideoNotify::getActionType, NotifyActionTypeEnum.LIKE.getCode())
+                .eq(ShortVideoNotify::getRecordId, likeId)
+                .eq(ShortVideoNotify::getRecordType, RecordTypeEnum.LIKE.getCode())
+                .set(ShortVideoNotify::getDeleted, true);
+        shortVideoNotifyService.update(wrapper);
+    }
+
+    /**
+     * 批量删除当前用户产生的短视频点赞通知。
+     */
+    private void removeShortVideoNotifies(Long userId, List<Long> likeIds) {
+        if (CollectionUtils.isEmpty(likeIds)) {
+            return;
+        }
+        LambdaUpdateWrapper<ShortVideoNotify> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(ShortVideoNotify::getOperateUserId, userId)
+                .eq(ShortVideoNotify::getActionType, NotifyActionTypeEnum.LIKE.getCode())
+                .in(ShortVideoNotify::getRecordId, likeIds)
+                .eq(ShortVideoNotify::getRecordType, RecordTypeEnum.LIKE.getCode())
+                .set(ShortVideoNotify::getDeleted, true);
+        shortVideoNotifyService.update(wrapper);
     }
 
     /**
