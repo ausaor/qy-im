@@ -21,28 +21,14 @@
       </div>
 
       <div class="friend-list">
-        <div
+        <short-video-friend-item
           v-for="item in filteredFriends"
           :key="item.id"
-          class="friend-item"
-          :class="{ active: currentFriend.id === item.id }"
-          @click="handleFriendClick(item)"
-        >
-          <div class="friend-avatar">
-            <head-image
-              :url="item.headImage"
-              :name="item.nickName"
-              :size="sidebarCollapsed ? 42 : 36"
-              :online="item.online"
-            ></head-image>
-          </div>
-          <div class="friend-info" v-if="!sidebarCollapsed">
-            <div class="friend-name">
-              {{ item.friendRemark || item.nickName }}
-            </div>
-            <div class="friend-signature" v-if="item.signature">{{ item.signature }}</div>
-          </div>
-        </div>
+          :item="item"
+          :collapsed="sidebarCollapsed"
+          :active="currentFriend.id === item.id"
+          @select="handleFriendClick"
+        ></short-video-friend-item>
 
         <div v-if="filteredFriends.length === 0" class="empty-list">
           <i class="el-icon-user"></i>
@@ -69,14 +55,14 @@
 
 <script>
 import ShortVideoPlay from '@/components/shortVideo/ShortVideoPlay.vue'
-import HeadImage from '@/components/common/HeadImage.vue'
+import ShortVideoFriendItem from '@/components/shortVideo/ShortVideoFriendItem.vue'
 import { mapState } from 'vuex'
 
 export default {
   name: 'ShortVideoFriend',
   components: {
     ShortVideoPlay,
-    HeadImage
+    ShortVideoFriendItem
   },
   data() {
     return {
@@ -138,12 +124,7 @@ export default {
     },
     handleFriendClick(item) {
       this.currentFriend = { ...item }
-    },
-    getNewVideoCount(item) {
-      const key = item.id + '-user'
-      const videos = this.$store.state.shortVideoStore.shortVideoMap.get(key)
-      return videos ? videos.length : 0
-    },
+    }
   }
 }
 
@@ -231,54 +212,6 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 6px 0;
-
-  .friend-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    cursor: pointer;
-    transition: background 0.15s;
-    gap: 10px;
-
-    &:hover {
-      background: #f5f7fa;
-    }
-
-    &.active {
-      background: #ecf5ff;
-
-      .friend-name {
-        color: #409EFF;
-      }
-    }
-  }
-
-  .friend-avatar {
-    flex-shrink: 0;
-  }
-
-  .friend-info {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .friend-name {
-    font-size: 14px;
-    color: #303133;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .friend-signature {
-    font-size: 12px;
-    color: #999;
-    margin-top: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 
   .empty-list {
     display: flex;

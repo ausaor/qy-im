@@ -21,29 +21,14 @@
       </div>
 
       <div class="follow-list">
-        <div
+        <short-video-follow-item
           v-for="item in filteredFollowList"
           :key="item.id"
-          class="follow-item"
-          :class="{ active: isActiveFollow(item) }"
-          @click="handleFollowClick(item)"
-        >
-          <div class="follow-avatar">
-            <head-image
-              :url="item.targetAvatar"
-              :name="item.targetName"
-              :size="sidebarCollapsed ? 42 : 36"
-            ></head-image>
-            <span v-if="getNewVideoCount(item) > 0" class="new-badge">{{ getNewVideoCount(item) }}</span>
-          </div>
-          <div class="follow-info" v-if="!sidebarCollapsed">
-            <div class="follow-name">
-              <span class="type-star" :style="{ color: getStarColor(item.type) }">★</span>
-              {{ item.targetName }}
-            </div>
-            <div class="follow-type">{{ getTypeName(item.type) }}</div>
-          </div>
-        </div>
+          :item="item"
+          :collapsed="sidebarCollapsed"
+          :active="isActiveFollow(item)"
+          @select="handleFollowClick"
+        ></short-video-follow-item>
 
         <div v-if="filteredFollowList.length === 0" class="empty-list">
           <i class="el-icon-star-off"></i>
@@ -72,13 +57,13 @@
 
 <script>
 import ShortVideoPlay from '@/components/shortVideo/ShortVideoPlay.vue'
-import HeadImage from '@/components/common/HeadImage.vue'
+import ShortVideoFollowItem from '@/components/shortVideo/ShortVideoFollowItem.vue'
 
 export default {
   name: 'ShortVideoFollow',
   components: {
     ShortVideoPlay,
-    HeadImage
+    ShortVideoFollowItem
   },
   data() {
     return {
@@ -139,43 +124,10 @@ export default {
         targetName: item.targetName,
         targetAvatar: item.targetAvatar
       }
-      if (this.getNewVideoCount(item) > 0) {
-        this.readedTargetNotify(item.targetId, item.type);
-      }
-      this.$store.commit('resetShortVideo', item.targetId + '-' + item.type);
     },
     isActiveFollow(item) {
       return this.currentFollow.objectId === item.targetId &&
              this.currentFollow.type === item.type
-    },
-    getStarColor(type) {
-      const colorMap = {
-        user: '#409EFF',
-        group: '#67C23A',
-        character: '#E6A23C',
-        template: '#9B59B6'
-      }
-      return colorMap[type] || '#999'
-    },
-    getTypeName(type) {
-      const nameMap = {
-        user: '用户',
-        group: '群组',
-        character: '角色',
-        template: '群聊模板'
-      }
-      return nameMap[type] || type
-    },
-    getNewVideoCount(item) {
-      const key = item.targetId + '-' + item.type
-      const videos = this.$store.state.shortVideoStore.shortVideoMap.get(key)
-      return videos ? videos.length : 0
-    },
-    readedTargetNotify(targetId, targetType) {
-      this.$http({
-        url: `/shortVideoNotify/readed?targetId=${targetId}&targetType=${targetType}`,
-        method: 'post'
-      })
     }
   }
 }
@@ -262,77 +214,6 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: 6px 0;
-
-  .follow-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    cursor: pointer;
-    transition: background 0.15s;
-    gap: 10px;
-
-    &:hover {
-      background: #f5f7fa;
-    }
-
-    &.active {
-      background: #ecf5ff;
-
-      .follow-name {
-        color: #409EFF;
-      }
-    }
-  }
-
-  .follow-avatar {
-    flex-shrink: 0;
-    position: relative;
-
-    .new-badge {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      min-width: 18px;
-      height: 18px;
-      line-height: 18px;
-      border-radius: 9px;
-      background: #F56C6C;
-      color: #fff;
-      font-size: 11px;
-      text-align: center;
-      padding: 0 4px;
-      white-space: nowrap;
-      box-shadow: 0 0 0 2px #fff;
-    }
-  }
-
-  .follow-info {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .follow-name {
-    font-size: 14px;
-    color: #303133;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-
-    .type-star {
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-  }
-
-  .follow-type {
-    font-size: 12px;
-    color: #999;
-    margin-top: 2px;
-  }
 
   .empty-list {
     display: flex;
