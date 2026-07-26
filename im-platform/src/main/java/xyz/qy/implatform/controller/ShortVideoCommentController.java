@@ -4,16 +4,15 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.imclient.annotation.CountLimit;
 import xyz.qy.implatform.dto.ShortVideoCommentAddDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentDelDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentQueryDTO;
-import xyz.qy.implatform.dto.ShortVideoCommentUpdateDTO;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
 import xyz.qy.implatform.service.IShortVideoCommentService;
@@ -22,7 +21,6 @@ import xyz.qy.implatform.vo.ShortVideoCommentVO;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Api(tags = "短视频评论")
@@ -34,6 +32,7 @@ public class ShortVideoCommentController {
     private IShortVideoCommentService shortVideoCommentService;
 
     @ApiOperation(value = "新增评论", notes = "新增评论")
+    @CountLimit(limitType = "short-video-comment", count = 50)
     @PostMapping("/add")
     public Result<ShortVideoCommentVO> add(@Valid @RequestBody ShortVideoCommentAddDTO dto) {
         return ResultUtils.success(shortVideoCommentService.addShortVideoComment(dto));

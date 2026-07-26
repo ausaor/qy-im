@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.imclient.annotation.CountLimit;
 import xyz.qy.implatform.annotation.RequireRoles;
 import xyz.qy.implatform.dto.ShortVideoAddDTO;
 import xyz.qy.implatform.dto.ShortVideoBatchDelDTO;
@@ -39,6 +40,7 @@ public class ShortVideoController {
     private IShortVideoService shortVideoService;
 
     @ApiOperation(value = "新增短视频", notes = "新增短视频")
+    @CountLimit(limitType = "short-video", count = 3)
     @PostMapping("/add")
     public Result<ShortVideoVO> add(@Valid @RequestBody ShortVideoAddDTO dto) {
         return ResultUtils.success(shortVideoService.addShortVideo(dto));
