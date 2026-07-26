@@ -871,6 +871,170 @@ create index idx_2
     on im_follow (target_id);
 
 
+create table im_short_video
+(
+    id             bigint auto_increment comment '主键'
+        primary key,
+    user_id        bigint                                 not null comment '作者用户id',
+    object_id      bigint                                 not null comment '对象id',
+    type           varchar(50)                            null comment '分类',
+    scope          tinyint      default 0                 null comment '公布范围',
+    title          varchar(200)                           null comment '标题',
+    description    text                                   null comment '描述',
+    video_url      varchar(500)                           not null comment '视频地址',
+    cover_url      varchar(500)                           null comment '封面图地址',
+    duration       int          default 0                 null comment '视频时长（秒）',
+    width          int          default 0                 null comment '视频宽度',
+    height         int          default 0                 null comment '视频高度',
+    size           bigint       default 0                 null comment '文件大小（字节）',
+    play_count     int          default 0                 null comment '播放数',
+    like_count     int          default 0                 null comment '点赞数',
+    favorite_count int          default 0                 null comment '收藏数',
+    comment_count  int          default 0                 null comment '评论数',
+    status         tinyint      default 0                 null comment '状态：0-审核中；1-已发布；2-不通过',
+    review_user_id bigint                                 null comment '审核人id',
+    reason         varchar(200) default ''                not null comment '审核不通过原因',
+    create_time    datetime     default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time    datetime     default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    deleted        tinyint(1)   default 0                 not null comment '是否已删除：0-否；1-是'
+)
+    comment '短视频表' row_format = DYNAMIC;
+
+create index idx_category
+    on im_short_video (type)
+    comment '分类索引';
+
+create index idx_create_time
+    on im_short_video (create_time)
+    comment '创建时间索引';
+
+create index idx_object_id
+    on im_short_video (object_id)
+    comment '对象id索引';
+
+create index idx_status
+    on im_short_video (status)
+    comment '状态索引';
+
+create index idx_user_id
+    on im_short_video (user_id)
+    comment '作者用户id索引';
+
+
+create table im_short_video_comment
+(
+    id                         bigint                                  not null comment '主键'
+        primary key,
+    video_id                   bigint                                  not null comment '短视频id',
+    user_id                    bigint                                  not null comment '评论用户id',
+    user_nickname              varchar(50)                             not null comment '用户昵称',
+    user_avatar                varchar(1000) default ''                not null comment '用户头像',
+    character_id               bigint                                  null comment '角色id',
+    avatar_id                  bigint                                  null comment '头像id',
+    reply_comment_id           bigint                                  null comment '父评论id',
+    top_reply_comment_id       bigint        default 0                 not null comment '顶级回复的评论id',
+    reply_to_user_id           bigint                                  null comment '被回复的用户id',
+    reply_to_user_avatar       varchar(1000) default ''                not null comment '被回复用户头像',
+    reply_to_user_character_id bigint                                  null comment '被回复用户角色id',
+    reply_to_user_nickname     varchar(255)  default ''                not null comment '被回复用户昵称',
+    type                       tinyint(1)                              not null comment '消息类型 0:文字 1:图片 5:语音台词',
+    content                    text                                    not null comment '评论内容',
+    like_count                 int           default 0                 not null comment '点赞数',
+    ip                         varchar(100)  default ''                not null comment '数字IP地址',
+    ip_address                 varchar(200)  default ''                not null comment 'IP来源',
+    create_time                datetime      default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time                datetime      default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    deleted                    tinyint(1)    default 0                 not null comment '是否已删除：0-否；1-是'
+)
+    comment '短视频评论表' row_format = DYNAMIC;
+
+create index idx_create_time
+    on im_short_video_comment (create_time)
+    comment '创建时间索引';
+
+create index idx_parent_id
+    on im_short_video_comment (reply_comment_id)
+    comment '父评论id索引';
+
+create index idx_user_id
+    on im_short_video_comment (user_id)
+    comment '评论用户id索引';
+
+create index idx_video_id
+    on im_short_video_comment (video_id)
+    comment '短视频id索引';
+
+
+create table im_short_video_favorite
+(
+    id          bigint                             not null comment '主键'
+        primary key,
+    video_id    bigint                             not null comment '短视频id',
+    user_id     bigint                             not null comment '收藏用户id',
+    create_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    constraint uk_video_user
+        unique (video_id, user_id) comment '视频和用户唯一索引'
+)
+    comment '短视频收藏表' row_format = DYNAMIC;
+
+create index idx_user_id
+    on im_short_video_favorite (user_id)
+    comment '收藏用户id索引';
+
+create index idx_video_id
+    on im_short_video_favorite (video_id)
+    comment '短视频id索引';
+
+
+create table im_short_video_like
+(
+    id          bigint                             not null comment '主键'
+        primary key,
+    video_id    bigint                             not null comment '短视频id',
+    target_id   bigint                             not null comment '被赞目标id',
+    type        varchar(10)                        not null comment '被赞目标类型',
+    user_id     bigint                             not null comment '点赞用户id',
+    create_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    constraint uk_video_user
+        unique (video_id, user_id) comment '视频和用户唯一索引'
+)
+    comment '短视频点赞表' row_format = DYNAMIC;
+
+create index idx_user_id
+    on im_short_video_like (user_id)
+    comment '点赞用户id索引';
+
+create index idx_video_id
+    on im_short_video_like (video_id)
+    comment '短视频id索引';
+
+
+create table im_short_video_notify
+(
+    id              bigint auto_increment comment '主键'
+        primary key,
+    user_id         bigint               not null comment '接收提醒的用户ID',
+    video_id        bigint               not null comment '短视频id',
+    target_id       bigint               not null comment '目标id',
+    target_type     varchar(10)          not null comment '目标类型（用户，角色，群模板）',
+    action_type     tinyint(1)           not null comment '提醒类型（点赞、评论、收藏、评论点赞）',
+    is_read         tinyint(1) default 0 not null comment '是否已读',
+    operate_user_id bigint               not null comment '操作用户id',
+    record_id       bigint               not null comment '记录id（评论，点赞，收藏表的id）',
+    record_type     tinyint(1)           not null comment '记录类型',
+    deleted         tinyint(1) default 0 not null comment '删除标识',
+    create_time     datetime             not null comment '提醒生成的时间',
+    update_time     datetime             null comment '更新时间'
+)
+    comment '短视频互动消息通知表' row_format = DYNAMIC;
+
+create index idx_1
+    on im_short_video_notify (user_id);
+
+create index idx_2
+    on im_short_video_notify (video_id);
+
+
 create table ai_chat_message
 (
     id          bigint auto_increment comment '主键'
