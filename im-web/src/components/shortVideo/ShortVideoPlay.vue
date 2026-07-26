@@ -45,6 +45,7 @@
           <div class="video-actions-right">
             <div class="action-item avatar-item" @click.stop>
               <head-image
+                  :id="currentVideo.userId"
                   :url="currentVideo.headImage"
                   :name="currentVideo.authorName || '?'"
                   :size="48"
@@ -640,7 +641,7 @@ export default {
 
 .nav-buttons {
   position: absolute;
-  right: 16px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;

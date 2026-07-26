@@ -31,7 +31,7 @@
           </div>
 
           <template v-if="item.actionType === 1">
-            <div class="action-text">评论了你的作品</div>
+            <div class="action-text">{{item.shortVideo.isOwner ? '评论了你的作品' : '回复了你的评论'}}</div>
             <div v-if="item.shortVideoComment" class="comment-content">
               <div v-if="item.shortVideoComment.type === $enums.MESSAGE_TYPE.TEXT" v-html="$emo.transform(item.shortVideoComment.content)"></div>
               <img v-else-if="item.shortVideoComment.type === $enums.MESSAGE_TYPE.IMAGE" :src="parseCommentContent(item.shortVideoComment.content).originUrl" class="comment-image" alt="评论图片" />

@@ -142,7 +142,9 @@ public class ShortVideoNotifyServiceImpl extends ServiceImpl<ShortVideoNotifyMap
             item.setOperateUserHeadImage(userMap.get(item.getOperateUserId()).getHeadImage());
 
             ShortVideo shortVideo = shortVideoMap.get(item.getVideoId());
-            item.setShortVideo(BeanUtils.copyProperties(shortVideo, ShortVideoVO.class));
+            ShortVideoVO shortVideoVO = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
+            shortVideoVO.setIsOwner(shortVideo.getUserId().equals(userId));
+            item.setShortVideo(shortVideoVO);
             if (RecordTypeEnum.COMMENT.getCode().equals(item.getRecordType())) {
                 ShortVideoComment comment = videoCommentMap.get(item.getRecordId());
                 item.setShortVideoComment(BeanUtils.copyProperties(comment, ShortVideoCommentVO.class));

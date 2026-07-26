@@ -146,6 +146,7 @@
           <div class="float-actions-right">
             <div class="float-action-item float-avatar-item" @click.stop>
               <head-image
+                :id="currentVideo.userId"
                 :url="currentVideo.headImage"
                 :name="currentVideo.authorName || '?'"
                 :size="44"
