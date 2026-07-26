@@ -10,6 +10,7 @@ import uiStore from './uiStore.js';
 import talkStore from './talkStore.js';
 import musicStore from "./musicStore.js";
 import shortVideoStore from "./shortVideoStore"
+import followStore from "./followStore.js";
 // import VuexPersistence from 'vuex-persist'
 //
 //
@@ -21,7 +22,7 @@ import shortVideoStore from "./shortVideoStore"
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-	modules: {chatStore,friendStore,userStore,groupStore,regionGroupStore,configStore,uiStore,talkStore,musicStore,shortVideoStore},
+	modules: {chatStore,friendStore,userStore,groupStore,regionGroupStore,configStore,uiStore,talkStore,musicStore,shortVideoStore,followStore},
 	state: {},
 	//plugins: [vuexLocal.plugin],
 	mutations: {
@@ -31,6 +32,7 @@ export default new Vuex.Store({
 			return this.dispatch("loadUser").then(() => {
 				const promises = [];
 				promises.push(this.dispatch("loadFriend"));
+				promises.push(this.dispatch("loadFollow"));
 				promises.push(this.dispatch("loadGroup"));
 				promises.push(this.dispatch("loadRegionGroup"));
 				promises.push(this.dispatch("loadChat"));

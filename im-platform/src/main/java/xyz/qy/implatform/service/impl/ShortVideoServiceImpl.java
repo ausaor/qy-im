@@ -178,8 +178,19 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         LambdaQueryWrapper<ShortVideo> wrapper = buildQueryWrapper(dto);
         wrapper.orderByDesc(ShortVideo::getCreateTime);
         Page<ShortVideo> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
+        if (CollectionUtils.isEmpty(page.getRecords())) {
+            return PageResultVO.<List<ShortVideoVO>>builder().data(Collections.emptyList()).total(0).build();
+        }
         List<ShortVideoVO> vos = BeanUtils.copyPropertiesList(page.getRecords(), ShortVideoVO.class);
-        fillOwnerFlag(vos);
+        List<Long> userIds = vos.stream().map(ShortVideoVO::getUserId).distinct().collect(Collectors.toList());
+        List<User> userList = userService.findUserByIds(userIds);
+        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, userItem -> userItem));
+        for (ShortVideoVO vo : vos) {
+            vo.setNickName(userMap.get(vo.getUserId()).getNickName());
+            vo.setAuthorName(userMap.get(vo.getUserId()).getNickName());
+            vo.setHeadImage(userMap.get(vo.getUserId()).getHeadImage());
+        }
+
         return PageResultVO.<List<ShortVideoVO>>builder().data(vos).total(page.getTotal()).build();
     }
 

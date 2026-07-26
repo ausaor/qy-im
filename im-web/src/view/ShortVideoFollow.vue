@@ -58,6 +58,7 @@
 <script>
 import ShortVideoPlay from '@/components/shortVideo/ShortVideoPlay.vue'
 import ShortVideoFollowItem from '@/components/shortVideo/ShortVideoFollowItem.vue'
+import { mapState } from 'vuex'
 
 export default {
   name: 'ShortVideoFollow',
@@ -68,12 +69,14 @@ export default {
   data() {
     return {
       currentFollow: {},
-      followList: [],
       searchText: '',
       sidebarCollapsed: false
     }
   },
   computed: {
+    ...mapState({
+      followList: state => state.followStore.follows
+    }),
     followVideoKey() {
       return `${this.currentFollow.type || ''}_${this.currentFollow.objectId || ''}`
     },
@@ -99,22 +102,22 @@ export default {
     }
   },
   created() {
-    this.fetchFollowList()
+    this.initPage()
   },
   methods: {
-    async fetchFollowList() {
-      try {
-        const res = await this.$http({
-          url: '/follow/list',
-          method: 'get'
+    initPage() {
+      // 确保关注列表已加载后再选中第一个关注对象
+      if (this.followList.length === 0) {
+        this.$store.dispatch('loadFollow').then(() => {
+          this.selectFirstFollow()
         })
-        this.followList = res || []
-        // 默认展示第一个关注对象的视频
-        if (this.followList.length > 0) {
-          this.handleFollowClick(this.followList[0])
-        }
-      } catch (e) {
-        this.followList = []
+      } else {
+        this.selectFirstFollow()
+      }
+    },
+    selectFirstFollow() {
+      if (this.followList.length > 0 && !this.currentFollow.objectId) {
+        this.handleFollowClick(this.followList[0])
       }
     },
     handleFollowClick(item) {

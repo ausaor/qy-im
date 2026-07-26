@@ -33,6 +33,7 @@
       >
         <span class="menu-icon iconfont icon-friend" style="color: #0ABDE3"></span>
         <span class="menu-label">朋友</span>
+        <span v-if="friendsNewVideoCount > 0" class="notify-count">{{ friendsNewVideoCount }}</span>
       </div>
       <div
         class="menu-item"
@@ -47,11 +48,9 @@
           :class="{ active: currentPath === '/home/shortVideo/notify' }"
           @click="navigateTo('/home/shortVideo/notify')"
       >
-        <span class="menu-icon-wrapper">
-          <span class="menu-icon iconfont icon-xiaoxi" style="color: #1DD1A1"></span>
-          <span v-if="notifyCount > 0" class="notify-badge">{{ notifyCount }}</span>
-        </span>
+        <span class="menu-icon iconfont icon-xiaoxi" style="color: #1DD1A1"></span>
         <span class="menu-label">消息</span>
+        <span v-if="notifyCount > 0" class="notify-count">{{ notifyCount }}</span>
       </div>
     </div>
 
@@ -75,6 +74,22 @@ export default {
     },
     notifyCount() {
       return this.$store.state.shortVideoStore.shortVideoNotify.length || 0;
+    },
+    friends() {
+      return this.$store.state.friendStore.friends;
+    },
+    activeFriends() {
+      return this.friends.filter(item => !item.deleted)
+    },
+    friendsNewVideoCount() {
+      let count = 0;
+      this.activeFriends.forEach(item => {
+        const videos = this.$store.state.shortVideoStore.shortVideoMap.get(item.id + '-user')
+        if (videos) {
+          count += videos.length
+        }
+      })
+      return count;
     }
   },
   mounted() {
@@ -143,28 +158,19 @@ export default {
 
 .menu-icon {
   font-size: 22px;
+  margin-right: 14px;
   flex-shrink: 0;
   transition: transform 0.25s ease;
 }
 
-.menu-icon-wrapper {
-  position: relative;
-  width: 22px;
-  height: 22px;
-  margin-right: 14px;
-  flex-shrink: 0;
-}
-
-.menu-item:hover .menu-icon-wrapper .menu-icon {
+.menu-item:hover .menu-icon {
   transform: scale(1.12);
 }
 
-.notify-badge {
-  position: absolute;
-  top: -8px;
-  right: -10px;
+.notify-count {
   min-width: 16px;
   height: 16px;
+  margin-left: 8px;
   padding: 0 4px;
   border-radius: 8px;
   background: #f56c6c;

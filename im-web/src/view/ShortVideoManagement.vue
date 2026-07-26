@@ -93,6 +93,17 @@
           class="short-video-table"
         >
           <el-table-column type="index" label="序号" width="60" align="center" />
+          <el-table-column prop="authorName" label="作者" width="120" show-overflow-tooltip />
+          <el-table-column label="头像" width="80" align="center">
+            <template slot-scope="scope">
+              <head-image
+                :id="scope.row.userId"
+                :url="scope.row.headImage"
+                :name="scope.row.authorName || '?'"
+                :size="40"
+              />
+            </template>
+          </el-table-column>
           <el-table-column prop="title" label="标题" width="220" show-overflow-tooltip />
 
           <el-table-column label="封面" width="100" align="center">
@@ -228,8 +239,11 @@
 </template>
 
 <script>
+import HeadImage from '@/components/common/HeadImage'
+
 export default {
   name: 'ShortVideoManagement',
+  components: { HeadImage },
   data() {
     return {
       searchForm: {
@@ -584,7 +598,7 @@ export default {
 ::v-deep .short-video-table.el-table .el-table__header,
 ::v-deep .short-video-table.el-table .el-table__body,
 ::v-deep .short-video-table.el-table .el-table__footer {
-  min-width: 1620px;
+  min-width: 1820px;
 }
 
 ::v-deep .short-video-table.el-table .el-table__body-wrapper {

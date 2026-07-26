@@ -11,10 +11,13 @@
         :size="collapsed ? 42 : 36"
         :online="item.online"
       ></head-image>
-      <span v-if="newVideoCount > 0" class="new-badge">{{ newVideoCount }}</span>
+      <span v-if="collapsed && newVideoCount > 0" class="new-badge">{{ newVideoCount }}</span>
     </div>
     <div v-if="!collapsed" class="friend-info">
-      <div class="friend-name">{{ item.friendRemark || item.nickName }}</div>
+      <div class="friend-name">
+        <span class="name-text">{{ item.friendRemark || item.nickName }}</span>
+        <span v-if="newVideoCount > 0" class="new-video-text">有 {{ newVideoCount }} 个新发布作品</span>
+      </div>
       <div v-if="item.signature" class="friend-signature">{{ item.signature }}</div>
     </div>
   </div>
@@ -141,7 +144,21 @@ export default {
   color: #303133;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .name-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .new-video-text {
+    color: #f56c6c;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
 }
 
 .friend-signature {

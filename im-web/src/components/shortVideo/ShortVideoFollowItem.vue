@@ -10,12 +10,13 @@
         :name="item.targetName"
         :size="collapsed ? 42 : 36"
       ></head-image>
-      <span v-if="newVideoCount > 0" class="new-badge">{{ newVideoCount }}</span>
+      <span v-if="collapsed && newVideoCount > 0" class="new-badge">{{ newVideoCount }}</span>
     </div>
     <div v-if="!collapsed" class="follow-info">
       <div class="follow-name">
         <span class="type-star" :style="{ color: starColor }">★</span>
-        {{ item.targetName }}
+        <span class="name-text">{{ item.targetName }}</span>
+        <span v-if="newVideoCount > 0" class="new-video-text">有 {{ newVideoCount }} 个新发布作品</span>
       </div>
       <div class="follow-type">{{ typeName }}</div>
     </div>
@@ -157,6 +158,18 @@ export default {
 
   .type-star {
     font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .name-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .new-video-text {
+    color: #f56c6c;
+    font-size: 12px;
     flex-shrink: 0;
   }
 }
