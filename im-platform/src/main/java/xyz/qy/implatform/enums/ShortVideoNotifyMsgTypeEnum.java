@@ -24,4 +24,19 @@ public enum ShortVideoNotifyMsgTypeEnum {
     private final Integer code;
 
     private final String desc;
+
+    public static Integer getCodeByActionTypeCode(Integer actionTypeCode) {
+        switch (actionTypeCode) {
+            case 1:
+                return COMMENT.getCode();
+            case 2:
+                return LIKE.getCode();
+            case 3:
+                return COLLECT.getCode();
+            case 4:
+                return COMMENT_LIKE.getCode();
+            default:
+                return null;
+        }
+    }
 }

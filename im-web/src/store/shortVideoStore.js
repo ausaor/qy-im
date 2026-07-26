@@ -122,7 +122,7 @@ export default {
 		addShortVideoNotify(state, msg) {
 			state.shortVideoNotify.push(msg);
 		},
-		resetShortVideoNotify(state) {
+		clearShortVideoNotify(state) {
 			state.shortVideoNotify = [];
 		}
 	},
@@ -147,6 +147,9 @@ export default {
 		 */
 		isFollowed: (state) => (key) => {
 			return state.followedKeys.includes(key)
-		}
+		},
+		getShortVideoNotifyCount: (state) =>  () => {
+			return state.shortVideoNotify.length;
+		},
 	}
 }

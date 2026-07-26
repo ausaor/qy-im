@@ -122,7 +122,11 @@ export default {
     }
   },
   created() {
-    this.fetchNotifyList()
+    this.fetchNotifyList();
+    if (this.$store.getters.getShortVideoNotifyCount() > 0) {
+      this.readedAllNotify();
+      this.$store.commit("clearShortVideoNotify")
+    }
   },
   beforeDestroy() {
     if (this.audio) {
@@ -141,6 +145,10 @@ export default {
       this.fetchNotifyList()
     },
     refresh() {
+      if (this.$store.getters.getShortVideoNotifyCount() > 0) {
+        this.readedAllNotify();
+        this.$store.commit("clearShortVideoNotify")
+      }
       this.notifyList = []
       this.pageNo = 1
       this.total = 0
@@ -217,6 +225,12 @@ export default {
       }
       this.audio.play().catch(() => {
         this.audio = null
+      })
+    },
+    readedAllNotify() {
+      this.$http({
+        url: '/shortVideoNotify/readedAll',
+        method: 'post'
       })
     }
   }

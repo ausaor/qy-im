@@ -3,6 +3,7 @@ package xyz.qy.implatform.controller;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,5 +46,12 @@ public class ShortVideoNotifyController {
     @PostMapping("/pageList")
     public Result<PageResultVO<List<ShortVideoNotifyVO>>> pageList(@RequestBody ShortVideoNotifyQueryDTO dto) {
         return ResultUtils.success(shortVideoNotifyService.pageShortVideoNotify(dto));
+    }
+
+    @ApiOperation(value = "拉取离线通知", notes = "拉取离线通知")
+    @GetMapping("/pullOfflineNotify")
+    public Result pullOfflineNotify() {
+        shortVideoNotifyService.pullOfflineNotify();
+        return ResultUtils.success();
     }
 }

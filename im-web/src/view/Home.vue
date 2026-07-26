@@ -59,6 +59,7 @@
                       <use xlink:href="#icon-duanshipin1"></use>
                     </svg>
                   </span>
+                  <div v-show="shortVideoNotifyCount > 0" class="unread-text">{{ shortVideoNotifyCount }}</div>
                   <span class="phone-float-trigger" @click.prevent.stop="openFloatShortVideo" title="悬浮播放">
                     <svg class="icon svg-icon" aria-hidden="true">
                       <use xlink:href="#icon-phone"></use>
@@ -311,6 +312,9 @@
         return this.$store.state.groupStore.groupRequests
             .filter((r) => r.groupOwnerId === this.mine.id && r.status === 1 && r.type === 1).length;
       },
+      shortVideoNotifyCount() {
+        return this.$store.state.shortVideoStore.shortVideoNotify.length || 0;
+      }
 		},
 		watch: {
 			unreadCount: {
@@ -345,6 +349,7 @@
             this.pullFriendRequests();
             this.pullGroupRequests();
             this.pullOfflineTalkNotify();
+            this.pullOfflineShortVideoNotify();
             this.queryEmoAlbumImgs();
           });
           this.$wsApi.onMessage((cmd, msgInfo) => {
@@ -453,8 +458,12 @@
         this.$http({
           url: "/talk-notify/pullOfflineNotify",
           method: 'GET'
-        }).then((data) => {
-        }).catch((err) => {
+        })
+      },
+      pullOfflineShortVideoNotify() {
+        this.$http({
+          url: "/shortVideoNotify/pullOfflineNotify",
+          method: 'GET'
         })
       },
       pullFriendRequests() {

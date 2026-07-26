@@ -14,4 +14,6 @@ public interface IShortVideoNotifyService extends IService<ShortVideoNotify> {
     void readedAllShortVideoNotify();
 
     PageResultVO<List<ShortVideoNotifyVO>> pageShortVideoNotify(ShortVideoNotifyQueryDTO dto);
+
+    void pullOfflineNotify();
 }

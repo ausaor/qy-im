@@ -47,7 +47,10 @@
           :class="{ active: currentPath === '/home/shortVideo/notify' }"
           @click="navigateTo('/home/shortVideo/notify')"
       >
-        <span class="menu-icon iconfont icon-xiaoxi" style="color: #1DD1A1"></span>
+        <span class="menu-icon-wrapper">
+          <span class="menu-icon iconfont icon-xiaoxi" style="color: #1DD1A1"></span>
+          <span v-if="notifyCount > 0" class="notify-badge">{{ notifyCount }}</span>
+        </span>
         <span class="menu-label">消息</span>
       </div>
     </div>
@@ -70,6 +73,9 @@ export default {
     currentPath() {
       return this.$route.path
     },
+    notifyCount() {
+      return this.$store.state.shortVideoStore.shortVideoNotify.length || 0;
+    }
   },
   mounted() {
     this.fetchFollowList()
@@ -137,13 +143,37 @@ export default {
 
 .menu-icon {
   font-size: 22px;
-  margin-right: 14px;
   flex-shrink: 0;
   transition: transform 0.25s ease;
 }
 
-.menu-item:hover .menu-icon {
+.menu-icon-wrapper {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  margin-right: 14px;
+  flex-shrink: 0;
+}
+
+.menu-item:hover .menu-icon-wrapper .menu-icon {
   transform: scale(1.12);
+}
+
+.notify-badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #f56c6c;
+  color: #fff;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 0 0 2px #fff;
 }
 
 .menu-label {
