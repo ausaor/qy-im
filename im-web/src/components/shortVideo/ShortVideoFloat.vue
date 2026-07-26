@@ -330,7 +330,7 @@ export default {
       const video = this.currentVideo
       if (!video || !video.id) return false
       const key = `${video.objectId}:${video.type}`
-      return video.followed || this.$store.getters.isFollowed(key)
+      return this.$store.getters.isFollowed(key)
     },
     panelStyle() {
       if (this.panelX !== null && this.panelY !== null) {
@@ -735,9 +735,8 @@ export default {
         url: '/follow/add',
         method: 'post',
         data: { targetId: shortVideo.objectId, type: shortVideo.type }
-      }).then(() => {
-        shortVideo.followed = true
-        this.$store.commit('markFollowed', `${shortVideo.objectId}:${shortVideo.type}`)
+      }).then((data) => {
+        this.$store.commit('addFollow', data);
       })
     },
 
@@ -746,8 +745,8 @@ export default {
         url: `/follow/cancel?targetId=${shortVideo.objectId}&type=${shortVideo.type}`,
         method: 'delete'
       }).then(() => {
-        shortVideo.followed = false
-        this.$store.commit('unmarkFollowed', `${shortVideo.objectId}:${shortVideo.type}`)
+        let follow = {targetId: shortVideo.objectId, type: shortVideo.type}
+        this.$store.commit('removeFollow', follow);
       })
     },
 

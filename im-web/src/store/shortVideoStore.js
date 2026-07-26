@@ -44,25 +44,6 @@ export default {
 				state.likedCommentIds.push(commentId)
 			}
 		},
-
-		/**
-		 * 记录已关注（key 格式：objectId:type）
-		 */
-		markFollowed(state, key) {
-			if (!state.followedKeys.includes(key)) {
-				state.followedKeys.push(key)
-			}
-		},
-
-		/**
-		 * 移除关注记录
-		 */
-		unmarkFollowed(state, key) {
-			const idx = state.followedKeys.indexOf(key)
-			if (idx !== -1) {
-				state.followedKeys.splice(idx, 1)
-			}
-		},
 		openShortVideoFloat(state) {
 			state.showFloat = true
 		},
@@ -140,13 +121,6 @@ export default {
 		 */
 		isCommentLiked: (state) => (commentId) => {
 			return state.likedCommentIds.includes(commentId)
-		},
-
-		/**
-		 * 判断是否已关注（key 格式：objectId:type）
-		 */
-		isFollowed: (state) => (key) => {
-			return state.followedKeys.includes(key)
 		},
 		getShortVideoNotifyCount: (state) =>  () => {
 			return state.shortVideoNotify.length;

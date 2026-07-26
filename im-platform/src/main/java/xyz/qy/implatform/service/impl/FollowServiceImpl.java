@@ -55,7 +55,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     private ICharacterAvatarService characterAvatarService;
 
     @Override
-    public void addFollow(FollowDTO dto) {
+    public FollowVO addFollow(FollowDTO dto) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
 
@@ -67,6 +67,28 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         if (this.count(queryWrapper) > 0) {
             throw new GlobalException("已关注该目标!");
         }
+        // 判断关注对象是否存在
+        if (FollowEnum.USER.getCode().equals(dto.getType())) {
+            User user = userMapper.selectById(dto.getTargetId());
+            if (user == null || user.getIsDeleted()) {
+                throw new GlobalException("用户不存在!");
+            }
+        } else if (FollowEnum.GROUP.getCode().equals(dto.getType())) {
+            Group group = groupMapper.selectById(dto.getTargetId());
+            if (group == null || group.getDeleted()) {
+                throw new GlobalException("群组不存在!");
+            }
+        } else if (FollowEnum.TEMPLATE.getCode().equals(dto.getType())) {
+            TemplateGroup templateGroup = templateGroupMapper.selectById(dto.getTargetId());
+            if (templateGroup == null || templateGroup.getDeleted()) {
+                throw new GlobalException("模板不存在!");
+            }
+        } else if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
+            TemplateCharacter character = characterMapper.selectById(dto.getTargetId());
+            if (character == null || character.getDeleted()) {
+                throw new GlobalException("角色不存在!");
+            }
+        }
 
         Follow follow = new Follow();
         follow.setTargetId(dto.getTargetId());
@@ -74,12 +96,46 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         follow.setUserId(userId);
         follow.setCreateTime(new Date());
         this.save(follow);
+        log.info("用户{}添加关注成功，目标ID：{}, 目标类型：{}", userId, dto.getTargetId(), dto.getType());
+        FollowVO followVO = BeanUtils.copyProperties(follow, FollowVO.class);
+        if (FollowEnum.USER.getCode().equals(dto.getType())) {
+            User user = userMapper.selectById(dto.getTargetId());
+            followVO.setTargetName(user.getNickName());
+            followVO.setTargetAvatar(user.getHeadImage());
+        } else if (FollowEnum.GROUP.getCode().equals(dto.getType())) {
+            Group group = groupMapper.selectById(dto.getTargetId());
+            followVO.setTargetName(group.getName());
+            followVO.setTargetAvatar(group.getHeadImage());
+        } else if (FollowEnum.TEMPLATE.getCode().equals(dto.getType())) {
+            TemplateGroup templateGroup = templateGroupMapper.selectById(dto.getTargetId());
+            followVO.setTargetName(templateGroup.getGroupName());
+            followVO.setTargetAvatar(templateGroup.getAvatar());
+            followVO.setTemplateGroup(BeanUtils.copyProperties(templateGroup, TemplateGroupVO.class));
+        } else if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
+            TemplateCharacter templateCharacter = characterMapper.selectById(dto.getTargetId());
+            followVO.setTargetName(templateCharacter.getName());
+            followVO.setTargetAvatar(templateCharacter.getAvatar());
+            followVO.setCharacter(BeanUtils.copyProperties(templateCharacter, TemplateCharacterVO.class));
+            List<CharacterAvatarVO> characterAvatarVOS = characterAvatarService.queryPublishCharacterAvatarByCharacterIds(List.of(templateCharacter.getId()));
+            followVO.setCharacterAvatars(characterAvatarVOS);
+        }
+
+        return followVO;
     }
 
     @Override
     public void cancelFollow(Long targetId, String type) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
+        // 校验是否已关注
+        Integer count = this.lambdaQuery()
+                .eq(Follow::getUserId, userId)
+                .eq(Follow::getTargetId, targetId)
+                .eq(Follow::getType, type)
+                .count();
+        if (count <= 0) {
+            throw new GlobalException("未关注该目标!");
+        }
 
         LambdaQueryWrapper<Follow> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Follow::getUserId, userId)

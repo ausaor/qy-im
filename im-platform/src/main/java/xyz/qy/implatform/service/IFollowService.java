@@ -16,7 +16,7 @@ public interface IFollowService extends IService<Follow> {
      *
      * @param dto 关注参数
      */
-    void addFollow(FollowDTO dto);
+    FollowVO addFollow(FollowDTO dto);
 
     /**
      * 取消关注（物理删除）

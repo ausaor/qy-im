@@ -59,7 +59,7 @@
                       <use xlink:href="#icon-duanshipin1"></use>
                     </svg>
                   </span>
-                  <div v-show="shortVideoNotifyCount > 0" class="unread-text">{{ shortVideoNotifyCount }}</div>
+                  <div v-show="shortVideoNotifyCount > 0 || shortVideoCount > 0" class="unread-text">{{ shortVideoNotifyCount + shortVideoCount }}</div>
                   <span class="phone-float-trigger" @click.prevent.stop="openFloatShortVideo" title="悬浮播放">
                     <svg class="icon svg-icon" aria-hidden="true">
                       <use xlink:href="#icon-phone"></use>
@@ -314,6 +314,16 @@
       },
       shortVideoNotifyCount() {
         return this.$store.state.shortVideoStore.shortVideoNotify.length || 0;
+      },
+      shortVideoCount() {
+        let count = 0;
+        const shortVideoMap = this.$store.state.shortVideoStore.shortVideoMap
+        shortVideoMap.forEach((v) => {
+          if (v) {
+            count += v.length;
+          }
+        });
+        return count;
       }
 		},
 		watch: {

@@ -32,8 +32,7 @@ public class FollowController {
     @PostMapping("/add")
     @ApiOperation(value = "添加关注", notes = "关注目标")
     public Result addFollow(@RequestBody @Valid FollowDTO dto) {
-        followService.addFollow(dto);
-        return ResultUtils.success();
+        return ResultUtils.success(followService.addFollow(dto));
     }
 
     @DeleteMapping("/cancel")

@@ -34,6 +34,9 @@ export default {
         }
     },
     getters: {
+        isFollowed: (state) => (key) => {
+            return state.follows.some(f => f.targetId+ ':' + f.type === key);
+        },
     },
     actions: {
         loadFollow(context) {

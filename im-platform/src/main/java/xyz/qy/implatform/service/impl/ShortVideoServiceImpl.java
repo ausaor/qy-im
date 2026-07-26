@@ -289,8 +289,6 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                         .in(ShortVideoFavorite::getVideoId, videoIds));
         Set<Long> favoritedVideoIds = favorites.stream().map(ShortVideoFavorite::getVideoId).collect(Collectors.toSet());
 
-        Set<String> allFollows = followService.findAllFollows();
-
         List<User> userList = userService.findUserByIds(userIds);
         // userList根据id分组得到Map<Long, User>
         Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, user -> user));
@@ -318,9 +316,6 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
             }
             vo.setLiked(likedVideoIds.contains(vo.getId()));
             vo.setFavorited(favoritedVideoIds.contains(vo.getId()));
-            if (allFollows.contains(vo.getObjectId() + ":" + vo.getType())) {
-                vo.setFollowed(true);
-            }
         }
 
         return PageResultVO.<List<ShortVideoVO>>builder().data(vos).total(page.getTotal()).build();
@@ -589,8 +584,10 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                 List<Long> followUserIds = followService.findFansByTargetId(shortVideo.getObjectId(), shortVideo.getType());
                 userIds.addAll(followUserIds);
 
-                List<Long> friendUserIds = friendService.getFriendIdsByUserId(shortVideo.getUserId());
-                userIds.addAll(friendUserIds);
+                if (FollowEnum.USER.getCode().equals(shortVideo.getType())) {
+                    List<Long> friendUserIds = friendService.getFriendIdsByUserId(shortVideo.getUserId());
+                    userIds.addAll(friendUserIds);
+                }
             } else if (ViewScopeEnum.FRIENDS.getCode().equals(shortVideo.getScope())) {
                 List<Long> friendUserIds = friendService.getFriendIdsByUserId(shortVideo.getUserId());
                 userIds.addAll(friendUserIds);

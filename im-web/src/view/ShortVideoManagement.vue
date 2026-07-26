@@ -115,6 +115,16 @@
                   class="cover-image"
                   alt="cover"
                 >
+                <button
+                  v-if="scope.row.videoUrl"
+                  class="cover-play-button"
+                  type="button"
+                  title="播放视频"
+                  aria-label="播放视频"
+                  @click.stop="handlePlayVideo(scope.row)"
+                >
+                  <i class="el-icon-video-play" />
+                </button>
                 <span v-else>-</span>
               </div>
             </template>
@@ -163,7 +173,7 @@
 
           <el-table-column label="发布时间" width="170" align="center">
             <template slot-scope="scope">
-              {{ formatDateTime(scope.row.publishTime) }}
+              {{ formatDateTime(scope.row.updateTime) }}
             </template>
           </el-table-column>
 
@@ -235,15 +245,25 @@
         </el-button>
       </span>
     </el-dialog>
+
+    <video-play
+      ref="videoPlay"
+      :video-url="videoUrl"
+      :poster-url="posterUrl"
+      :video-width="videoWidth"
+      :video-height="videoHeight"
+      @close="closeVideoPlay"
+    />
   </div>
 </template>
 
 <script>
 import HeadImage from '@/components/common/HeadImage'
+import VideoPlay from '@/components/common/VideoPlay.vue'
 
 export default {
   name: 'ShortVideoManagement',
-  components: { HeadImage },
+  components: { HeadImage, VideoPlay },
   data() {
     return {
       searchForm: {
@@ -282,7 +302,11 @@ export default {
         id: null,
         reason: '',
         loading: false
-      }
+      },
+      videoUrl: '',
+      posterUrl: '',
+      videoWidth: 0,
+      videoHeight: 0
     }
   },
   created() {
@@ -438,6 +462,25 @@ export default {
       this.rejectForm.id = null
       this.rejectForm.reason = ''
       this.rejectForm.loading = false
+    },
+
+    handlePlayVideo(row) {
+      if (!row.videoUrl) {
+        this.$message.warning('视频地址不存在')
+        return
+      }
+      this.videoUrl = row.videoUrl
+      this.posterUrl = row.coverUrl || ''
+      this.videoWidth = Number(row.width) || 0
+      this.videoHeight = Number(row.height) || 0
+      this.$refs.videoPlay.onPlayVideo()
+    },
+
+    closeVideoPlay() {
+      this.videoUrl = ''
+      this.posterUrl = ''
+      this.videoWidth = 0
+      this.videoHeight = 0
     },
 
     getTypeLabel(type) {
@@ -613,6 +656,7 @@ export default {
 }
 
 .cover-cell {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -625,6 +669,27 @@ export default {
   object-fit: cover;
   border-radius: 4px;
   border: 1px solid #ebeef5;
+}
+
+.cover-play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: auto;
+  height: auto;
+  padding: 0;
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  background: transparent;
+  border: 0;
+  transform: translate(-50%, -50%);
+
+  &:hover {
+    color: #409eff;
+  }
 }
 
 .pagination-container {

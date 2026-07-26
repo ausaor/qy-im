@@ -93,21 +93,13 @@ export default {
     }
   },
   mounted() {
-    this.fetchFollowList()
+
   },
   methods: {
     navigateTo(path) {
       if (this.$route.path !== path) {
         this.$router.push(path)
       }
-    },
-    fetchFollowList() {
-      this.$http({
-        url: '/follow/list',
-        method: 'get'
-      }).then((data) => {
-          this.$store.commit('setFollows', data)
-      })
     },
   }
 }
