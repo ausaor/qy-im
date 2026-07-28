@@ -125,7 +125,10 @@ export default {
 				return friend.isDnd;
 			}
 			return false;
-		}
+		},
+		isFriend: (state) => (userId) => {
+			return state.friends.some(f => f.id === userId);
+		},
 	},
 	actions: {
 		loadFriend(context) {

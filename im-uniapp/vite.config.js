@@ -1,13 +1,15 @@
-const { defineConfig } = require("vite");
-const uni = require("@dcloudio/vite-plugin-uni");
-const path = require('path');
-const { createSvgIconsPlugin } = require('vite-plugin-svg-icons');
+import { defineConfig } from 'vite';
+import uni from '@dcloudio/vite-plugin-uni';
+import path from 'path';
+import { createSvgIconsPlugin } from 'vite-plugin-svg-icons';
 
-module.exports = defineConfig({
+export default defineConfig({
 	plugins: [
 		uni(),
 		createSvgIconsPlugin({
-			iconDirs: [path.resolve(process.cwd(), 'static/svg-icons')],
+			// HBuilderX runs the Uni CLI from its installation directory, so use the
+			// config file's directory instead of process.cwd().
+			iconDirs: [path.resolve(__dirname, 'static/svg-icons')],
 			symbolId: 'icon-[dir]-[name]',
 			inject: true,
 			customDomId: '__svg__icons__dom__',

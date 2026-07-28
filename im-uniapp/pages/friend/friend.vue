@@ -38,6 +38,16 @@
 							</view>
 							<uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
 						</view>
+            <view class="socializes-item" @click.stop="toShortVideo">
+              <view class="item-icon">
+                <svg-icon class="svg-icon" icon-class="duanshipin1"></svg-icon>
+              </view>
+              <view class="item-info">
+                <view class="item-name">轻视频</view>
+                <uni-badge v-show="starSpaceNotifyCount > 0" :text="starSpaceNotifyCount" />
+              </view>
+              <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
+            </view>
 						<view class="socializes-item" @click.stop="toFriendRequestPage">
 							<view class="item-icon">
 								<svg-icon class="svg-icon" icon-class="xindepengyou"></svg-icon>
@@ -131,6 +141,11 @@ export default {
     toStarSpace() {
       uni.navigateTo({
         url: "/pages/activity/activity-space?category=character&section=allCharacters&spaceTitle=星空间"
+      })
+    },
+    toShortVideo() {
+      uni.navigateTo({
+        url: "/pages/short-video/short-video"
       })
     },
     toGroupPage() {

@@ -151,6 +151,9 @@
 		},
 		{
 			"path": "pages/activity/activity-notify"
+		},
+		{
+			"path": "pages/short-video/short-video"
 		}
 	],
 	"globalStyle": {

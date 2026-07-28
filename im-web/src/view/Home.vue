@@ -390,7 +390,6 @@
               this.handleTalkMessage(msgInfo);
             } else if (cmd == 7) {
               // 处理短视频消息
-              console.log("短视频消息", msgInfo)
               this.handleShortVideoMessage(msgInfo);
             } else if (cmd == 9) {
               // 插入地区群聊消息

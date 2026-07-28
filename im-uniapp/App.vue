@@ -91,6 +91,7 @@ export default {
 					.then(() => this.regionStore.loadRegionGroup())
 					.then(() => this.chatStore.loadChat())
 					.then(() => this.regionStore.loadRegionChat())
+          .then(() => this.followStore.loadFollows())
 					.then(() => this.talkStore.loadTalkInfo())
 					.then(() => this.configStore.loadConfig())
           .then(() => this.uiStore.loadEmoAlbums());

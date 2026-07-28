@@ -1,11 +1,12 @@
+import friendStore from "./friendStore";
+import followStore from "./followStore";
+
 export default {
 	state: {
 		// 已记录播放次数的视频 ID 集合
 		playedVideoIds: [],
 		// 已点赞的评论 ID 集合
 		likedCommentIds: [],
-		// 已关注的用户记录（格式：objectId:type）
-		followedKeys: [],
 		showFloat: false,
 		character: {},
 		template: {},
@@ -85,6 +86,17 @@ export default {
 		},
 		addShortVideo(state, shortVideo) {
 			const newMap = new Map(state.shortVideoMap); // 创建副本
+			if (shortVideo.type !== 'user'
+				&& !followStore.getters.isFollowed(shortVideo.objectId + ':' + shortVideo.type)
+				&& friendStore.getters.isFriend(shortVideo.userId)) { // 视频类型不是用户发布，且未关注目标对象，但发布用户是好友
+				if (!newMap.has(shortVideo.userId + '-user')) {
+					newMap.set(shortVideo.userId + '-' + 'user', [shortVideo]);
+				} else {
+					let shortVideos = newMap.get(shortVideo.userId + '-user');
+					shortVideos.unshift(shortVideo);
+				}
+				return
+			}
 			if (!newMap.has(shortVideo.objectId + '-' + shortVideo.type)) {
 				newMap.set(shortVideo.objectId + '-' + shortVideo.type, [shortVideo]);
 			} else {

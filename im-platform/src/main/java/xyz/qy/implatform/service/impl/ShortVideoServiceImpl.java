@@ -584,10 +584,8 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                 List<Long> followUserIds = followService.findFansByTargetId(shortVideo.getObjectId(), shortVideo.getType());
                 userIds.addAll(followUserIds);
 
-                if (FollowEnum.USER.getCode().equals(shortVideo.getType())) {
-                    List<Long> friendUserIds = friendService.getFriendIdsByUserId(shortVideo.getUserId());
-                    userIds.addAll(friendUserIds);
-                }
+                List<Long> friendUserIds = friendService.getFriendIdsByUserId(shortVideo.getUserId());
+                userIds.addAll(friendUserIds);
             } else if (ViewScopeEnum.FRIENDS.getCode().equals(shortVideo.getScope())) {
                 List<Long> friendUserIds = friendService.getFriendIdsByUserId(shortVideo.getUserId());
                 userIds.addAll(friendUserIds);
