@@ -65,10 +65,10 @@
     <view class="top-tabs" @click.stop>
       <view class="back-button" @click="goBack"><uni-icons type="back" size="25" color="#ffffff" /></view>
       <view class="tab-list">
-        <text>好友</text>
-        <text>关注</text>
-        <text class="active">推荐</text>
-        <text>我的</text>
+        <text :class="{ active: activeTab === 'friend' }" @click="switchTab('friend')">好友</text>
+        <text :class="{ active: activeTab === 'follow' }" @click="switchTab('follow')">关注</text>
+        <text :class="{ active: activeTab === 'recom' }" @click="switchTab('recom')">推荐</text>
+        <text @click="goToMyVideos">我的</text>
       </view>
     </view>
     <view v-if="loadingMore" class="load-more"><uni-icons type="spinner-cycle" size="20" color="#ffffff" /></view>
@@ -89,7 +89,8 @@ export default {
       isPlaying: true,
       actioning: false,
       pendingPlayVideoIds: [],
-      avatarColors: ['#5daa31', '#c7515a', '#e03697', '#85029b', '#c9b455', '#326eb6']
+      avatarColors: ['#5daa31', '#c7515a', '#e03697', '#85029b', '#c9b455', '#326eb6'],
+      activeTab: 'recom' // 值集：recom，follow，friend，my
     }
   },
   computed: {
@@ -116,10 +117,17 @@ export default {
       if (isFirstPage) this.loading = true
       else this.loadingMore = true
 
+      const data = {}
+      if (this.activeTab === 'friend') {
+        data.section = 'friends'
+      } else if (this.activeTab === 'follow') {
+        data.section = 'follows'
+      }
+
       this.$http({
-        url: '/shortVideo/recommend',
+        url: `/shortVideo/recommend?pageNo=${this.pageNo}&pageSize=${this.pageSize}`,
         method: 'POST',
-        data: { pageNo: this.pageNo, pageSize: this.pageSize }
+        data: data
       }).then((page) => {
         const videos = page.data || []
         this.total = page.total || 0
@@ -129,6 +137,23 @@ export default {
       }).finally(() => {
         this.loading = false
         this.loadingMore = false
+      })
+    },
+    switchTab(tab) {
+      if (this.activeTab === tab || this.loading || this.loadingMore) return
+      this.currentVideoContext().pause()
+      this.activeTab = tab
+      this.videoList = []
+      this.currentIndex = 0
+      this.pageNo = 1
+      this.total = 0
+      this.isPlaying = true
+      this.fetchVideos()
+    },
+    goToMyVideos() {
+      this.currentVideoContext().pause()
+      uni.navigateTo({
+        url: '/pages/short-video/short-video-user'
       })
     },
     playCurrentVideo() {

@@ -154,6 +154,9 @@
 		},
 		{
 			"path": "pages/short-video/short-video"
+		},
+		{
+			"path": "pages/short-video/short-video-user"
 		}
 	],
 	"globalStyle": {
