@@ -96,7 +96,10 @@ export default {
   computed: {
     hasMore() {
       return this.videoList.length < this.total
-    }
+    },
+    mine() {
+      return this.userStore.userInfo;
+    },
   },
   created() {
     this.fetchVideos()
@@ -153,7 +156,7 @@ export default {
     goToMyVideos() {
       this.currentVideoContext().pause()
       uni.navigateTo({
-        url: '/pages/short-video/short-video-user'
+        url: `/pages/short-video/short-video-user?userId=${this.mine.id}`
       })
     },
     playCurrentVideo() {
