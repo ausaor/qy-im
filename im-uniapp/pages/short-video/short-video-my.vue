@@ -28,11 +28,11 @@
           <text class="stat-count">{{ formatCount(likeCount) }}</text>
           <text class="stat-label">获赞</text>
         </view>
-        <view class="stat-item">
+        <view class="stat-item stat-clickable" @tap="goToFollowFans">
           <text class="stat-count">{{ formatCount(followCount) }}</text>
           <text class="stat-label">关注</text>
         </view>
-        <view class="stat-item">
+        <view class="stat-item stat-clickable" @tap="goToFollowFans">
           <text class="stat-count">{{ formatCount(fansCount) }}</text>
           <text class="stat-label">粉丝</text>
         </view>
@@ -147,6 +147,11 @@ export default {
       const query = videoId !== undefined && videoId !== null ? `?videoId=${encodeURIComponent(videoId)}` : ''
       uni.navigateTo({
         url: `/pages/short-video/short-video-edit${query}`
+      })
+    },
+    goToFollowFans() {
+      uni.navigateTo({
+        url: '/pages/mine/mine-follow-fans'
       })
     },
     goBack() {

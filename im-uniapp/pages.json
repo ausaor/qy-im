@@ -38,6 +38,9 @@
 			"path": "pages/mine/mine"
 		},
 		{
+			"path": "pages/mine/mine-follow-fans"
+		},
+		{
 			"path": "pages/common/user-info"
 		},
 		{
