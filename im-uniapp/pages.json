@@ -156,6 +156,12 @@
 			"path": "pages/short-video/short-video"
 		},
 		{
+			"path": "pages/short-video/short-video-my"
+		},
+		{
+			"path": "pages/short-video/short-video-edit"
+		},
+		{
 			"path": "pages/short-video/short-video-user"
 		}
 	],

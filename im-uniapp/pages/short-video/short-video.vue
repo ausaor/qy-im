@@ -321,7 +321,7 @@ export default {
     goToMyVideos() {
       this.currentVideoContext().pause()
       uni.navigateTo({
-        url: `/pages/short-video/short-video-user?userId=${this.mine.id}`
+        url: `/pages/short-video/short-video-my`
       })
     },
     playCurrentVideo() {
@@ -731,7 +731,6 @@ export default {
   height: 100vh;
   overflow: hidden;
   background: #000;
-  color: #fff;
 }
 
 .video-swiper,
@@ -840,6 +839,7 @@ export default {
   left: 30rpx;
   display: flex;
   flex-direction: column;
+  color: #fff;
   text-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.8);
 }
 
@@ -883,6 +883,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #fff;
   font-size: 30rpx;
 }
 
@@ -898,6 +899,7 @@ export default {
   border: 3rpx solid #fff;
   border-radius: 50%;
   background: #22c55e;
+  color: #fff;
   font-size: 32rpx;
   line-height: 32rpx;
 }
@@ -911,6 +913,7 @@ export default {
   flex-direction: column;
   align-items: center;
   min-width: 82rpx;
+  color: #fff;
   font-size: 23rpx;
   font-weight: 500;
   text-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.8);
