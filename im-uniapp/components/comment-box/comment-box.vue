@@ -84,6 +84,9 @@ export default {
     cancel() {
       this.$refs.commentPopup.close();
     },
+    clear() {
+      if (this.editorCtx) this.editorCtx.clear();
+    },
     selectEmoji(emoText) {
       let path = this.$emo.textToPathOriginal(emoText)
       // 先把键盘禁用了，否则会重新弹出键盘
