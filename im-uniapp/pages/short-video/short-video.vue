@@ -182,20 +182,37 @@
       </scroll-view>
       <view class="comment-input-trigger" @click="openCommentInput">
         <text>{{ commentPlaceholder }}</text>
-        <uni-icons type="compose" size="22" color="#777777"/>
+        <view class="comment-character-actions" @click.stop>
+          <view v-if="!commentForm.characterId" class="comment-character-setting" @click="showGroupTemplatesPopup">
+            <uni-icons type="gear" size="22" color="#777777"/>
+          </view>
+          <template v-else>
+            <head-image class="comment-character-avatar" :id="commentForm.characterId" :url="commentForm.avatar"
+                        :name="commentForm.nickName" :size="48" @click="showGroupTemplatesPopup"/>
+            <view class="comment-character-clear" @click="clearCommentCharacter">
+              <uni-icons type="closeempty" size="20" color="#999999"/>
+            </view>
+          </template>
+        </view>
       </view>
     </view>
-    <comment-box ref="commentBox" :comment-placeholder="commentPlaceholder" @submit="submitComment"
+    <comment-box ref="commentBox" :comment-placeholder="commentPlaceholder" :character-id="commentForm.characterId" @submit="submitComment"
                  @send-img="sendCommentImage" @send-word="sendCommentWord"/>
+    <group-template-list ref="groupTemplateListRef" :group-templates="groupTemplates" @confirm="chooseGroupTemplate"></group-template-list>
+    <character-list ref="characterListRef" :characters="characters" @confirm="chooseCharacter" @more="moreCharacterAvatars"></character-list>
+    <character-avatar-list  ref="characterAvatarListRef" :character-avatars="characterAvatars" @confirm="chooseCharacterAvatar"></character-avatar-list>
   </view>
 </template>
 
 <script>
 import CommentBox from '../../components/comment-box/comment-box.vue'
 import HeadImage from '../../components/head-image/head-image.vue'
+import GroupTemplateList from "../../components/group-template-list/group-template-list.vue";
+import CharacterList from "../../components/character-list/character-list.vue";
+import CharacterAvatarList from "../../components/character-avatar-list/character-avatar-list.vue";
 
 export default {
-  components: {CommentBox, HeadImage},
+  components: {CommentBox, HeadImage, GroupTemplateList, CharacterList, CharacterAvatarList},
   data() {
     return {
       videoList: [],
@@ -219,7 +236,16 @@ export default {
       commentActioning: false,
       commentAudio: null,
       avatarColors: ['#5daa31', '#c7515a', '#e03697', '#85029b', '#c9b455', '#326eb6'],
-      activeTab: 'recom' // 值集：recom，follow，friend，my
+      activeTab: 'recom', // 值集：recom，follow，friend，my
+      groupTemplates: [],
+      characters: [],
+      characterAvatars: [],
+      commentForm: {
+        characterAvatarId: null,
+        characterId: null,
+        nickName: '',
+        avatar: '',
+      },
     }
   },
   computed: {
@@ -272,7 +298,10 @@ export default {
         this.total = page.total || 0
         this.videoList.push(...videos)
         this.pageNo += 1
-        if (isFirstPage && videos.length) this.playCurrentVideo()
+        if (isFirstPage && videos.length) {
+          this.playCurrentVideo()
+          this.getCommentCharacter(videos[this.currentIndex].id)
+        }
       }).finally(() => {
         this.loading = false
         this.loadingMore = false
@@ -326,6 +355,7 @@ export default {
       this.currentVideoContext().pause()
       this.currentIndex = nextIndex
       this.playCurrentVideo()
+      this.getCommentCharacter(this.currentVideo.id)
       if (nextIndex >= this.videoList.length - 3 && this.hasMore) this.fetchVideos()
     },
     togglePlay(index) {
@@ -487,7 +517,11 @@ export default {
       this.$http({
         url: '/shortVideoComment/add',
         method: 'POST',
-        data: {videoId: this.currentVideo.id, content, type, replyCommentId: parent ? parent.id : null}
+        data: {
+          videoId: this.currentVideo.id, content, type, replyCommentId: parent ? parent.id : null,
+          characterId: this.commentForm.characterId,
+          avatarId: this.commentForm.characterAvatarId
+        }
       }).then((created) => {
         if (parent) {
           const top = String(parent.topReplyCommentId || 0) === '0' ? parent : this.commentList.find(item => String(item.id) === String(parent.topReplyCommentId))
@@ -606,7 +640,86 @@ export default {
     },
     goBack() {
       uni.navigateBack()
-    }
+    },
+    getCommentCharacter(videoId) {
+      this.clearCommentCharacter()
+      if (!videoId) return
+      const targetVideoId = String(videoId)
+      this.$http({
+        url: `/commentCharacter/getCommentCharacter?targetId=${videoId}&targetType=shortVideo`,
+        method: 'get',
+      }).then((res) => {
+        if (!res || String(this.currentVideo.id) !== targetVideoId) return
+        this.commentForm.characterAvatarId = res.avatarId;
+        this.commentForm.nickName = res.characterName;
+        this.commentForm.avatar = res.avatar;
+        this.commentForm.characterId = res.characterId;
+      })
+    },
+    clearCommentCharacter() {
+      this.commentForm.characterAvatarId = null;
+      this.commentForm.characterId = null;
+      this.commentForm.nickName = '';
+      this.commentForm.avatar = '';
+    },
+    showGroupTemplatesPopup() {
+      if (!this.groupTemplates || this.groupTemplates.length === 0) {
+        this.queryGroupTemplateList();
+      }
+      this.$refs.groupTemplateListRef.open();
+    },
+    async queryGroupTemplateList() {
+      await this.$http({
+        url: "/templateGroup/list",
+        method: 'get',
+        params: ''
+      }).then(data => {
+        this.groupTemplates = data;
+      })
+    },
+    chooseGroupTemplate(groupTemplate) {
+      this.$refs.groupTemplateListRef.cancel();
+      if (groupTemplate) {
+        this.queryCharacterList(groupTemplate.id);
+        this.$refs.characterListRef.open();
+      }
+    },
+    async queryCharacterList(templateGroupId) {
+      await this.$http({
+        url: `/templateCharacter/list/${templateGroupId}`,
+        method: 'get'
+      }).then(result => {
+        this.characters = result;
+      });
+    },
+    chooseCharacter(character) {
+      this.$refs.characterListRef.cancel();
+      this.commentForm.characterId = character.id;
+      this.commentForm.nickName = character.name;
+      this.commentForm.avatar = character.avatar;
+    },
+    async moreCharacterAvatars(character) {
+      this.commentForm.characterId = character.id;
+      this.commentForm.nickName = character.name;
+      this.commentForm.avatar = character.avatar;
+      await this.queryCharacterAvatars(character.id);
+      this.$refs.characterAvatarListRef.open();
+    },
+    async queryCharacterAvatars(templateCharacterId) {
+      await this.$http({
+        url: `/characterAvatar/list/${templateCharacterId}`,
+        method: 'get'
+      }).then((data) => {
+        this.characterAvatars = data;
+      });
+    },
+    chooseCharacterAvatar(characterAvatar) {
+      this.commentForm.avatar = characterAvatar.avatar;
+      this.commentForm.characterAvatarId = characterAvatar.id;
+      if (characterAvatar.level !== 0) {
+        this.commentForm.nickName = characterAvatar.name;
+      }
+    },
   }
 }
 </script>
@@ -1024,5 +1137,32 @@ export default {
   background: #f4f5f6;
   color: #999;
   font-size: 26rpx;
+}
+
+.comment-character-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  margin-left: 16rpx;
+}
+
+.comment-character-setting,
+.comment-character-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.comment-character-avatar {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.comment-character-clear {
+  margin-left: 8rpx;
 }
 </style>
