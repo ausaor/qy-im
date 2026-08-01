@@ -140,11 +140,11 @@ export default {
         }
       }
     },
-    videoId() {
-      if (this.visible && this.videoId != null) {
-        this.loadVideoDetail()
-      }
-    }
+    // videoId() {
+    //   if (this.visible && this.videoId != null) {
+    //     this.loadVideoDetail()
+    //   }
+    // }
   },
   methods: {
     handleClose() {

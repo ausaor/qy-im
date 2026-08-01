@@ -69,6 +69,8 @@
           <uni-icons type="videocam" size="30" color="rgba(255,255,255,0.75)"/>
         </view>
         <view class="video-shade"/>
+        <view v-if="video.status === '1'" class="video-audit-status auditing">审核中</view>
+        <view v-else-if="video.status === '3'" class="video-audit-status rejected">未通过审核</view>
         <view class="video-stat">
           <uni-icons
               :type="activeTab === 'works' ? 'videocam' : 'heart-filled'"
@@ -408,6 +410,26 @@ export default {
   left: 0;
   height: 80rpx;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.56));
+}
+
+.video-audit-status {
+  position: absolute;
+  top: 12rpx;
+  left: 12rpx;
+  z-index: 1;
+  padding: 6rpx 12rpx;
+  border-radius: 6rpx;
+  color: #ffffff;
+  font-size: 20rpx;
+  line-height: 1.35;
+}
+
+.video-audit-status.auditing {
+  background: rgba(245, 158, 11, 0.9);
+}
+
+.video-audit-status.rejected {
+  background: rgba(239, 68, 68, 0.9);
 }
 
 .video-stat {
