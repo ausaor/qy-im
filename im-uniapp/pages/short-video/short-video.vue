@@ -20,11 +20,11 @@
               :show-center-play-btn="false"
               :controls="false"
               :loop="true"
-              :object-fit="'cover'"
+              :object-fit="'contain'"
               :enable-progress-gesture="false"
               @click="togglePlay(index)"
           />
-          <image v-if="!video.videoUrl && video.coverUrl" class="video-cover" :src="video.coverUrl" mode="aspectFill"/>
+          <image v-if="!video.videoUrl && video.coverUrl" class="video-cover" :src="video.coverUrl" mode="aspectFit"/>
           <view v-if="index === currentIndex && !isPlaying" class="play-mask" @click="togglePlay(index)">
             <uni-icons type="videocam" size="48" color="#ffffff"/>
           </view>
