@@ -71,6 +71,9 @@
         <view class="video-shade"/>
         <view v-if="video.status === '1'" class="video-audit-status auditing">审核中</view>
         <view v-else-if="video.status === '3'" class="video-audit-status rejected">未通过审核</view>
+        <view v-if="activeTab === 'works'" class="video-edit" @tap.stop="goToVideoEdit(video.id)">
+          <uni-icons type="compose" size="18" color="#ffffff"/>
+        </view>
         <view class="video-stat">
           <uni-icons
               :type="activeTab === 'works' ? 'videocam' : 'heart-filled'"
@@ -140,9 +143,10 @@ export default {
       this.videoList = []
       this.loadVideoList()
     },
-    goToVideoEdit() {
+    goToVideoEdit(videoId) {
+      const query = videoId !== undefined && videoId !== null ? `?videoId=${encodeURIComponent(videoId)}` : ''
       uni.navigateTo({
-        url: '/pages/short-video/short-video-edit'
+        url: `/pages/short-video/short-video-edit${query}`
       })
     },
     goBack() {
@@ -430,6 +434,20 @@ export default {
 
 .video-audit-status.rejected {
   background: rgba(239, 68, 68, 0.9);
+}
+
+.video-edit {
+  position: absolute;
+  right: 12rpx;
+  bottom: 12rpx;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
 }
 
 .video-stat {
