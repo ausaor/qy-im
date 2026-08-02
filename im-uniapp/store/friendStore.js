@@ -126,7 +126,7 @@ export default defineStore('friendStore', {
 			return state.friendRequests.find((f) => f.id === id);
 		},
 		isFriend: (state) => (userId) => {
-			let f = state.findFriend(userId)
+			let f = state.friends.find((f) => f.id === userId)
 			return f && !f.deleted
 		},
 		friendMsgDnd: (state) => (friendId) => {

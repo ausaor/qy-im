@@ -78,10 +78,20 @@
         <uni-icons type="back" size="25" color="#ffffff"/>
       </view>
       <view class="tab-list">
-        <text :class="{ active: activeTab === 'friend' }" @click="switchTab('friend')">好友</text>
-        <text :class="{ active: activeTab === 'follow' }" @click="switchTab('follow')">关注</text>
+        <view class="tab-item" @click="switchTab('friend')">
+          <text :class="{ active: activeTab === 'friend' }">好友</text>
+          <view v-show="friendShortVideoCount > 0" class="notify-dot"/>
+        </view>
+        <view class="tab-item" @click="switchTab('follow')">
+          <text :class="{ active: activeTab === 'follow' }">关注</text>
+          <view v-show="followShortVideoCount > 0" class="notify-dot"/>
+        </view>
+        <text :class="{ active: activeTab === 'star' }" @click="switchTab('star')">星选</text>
         <text :class="{ active: activeTab === 'recom' }" @click="switchTab('recom')">推荐</text>
-        <text @click="goToMyVideos">我的</text>
+        <view class="my-tab" @click="goToMyVideos">
+          <text>我的</text>
+          <view v-show="shortVideoNotifyCount > 0" class="notify-dot"/>
+        </view>
       </view>
     </view>
     <view v-if="loadingMore" class="load-more">
@@ -261,6 +271,30 @@ export default {
     commentHasMore() {
       return this.commentList.length < this.commentTotal
     },
+    shortVideoNotifyCount() {
+      return this.shortVideoStore.getShortVideoNotifyCount()
+    },
+    friends() {
+      return this.friendStore.friends;
+    },
+    follows() {
+      return this.followStore.follows
+    },
+    shortVideos() {
+      return this.shortVideoStore.shortVideoMap;
+    },
+    friendShortVideoCount() {
+      return this.friends.reduce((count, friend) => {
+        const videos = this.shortVideos.get(`${friend.id}-user`)
+        return count + (videos ? videos.length : 0)
+      }, 0)
+    },
+    followShortVideoCount() {
+      return this.follows.reduce((count, follow) => {
+        const videos = this.shortVideos.get(`${follow.targetId}-${follow.type}`)
+        return count + (videos ? videos.length : 0)
+      }, 0)
+    }
   },
   created() {
     this.fetchVideos()
@@ -287,6 +321,8 @@ export default {
         data.section = 'friends'
       } else if (this.activeTab === 'follow') {
         data.section = 'follows'
+      } else if (this.activeTab === 'star') {
+        data.section = 'allCharacters'
       }
 
       this.$http({
@@ -310,6 +346,11 @@ export default {
     switchTab(tab) {
       if (this.activeTab === tab || this.loading || this.loadingMore) return
       this.currentVideoContext().pause()
+      if (tab === 'friend' && this.friendShortVideoCount > 0) {
+        this.shortVideoStore.clearFriendShortVideos()
+      } else if (tab === 'follow' && this.followShortVideoCount > 0) {
+        this.shortVideoStore.clearFollowShortVideos()
+      }
       this.activeTab = tab
       this.videoList = []
       this.currentIndex = 0
@@ -812,6 +853,25 @@ export default {
   padding-right: 20rpx;
   font-size: 30rpx;
   color: rgba(255, 255, 255, 0.75);
+}
+
+.my-tab {
+  position: relative;
+}
+
+.tab-item {
+  position: relative;
+}
+
+.notify-dot {
+  position: absolute;
+  top: -8rpx;
+  right: -12rpx;
+  width: 12rpx;
+  height: 12rpx;
+  border: 2rpx solid rgba(0, 0, 0, 0.45);
+  border-radius: 50%;
+  background: #f0445d;
 }
 
 .tab-list .active {

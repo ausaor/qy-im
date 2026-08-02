@@ -393,9 +393,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         if (Objects.nonNull(dto.getSize())) {
             shortVideo.setSize(dto.getSize());
         }
-        if (Objects.nonNull(dto.getStatus())) {
-            shortVideo.setStatus(dto.getStatus());
-        }
+        shortVideo.setStatus(ReviewEnum.REVIEWING.getCode());
         shortVideo.setUpdateTime(new Date());
         this.updateById(shortVideo);
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);

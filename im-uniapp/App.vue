@@ -68,6 +68,9 @@ export default {
 				} else if (cmd == 6) {
           // 处理动态消息
           this.handleTalkMessage(msgInfo);
+        } else if (cmd == 7) {
+          // 处理短视频消息
+          this.handleShortVideoMessage(msgInfo);
         } else if (cmd == 9) {
           // 地区群聊消息
           msgInfo.chatType = 'REGION-GROUP'
@@ -115,7 +118,8 @@ export default {
 				() => this.pullOfflineTalks(this.talkStore.privateTalkMaxId),
 				() => this.pullFriendRequests(),
 				() => this.pullGroupRequests(),
-				() => this.pullOfflineTalkNotify()
+				() => this.pullOfflineTalkNotify(),
+        () => this.pullOfflineShortVideoNotify()
 			];
 			
 			// 使用 Promise 链串行执行，确保前一个请求完成后再执行下一个
@@ -220,6 +224,12 @@ export default {
         timeout: 8000 // 8秒超时
       }).then((data) => {
       }).catch((err) => {
+      })
+    },
+    pullOfflineShortVideoNotify() {
+      this.$http({
+        url: "/shortVideoNotify/pullOfflineNotify",
+        method: 'GET'
       })
     },
 		handlePrivateMessage(msg) {
@@ -438,6 +448,13 @@ export default {
         // 插入群聊消息
         this.insertRegionGroupMessage(group, msg);
       })
+    },
+    handleShortVideoMessage(msg) {
+      if (msg.type === 1) { // 新的短视频通知
+        this.shortVideoStore.addShortVideo(msg.shortVideo);
+      } else if ([2,3,4,5].includes(msg.type)) {
+        this.shortVideoStore.addShortVideoNotify(msg);
+      }
     },
     handleTalkMessage(msg) {
       if (msg.type === 1) {

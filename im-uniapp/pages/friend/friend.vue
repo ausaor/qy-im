@@ -44,7 +44,7 @@
               </view>
               <view class="item-info">
                 <view class="item-name">轻视频</view>
-                <uni-badge v-show="starSpaceNotifyCount > 0" :text="starSpaceNotifyCount" />
+                <uni-badge v-show="shortVideoCount > 0 || shortVideoNotifyCount > 0" :text="shortVideoCount + shortVideoNotifyCount" />
               </view>
               <uni-icons class="arrow-right" type="right" size="16" color="#ccc"></uni-icons>
             </view>
@@ -164,10 +164,12 @@ export default {
       })
     },
     refreshUnreadBadge() {
-      if (this.friendRequestCount > 0 || this.notifyCount > 0 || this.unreadUserCount > 0 || this.receivedGroupRequestsCount > 0 || this.joinGroupRequestsCount > 0 || this.starSpaceNotifyCount > 0) {
+      if (this.friendRequestCount > 0 || this.notifyCount > 0 || this.unreadUserCount > 0 || this.receivedGroupRequestsCount > 0
+          || this.joinGroupRequestsCount > 0 || this.starSpaceNotifyCount > 0 || this.shortVideoCount > 0 || this.shortVideoNotifyCount > 0) {
         uni.setTabBarBadge({
           index: 2,
-          text: this.friendRequestCount + this.notifyCount + this.unreadUserCount + this.receivedGroupRequestsCount + this.joinGroupRequestsCount  + this.starSpaceNotifyCount + ""
+          text: this.friendRequestCount + this.notifyCount + this.unreadUserCount + this.receivedGroupRequestsCount
+              + this.joinGroupRequestsCount  + this.starSpaceNotifyCount + this.shortVideoCount + this.shortVideoNotifyCount + ""
         })
       } else {
         uni.removeTabBarBadge({
@@ -257,6 +259,19 @@ export default {
     },
     starSpaceNotifyCount() {
       return this.talkStore.getTotalCharacterNotifyCount();
+    },
+    shortVideoCount() {
+      let count = 0;
+      const shortVideoMap = this.shortVideoStore.shortVideoMap
+      shortVideoMap.forEach((v) => {
+        if (v) {
+          count += v.length;
+        }
+      });
+      return count;
+    },
+    shortVideoNotifyCount() {
+      return this.shortVideoStore.getShortVideoNotifyCount()
     }
 	},
   watch: {

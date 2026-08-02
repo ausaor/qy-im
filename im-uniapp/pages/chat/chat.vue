@@ -121,10 +121,12 @@ export default {
       }
     },
     refreshOtherUnreadBadge() {
-      if (this.friendRequestCount > 0 || this.notifyCount > 0 || this.unreadUserCount > 0 || this.receivedGroupRequestsCount > 0 || this.joinGroupRequestsCount > 0 || this.starSpaceNotifyCount > 0) {
+      if (this.friendRequestCount > 0 || this.notifyCount > 0 || this.unreadUserCount > 0 || this.receivedGroupRequestsCount > 0
+          || this.joinGroupRequestsCount > 0 || this.starSpaceNotifyCount > 0 || this.shortVideoCount > 0 || this.shortVideoNotifyCount > 0) {
         uni.setTabBarBadge({
           index: 2,
-          text: this.friendRequestCount + this.notifyCount + this.unreadUserCount + this.receivedGroupRequestsCount + this.joinGroupRequestsCount  + this.starSpaceNotifyCount + ""
+          text: this.friendRequestCount + this.notifyCount + this.unreadUserCount + this.receivedGroupRequestsCount
+              + this.joinGroupRequestsCount  + this.starSpaceNotifyCount + this.shortVideoCount + this.shortVideoNotifyCount + ""
         })
       } else {
         uni.removeTabBarBadge({
@@ -175,6 +177,19 @@ export default {
     },
     starSpaceNotifyCount() {
       return this.talkStore.getTotalCharacterNotifyCount();
+    },
+    shortVideoCount() {
+      let count = 0;
+      const shortVideoMap = this.shortVideoStore.shortVideoMap
+      shortVideoMap.forEach((v) => {
+        if (v) {
+          count += v.length;
+        }
+      });
+      return count;
+    },
+    shortVideoNotifyCount() {
+      return this.shortVideoStore.getShortVideoNotifyCount()
     },
 		loading() {
 			return this.chatStore.isLoading();
