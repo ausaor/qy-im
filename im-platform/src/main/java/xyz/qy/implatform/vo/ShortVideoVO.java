@@ -15,9 +15,15 @@ public class ShortVideoVO {
 
     private String authorName;
 
+    // 头像
     private String headImage;
 
     private Long objectId;
+
+    private String objectName;
+
+    // 对象头像
+    private String avatar;
 
     private String type;
 

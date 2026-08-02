@@ -41,6 +41,24 @@
           show-word-limit
         />
       </el-form-item>
+      <el-form-item label="我的角色" prop="objectId" v-show="myCharacters.length">
+        <div class="character-selector">
+          <el-select v-model="selectValue" placeholder="请选择" @change="selectMyCharacterChange">
+            <el-option
+                v-for="item in myCharacters"
+                :key="item.characterId"
+                :label="item.characterName"
+                :value="item.characterId">
+              <span style="float: left">{{ item.characterName }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px"><head-image :name="item.characterName" :url="item.characterAvatar" :size="30"></head-image></span>
+            </el-option>
+          </el-select>
+          <div v-if="form.type !== 'user'" class="selected-character">
+            <head-image :name="form.objectName" :url="form.avatar" :size="32"/>
+            <el-button class="clear-character" type="text" icon="el-icon-close" @click="clearCharacter"/>
+          </div>
+        </div>
+      </el-form-item>
 
       <el-form-item label="封面图片" prop="coverUrl">
         <ImageUpload
@@ -69,10 +87,12 @@
 <script>
 import VideoUpload from '@/components/common/VideoUpload.vue'
 import ImageUpload from '@/components/common/ImageUpload.vue'
+import HeadImage from "@components/common/HeadImage.vue";
 
 export default {
   name: 'ShortVideoEdit',
   components: {
+    HeadImage,
     VideoUpload,
     ImageUpload,
   },
@@ -102,7 +122,11 @@ export default {
         duration: 0,
         width: 0,
         height: 0,
-        size: 0
+        size: 0,
+        type: 'user',
+        objectId: null,
+        objectName: '',
+        avatar: '',
       },
       rules: {
         videoUrl: [
@@ -123,7 +147,11 @@ export default {
         { value: 3, label: '关注可见' },
         { value: 2, label: '好友可见' },
         { value: 1, label: '私密' }
-      ]
+      ],
+      myCharacters: [],
+      selectValue: '',
+      selectAvatarValue: '',
+      selectAvatars: [],
     }
   },
   computed: {
@@ -138,6 +166,7 @@ export default {
         if (this.videoId != null) {
           this.loadVideoDetail()
         }
+        this.queryMyCharacters();
       }
     },
     // videoId() {
@@ -161,8 +190,13 @@ export default {
         duration: 0,
         width: 0,
         height: 0,
-        size: 0
+        size: 0,
+        type: 'user',
+        objectId: null,
+        objectName: '',
+        avatar: '',
       }
+      this.selectValue = ''
       this.$nextTick(() => {
         if (this.$refs.formRef) {
           this.$refs.formRef.clearValidate()
@@ -175,6 +209,10 @@ export default {
         method: 'get'
       }).then((data) => {
         this.form.id = data.id
+        this.form.objectId = data.objectId
+        this.form.objectName = data.objectName || ''
+        this.form.avatar = data.avatar || ''
+        this.form.type = data.type
         this.form.scope = data.scope
         this.form.title = data.title || ''
         this.form.coverUrl = data.coverUrl || ''
@@ -183,6 +221,7 @@ export default {
         this.form.width = data.width || 0
         this.form.height = data.height || 0
         this.form.size = data.size || 0
+        this.syncSelectedCharacter()
       }).catch(() => {
         this.$message.error('获取视频详情失败')
       })
@@ -218,7 +257,8 @@ export default {
         const isEdit = this.form.id != null
         const url = isEdit ? '/shortVideo/update' : '/shortVideo/add'
         const params = {
-          type: this.type,
+          type: this.form.type || this.type,
+          objectId: this.form.objectId,
           scope: this.form.scope,
           title: this.form.title,
           coverUrl: this.form.coverUrl,
@@ -226,7 +266,7 @@ export default {
           duration: this.form.duration,
           width: this.form.width,
           height: this.form.height,
-          size: this.form.size
+          size: this.form.size,
         }
         if (isEdit) {
           params.id = this.form.id
@@ -246,7 +286,38 @@ export default {
           this.submitting = false
         })
       })
-    }
+    },
+    queryMyCharacters() {
+      this.$http({
+        url: "/characterUser/getMyCharacters",
+        method: 'get'
+      }).then((data) => {
+        this.myCharacters = data;
+        this.syncSelectedCharacter();
+      });
+    },
+    syncSelectedCharacter() {
+      if (!this.form.objectId || !this.myCharacters.length) return;
+      const character = this.myCharacters.find(item => String(item.id) === String(this.form.objectId));
+      if (!character) return;
+      this.selectValue = character.characterId;
+      this.form.objectName = character.characterName;
+      this.form.avatar = character.characterAvatar;
+    },
+    selectMyCharacterChange(value) {
+      let character = this.myCharacters.find(item => item.characterId === value)
+      this.form.objectName = character.characterName;
+      this.form.avatar = character.characterAvatar;
+      this.form.objectId = character.characterId;
+      this.form.type = 'character';
+    },
+    clearCharacter() {
+      this.selectValue = '';
+      this.form.objectId = null;
+      this.form.objectName = '';
+      this.form.avatar = '';
+      this.form.type = 'user';
+    },
   }
 }
 </script>
@@ -260,5 +331,26 @@ export default {
 
 .dialog-footer {
   text-align: right;
+}
+
+.character-selector {
+  display: flex;
+  align-items: center;
+
+  .el-select {
+    flex: 1;
+  }
+}
+
+.selected-character {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.clear-character {
+  margin-left: 4px;
+  padding: 0;
+  color: #909399;
 }
 </style>

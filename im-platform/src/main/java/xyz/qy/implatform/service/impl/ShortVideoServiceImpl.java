@@ -54,6 +54,7 @@ import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.contant.RedisKey;
 import xyz.qy.implatform.util.RedisCache;
+import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.FollowVO;
 import xyz.qy.implatform.vo.GroupVO;
 import xyz.qy.implatform.vo.PageResultVO;
@@ -329,6 +330,19 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         }
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
         vo.setIsOwner(isOwner(shortVideo.getUserId()));
+        if (FollowEnum.CHARACTER.getCode().equals(vo.getType())) {
+            TemplateCharacter character = templateCharacterService.findPublishedById(vo.getObjectId());
+            if (ObjectUtil.isNotNull(character)) {
+                vo.setObjectName(character.getName());
+                vo.setAvatar(character.getAvatar());
+            }
+        } else if (FollowEnum.TEMPLATE.getCode().equals(vo.getType())) {
+            TemplateGroup templateGroup = templateGroupService.findPublishedById(vo.getObjectId());
+            if (ObjectUtil.isNotNull(templateGroup)) {
+                vo.setObjectName(templateGroup.getGroupName());
+                vo.setAvatar(templateGroup.getAvatar());
+            }
+        }
         return vo;
     }
 
@@ -345,6 +359,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         }
 
         ShortVideo shortVideo = BeanUtils.copyProperties(dto, ShortVideo.class);
+        shortVideo.setTitle(SensitiveUtil.filter(dto.getTitle()));
         shortVideo.setUserId(session.getUserId());
         shortVideo.setCreateTime(new Date());
         shortVideo.setUpdateTime(new Date());
@@ -362,10 +377,24 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
     @Transactional
     @Override
     public ShortVideoVO updateShortVideo(ShortVideoUpdateDTO dto) {
+        UserSession session = SessionContext.getSession();
+        Long userId = session.getUserId();
+
         ShortVideo shortVideo = this.getById(dto.getId());
         checkExists(shortVideo);
         checkOwner(shortVideo);
         checkViewScope(shortVideo.getType(), dto.getScope());
+        if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
+            checkCharacterUser(dto.getObjectId(), null, userId);
+        } else if (FollowEnum.TEMPLATE.getCode().equals(dto.getType())) {
+            checkCharacterUser(null, dto.getObjectId(), userId);
+        }
+        if (StringUtils.isNotBlank(dto.getType())) {
+            shortVideo.setType(dto.getType());
+        }
+        if (Objects.nonNull(dto.getObjectId())) {
+            shortVideo.setObjectId(dto.getObjectId());
+        }
         if (Objects.nonNull(dto.getScope())) {
             shortVideo.setScope(dto.getScope());
         }
@@ -393,6 +422,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         if (Objects.nonNull(dto.getSize())) {
             shortVideo.setSize(dto.getSize());
         }
+        shortVideo.setTitle(SensitiveUtil.filter(shortVideo.getTitle()));
         shortVideo.setStatus(ReviewEnum.REVIEWING.getCode());
         shortVideo.setUpdateTime(new Date());
         this.updateById(shortVideo);

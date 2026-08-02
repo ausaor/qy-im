@@ -48,20 +48,38 @@
             </view>
           </picker>
         </view>
+        <view v-show="myCharacters.length" class="form-row character-row" @tap="chooseMyCharacters">
+          <text class="field-label">选择角色</text>
+          <view class="character-picker">
+            <view v-show="form.type !== 'user'" class="selected-character">
+              <head-image :name="form.objectName" :url="form.avatar" :size="56"/>
+              <text class="selected-character-name">{{ form.objectName }}</text>
+              <view class="clear-character" @tap.stop="clearCharacter">
+                <uni-icons type="closeempty" size="18" color="#9ca7b5"/>
+              </view>
+            </view>
+            <uni-icons type="right" size="16" color="#9ca7b5"/>
+          </view>
+        </view>
       </view>
     </scroll-view>
     <video-play v-if="previewVisible" :video-url="form.videoUrl" :cover-url="form.coverUrl"
                 :visible.sync="previewVisible" @close="previewVisible = false"/>
+    <character-list ref="characterList" :characters="characterList" @confirm="chooseCharacter" @more="moreCharacterAvatars"></character-list>
+    <character-avatar-list ref="characterAvatarList" :characterAvatars="characterAvatarList" @confirm="chooseCharacterAvatar"></character-avatar-list>
   </view>
 </template>
 
 <script>
 import VideoUpload from '../../components/video-upload/video-upload.vue'
 import VideoPlay from '../../components/video-play/video-play.vue'
+import CharacterList from "../../components/character-list/character-list.vue";
+import CharacterAvatarList from "../../components/character-avatar-list/character-avatar-list.vue";
+import HeadImage from "../../components/head-image/head-image.vue";
 
 export default {
   name: 'short-video-edit',
-  components: {VideoUpload, VideoPlay},
+  components: {VideoUpload, VideoPlay, CharacterList, CharacterAvatarList, HeadImage},
   data() {
     return {
       videoId: null, loadingDetail: false, uploading: false, submitting: false, previewVisible: false,
@@ -75,11 +93,19 @@ export default {
         title: '',
         videoUrl: '',
         coverUrl: '',
+        type: 'user',
         duration: null,
         width: null,
         height: null,
-        size: null
+        size: null,
+        objectId: null,
+        avatarId: null,
+        objectName: '',
+        avatar: '',
       },
+      myCharacters: [],
+      characterList: [],
+      characterAvatarList: [],
     }
   },
   computed: {
@@ -104,9 +130,9 @@ export default {
           return
         }
         this.form = {
-          ...this.form, id: data.id, scope: Number(data.scope), title: data.title || '',
-          videoUrl: data.videoUrl || '', coverUrl: data.coverUrl || '', duration: data.duration,
-          width: data.width, height: data.height, size: data.size,
+          ...this.form, id: data.id, scope: Number(data.scope), title: data.title || '',type: data.type,
+          videoUrl: data.videoUrl || '', coverUrl: data.coverUrl || '', duration: data.duration,objectId: data.objectId,
+          width: data.width, height: data.height, size: data.size, objectName: data.objectName || '',avatar: data.avatar || '',
         }
       }).finally(() => {
         this.loadingDetail = false
@@ -154,7 +180,7 @@ export default {
       if (Array.from(title).length > 100) return uni.showToast({icon: 'none', title: '标题最多100个字'})
 
       const data = {...this.form, title, scope: Number(this.form.scope)}
-      if (!this.isEdit) data.type = 'user'
+      data.type = this.form.type;
       this.submitting = true
       uni.showLoading({title: this.isEdit ? '保存中...' : '发布中...', mask: true})
       this.$http({url: this.isEdit ? '/shortVideo/update' : '/shortVideo/add', method: 'POST', data}).then(() => {
@@ -165,6 +191,61 @@ export default {
         uni.hideLoading()
       })
     },
+    queryMyCharacters() {
+      this.$http({
+        url: "/characterUser/getMyCharacters",
+        method: 'get'
+      }).then((data) => {
+        this.myCharacters = data;
+      });
+    },
+    chooseMyCharacters() {
+      this.characterList = [];
+      if (this.myCharacters.length) {
+        this.myCharacters.forEach(item => {
+          this.characterList.push(item.character);
+        });
+        this.$refs.characterList.open();
+      }
+    },
+    chooseCharacter(character) {
+      this.form.objectId = character.id;
+      this.form.objectName = character.name;
+      this.form.avatar = character.avatar;
+      this.form.avatarId = null;
+      this.form.type = 'character'
+    },
+    async moreCharacterAvatars(character) {
+      this.form.objectId = character.id;
+      this.form.objectName = character.name;
+      this.form.avatar = character.avatar;
+      this.form.type = 'character'
+      await this.queryCharacterAvatars(character.id);
+      this.$refs.characterAvatarList.open();
+    },
+    async queryCharacterAvatars(templateCharacterId) {
+      await this.$http({
+        url: `/characterAvatar/list/${templateCharacterId}`,
+        method: 'get'
+      }).then((data) => {
+        this.characterAvatarList = data;
+      });
+    },
+    chooseCharacterAvatar(characterAvatar) {
+      this.form.avatarId = characterAvatar.id;
+      this.form.avatar = characterAvatar.avatar;
+      this.form.type = 'character'
+      if (characterAvatar.level !== 0) {
+        this.form.objectName = characterAvatar.name;
+      }
+    },
+    clearCharacter() {
+      this.form.objectId = null;
+      this.form.avatarId = null;
+      this.form.objectName = '';
+      this.form.avatar = '';
+      this.form.type = 'user'
+    },
     goBack() {
       if (!this.submitting) uni.navigateBack()
     },
@@ -174,6 +255,7 @@ export default {
       this.videoId = options.videoId
       this.loadDetail()
     }
+    this.queryMyCharacters();
   },
 }
 </script>
@@ -359,5 +441,41 @@ export default {
   gap: 8rpx;
   color: #596474;
   font-size: 28rpx;
+}
+
+.character-row {
+  align-items: center;
+}
+
+.character-row .field-label {
+  padding-top: 0;
+}
+
+.character-picker {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.selected-character {
+  display: flex;
+  align-items: center;
+  margin-right: 16rpx;
+}
+
+.selected-character-name {
+  max-width: 260rpx;
+  margin-left: 12rpx;
+  overflow: hidden;
+  color: #596474;
+  font-size: 28rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clear-character {
+  margin-left: 12rpx;
+  line-height: 1;
 }
 </style>

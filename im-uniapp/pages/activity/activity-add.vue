@@ -19,7 +19,7 @@
             <head-image class="avatar" :name="form.nickName" :url="form.avatar" :size="80" @click="openCharacterChoosePopup"></head-image>
             <text class="nickname">{{form.nickName}}</text>
           </view>
-          <view class="user-info-right" @click="chooseMyCharacters" v-if="myCharacters.length">
+          <view class="user-info-right" @click="chooseMyCharacters" v-show="myCharacters.length">
             我的角色
           </view>
         </view>
