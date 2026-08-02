@@ -5,6 +5,10 @@
         <view class="back-button" @tap="goBack">
           <uni-icons type="back" size="22" color="#3d6474"/>
         </view>
+        <view class="notify-button" @tap="goToNotify">
+          <uni-icons type="chatbubble" size="22" color="#3d6474"/>
+          <view v-if="shortVideoNotifyCount" class="notify-badge">{{ shortVideoNotifyCount > 99 ? '99+' : shortVideoNotifyCount }}</view>
+        </view>
         <view class="avatar-ring">
           <image v-if="userInfo.headImage" class="avatar" :src="userInfo.headImage" mode="aspectFill"/>
           <view v-else class="avatar avatar-placeholder">{{ avatarInitial }}</view>
@@ -106,6 +110,9 @@ export default {
     mine() {
       return this.userStore.userInfo;
     },
+    shortVideoNotifyCount() {
+      return this.shortVideoStore.getShortVideoNotifyCount()
+    },
     avatarInitial() {
       const name = this.userInfo.nickName || this.userInfo.userName || ''
       return name ? name.charAt(0).toUpperCase() : '我'
@@ -152,6 +159,11 @@ export default {
     goToFollowFans() {
       uni.navigateTo({
         url: '/pages/mine/mine-follow-fans'
+      })
+    },
+    goToNotify() {
+      uni.navigateTo({
+        url: '/pages/short-video/short-video-notify'
       })
     },
     goBack() {
@@ -235,6 +247,37 @@ export default {
   height: 56rpx;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.65);
+}
+
+.notify-button {
+  position: absolute;
+  top: 18rpx;
+  right: 92rpx;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.notify-badge {
+  position: absolute;
+  top: -8rpx;
+  right: -14rpx;
+  min-width: 28rpx;
+  height: 28rpx;
+  padding: 0 5rpx;
+  border: 2rpx solid #ffffff;
+  border-radius: 16rpx;
+  box-sizing: border-box;
+  background: #f0445d;
+  color: #ffffff;
+  font-size: 18rpx;
+  line-height: 24rpx;
+  text-align: center;
 }
 
 .avatar-ring {

@@ -166,6 +166,9 @@
 		},
 		{
 			"path": "pages/short-video/short-video-user"
+		},
+		{
+			"path": "pages/short-video/short-video-notify"
 		}
 	],
 	"globalStyle": {

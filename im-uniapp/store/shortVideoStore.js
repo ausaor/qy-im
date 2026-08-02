@@ -7,6 +7,7 @@ export default defineStore('shortVideoStore', {
             playedVideoIds: [],
             // 已点赞的评论 ID 集合
             likedCommentIds: [],
+            shortVideoNotify: []
         }
     },
     actions: {
@@ -32,6 +33,12 @@ export default defineStore('shortVideoStore', {
                 this.likedCommentIds.push(commentId)
             }
         },
+        addShortVideoNotify(msg) {
+            this.shortVideoNotify.push(msg);
+        },
+        clearShortVideoNotify() {
+            this.shortVideoNotify = [];
+        }
     },
     getters: {
         /**
@@ -46,6 +53,9 @@ export default defineStore('shortVideoStore', {
          */
         isCommentLiked: (state) => (commentId) => {
             return state.likedCommentIds.includes(commentId)
+        },
+        getShortVideoNotifyCount: (state) =>  () => {
+            return state.shortVideoNotify.length;
         },
     }
 })
