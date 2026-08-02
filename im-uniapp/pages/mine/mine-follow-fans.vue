@@ -169,7 +169,10 @@ export default {
       return nameMap[type] || type || '未知类型'
     }
   },
-  onLoad() {
+  onLoad(options) {
+    if (['follow', 'fans'].includes(options.tab)) {
+      this.activeTab = options.tab
+    }
     this.loadList()
   }
 }

@@ -32,11 +32,11 @@
           <text class="stat-count">{{ formatCount(likeCount) }}</text>
           <text class="stat-label">获赞</text>
         </view>
-        <view class="stat-item stat-clickable" @tap="goToFollowFans">
+        <view class="stat-item stat-clickable" @tap="goToFollowFans('follow')">
           <text class="stat-count">{{ formatCount(followCount) }}</text>
           <text class="stat-label">关注</text>
         </view>
-        <view class="stat-item stat-clickable" @tap="goToFollowFans">
+        <view class="stat-item stat-clickable" @tap="goToFollowFans('fans')">
           <text class="stat-count">{{ formatCount(fansCount) }}</text>
           <text class="stat-label">粉丝</text>
         </view>
@@ -120,7 +120,6 @@ export default {
   data() {
     return {
       userInfo: {},
-      followCount: 0,
       fansCount: 0,
       likeCount: 0,
       activeTab: 'works',
@@ -171,6 +170,9 @@ export default {
       }
       return textMap[this.activeTab]
     },
+    followCount() {
+      return this.followStore.follows.length;
+    }
   },
   methods: {
     loadUserInfo() {
@@ -179,7 +181,6 @@ export default {
         method: 'get'
       }).then((user) => {
         this.userInfo = user || {}
-        this.followCount = this.userInfo.followCount || 0
         this.fansCount = this.userInfo.fansCount || 0
         this.likeCount = this.userInfo.shortVideoLikedCount || this.userInfo.likeCount || 0
       })
@@ -253,9 +254,9 @@ export default {
         url: `/pages/short-video/short-video-edit${query}`
       })
     },
-    goToFollowFans() {
+    goToFollowFans(tab) {
       uni.navigateTo({
-        url: '/pages/mine/mine-follow-fans'
+        url: `/pages/mine/mine-follow-fans?tab=${tab}`
       })
     },
     goToNotify() {
