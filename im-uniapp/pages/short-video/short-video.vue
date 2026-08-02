@@ -42,8 +42,8 @@
                   avatarText(video)
                 }}
               </view>
-              <view class="follow-mark" :class="{ followed: isFollowed(video) }" @click="toggleFollow(video)">
-                <text>{{ isFollowed(video) ? '-' : '+' }}</text>
+              <view v-if="!isFollowed(video)" class="follow-mark" @click="toggleFollow(video)">
+                <text>+</text>
               </view>
             </view>
             <view class="action-item" @click="toggleLike(video)">
@@ -958,14 +958,10 @@ export default {
   height: 38rpx;
   border: 3rpx solid #fff;
   border-radius: 50%;
-  background: #22c55e;
+  background: #f23b54;
   color: #fff;
   font-size: 32rpx;
   line-height: 32rpx;
-}
-
-.follow-mark.followed {
-  background: #f23b54;
 }
 
 .action-item {

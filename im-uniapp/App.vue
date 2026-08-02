@@ -127,7 +127,7 @@ export default {
 			tasks.forEach((task, index) => {
 				chain = chain.then(() => {
 					console.log(`执行离线消息任务 ${index + 1}/${tasks.length}`);
-					return task().catch(err => {
+					return Promise.resolve().then(task).catch(err => {
 						// 单个任务失败不影响后续任务
 						console.error(`离线消息任务 ${index + 1} 失败:`, err);
 					});
@@ -226,12 +226,13 @@ export default {
       }).catch((err) => {
       })
     },
-    pullOfflineShortVideoNotify() {
-      this.$http({
-        url: "/shortVideoNotify/pullOfflineNotify",
-        method: 'GET'
-      })
-    },
+	    pullOfflineShortVideoNotify() {
+	      return http({
+	        url: "/shortVideoNotify/pullOfflineNotify",
+	        method: 'GET',
+	        timeout: 8000 // 8秒超时
+	      })
+	    },
 		handlePrivateMessage(msg) {
       // 标记这条消息是不是自己发的
       msg.selfSend = msg.sendId === this.userStore.userInfo.id;

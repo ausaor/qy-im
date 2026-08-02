@@ -56,6 +56,24 @@
         <text>喜欢</text>
         <view class="tab-indicator"/>
       </view>
+      <view class="batch-manage-button" @tap="toggleBatchMode">
+        <text>{{ batchMode ? '完成' : '管理' }}</text>
+      </view>
+    </view>
+
+    <view v-if="batchMode" class="batch-action-bar">
+      <view class="batch-select-all" @tap="toggleSelectAll">
+        <view class="selection-icon" :class="{ selected: isAllSelected, indeterminate: isIndeterminate }">
+          <uni-icons v-if="isAllSelected" type="checkmarkempty" size="18" color="#ffffff"/>
+          <view v-else-if="isIndeterminate" class="indeterminate-mark"/>
+        </view>
+        <text>全选</text>
+      </view>
+      <text class="batch-selected-count">已选 {{ selectedVideoIds.length }} 个</text>
+      <view class="batch-delete-button" :class="{ disabled: !selectedVideoIds.length || batchSubmitting }" @tap="handleBatchAction">
+        <uni-icons type="trash" size="17" color="#ffffff"/>
+        <text>{{ batchActionText }}</text>
+      </view>
     </view>
 
     <view v-if="loading" class="state-view">
@@ -67,7 +85,7 @@
       <text>{{ emptyText }}</text>
     </view>
     <view v-else class="video-grid">
-      <view v-for="video in videoList" :key="video.id" class="video-card">
+      <view v-for="video in videoList" :key="video.id" class="video-card" :class="{ selected: isVideoSelected(video.id) }" @tap="handleVideoTap(video)">
         <image v-if="video.coverUrl" class="video-cover" :src="video.coverUrl" mode="aspectFill"/>
         <view v-else class="video-cover cover-placeholder">
           <uni-icons type="videocam" size="30" color="rgba(255,255,255,0.75)"/>
@@ -75,7 +93,12 @@
         <view class="video-shade"/>
         <view v-if="video.status === '1'" class="video-audit-status auditing">审核中</view>
         <view v-else-if="video.status === '3'" class="video-audit-status rejected">未通过审核</view>
-        <view v-if="activeTab === 'works'" class="video-edit" @tap.stop="goToVideoEdit(video.id)">
+        <view v-if="batchMode" class="video-selection">
+          <view class="selection-icon" :class="{ selected: isVideoSelected(video.id) }">
+            <uni-icons v-if="isVideoSelected(video.id)" type="checkmarkempty" size="18" color="#ffffff"/>
+          </view>
+        </view>
+        <view v-if="activeTab === 'works' && !batchMode" class="video-edit" @tap.stop="goToVideoEdit(video.id)">
           <uni-icons type="compose" size="18" color="#ffffff"/>
         </view>
         <view class="video-stat">
@@ -104,6 +127,9 @@ export default {
       videoList: [],
       loading: false,
       requestId: 0,
+      batchMode: false,
+      selectedVideoIds: [],
+      batchSubmitting: false,
     }
   },
   computed: {
@@ -131,6 +157,20 @@ export default {
       }
       return textMap[this.activeTab]
     },
+    isAllSelected() {
+      return this.videoList.length > 0 && this.selectedVideoIds.length === this.videoList.length
+    },
+    isIndeterminate() {
+      return this.selectedVideoIds.length > 0 && this.selectedVideoIds.length < this.videoList.length
+    },
+    batchActionText() {
+      const textMap = {
+        works: '删除',
+        favorite: '取消收藏',
+        liked: '取消喜欢',
+      }
+      return textMap[this.activeTab]
+    },
   },
   methods: {
     loadUserInfo() {
@@ -148,7 +188,64 @@ export default {
       if (this.activeTab === tab) return
       this.activeTab = tab
       this.videoList = []
+      this.selectedVideoIds = []
       this.loadVideoList()
+    },
+    toggleBatchMode() {
+      this.batchMode = !this.batchMode
+      this.selectedVideoIds = []
+    },
+    isVideoSelected(videoId) {
+      return this.selectedVideoIds.includes(videoId)
+    },
+    handleVideoTap(video) {
+      if (this.batchMode) this.toggleVideoSelection(video.id)
+    },
+    toggleVideoSelection(videoId) {
+      const index = this.selectedVideoIds.indexOf(videoId)
+      if (index === -1) this.selectedVideoIds.push(videoId)
+      else this.selectedVideoIds.splice(index, 1)
+    },
+    toggleSelectAll() {
+      this.selectedVideoIds = this.isAllSelected ? [] : this.videoList.map(video => video.id)
+    },
+    handleBatchAction() {
+      if (!this.selectedVideoIds.length || this.batchSubmitting) {
+        if (!this.selectedVideoIds.length) uni.showToast({ title: '请先选择视频', icon: 'none' })
+        return
+      }
+      const configMap = {
+        works: {
+          title: '删除作品',
+          content: `确定删除选中的 ${this.selectedVideoIds.length} 个作品吗？删除后不可恢复。`,
+          url: '/shortVideo/batchDelete', method: 'post', data: { ids: this.selectedVideoIds }, success: '删除成功',
+        },
+        liked: {
+          title: '取消喜欢', content: `确定取消喜欢选中的 ${this.selectedVideoIds.length} 个视频吗？`,
+          url: '/shortVideoLike/batchDelete', method: 'delete', data: { videoIds: this.selectedVideoIds }, success: '已取消喜欢',
+        },
+        favorite: {
+          title: '取消收藏', content: `确定取消收藏选中的 ${this.selectedVideoIds.length} 个视频吗？`,
+          url: '/shortVideoFavorite/batchDelete', method: 'delete', data: { videoIds: this.selectedVideoIds }, success: '已取消收藏',
+        },
+      }
+      const config = configMap[this.activeTab]
+      uni.showModal({
+        title: config.title,
+        content: config.content,
+        confirmText: '确定',
+        success: ({ confirm }) => {
+          if (!confirm) return
+          this.batchSubmitting = true
+          this.$http({ url: config.url, method: config.method, data: config.data }).then(() => {
+            uni.showToast({ title: config.success, icon: 'success' })
+            this.selectedVideoIds = []
+            this.loadVideoList()
+          }).finally(() => {
+            this.batchSubmitting = false
+          })
+        },
+      })
     },
     goToVideoEdit(videoId) {
       const query = videoId !== undefined && videoId !== null ? `?videoId=${encodeURIComponent(videoId)}` : ''
@@ -427,6 +524,95 @@ export default {
   background: linear-gradient(90deg, #20c9c5, #238df2);
 }
 
+.batch-manage-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 108rpx;
+  color: #3d6474;
+  font-size: 26rpx;
+}
+
+.batch-action-bar {
+  display: flex;
+  align-items: center;
+  height: 88rpx;
+  padding: 0 24rpx;
+  border-bottom: 1rpx solid #edf0f2;
+  background: #ffffff;
+}
+
+.batch-select-all {
+  display: flex;
+  align-items: center;
+  color: #3d4752;
+  font-size: 25rpx;
+}
+
+.selection-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34rpx;
+  height: 34rpx;
+  margin-right: 10rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.92);
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.batch-select-all .selection-icon {
+  border-color: #b5c0c8;
+  background: #ffffff;
+}
+
+.selection-icon.selected {
+  border-color: #22aaa7;
+  background: #22aaa7;
+}
+
+.selection-icon.indeterminate {
+  border-color: #22aaa7;
+  background: #22aaa7;
+}
+
+.indeterminate-mark {
+  width: 16rpx;
+  height: 2rpx;
+  border-radius: 2rpx;
+  background: #ffffff;
+}
+
+.batch-selected-count {
+  flex: 1;
+  margin-left: 22rpx;
+  color: #7d8793;
+  font-size: 24rpx;
+}
+
+.batch-delete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 144rpx;
+  height: 56rpx;
+  padding: 0 18rpx;
+  border-radius: 28rpx;
+  box-sizing: border-box;
+  background: #f0445d;
+  color: #ffffff;
+  font-size: 24rpx;
+}
+
+.batch-delete-button text {
+  margin-left: 6rpx;
+}
+
+.batch-delete-button.disabled {
+  background: #d5dade;
+}
+
 .video-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -440,6 +626,19 @@ export default {
   padding-bottom: 132%;
   overflow: hidden;
   background: #e7edf1;
+}
+
+.video-card.selected::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  border: 4rpx solid #22aaa7;
+  box-sizing: border-box;
+  content: '';
+  pointer-events: none;
 }
 
 .video-cover {
@@ -496,6 +695,17 @@ export default {
   height: 48rpx;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.45);
+}
+
+.video-selection {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  z-index: 2;
+}
+
+.video-selection .selection-icon {
+  margin: 0;
 }
 
 .video-stat {
