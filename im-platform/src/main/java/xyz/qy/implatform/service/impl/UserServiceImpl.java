@@ -12,7 +12,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +36,8 @@ import xyz.qy.implatform.entity.Friend;
 import xyz.qy.implatform.entity.FriendRequest;
 import xyz.qy.implatform.entity.GroupMember;
 import xyz.qy.implatform.entity.ShortVideoLike;
+import xyz.qy.implatform.entity.TemplateCharacter;
+import xyz.qy.implatform.entity.TemplateGroup;
 import xyz.qy.implatform.entity.User;
 import xyz.qy.implatform.enums.EmailCategoryEnum;
 import xyz.qy.implatform.enums.FollowEnum;
@@ -54,10 +55,11 @@ import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IGroupService;
 import xyz.qy.implatform.service.IRegionGroupMemberService;
 import xyz.qy.implatform.service.IShortVideoLikeService;
+import xyz.qy.implatform.service.ITemplateCharacterService;
+import xyz.qy.implatform.service.ITemplateGroupService;
 import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
-import xyz.qy.implatform.strategy.context.UploadStrategyContext;
 import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.IpUtils;
 import xyz.qy.implatform.util.JwtUtil;
@@ -91,9 +93,6 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
     @Resource
-    RedisTemplate<String, Object> redisTemplate;
-
-    @Resource
     private PasswordEncoder passwordEncoder;
 
     @Resource
@@ -107,9 +106,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Resource
     private IFriendService friendService;
-
-    @Resource
-    private UploadStrategyContext uploadStrategyContext;
 
     @Resource
     private RedisCache redisCache;
@@ -140,6 +136,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Resource
     private IShortVideoLikeService shortVideoLikeService;
+
+    @Resource
+    private ITemplateCharacterService templateCharacterService;
+
+    @Resource
+    private ITemplateGroupService templateGroupService;
 
     @Override
     public LoginVO login(LoginDTO dto) {
@@ -472,12 +474,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             targetVO.setUserName(user.getUserName());
             targetVO.setNickName(user.getNickName());
             targetVO.setHeadImage(user.getHeadImage());
+        } else if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
+            TemplateCharacter character = templateCharacterService.getById(dto.getTargetId());
+            if (character != null) {
+                targetVO.setNickName(character.getName());
+                targetVO.setHeadImage(character.getAvatar());
+            }
+        } else if (FollowEnum.TEMPLATE.getCode().equals(dto.getType())) {
+            TemplateGroup templateGroup = templateGroupService.getById(dto.getTargetId());
+            if (templateGroup != null) {
+                targetVO.setNickName(templateGroup.getGroupName());
+                targetVO.setHeadImage(templateGroup.getAvatar());
+            }
         }
 
         // 目标对象的粉丝数
         Integer fansCount = followService.lambdaQuery()
                 .eq(Follow::getTargetId, dto.getTargetId())
-                .eq(Follow::getType, FollowEnum.USER.getCode())
+                .eq(Follow::getType, dto.getType())
                 .count();
         targetVO.setFansCount(fansCount);
 

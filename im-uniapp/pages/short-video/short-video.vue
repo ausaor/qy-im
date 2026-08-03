@@ -36,13 +36,13 @@
           </view>
 
           <view class="video-actions" @click.stop>
-            <view class="avatar-action">
+            <view class="avatar-action" @click="goToUser(video)">
               <image v-if="video.headImage" class="avatar" :src="video.headImage" mode="aspectFill"/>
               <view v-else class="avatar avatar-placeholder" :style="avatarPlaceholderStyle(video)">{{
                   avatarText(video)
                 }}
               </view>
-              <view v-if="!isFollowed(video)" class="follow-mark" @click="toggleFollow(video)">
+              <view v-if="!isFollowed(video)" class="follow-mark" @click.stop="toggleFollow(video)">
                 <text>+</text>
               </view>
             </view>
@@ -332,6 +332,12 @@ export default {
         else this.followStore.addFollow(savedFollow || follow)
       }).finally(() => {
         this.actioning = false
+      })
+    },
+    goToUser(video) {
+      if (!video || !video.objectId || !video.type) return
+      uni.navigateTo({
+        url: `/pages/short-video/short-video-user?targetId=${encodeURIComponent(video.objectId)}&targetType=${encodeURIComponent(video.type)}`
       })
     },
     avatarText(video) {
