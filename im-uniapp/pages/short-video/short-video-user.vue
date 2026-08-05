@@ -46,7 +46,7 @@
       <text>暂时还没有作品</text>
     </view>
     <view v-else class="video-grid">
-      <view v-for="video in videoList" :key="video.id" class="video-card">
+      <view v-for="video in videoList" :key="video.id" class="video-card" @click="viewObjectShortVideo(video)">
         <image v-if="video.coverUrl" class="video-cover" :src="video.coverUrl" mode="aspectFill" lazy-load/>
         <view v-else class="video-cover cover-placeholder">
           <uni-icons type="videocam" size="30" color="rgba(255,255,255,0.75)"/>
@@ -165,6 +165,12 @@ export default {
       if (value >= 10000) return `${(value / 10000).toFixed(value >= 100000 ? 0 : 1)}w`
       return value
     },
+    viewObjectShortVideo(video) {
+      this.shortVideoStore.setObjectShortVideos(this.videoList);
+      uni.navigateTo({
+        url: `/pages/short-video/short-video-view?videoId=${encodeURIComponent(video.id)}`
+      })
+    }
   },
   onLoad(options) {
     this.targetId = options.targetId

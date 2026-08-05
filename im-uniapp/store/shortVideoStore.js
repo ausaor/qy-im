@@ -10,10 +10,17 @@ export default defineStore('shortVideoStore', {
             // 已点赞的评论 ID 集合
             likedCommentIds: [],
             shortVideoMap: new Map(),
-            shortVideoNotify: []
+            shortVideoNotify: [],
+            objectShortVideos: [],// 目标对象的短视频
         }
     },
     actions: {
+        setObjectShortVideos(objectShortVideos) {
+            this.objectShortVideos = objectShortVideos;
+        },
+        clearObjectShortVideos() {
+            this.objectShortVideos = [];
+        },
         /**
          * 记录视频已播放（已调用接口增加播放次数）
          */
