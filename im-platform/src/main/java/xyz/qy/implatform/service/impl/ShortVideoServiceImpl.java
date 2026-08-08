@@ -118,7 +118,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         dto.setUserId(session.getUserId());
         List<ShortVideo> shortVideos = this.list(buildQueryWrapper(dto));
         List<ShortVideoVO> shortVideoVOS = BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
-        fillOwnerFlag(shortVideoVOS);
+        fillShortVideoFields(shortVideos, shortVideoVOS);
         return shortVideoVOS;
     }
 
@@ -140,7 +140,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                 .list();
 
         List<ShortVideoVO> shortVideoVOS = BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
-        fillOwnerFlag(shortVideoVOS);
+        fillShortVideoFields(shortVideos, shortVideoVOS);
         return shortVideoVOS;
     }
 
@@ -160,7 +160,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                 .eq(ShortVideo::getStatus, ReviewEnum.REVIEWED.getCode())
                 .list();
         List<ShortVideoVO> shortVideoVOS = BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
-        fillOwnerFlag(shortVideoVOS);
+        fillShortVideoFields(shortVideos, shortVideoVOS);
         return shortVideoVOS;
     }
 
@@ -248,6 +248,17 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
         List<ShortVideo> shortVideos = page.getRecords();
         List<ShortVideoVO> vos = BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+        fillShortVideoFields(shortVideos, vos);
+
+        return PageResultVO.<List<ShortVideoVO>>builder().data(vos).total(page.getTotal()).build();
+    }
+
+    private void fillShortVideoFields(List<ShortVideo> shortVideos, List<ShortVideoVO> vos) {
+        if (CollectionUtils.isEmpty(shortVideos) || CollectionUtils.isEmpty(vos)) {
+            return;
+        }
+
+        Long userId = SessionContext.getSession().getUserId();
         fillOwnerFlag(vos);
 
         List<Long> userIds = shortVideos.stream().map(ShortVideo::getUserId).distinct().collect(Collectors.toList());
@@ -318,8 +329,6 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
             vo.setLiked(likedVideoIds.contains(vo.getId()));
             vo.setFavorited(favoritedVideoIds.contains(vo.getId()));
         }
-
-        return PageResultVO.<List<ShortVideoVO>>builder().data(vos).total(page.getTotal()).build();
     }
 
     @Override
