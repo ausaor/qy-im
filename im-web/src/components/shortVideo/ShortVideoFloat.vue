@@ -399,6 +399,8 @@ export default {
       this._dragStartY = e.clientY
       this._panelStartX = rect.left
       this._panelStartY = rect.top
+      this._panelWidth = rect.width
+      this._panelHeight = rect.height
 
       document.addEventListener('mousemove', this.onDrag)
       document.addEventListener('mouseup', this.stopDrag)
@@ -413,8 +415,11 @@ export default {
         this.hasDragged = true
       }
 
-      this.panelX = this._panelStartX + dx
-      this.panelY = this._panelStartY + dy
+      // 以可视区域为边界，避免悬浮窗被拖出浏览器窗口。
+      const maxX = Math.max(0, window.innerWidth - this._panelWidth)
+      const maxY = Math.max(0, window.innerHeight - this._panelHeight)
+      this.panelX = Math.min(Math.max(this._panelStartX + dx, 0), maxX)
+      this.panelY = Math.min(Math.max(this._panelStartY + dy, 0), maxY)
     },
 
     stopDrag() {
@@ -754,6 +759,7 @@ export default {
     },
 
     cleanup() {
+      this.stopDrag()
       const video = this.$refs.videoPlayer
       if (video) {
         video.pause()

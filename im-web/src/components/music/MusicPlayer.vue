@@ -2,6 +2,7 @@
   <div
       id="music-player"
       class="floating"
+      :class="{ 'is-dragging': isDragging }"
       :style="{ left: playerLeft + 'px', top: playerTop + 'px', position: 'fixed' }"
   >
     <!-- 拖拽区域 -->
@@ -219,12 +220,14 @@ export default {
       this.isDragging = true;
       
       // 获取播放器元素
-      const player = document.getElementById('music-player');
+      const player = this.$el;
       const rect = player.getBoundingClientRect();
       
       // 计算鼠标相对于播放器左上角的偏移量
       this.offsetX = event.clientX - rect.left;
       this.offsetY = event.clientY - rect.top;
+      this._dragPlayerWidth = rect.width;
+      this._dragPlayerHeight = rect.height;
       
       // 添加全局鼠标事件监听器
       document.addEventListener('mousemove', this.onDrag);
@@ -237,45 +240,33 @@ export default {
     // 拖拽过程中
     onDrag(event) {
       if (!this.isDragging) return;
-      
-      // 使用requestAnimationFrame优化性能
-      requestAnimationFrame(() => {
-        // 计算播放器新位置（鼠标位置减去偏移量）
-        let newX = event.clientX - this.offsetX;
-        let newY = event.clientY - this.offsetY;
-        
-        // 获取窗口尺寸
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
-        
-        // 获取播放器实际尺寸
-        const player = document.getElementById('music-player');
-        const playerRect = player.getBoundingClientRect();
-        const actualWidth = playerRect.width;
-        const actualHeight = playerRect.height;
-        
-        // 限制X轴移动范围
-        if (newX < 0) {
-          newX = 0;
-        } else if (newX + actualWidth > windowWidth) {
-          newX = windowWidth - actualWidth;
-        }
-        
-        // 限制Y轴移动范围
-        if (newY < 0) {
-          newY = 0;
-        } else if (newY + actualHeight > windowHeight) {
-          newY = windowHeight - actualHeight;
-        }
-        
-        // 更新播放器位置
-        this.playerLeft = newX;
-        this.playerTop = newY;
+
+      // 同一帧内只处理最新鼠标位置，防止快速移动时积压多个更新。
+      this._dragClientX = event.clientX;
+      this._dragClientY = event.clientY;
+      if (this._dragFrame) return;
+      this._dragFrame = requestAnimationFrame(() => {
+        this._dragFrame = null;
+        this.updateDragPosition();
       });
+    },
+
+    updateDragPosition() {
+      if (!this.isDragging) return;
+
+      const maxX = Math.max(0, window.innerWidth - this._dragPlayerWidth);
+      const maxY = Math.max(0, window.innerHeight - this._dragPlayerHeight);
+      this.playerLeft = Math.min(Math.max(this._dragClientX - this.offsetX, 0), maxX);
+      this.playerTop = Math.min(Math.max(this._dragClientY - this.offsetY, 0), maxY);
     },
     
     // 停止拖拽
     stopDrag() {
+      if (this._dragFrame) {
+        cancelAnimationFrame(this._dragFrame);
+        this._dragFrame = null;
+        this.updateDragPosition();
+      }
       this.isDragging = false;
       
       // 移除全局鼠标事件监听器
@@ -443,6 +434,9 @@ export default {
     // 设置播放器初始位置到屏幕中央
     this.centerPlayer();
   },
+  beforeDestroy() {
+    this.stopDrag();
+  },
   watch: {
     showFloatMusic(val) {
       if (val) {
@@ -468,7 +462,7 @@ export default {
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   background: linear-gradient(135deg, #80d4ff 0%, #99f2d2 100%);
-  transition: all 0.3s ease;
+  transition: box-shadow 0.3s ease;
   z-index: 9999;
 }
 
@@ -768,6 +762,10 @@ export default {
 /* 悬浮动画 */
 .floating {
   animation: floating 6s ease-in-out infinite;
+}
+
+.floating.is-dragging {
+  animation: none;
 }
 
 @keyframes floating {
