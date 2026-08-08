@@ -360,7 +360,6 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
     public ShortVideoVO addShortVideo(ShortVideoAddDTO dto) {
         UserSession session = SessionContext.getSession();
         Long userId = session.getUserId();
-        checkViewScope(dto.getType(), dto.getScope());
         if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
             checkCharacterUser(dto.getObjectId(), null, userId);
         } else if (FollowEnum.TEMPLATE.getCode().equals(dto.getType())) {
@@ -392,7 +391,6 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         ShortVideo shortVideo = this.getById(dto.getId());
         checkExists(shortVideo);
         checkOwner(shortVideo);
-        checkViewScope(shortVideo.getType(), dto.getScope());
         if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
             checkCharacterUser(dto.getObjectId(), null, userId);
         } else if (FollowEnum.TEMPLATE.getCode().equals(dto.getType())) {
@@ -438,14 +436,6 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
         vo.setIsOwner(Boolean.TRUE);
         return vo;
-    }
-
-    private void checkViewScope(String type, Integer scope) {
-        if (FollowEnum.CHARACTER.getCode().equals(type) || FollowEnum.TEMPLATE.getCode().equals(type)) {
-            if (!ViewScopeEnum.PUBLIC.getCode().equals(scope)) {
-                throw new GlobalException("角色和群聊模板短视频只能设置为公开");
-            }
-        }
     }
 
     private void checkCharacterUser(Long characterId, Long groupTemplateId, Long userId) {

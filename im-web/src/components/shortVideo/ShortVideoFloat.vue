@@ -1,10 +1,5 @@
 <template>
   <div v-if="visible" class="short-video-float-panel" :style="panelStyle">
-    <!-- 关闭按钮 -->
-    <div class="float-close-btn" @click="close">
-      <i class="el-icon-close"></i>
-    </div>
-
     <!-- 顶部标签栏，z-index置于视频之上，可作为拖拽手柄 -->
     <div class="float-tabs" @mousedown="startDrag">
       <div
@@ -48,6 +43,10 @@
         :class="{ active: activeTab === 'publish' }"
         @click.stop="switchTab('publish')"
       ><i class="el-icon-camera" style="font-size: 16px;"/></div>
+      <!-- 关闭按钮 -->
+      <div class="float-close-btn" @mousedown.stop @click.stop="close">
+        <i class="el-icon-close"></i>
+      </div>
     </div>
 
     <!-- 发布模式 -->
@@ -873,9 +872,6 @@ export default {
 
 // 关闭按钮
 .float-close-btn {
-  position: absolute;
-  top: 5px;
-  right: 5px;
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -896,7 +892,7 @@ export default {
 
   i {
     font-size: 14px;
-    color: red;
+    color: #fff;
   }
 }
 
@@ -909,8 +905,9 @@ export default {
   height: 44px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 20px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 8px;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
   z-index: 10;
   cursor: move;
@@ -921,9 +918,10 @@ export default {
   font-size: 15px;
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 4px 6px;
   position: relative;
   user-select: none;
+  white-space: nowrap;
   transition: color 0.2s, font-weight 0.2s;
 
   &:hover {
