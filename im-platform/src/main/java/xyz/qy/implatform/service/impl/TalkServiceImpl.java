@@ -443,6 +443,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
             dto.setGroupId(queryDTO.getGroupId());
             dto.setGroupMemberUserIds(userIds);
+            dto.setUserId(myUserId);
             talkPage = this.baseMapper.pageQueryGroupTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), dto);
             if (ObjectUtil.isNotNull(talkPage)) {
                 records = talkPage.getRecords();
@@ -464,6 +465,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             List<Long> userIds = regionGroupMemberService.findUserIdsByRegionGroupId(regionGroup.getId());
             dto.setGroupMemberUserIds(userIds);
             dto.setRegionCode(regionGroup.getCode());
+            dto.setUserId(myUserId);
 
             talkPage = this.baseMapper.pageQueryRegionTalkList(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), dto);
             if (ObjectUtil.isNotNull(talkPage)) {

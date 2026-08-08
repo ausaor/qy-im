@@ -86,15 +86,9 @@
         <include refid="taskQueryBase"/> g
         <where>
             g.group_id = #{queryDTO.groupId}
-            <if test="true">
-                and g.category = 'group'
-            </if>
-            <if test="true">
-                and g.deleted = 0
-            </if>
-            <if test="true">
-                and g.status = '2'
-            </if>
+            and (g.status = '2' or g.user_id = #{queryDTO.userId})
+            and g.category = 'group'
+            and g.deleted = 0
         </where>
         <if test="queryDTO.groupMemberUserIds != null and queryDTO.groupMemberUserIds.size() > 0">
             union all
@@ -128,15 +122,9 @@
         <include refid="taskQueryBase"/> r
         <where>
             r.region_code = #{queryDTO.regionCode}
-            <if test="true">
-                and r.category = 'region'
-            </if>
-            <if test="true">
-                and r.deleted = 0
-            </if>
-            <if test="true">
-                and r.status = '2'
-            </if>
+            and (r.status = '2' or r.user_id = #{queryDTO.userId})
+            and r.category = 'region'
+            and r.deleted = 0
         </where>
         <if test="queryDTO.groupMemberUserIds != null and queryDTO.groupMemberUserIds.size() > 0">
             union all

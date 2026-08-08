@@ -121,6 +121,7 @@ public class TalkController {
     }
 
     @ApiOperation(value = "分页查询动态列表", notes = "分页查询动态列表")
+    @RequireRoles(value = {RoleEnum.ADMIN, RoleEnum.SUPER_ADMIN})
     @PostMapping("/pageTalkList")
     public Result pageTalkList(@RequestBody @Valid TalkQueryDTO queryDTO) {
         return ResultUtils.success(talkService.pageTalkList(queryDTO));

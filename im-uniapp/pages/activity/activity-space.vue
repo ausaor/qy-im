@@ -41,6 +41,7 @@
             <view class="info-right">
               <text class="nickname">{{item.nickName}}</text>
               <text class="time">{{item.createTime}}</text>
+              <text v-if="item.status !== '2'" class="status">{{item.statusName}}</text>
             </view>
             <view class="more-action cursor-pointer" @click.stop="moreAction(item)">
               <uni-icons type="more-filled" size="30"></uni-icons>
@@ -1247,19 +1248,32 @@ export default {
 .info-right {
   flex: 1;
   margin-left: 20rpx;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .nickname {
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 30rpx;
   color: #333333;
   font-weight: 500;
 }
 
 .time {
+  flex-shrink: 0;
+  margin-left: 16rpx;
   font-size: 24rpx;
   color: #999999;
-  display: block;
-  margin-top: 4rpx;
+}
+
+.status {
+  flex-shrink: 0;
+  margin-left: 16rpx;
+  font-size: 24rpx;
+  color: #409eff;
 }
 
 .more-action {
