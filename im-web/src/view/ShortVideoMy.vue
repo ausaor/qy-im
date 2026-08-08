@@ -256,8 +256,34 @@
         title=""
         :visible.sync="drawerVisible"
         :with-header="false">
-      <ShortVideoCommentList ref="commentListRef" :video="curVideo" :commentForm="commentForm" @closeCommentInput="showCommentInput = false" />
+      <div class="comment-drawer-content">
+        <div v-if="!showCommentInput" class="comment-btn-wrapper">
+          <div class="comment-text-btn" @click="openCommentInput">发表评论</div>
+          <span v-if="!commentForm.characterId" class="comment-setting-btn" @click="chooseCharacterDialogVisible = true">
+            <i class="el-icon-setting"></i>
+          </span>
+          <div v-else class="comment-character-info">
+            <head-image :url="commentForm.avatar" :name="commentForm.nickName" :size="24" radius="50%"></head-image>
+            <span class="character-clear" @click="clearCommentForm"><i class="el-icon-close"></i></span>
+          </div>
+        </div>
+        <div v-if="showCommentInput" class="comment-input-wrapper">
+          <div class="input-header">
+            <span class="input-title">发表评论</span>
+            <span class="input-close" @click="showCommentInput = false">收起 <i class="el-icon-arrow-up"></i></span>
+          </div>
+          <input-box ref="commentInput" width="100%" :character-id="commentForm.characterId"
+                     @send="handleSendComment" @sendWord="handleSendCommentWord"></input-box>
+        </div>
+        <ShortVideoCommentList ref="commentListRef" :video="curVideo" :commentForm="commentForm" @closeCommentInput="showCommentInput = false" />
+      </div>
     </el-drawer>
+
+    <template-character-choose
+        :visible.sync="chooseCharacterDialogVisible"
+        @close="closeChooseCharacterDialog"
+        @confirm="confirmChooseCharacter">
+    </template-character-choose>
 
     <!-- 点赞/收藏用户列表抽屉 -->
     <el-drawer
@@ -304,6 +330,8 @@
 import HeadImage from '@/components/common/HeadImage.vue'
 import ShortVideoEdit from '@/components/shortVideo/ShortVideoEdit.vue'
 import VideoPlay from '@/components/common/VideoPlay.vue'
+import InputBox from '@/components/common/InputBox.vue'
+import TemplateCharacterChoose from '@/components/template/TemplateCharacterChoose'
 import ShortVideoCommentList from '@/components/shortVideo/ShortVideoCommentList.vue'
 
 export default {
@@ -312,6 +340,8 @@ export default {
     HeadImage,
     ShortVideoEdit,
     VideoPlay,
+    InputBox,
+    TemplateCharacterChoose,
     ShortVideoCommentList,
   },
   data() {
@@ -347,6 +377,7 @@ export default {
         avatar: '',
       },
       showCommentInput: false,
+      chooseCharacterDialogVisible: false,
       userListDrawerVisible: false,
       userListTitle: '',
       userListData: [],
@@ -750,6 +781,86 @@ export default {
       this.getCommentCharacter();
       this.drawerVisible = true;
     },
+    openCommentInput() {
+      this.showCommentInput = true
+      if (this.$refs.commentListRef) {
+        this.$refs.commentListRef.closeAllReplies()
+      }
+      this.$nextTick(() => {
+        if (this.$refs.commentInput) {
+          this.$refs.commentInput.view()
+        }
+      })
+    },
+    handleSendComment(sendObj) {
+      if (!sendObj) return
+      const content = sendObj.type === this.$enums.MESSAGE_TYPE.IMAGE
+        ? JSON.stringify(sendObj.content)
+        : sendObj.content
+      this.$http({
+        url: '/shortVideoComment/add',
+        method: 'post',
+        data: {
+          videoId: this.curVideo.id,
+          content,
+          type: sendObj.type,
+          characterId: this.commentForm.characterId,
+          avatarId: this.commentForm.characterAvatarId
+        }
+      }).then(() => {
+        this.$message.success('评论成功')
+        if (this.$refs.commentListRef) this.$refs.commentListRef.refresh()
+      })
+    },
+    handleSendCommentWord(data) {
+      if (!data) return
+      const content = JSON.stringify({
+        id: data.id,
+        templateGroupId: data.templateGroupId,
+        characterId: data.characterId,
+        characterName: data.characterName,
+        word: data.word,
+        voice: data.voice
+      })
+      this.$http({
+        url: '/shortVideoComment/add',
+        method: 'post',
+        data: {
+          videoId: this.curVideo.id,
+          content,
+          type: this.$enums.MESSAGE_TYPE.WORD_VOICE,
+          characterId: this.commentForm.characterId,
+          avatarId: this.commentForm.characterAvatarId
+        }
+      }).then(() => {
+        this.$message.success('评论成功')
+        if (this.$refs.commentListRef) this.$refs.commentListRef.refresh()
+      })
+    },
+    clearCommentForm() {
+      this.commentForm = {
+        characterAvatarId: null,
+        characterId: null,
+        nickName: '',
+        avatar: '',
+      }
+    },
+    closeChooseCharacterDialog() {
+      this.chooseCharacterDialogVisible = false
+    },
+    confirmChooseCharacter(resultData) {
+      if (resultData?.characterAvatar?.id) {
+        this.commentForm.characterAvatarId = resultData.characterAvatar.id
+        this.commentForm.nickName = resultData.characterAvatar.level === 0 ? resultData.templateCharacter.name : resultData.characterAvatar.name
+        this.commentForm.avatar = resultData.characterAvatar.avatar
+        this.commentForm.characterId = resultData.templateCharacter.id
+      } else {
+        this.commentForm.nickName = resultData.templateCharacter.name
+        this.commentForm.avatar = resultData.templateCharacter.avatar
+        this.commentForm.characterId = resultData.templateCharacter.id
+      }
+      this.chooseCharacterDialogVisible = false
+    },
     getCommentCharacter() {
       this.$http({
         url: `/commentCharacter/getCommentCharacter?targetId=${this.curVideo.id}&targetType=shortVideo`,
@@ -871,6 +982,93 @@ export default {
 .short-video-my {
   min-height: 100vh;
   background: #f5f7fa;
+}
+
+.comment-drawer-content {
+  .comment-btn-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .comment-text-btn {
+    flex: 1;
+    padding: 10px 0;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    background: #f5f7fa;
+    color: #606266;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+
+    &:hover {
+      color: #409eff;
+      border-color: #c6e2ff;
+      background: #ecf5ff;
+    }
+  }
+
+  .comment-setting-btn, .comment-character-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    background: #f5f7fa;
+  }
+
+  .comment-setting-btn {
+    width: 36px;
+    color: #999;
+    cursor: pointer;
+
+    &:hover {
+      color: #409eff;
+      border-color: #c6e2ff;
+      background: #ecf5ff;
+    }
+  }
+
+  .comment-character-info {
+    gap: 6px;
+    padding: 0 8px 0 4px;
+    background: #ecf5ff;
+  }
+
+  .character-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ccc;
+    color: #fff;
+    cursor: pointer;
+    font-size: 10px;
+
+    &:hover { background: #f56c6c; }
+  }
+
+  .comment-input-wrapper {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .input-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .input-title { font-size: 13px; color: #333; font-weight: 500; }
+  .input-close { font-size: 12px; color: #999; cursor: pointer; }
+  .input-close:hover { color: #409eff; }
 }
 
 // 用户信息区域

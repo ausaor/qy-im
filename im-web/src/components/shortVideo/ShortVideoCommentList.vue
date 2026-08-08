@@ -22,6 +22,7 @@
         <div class="comment-body">
           <div class="comment-header">
             <span class="comment-nickname">{{ item.userNickname }}</span>
+            <span v-if="isVideoAuthor(item.userId)" class="comment-author">作者</span>
             <span class="comment-time">{{ formatTime(item.createTime) }}</span>
             <span v-if="item.isOwner" class="comment-delete" @click="handleDelete(item)">删除</span>
           </div>
@@ -76,6 +77,7 @@
                 <div class="comment-body">
                   <div class="comment-header">
                     <span class="comment-nickname">{{ child.userNickname }}</span>
+                    <span v-if="isVideoAuthor(child.userId)" class="comment-author">作者</span>
                     <span class="comment-time">{{ formatTime(child.createTime) }}</span>
                     <span v-if="child.isOwner" class="comment-delete" @click="handleDelete(child)">删除</span>
                   </div>
@@ -225,6 +227,11 @@ export default {
       const h = String(d.getHours()).padStart(2, '0')
       const min = String(d.getMinutes()).padStart(2, '0')
       return `${y}-${m}-${day} ${h}:${min}`
+    },
+
+    // 判断评论用户是否为视频作者，统一转换为字符串以兼容接口返回的数字/字符串 ID
+    isVideoAuthor(userId) {
+      return this.video && this.video.userId != null && userId != null && String(this.video.userId) === String(userId)
     },
 
     fetchComments() {
@@ -560,6 +567,14 @@ export default {
   .comment-nickname {
     font-size: 13px;
     color: #999;
+  }
+
+  .comment-author {
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: #f56c6c;
+    color: #fff;
   }
 
   .comment-time {

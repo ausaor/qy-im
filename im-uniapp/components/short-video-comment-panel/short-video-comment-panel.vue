@@ -30,6 +30,7 @@
           <view class="comment-body">
             <view>
               <text class="comment-name">{{ comment.userNickname || '用户' }}</text>
+              <text v-if="isVideoAuthor(comment.userId)" class="comment-author">作者</text>
               <text class="comment-time">{{ formatCommentTime(comment.createTime) }}</text>
             </view>
             <view v-if="comment.replyToUserId" class="reply-to">回复 @{{ comment.replyToUserNickname || '用户' }}</view>
@@ -66,6 +67,7 @@
             <view class="comment-body">
               <view>
                 <text class="comment-name">{{ child.userNickname || '用户' }}</text>
+                <text v-if="isVideoAuthor(child.userId)" class="comment-author">作者</text>
                 <text class="comment-time">{{ formatCommentTime(child.createTime) }}</text>
               </view>
               <view v-if="child.replyToUserId" class="reply-to">回复 @{{ child.replyToUserNickname || '用户' }}</view>
@@ -475,6 +477,10 @@ export default {
     isCommentLiked(commentId) {
       return this.shortVideoStore.isCommentLiked(commentId)
     },
+    isVideoAuthor(userId) {
+      return this.video && this.video.userId != null && userId != null
+        && String(this.video.userId) === String(userId)
+    },
     formatCommentTime(value) {
       if (!value) return ''
       const diff = Date.now() - new Date(value.replace(/-/g, '/')).getTime()
@@ -684,6 +690,17 @@ export default {
   color: #5b7799;
   font-size: 26rpx;
   font-weight: 500
+}
+
+.comment-author {
+  display: inline-block;
+  margin-left: 10rpx;
+  padding: 2rpx 8rpx;
+  border-radius: 4rpx;
+  background: #f23b54;
+  color: #fff;
+  font-size: 20rpx;
+  line-height: 1.2
 }
 
 .comment-time {
