@@ -105,7 +105,7 @@ public interface TalkMapper extends BaseMapper<Talk> {
      * @param page 分页对象
      * @return 动态列表
      */
-    Page<Talk> pageQueryAllCharactersTalkList(@Param("page") Page<Object> page);
+    Page<Talk> pageQueryAllCharactersTalkList(@Param("page") Page<Object> page, @Param("queryDTO") TalkQueryDTO queryDTO);
 
     /**
      * 分页查询自己角色动态

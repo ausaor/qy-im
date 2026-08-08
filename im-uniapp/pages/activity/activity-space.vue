@@ -40,7 +40,6 @@
             <head-image class="avatar" :url="item.avatar" :name="item.nickName" :id="item.userId" size="small"></head-image>
             <view class="info-right">
               <text class="nickname">{{item.nickName}}</text>
-              <text class="time">{{item.createTime}}</text>
               <text v-if="item.status !== '2'" class="status">{{item.statusName}}</text>
             </view>
             <view class="more-action cursor-pointer" @click.stop="moreAction(item)">
@@ -78,6 +77,7 @@
                 </view>
               </view>
             </view>
+            <text class="time">{{item.createTime}}</text>
           </view>
 
           <view class="interaction">
@@ -1263,8 +1263,8 @@ export default {
 }
 
 .time {
-  flex-shrink: 0;
-  margin-left: 16rpx;
+  display: block;
+  margin-top: 12rpx;
   font-size: 24rpx;
   color: #999999;
 }

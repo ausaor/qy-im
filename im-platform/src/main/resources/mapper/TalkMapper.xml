@@ -406,18 +406,10 @@
     <select id="pageQueryAllCharactersTalkList" resultType="xyz.qy.implatform.entity.Talk">
         <include refid="taskQueryBase"/> c
         <where>
-            <if test="true">
-                and c.category = 'character'
-            </if>
-            <if test="true">
-                and c.scope = 9
-            </if>
-            <if test="true">
-                and c.deleted = 0
-            </if>
-            <if test="true">
-                and c.status = '2'
-            </if>
+            and c.category = 'character'
+            and (c.status = '2' or c.user_id = #{queryDTO.userId})
+            and c.scope = 9
+            and c.deleted = 0
         </where>
         union all
         <include refid="taskQueryBase"/> u
