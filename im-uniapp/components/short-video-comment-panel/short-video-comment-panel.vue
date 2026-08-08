@@ -4,10 +4,23 @@
       <view class="comment-panel-close" @click="close">
         <uni-icons type="closeempty" size="26" color="#333"/>
       </view>
-      <text>评论 {{ video.commentCount || 0 }}</text>
+      <view class="comment-tabs">
+        <text :class="['comment-tab', {active: activeTab === 'comment'}]" @click="selectTab('comment')">
+          评论 {{ video.commentCount || 0 }}
+        </text>
+        <template v-if="isVideoOwner">
+          <text :class="['comment-tab', {active: activeTab === 'favorite'}]" @click="selectTab('favorite')">
+            收藏 {{ video.favoriteCount || 0 }}
+          </text>
+          <text :class="['comment-tab', {active: activeTab === 'like'}]" @click="selectTab('like')">
+            喜欢 {{ video.likeCount || 0 }}
+          </text>
+        </template>
+      </view>
       <view class="comment-panel-close"/>
     </view>
-    <scroll-view class="comment-list" scroll-y @scrolltolower="loadMoreComments">
+    <scroll-view class="comment-list" scroll-y @scrolltolower="loadMore">
+      <template v-if="activeTab === 'comment'">
       <view v-if="commentLoading && !commentList.length" class="comment-state">加载中...</view>
       <view v-else-if="!commentList.length" class="comment-state">暂无评论，快来抢沙发吧~</view>
       <view v-for="comment in commentList" :key="comment.id" class="comment-item">
@@ -82,8 +95,22 @@
         </view>
       </view>
       <view v-if="commentHasMore" class="load-comments">{{ commentLoadingMore ? '加载中...' : '上拉加载更多' }}</view>
+      </template>
+      <template v-else>
+        <view v-if="userListLoading && !currentUserList.length" class="comment-state">加载中...</view>
+        <view v-else-if="!currentUserList.length" class="comment-state">暂无{{ activeTab === 'favorite' ? '收藏' : '喜欢' }}用户</view>
+        <view v-for="user in currentUserList" :key="user.id" class="user-item">
+          <head-image class="user-avatar" :id="user.userId" :name="user.nickName || '用户'" :url="user.headImage" :size="64"/>
+          <text class="user-name">{{ user.nickName || '用户' }}</text>
+          <button v-if="!isMineUser(user)" class="follow-button" :class="{followed: isFollowingUser(user)}"
+                  :disabled="isFollowActioning(user)" @click.stop="toggleFollowUser(user)">
+            {{ isFollowingUser(user) ? '已关注' : '关注' }}
+          </button>
+        </view>
+        <view v-if="currentUserHasMore" class="load-comments">{{ userListLoadingMore ? '加载中...' : '上拉加载更多' }}</view>
+      </template>
     </scroll-view>
-    <view class="comment-input-trigger" @click="openCommentInput">
+    <view v-if="activeTab === 'comment'" class="comment-input-trigger" @click="openCommentInput">
       <text>{{ commentPlaceholder }}</text>
       <view class="comment-character-actions" @click.stop>
         <view v-if="!commentForm.characterId" @click="showGroupTemplatesPopup">
@@ -125,6 +152,16 @@ export default {
     commentTotal: 0,
     commentLoading: false,
     commentLoadingMore: false,
+    activeTab: 'comment',
+    favoriteUserList: [],
+    favoriteUserPageNo: 1,
+    favoriteUserTotal: 0,
+    likeUserList: [],
+    likeUserPageNo: 1,
+    likeUserTotal: 0,
+    userListLoading: false,
+    userListLoadingMore: false,
+    followActioningKeys: {},
     commentPlaceholder: '说点什么...',
     replyingComment: null,
     commentActioning: false,
@@ -137,17 +174,37 @@ export default {
   computed: {
     commentHasMore() {
       return this.commentList.length < this.commentTotal
-    }
+    },
+    mine() {
+      return this.userStore.userInfo;
+    },
+    isVideoOwner() {
+      return this.mine && this.mine.id != null && this.video && this.video.userId != null
+        && String(this.mine.id) === String(this.video.userId)
+    },
+    currentUserList() {
+      return this.activeTab === 'favorite' ? this.favoriteUserList : this.likeUserList
+    },
+    currentUserTotal() {
+      return this.activeTab === 'favorite' ? this.favoriteUserTotal : this.likeUserTotal
+    },
+    currentUserHasMore() {
+      return this.currentUserList.length < this.currentUserTotal
+    },
   },
   watch: {
     visible(open) {
       if (open) {
+        this.activeTab = 'comment';
         this.resetComments();
+        this.resetUserLists();
         this.getCommentCharacter(this.video.id)
       }
     }, 'video.id'(id) {
       if (this.visible) {
+        this.activeTab = 'comment';
         this.resetComments();
+        this.resetUserLists();
         this.getCommentCharacter(id)
       }
     }
@@ -166,6 +223,23 @@ export default {
       this.commentPageNo = 1;
       this.commentTotal = 0;
       this.fetchComments()
+    },
+    resetUserLists() {
+      this.favoriteUserList = [];
+      this.favoriteUserPageNo = 1;
+      this.favoriteUserTotal = 0;
+      this.likeUserList = [];
+      this.likeUserPageNo = 1;
+      this.likeUserTotal = 0
+    },
+    selectTab(tab) {
+      if (tab !== 'comment' && !this.isVideoOwner) return;
+      this.activeTab = tab;
+      if (tab !== 'comment' && !this.currentUserList.length) this.fetchUserList(1)
+    },
+    loadMore() {
+      if (this.activeTab === 'comment') this.loadMoreComments();
+      else this.loadMoreUserList()
     },
     request(pageNo, data) {
       return this.$http({
@@ -207,6 +281,69 @@ export default {
         this.commentPageNo = pageNo
       }).finally(() => {
         this.commentLoadingMore = false
+      })
+    },
+    userListConfig() {
+      return this.activeTab === 'favorite'
+        ? {url: '/shortVideoFavorite/pageShortVideoFavoritesUser', list: 'favoriteUserList', pageNo: 'favoriteUserPageNo', total: 'favoriteUserTotal'}
+        : {url: '/shortVideoLike/pageShortVideoLikeUser', list: 'likeUserList', pageNo: 'likeUserPageNo', total: 'likeUserTotal'}
+    },
+    fetchUserList(pageNo) {
+      if (!this.video.id || !this.isVideoOwner || this.userListLoading || this.userListLoadingMore) return;
+      const config = this.userListConfig();
+      const tab = this.activeTab;
+      pageNo === 1 ? this.userListLoading = true : this.userListLoadingMore = true;
+      this.$http({
+        url: config.url,
+        method: 'POST',
+        params: {currentPage: pageNo, pageSize: 50},
+        data: {videoId: this.video.id}
+      }).then(page => {
+        if (tab !== this.activeTab) return;
+        const users = page.data || [];
+        if (pageNo === 1) this[config.list] = users;
+        else this[config.list].push(...users);
+        this[config.pageNo] = pageNo;
+        this[config.total] = page.total || 0
+      }).finally(() => {
+        this.userListLoading = false;
+        this.userListLoadingMore = false;
+        if (tab !== this.activeTab && this.activeTab !== 'comment' && !this.currentUserList.length) {
+          this.fetchUserList(1)
+        }
+      })
+    },
+    loadMoreUserList() {
+      if (this.userListLoadingMore || !this.currentUserHasMore) return;
+      const config = this.userListConfig();
+      this.fetchUserList(this[config.pageNo] + 1)
+    },
+    isMineUser(user) {
+      return this.mine && this.mine.id != null && user && user.userId != null
+        && String(this.mine.id) === String(user.userId)
+    },
+    isFollowingUser(user) {
+      return Boolean(user && user.userId != null && this.followStore.isFollow(`${user.userId}:user`))
+    },
+    isFollowActioning(user) {
+      return Boolean(user && this.followActioningKeys[`user:${user.userId}`])
+    },
+    toggleFollowUser(user) {
+      if (!user || !user.userId || this.isMineUser(user) || this.isFollowActioning(user)) return;
+      const follow = {targetId: user.userId, type: 'user'};
+      const followed = this.isFollowingUser(user);
+      const actionKey = `user:${user.userId}`;
+      this.followActioningKeys[actionKey] = true;
+      this.$http({
+        url: followed ? `/follow/cancel?targetId=${user.userId}&type=user` : '/follow/add',
+        method: followed ? 'DELETE' : 'POST',
+        data: followed ? {} : follow
+      }).then(savedFollow => {
+        if (followed) this.followStore.removeFollow(follow);
+        else this.followStore.addFollow(savedFollow || follow);
+        uni.showToast({title: followed ? '已取消关注' : '关注成功', icon: 'none'})
+      }).finally(() => {
+        delete this.followActioningKeys[actionKey]
       })
     },
     toggleChildren(comment) {
@@ -444,6 +581,26 @@ export default {
   text-align: center
 }
 
+.comment-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28rpx;
+  min-width: 0
+}
+
+.comment-tab {
+  color: #777;
+  font-size: 28rpx;
+  font-weight: 400;
+  white-space: nowrap
+}
+
+.comment-tab.active {
+  color: #333;
+  font-weight: 600
+}
+
 .comment-list {
   flex: 1;
   min-height: 0;
@@ -461,6 +618,49 @@ export default {
 .comment-item {
   padding: 24rpx 0;
   border-bottom: 1rpx solid #f1f1f1
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid #f1f1f1
+}
+
+.user-avatar {
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e6e6e6
+}
+
+.user-name {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  margin-left: 18rpx;
+  color: #333;
+  font-size: 28rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap
+}
+
+.follow-button {
+  min-width: 112rpx;
+  height: 54rpx;
+  margin: 0 0 0 18rpx;
+  padding: 0 16rpx;
+  border: 1rpx solid #f23b54;
+  border-radius: 28rpx;
+  background: #f23b54;
+  color: #fff;
+  font-size: 24rpx;
+  line-height: 52rpx
+}
+
+.follow-button.followed {
+  border-color: #b8b8b8;
+  background: #b8b8b8;
+  color: #fff
 }
 
 .comment-main {

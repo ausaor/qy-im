@@ -281,6 +281,12 @@
             <div class="user-list-item-info">
               <div class="user-list-item-name">{{ item.nickName }}</div>
             </div>
+            <span
+              v-if="!isCurrentUser(item)"
+              class="user-follow-button"
+              :class="{ followed: isUserFollowed(item), loading: isUserFollowActioning(item) }"
+              @click="toggleUserFollow(item)"
+            >{{ isUserFollowed(item) ? '已关注' : '关注' }}</span>
           </div>
           <div v-if="!userListLoading && userListData.length === 0" class="empty-user-list">
             <p>暂无数据</p>
@@ -349,6 +355,7 @@ export default {
       userListTotal: 0,
       userListVideoId: null,
       userListType: '',
+      userFollowActioning: {},
     }
   },
   created() {
@@ -825,6 +832,35 @@ export default {
         this.userListPageNo--
       }).finally(() => {
         this.userListLoading = false
+      })
+    },
+    isCurrentUser(item) {
+      return Boolean(item && item.userId != null && this.userInfo && this.userInfo.id != null
+        && String(item.userId) === String(this.userInfo.id))
+    },
+    isUserFollowed(item) {
+      return Boolean(item && item.userId != null && this.$store.getters.isFollowed(`${item.userId}:user`))
+    },
+    isUserFollowActioning(item) {
+      return Boolean(item && this.userFollowActioning[`user:${item.userId}`])
+    },
+    toggleUserFollow(item) {
+      if (!item || !item.userId || this.isCurrentUser(item) || this.isUserFollowActioning(item)) return
+      const follow = {targetId: item.userId, type: 'user'}
+      const followed = this.isUserFollowed(item)
+      const actionKey = `user:${item.userId}`
+      this.$set(this.userFollowActioning, actionKey, true)
+      this.$http({
+        url: followed ? '/follow/cancel' : '/follow/add',
+        method: followed ? 'delete' : 'post',
+        params: followed ? {targetId: item.userId, type: 'user'} : {},
+        data: followed ? {} : follow
+      }).then((savedFollow) => {
+        if (followed) this.$store.commit('removeFollow', follow)
+        else this.$store.commit('addFollow', savedFollow || follow)
+        this.$message.success(followed ? '已取消关注' : '关注成功')
+      }).finally(() => {
+        this.$delete(this.userFollowActioning, actionKey)
       })
     },
   }
@@ -1370,6 +1406,28 @@ export default {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+        }
+      }
+
+      .user-follow-button {
+        flex-shrink: 0;
+        min-width: 52px;
+        padding: 6px 10px;
+        border-radius: 14px;
+        background: #f23b54;
+        color: #fff;
+        font-size: 12px;
+        line-height: 1;
+        text-align: center;
+        cursor: pointer;
+
+        &.followed {
+          background: #b8b8b8;
+        }
+
+        &.loading {
+          cursor: not-allowed;
+          opacity: 0.65;
         }
       }
     }
