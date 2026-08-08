@@ -63,7 +63,7 @@
         <label class="publish-label">可见范围</label>
         <el-radio-group v-model="publishForm.scope" class="publish-scope-radios">
           <el-radio
-            v-for="item in filteredScopeOptions"
+            v-for="item in scopeOptions"
             :key="item.value"
             :label="item.value"
           >{{ item.label }}</el-radio>
@@ -353,12 +353,6 @@ export default {
     },
     showTemplateTab() {
       return this.$store.state.shortVideoStore.showTemplateTab
-    },
-    filteredScopeOptions() {
-      if (this.publishType === 'character' || this.publishType === 'template') {
-        return [{ value: 9, label: '公开' }]
-      }
-      return this.scopeOptions
     },
     starTabName() {
       return this.$store.state.shortVideoStore.starTabName;
@@ -880,26 +874,29 @@ export default {
 // 关闭按钮
 .float-close-btn {
   position: absolute;
-  top: 10px;
-  right: 12px;
+  top: 5px;
+  right: 5px;
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  // 使用深色背景，与视频内容区形成明显区分
+  background: rgba(31, 35, 41, 0.96);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 20;
-  transition: background 0.2s;
+  z-index: 3010;
+  transition: background 0.2s, box-shadow 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.45);
+    background: #000;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.36);
   }
 
   i {
     font-size: 14px;
-    color: #fff;
+    color: red;
   }
 }
 

@@ -42,6 +42,9 @@
                          :color="video.favorited ? '#ffd23f' : '#ffffff'"/>
               <text>{{ video.favoriteCount || 0 }}</text>
             </view>
+            <view v-if="isVideoOwner(video)" class="action-item more-action" @click="openMoreActions(video)">
+              <uni-icons type="more-filled" size="32" color="#ffffff"/>
+            </view>
           </view>
         </view>
       </swiper-item>
@@ -56,6 +59,27 @@
     </view>
     <short-video-comment-panel :visible="showCommentPanel" :video="currentVideo" @close="closeComments"
                                @comment-count-change="changeCurrentVideoCommentCount"/>
+    <uni-popup ref="morePopup" type="bottom" :safe-area="false" @maskClick="closeMoreActions">
+      <view class="more-actions-popup">
+        <view class="more-actions-close" @click="closeMoreActions">
+          <uni-icons type="closeempty" size="24" color="#687385"/>
+        </view>
+        <view class="more-action-buttons">
+          <view class="more-action-item" @click="editCurrentVideo">
+            <view class="more-action-button">
+              <uni-icons type="compose" size="28" color="#202733"/>
+            </view>
+            <text>编辑</text>
+          </view>
+          <view class="more-action-item delete-action" @click="confirmDeleteCurrentVideo">
+            <view class="more-action-button">
+              <uni-icons type="trash" size="28" color="#f23b54"/>
+            </view>
+            <text>删除</text>
+          </view>
+        </view>
+      </view>
+    </uni-popup>
   </view>
 </template>
 
@@ -67,11 +91,14 @@ export default {
   components: {ShortVideoCommentPanel},
   data() {
     return {
-      currentIndex: 0, isPlaying: true, actioning: false, pendingPlayVideoIds: [], showCommentPanel: false,
+      currentIndex: 0, isPlaying: true, actioning: false, deleting: false, pendingPlayVideoIds: [], showCommentPanel: false,
       initialVideoId: '', avatarColors: ['#5daa31', '#c7515a', '#e03697', '#85029b', '#c9b455', '#326eb6'],
     }
   },
   computed: {
+    mine() {
+      return this.userStore.userInfo;
+    },
     videoList() {
       return this.shortVideoStore.objectShortVideos || []
     },
@@ -149,6 +176,52 @@ export default {
     },
     toggleFavorite(video) {
       this.toggleVideoAction(video, 'favorited', 'favoriteCount', '/shortVideoFavorite/add', '/shortVideoFavorite/delete')
+    },
+    isVideoOwner(video) {
+      return Boolean(video && video.userId != null && this.mine && this.mine.id != null
+        && String(video.userId) === String(this.mine.id))
+    },
+    openMoreActions(video) {
+      if (!this.isVideoOwner(video)) return
+      this.$refs.morePopup.open()
+    },
+    closeMoreActions() {
+      this.$refs.morePopup.close()
+    },
+    editCurrentVideo() {
+      const video = this.currentVideo
+      if (!this.isVideoOwner(video)) return
+      this.closeMoreActions()
+      uni.navigateTo({url: `/pages/short-video/short-video-edit?videoId=${encodeURIComponent(video.id)}`})
+    },
+    confirmDeleteCurrentVideo() {
+      const video = this.currentVideo
+      if (!this.isVideoOwner(video) || this.deleting) return
+      this.closeMoreActions()
+      uni.showModal({
+        title: '删除作品',
+        content: '确定删除这个作品吗？删除后不可恢复。',
+        confirmText: '删除',
+        confirmColor: '#f23b54',
+        success: ({confirm}) => {
+          if (!confirm) return
+          this.deleteCurrentVideo(video)
+        },
+      })
+    },
+    deleteCurrentVideo(video) {
+      if (!video || !video.id || this.deleting) return
+      this.deleting = true
+      uni.showLoading({title: '删除中...', mask: true})
+      this.$http({url: '/shortVideo/delete', method: 'DELETE', data: {id: video.id}}).then(() => {
+        const index = this.videoList.findIndex(item => String(item.id) === String(video.id))
+        if (index !== -1) this.videoList.splice(index, 1)
+        uni.showToast({title: '删除成功', icon: 'success'})
+        setTimeout(() => uni.navigateBack(), 500)
+      }).finally(() => {
+        this.deleting = false
+        uni.hideLoading()
+      })
     },
     toggleVideoAction(video, field, countField, addUrl, deleteUrl) {
       if (!video || !video.id || this.actioning) return
@@ -359,6 +432,63 @@ export default {
 
 .action-item text {
   margin-top: 5rpx;
+}
+
+.more-action {
+  margin-top: 4rpx;
+}
+
+.more-actions-popup {
+  position: relative;
+  overflow: hidden;
+  padding: 48rpx 32rpx calc(32rpx + env(safe-area-inset-bottom));
+  background: #fff;
+}
+
+.more-actions-close {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64rpx;
+  height: 64rpx;
+}
+
+.more-action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48rpx;
+}
+
+.more-action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  color: #202733;
+  font-size: 26rpx;
+}
+
+.more-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  background: #f1f3f6;
+  color: #202733;
+}
+
+.delete-action .more-action-button {
+  background: #fff0f2;
+}
+
+.delete-action {
+  color: #f23b54;
 }
 
 .state-view {

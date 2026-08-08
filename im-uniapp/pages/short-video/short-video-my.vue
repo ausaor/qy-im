@@ -12,6 +12,9 @@
         <view class="avatar-ring">
           <image v-if="userInfo.headImage" class="avatar" :src="userInfo.headImage" mode="aspectFill"/>
           <view v-else class="avatar avatar-placeholder">{{ avatarInitial }}</view>
+          <view class="avatar-add" @tap="goToVideoEdit(null)">
+            <uni-icons type="plus" size="17" color="#ffffff"/>
+          </view>
         </view>
 
         <view class="profile-info">
@@ -248,6 +251,18 @@ export default {
           })
         },
       })
+    },
+    goToVideoEdit(videoId) {
+      if (videoId) {
+        const query = videoId !== undefined && videoId !== null ? `?videoId=${encodeURIComponent(videoId)}` : ''
+        uni.navigateTo({
+          url: `/pages/short-video/short-video-edit${query}`
+        })
+      } else {
+        uni.navigateTo({
+          url: '/pages/short-video/short-video-edit'
+        })
+      }
     },
     goToFollowFans(tab) {
       uni.navigateTo({
