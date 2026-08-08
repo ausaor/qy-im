@@ -34,12 +34,14 @@ import xyz.qy.implatform.enums.GroupTypeEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.ShortVideoNotifyMsgTypeEnum;
+import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.enums.ViewScopeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
 import xyz.qy.implatform.mapper.ShortVideoLikeMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.service.ICharacterUserService;
+import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.IFollowService;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
@@ -108,6 +110,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
     @Resource
     private ICharacterUserService characterUserService;
+
+    @Resource
+    private ICommentCharacterService commentCharacterService;
 
     @Resource
     private IMClient imClient;
@@ -375,6 +380,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         shortVideo.setStatus(ReviewEnum.REVIEWING.getCode());
         setObjectId(shortVideo);
         this.save(shortVideo);
+        if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
+            commentCharacterService.saveCommentCharacter(userId, shortVideo.getId(), TargetTypeEnum.SHORT_VIDEO.getCode(), dto.getObjectId(), null);
+        }
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
         vo.setAuthorName(session.getNickName());
         vo.setNickName(session.getNickName());
@@ -396,12 +404,13 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         } else if (FollowEnum.TEMPLATE.getCode().equals(dto.getType())) {
             checkCharacterUser(null, dto.getObjectId(), userId);
         }
-        if (StringUtils.isNotBlank(dto.getType())) {
-            shortVideo.setType(dto.getType());
+        if (!dto.getType().equals(shortVideo.getType())) {
+            throw new GlobalException("短视频类型不能修改");
         }
-        if (Objects.nonNull(dto.getObjectId())) {
-            shortVideo.setObjectId(dto.getObjectId());
+        if (!shortVideo.getObjectId().equals(dto.getObjectId())) {
+            throw new GlobalException("短视频对象id不能修改");
         }
+
         if (Objects.nonNull(dto.getScope())) {
             shortVideo.setScope(dto.getScope());
         }

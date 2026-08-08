@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import xyz.qy.imclient.IMClient;
 import xyz.qy.imclient.annotation.Lock;
 import xyz.qy.imcommon.contant.IMRedisKey;
+import xyz.qy.imcommon.enums.IMTerminalType;
 import xyz.qy.imcommon.model.IMTalkMessage;
 import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.contant.RedisKey;
@@ -171,11 +172,8 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         if (TalkCategoryEnum.CHARACTER.getCode().equals(talkAddDTO.getCategory())
             || (talkAddDTO.getCharacterVisible() && TalkCategoryEnum.PRIVATE.getCode().equals(talkAddDTO.getCategory()))) {
             checkCharacterUser(talkAddDTO.getCharacterId(), talkAddDTO.getGroupTemplateId(), session.getUserId(), talkAddDTO.getCategory());
-            // 发布角色空间的动态需要审核
-            talk.setStatus(ReviewEnum.REVIEWING.getCode());
-        } else {
-            talk.setStatus(ReviewEnum.REVIEWED.getCode());
         }
+        talk.setStatus(ReviewEnum.REVIEWING.getCode());
 
         if (StringUtils.isBlank(talk.getNickName()) && ObjectUtil.isNull(talkAddDTO.getCharacterId()) && ObjectUtil.isNull(talkAddDTO.getGroupTemplateId())) {
             talk.setNickName(user.getNickName());
@@ -190,47 +188,6 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         this.baseMapper.insert(talk);
         if (talk.getCharacterId() != null) {
             commentCharacterService.saveCommentCharacter(user.getId(), talk.getId(), TargetTypeEnum.TALK.getCode(), talk.getCharacterId(), talk.getAvatarId());
-        }
-
-        // 自己可见的不通知
-        if (!talk.getScope().equals(ViewScopeEnum.PRIVATE.getCode())) {
-            List<Long> userIds = new ArrayList<>();
-            // 个人动态通知好友列表
-            if (TalkCategoryEnum.PRIVATE.getCode().equals(talk.getCategory())) {
-                // 查询用户好友
-                userIds = friendService.findFriendByUserId(session.getUserId()).stream()
-                        .map(Friend::getFriendId)
-                        .collect(Collectors.toList());
-            } else if (TalkCategoryEnum.GROUP.getCode().equals(talk.getCategory())) {
-                userIds = groupMemberService.findUserIdsByGroupId(talk.getGroupId());
-                if (!userIds.contains(session.getUserId())) {
-                    throw new GlobalException("您不是当前群聊用户");
-                }
-                // 排除自己的userId
-                userIds.remove(session.getUserId());
-            } else if (TalkCategoryEnum.REGION.getCode().equals(talk.getCategory())) {
-                // 查询地区群聊的常驻用户
-                userIds = regionGroupMemberService.findUserIdsByCode(talk.getRegionCode());
-                if (!userIds.contains(session.getUserId())) {
-                    throw new GlobalException("您不是当前地区群聊常驻用户");
-                }
-                // 排除自己的userId
-                userIds.remove(session.getUserId());
-            }
-
-            if (CollectionUtils.isNotEmpty(userIds)) {
-                TalkMessageVO msgInfo = new TalkMessageVO();
-                msgInfo.setType(TalkNotifyMsgTypeEnum.TALK.getCode());
-                msgInfo.setTalk(talk);
-
-                IMTalkMessage<TalkMessageVO> sendMessage = new IMTalkMessage<>();
-                sendMessage.setSender(new IMUserInfo(session.getUserId(), session.getTerminal()));
-                sendMessage.setRecvIds(userIds);
-                sendMessage.setSendResult(false);
-                sendMessage.setData(msgInfo);
-
-                imClient.sendTalkMessage(sendMessage);
-            }
         }
     }
 
@@ -267,13 +224,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         if (TalkCategoryEnum.CHARACTER.getCode().equals(talkUpdateDTO.getCategory())
                 || (talkUpdateDTO.getCharacterVisible() && TalkCategoryEnum.PRIVATE.getCode().equals(talkUpdateDTO.getCategory()))) {
             checkCharacterUser(talkUpdateDTO.getCharacterId(), talkUpdateDTO.getGroupTemplateId(), session.getUserId(), talk.getCategory());
-            // 发布角色空间的动态需要审核
-            talk.setStatus(ReviewEnum.REVIEWING.getCode());
-        } else {
-            // 动态状态不能改变
-            talk.setStatus(status);
         }
-
+        // 修改动态需要审核
+        talk.setStatus(ReviewEnum.REVIEWING.getCode());
 
         if (CollectionUtils.isNotEmpty(talkUpdateDTO.getFiles())) {
             talk.setFiles(talkUpdateDTO.getFiles().toJSONString());
@@ -1249,5 +1202,46 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         talk.setUpdateTime(new Date());
         log.info("审核动态：talkId:{}, userId:{}", talk.getId(), session.getUserId());
         this.updateById(talk);
+
+        // 自己可见的不通知
+        if (!talk.getScope().equals(ViewScopeEnum.PRIVATE.getCode())) {
+            List<Long> userIds = new ArrayList<>();
+            // 个人动态通知好友列表
+            if (TalkCategoryEnum.PRIVATE.getCode().equals(talk.getCategory())) {
+                // 查询用户好友
+                userIds = friendService.findFriendByUserId(talk.getUserId()).stream()
+                        .map(Friend::getFriendId)
+                        .collect(Collectors.toList());
+            } else if (TalkCategoryEnum.GROUP.getCode().equals(talk.getCategory())) {
+                userIds = groupMemberService.findUserIdsByGroupId(talk.getGroupId());
+                if (!userIds.contains(talk.getUserId())) {
+                    throw new GlobalException("用户已不在目标群聊");
+                }
+                // 排除自己的userId
+                userIds.remove(talk.getUserId());
+            } else if (TalkCategoryEnum.REGION.getCode().equals(talk.getCategory())) {
+                // 查询地区群聊的常驻用户
+                userIds = regionGroupMemberService.findUserIdsByCode(talk.getRegionCode());
+                if (!userIds.contains(talk.getUserId())) {
+                    throw new GlobalException("用户已不在目标地区群聊");
+                }
+                // 排除自己的userId
+                userIds.remove(talk.getUserId());
+            }
+
+            if (CollectionUtils.isNotEmpty(userIds)) {
+                TalkMessageVO msgInfo = new TalkMessageVO();
+                msgInfo.setType(TalkNotifyMsgTypeEnum.TALK.getCode());
+                msgInfo.setTalk(talk);
+
+                IMTalkMessage<TalkMessageVO> sendMessage = new IMTalkMessage<>();
+                sendMessage.setSender(new IMUserInfo(talk.getUserId(), IMTerminalType.WEB.code()));
+                sendMessage.setRecvIds(userIds);
+                sendMessage.setSendResult(false);
+                sendMessage.setData(msgInfo);
+
+                imClient.sendTalkMessage(sendMessage);
+            }
+        }
     }
 }
