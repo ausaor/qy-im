@@ -144,7 +144,6 @@ export default {
 
 <style scoped lang="scss">
 .delete-account {
-  padding: 20rpx;
 
   .warning-section {
     margin-bottom: 30rpx;

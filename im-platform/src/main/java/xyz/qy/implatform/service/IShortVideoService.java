@@ -19,6 +19,8 @@ public interface IShortVideoService extends IService<ShortVideo> {
 
     List<ShortVideoVO> myShortVideos(ShortVideoQueryDTO dto);
 
+    PageResultVO<List<ShortVideoVO>> targetShortVideos(ShortVideoQueryDTO dto);
+
     List<ShortVideoVO> myLikedShortVideos();
 
     List<ShortVideoVO> myFavoriteShortVideos();

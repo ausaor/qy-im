@@ -337,7 +337,7 @@ export default {
     goToUser(video) {
       if (!video || !video.objectId || !video.type) return
       uni.navigateTo({
-        url: `/pages/short-video/short-video-user?targetId=${encodeURIComponent(video.objectId)}&targetType=${encodeURIComponent(video.type)}`
+        url: `/pages/short-video/short-video-user?targetId=${encodeURIComponent(video.objectId)}&targetType=${encodeURIComponent(video.type)}&videoId=${encodeURIComponent(video.id)}`
       })
     },
     avatarText(video) {

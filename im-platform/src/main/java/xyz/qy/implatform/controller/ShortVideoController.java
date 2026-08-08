@@ -71,6 +71,12 @@ public class ShortVideoController {
         return ResultUtils.success(shortVideoService.myShortVideos(dto));
     }
 
+    @ApiOperation(value = "目标的短视频", notes = "目标的短视频")
+    @PostMapping("/targetShortVideos")
+    public Result<PageResultVO<List<ShortVideoVO>>> targetShortVideos(@RequestBody ShortVideoQueryDTO dto) {
+        return ResultUtils.success(shortVideoService.targetShortVideos(dto));
+    }
+
     @ApiOperation(value = "我点赞的短视频", notes = "我点赞的短视频")
     @PostMapping("/myLiked")
     public Result<List<ShortVideoVO>> myLikedShortVideos() {

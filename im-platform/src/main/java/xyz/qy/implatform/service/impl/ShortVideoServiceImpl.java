@@ -128,6 +128,28 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
     }
 
     @Override
+    public PageResultVO<List<ShortVideoVO>> targetShortVideos(ShortVideoQueryDTO dto) {
+        if (ObjectUtil.isNull(dto.getObjectId()) || StringUtils.isBlank(dto.getType())) {
+            throw new GlobalException("参数异常");
+        }
+        LambdaQueryWrapper<ShortVideo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShortVideo::getObjectId, dto.getObjectId());
+        wrapper.eq(ShortVideo::getType, dto.getType());
+        wrapper.eq(ShortVideo::getScope, ViewScopeEnum.PUBLIC.getCode());
+        wrapper.eq(ShortVideo::getStatus, ReviewEnum.REVIEWED.getCode());
+        wrapper.eq(ShortVideo::getDeleted, false);
+        Page<ShortVideo> page = this.page(new Page<>(PageUtils.getPageNo(), PageUtils.getPageSize()), wrapper);
+        if (CollectionUtils.isEmpty(page.getRecords())) {
+            return PageResultVO.<List<ShortVideoVO>>builder().data(Collections.emptyList()).total(0).build();
+        }
+        List<ShortVideo> shortVideos = page.getRecords();
+        List<ShortVideoVO> vos = BeanUtils.copyPropertiesList(shortVideos, ShortVideoVO.class);
+        fillShortVideoFields(shortVideos, vos);
+
+        return PageResultVO.<List<ShortVideoVO>>builder().data(vos).total(page.getTotal()).build();
+    }
+
+    @Override
     public List<ShortVideoVO> myLikedShortVideos() {
         UserSession session = SessionContext.getSession();
         LambdaQueryWrapper<ShortVideoLike> wrapper = new LambdaQueryWrapper<>();

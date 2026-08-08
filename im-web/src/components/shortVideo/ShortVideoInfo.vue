@@ -305,7 +305,7 @@ export default {
       this.worksLoading = true
 
       this.$http({
-        url: '/shortVideo/recommend',
+        url: '/shortVideo/targetShortVideos',
         method: 'post',
         params: {
           pageNo: this.worksPageNo,

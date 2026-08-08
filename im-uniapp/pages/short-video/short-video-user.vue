@@ -52,6 +52,7 @@
           <uni-icons type="videocam" size="30" color="rgba(255,255,255,0.75)"/>
         </view>
         <view class="video-shade"/>
+        <view v-if="String(video.id) === String(videoId)" class="recently-viewed">刚刚浏览</view>
         <view class="video-stat">
           <uni-icons type="heart-filled" size="16" color="#ffffff"/>
           <text>{{ formatCount(video.likeCount) }}</text>
@@ -75,6 +76,7 @@ export default {
       videoList: [],
       targetId: null,
       targetType: '',
+      videoId: null,
       targetInfo: {},
       pageNo: 1,
       pageSize: 21,
@@ -122,7 +124,7 @@ export default {
       else this.loadingMore = true
 
       return this.$http({
-        url: `/shortVideo/recommend?pageNo=${this.pageNo}&pageSize=${this.pageSize}`,
+        url: `/shortVideo/targetShortVideos?pageNo=${this.pageNo}&pageSize=${this.pageSize}`,
         method: 'POST',
         data: { objectId: this.targetId, type: this.targetType },
       }).then((page) => {
@@ -173,8 +175,9 @@ export default {
     }
   },
   onLoad(options) {
-    this.targetId = options.targetId
-    this.targetType = options.targetType || 'user'
+    this.targetId = options.targetId;
+    this.targetType = options.targetType || 'user';
+    this.videoId = options.videoId || null;
     if (!this.targetId) {
       uni.showToast({ title: '缺少用户信息', icon: 'none' })
       return
@@ -326,6 +329,19 @@ export default {
   left: 0;
   height: 80rpx;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.56));
+}
+
+.recently-viewed {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 6rpx 12rpx;
+  border-radius: 6rpx;
+  background: rgba(0, 0, 0, 0.58);
+  color: #ffffff;
+  font-size: 20rpx;
+  line-height: 1.3;
+  transform: translate(-50%, -50%);
 }
 
 .video-stat {
