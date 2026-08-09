@@ -374,7 +374,7 @@ export default {
 .video-actions {
   position: absolute;
   right: 24rpx;
-  bottom: calc(48rpx + env(safe-area-inset-bottom));
+  bottom: 90rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -508,7 +508,7 @@ export default {
 
 .comment-open .video-actions {
   right: 14rpx;
-  bottom: 20rpx;
+  bottom: 90rpx;
   gap: 12rpx;
   transform: scale(.82);
   transform-origin: right bottom;
