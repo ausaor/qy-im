@@ -1035,6 +1035,25 @@ create index idx_2
     on im_short_video_notify (video_id);
 
 
+create table im_comment_character
+(
+    id           bigint      not null comment '主键'
+        primary key,
+    user_id      bigint      not null comment '用户id',
+    target_id    bigint      not null comment '目标id',
+    target_type  varchar(20) not null comment '目标类型：talk（动态），shortVideo（短视频）',
+    character_id bigint      not null comment '角色id',
+    avatar_id    bigint      null comment '头像id',
+    create_time  datetime    not null comment '创建时间',
+    constraint uidx1
+        unique (target_id, target_type, character_id)
+)
+    comment '评论使用的角色表' row_format = DYNAMIC;
+
+create index user_id
+    on im_comment_character (user_id);
+
+
 create table ai_chat_message
 (
     id          bigint auto_increment comment '主键'

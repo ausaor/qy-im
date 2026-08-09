@@ -1074,6 +1074,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
                 .in(Talk::getUserId, friendIds)
                 .in(Talk::getScope, Arrays.asList(ViewScopeEnum.FRIENDS.getCode(), ViewScopeEnum.PUBLIC.getCode()))
                 .eq(Talk::getCategory, TalkCategoryEnum.PRIVATE.getCode())
+                .eq(Talk::getStatus, ReviewEnum.REVIEWED.getCode())
                 .eq(Talk::getDeleted, false)
                 .ge(Talk::getCreateTime, minDate)
                 .gt(Talk::getId, minId)
