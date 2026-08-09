@@ -75,6 +75,7 @@ export default {
 .character-avatar-list-box {
   background-color: #fff;
   padding: 10rpx;
+  max-height: 700rpx;
 
   .choosed-character-avatar {
     display: flex;
@@ -95,7 +96,7 @@ export default {
     overflow: hidden;
 
     .scroll-bar {
-      height: 800rpx;
+      height: 500rpx;
 
       .character-avatar-item {
         height: 80rpx;

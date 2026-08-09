@@ -86,6 +86,7 @@ export default {
 .character-list-box {
   background-color: #fff;
   padding: 10rpx;
+  max-height: 700rpx;
 
   .choosed-character {
     display: grid;
@@ -120,7 +121,7 @@ export default {
     overflow: hidden;
 
     .scroll-bar {
-      height: 800rpx;
+      height: 500rpx;
 
       .character-item {
         height: 80rpx;
