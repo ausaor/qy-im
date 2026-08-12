@@ -488,7 +488,7 @@ export default {
 .video-info {
   position: absolute;
   right: 140rpx;
-  bottom: calc(54rpx + env(safe-area-inset-bottom));
+  bottom: 8%;
   left: 30rpx;
   display: flex;
   flex-direction: column;
@@ -512,7 +512,7 @@ export default {
 .video-actions {
   position: absolute;
   right: 24rpx;
-  bottom: 90rpx;
+  bottom: 8%;
   display: flex;
   flex-direction: column;
   align-items: center;

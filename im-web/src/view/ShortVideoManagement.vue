@@ -182,7 +182,6 @@
               <el-button
                 type="text"
                 size="mini"
-                :disabled="!canReview(scope.row)"
                 :loading="scope.row.approveLoading"
                 @click="handleApprove(scope.row)"
               >
@@ -191,7 +190,6 @@
               <el-button
                 type="text"
                 size="mini"
-                :disabled="!canReview(scope.row)"
                 :loading="scope.row.rejectLoading"
                 @click="openRejectDialog(scope.row)"
               >
@@ -394,10 +392,10 @@ export default {
     },
 
     handleApprove(row) {
-      if (!this.canReview(row)) {
+      /*if (!this.canReview(row)) {
         this.$message.warning('当前状态不可审核')
         return
-      }
+      }*/
       this.$set(row, 'approveLoading', true)
       this.$http({
         url: '/shortVideo/review',
@@ -417,10 +415,10 @@ export default {
     },
 
     openRejectDialog(row) {
-      if (!this.canReview(row)) {
+      /*if (!this.canReview(row)) {
         this.$message.warning('当前状态不可审核')
         return
-      }
+      }*/
       this.rejectForm.id = row.id
       this.rejectForm.reason = ''
       this.rejectForm.loading = false

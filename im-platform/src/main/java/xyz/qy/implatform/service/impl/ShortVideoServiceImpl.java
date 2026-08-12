@@ -616,9 +616,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
     public void review(ShortVideoReviewDTO dto) {
         ShortVideo shortVideo = this.getById(dto.getId());
         checkExists(shortVideo);
-        if (ReviewEnum.NO_PASS.getCode().equals(shortVideo.getStatus())) {
-            throw new GlobalException("视频已审核未通过");
-        }
+//        if (ReviewEnum.NO_PASS.getCode().equals(shortVideo.getStatus())) {
+//            throw new GlobalException("视频已审核未通过");
+//        }s
         if (!StringUtils.equalsAny(dto.getStatus(), ReviewEnum.REVIEWED.getCode(), ReviewEnum.NO_PASS.getCode())) {
             throw new GlobalException("审核状态错误");
         }

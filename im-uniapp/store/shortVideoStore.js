@@ -48,9 +48,9 @@ export default defineStore('shortVideoStore', {
             // 调用 hook 获取其他 store 实例（getter 为实例上的扁平属性，如 follow.isFollow(key)）
             const follow = followStore();
             const friend = friendStore();
-            if (shortVideo.type !== 'user'
-                && !follow.isFollow(shortVideo.objectId + ':' + shortVideo.type)
-                && friend.isFriend(shortVideo.userId)) { // 视频类型不是用户发布，且未关注目标对象，但发布用户是好友
+            const isFriend = friend.isFriend(shortVideo.userId);
+            const isFollow = follow.isFollow(shortVideo.objectId + ':' + shortVideo.type);
+            if (shortVideo.type !== 'user' && !isFollow && isFriend) { // 视频类型不是用户发布，且未关注目标对象，但发布用户是好友
                 if (!newMap.has(shortVideo.userId + '-user')) {
                     newMap.set(shortVideo.userId + '-' + 'user', [shortVideo]);
                 } else {
