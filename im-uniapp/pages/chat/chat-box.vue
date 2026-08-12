@@ -391,137 +391,58 @@ export default {
         return msgInfo.selfSend ? this.mine.nickName : this.chat.showName
       }
     },
-    showInfo(msgInfo) {
-      let showInfoObj = {
-        showName: "",
-        headImage: "",
-        nickName: "",
-        characterNum: null,
-        quoteShowName: '',
-        role: '',
-        chatBubbleIndex: 0,
-      };
-      if (this.chat.type == 'GROUP') {
-        let member = this.groupMembersMap.get(msgInfo.sendId);
-        let friend = this.friendsMap.get(msgInfo.sendId);
-        if (friend) {
-          if (friend.friendRemark) {
-            showInfoObj.nickName = friend.friendRemark;
-          } else if (member) {
-            showInfoObj.nickName = member.nickName;
-          }
-        }
-
-        if (!msgInfo.isTemplate) { // 不是作为模板角色发送的消息
-          if (friend) {
-            if (friend.friendRemark) {
-              showInfoObj.showName = friend.friendRemark;
+    sendTextMessage() {
+        this.editorCtx.getContents({
+            success: (e) => {
+                // 清空编辑框数据
+                this.editorCtx.clear();
+                // 检查是否被封禁
+                if (this.isBanned) {
+                    this.showBannedTip();
+                    return;
+                }
+                let sendText = "";
+                e.delta.ops.forEach((op) => {
+                    if (op.insert.image) {
+                        // emo表情
+                        sendText += `#${op.attributes.alt};`
+                    } else(
+                        // 文字
+                        sendText += op.insert
+                    )
+                })
+                if (!sendText.trim() && this.atUserIds.length == 0) {
+                    return uni.showToast({
+                        title: "不能发送空白信息",
+                        icon: "none"
+                    });
+                }
+                let receiptText = this.isReceipt ? "【回执消息】" : "";
+                let atText = this.createAtText();
+                let msgInfo = {
+                    content: receiptText + sendText + atText,
+                    atUserIds: this.atUserIds,
+                    receipt: this.isReceipt,
+                    type: 0
+                }
+                // 清空@成员和回执标记
+                this.atUserIds = [];
+                this.isReceipt = false;
+                // 填充对方id
+                this.fillTargetId(msgInfo, this.chat.targetId);
+                this.sendMessageRequest(msgInfo).then((m) => {
+                    m.selfSend = true;
+                    this.chatStore.insertMessage(m, this.chat);
+                    // 会话置顶
+                    this.moveChatToTop();
+                }).finally(() => {
+                    // 滚动到底部
+                    this.scrollToBottom();
+                });
             }
-            if (member) {
-              showInfoObj.headImage = member.headImage;
-            }
-          } else if (member) {
-            showInfoObj.showName = member.aliasName;
-            showInfoObj.headImage = member.headImage;
-            showInfoObj.nickName = member.nickName;
-          }
-        } else {
-          showInfoObj.showName = msgInfo.sendNickName;
-          showInfoObj.headImage = msgInfo.sendUserAvatar;
-        }
-        if (member) {
-          showInfoObj.role = member.role;
-          showInfoObj.characterNum = member.characterNum;
-          showInfoObj.chatBubbleIndex = member.chatBubble;
-        }
-        if (!showInfoObj.showName) {
-          if (msgInfo.sendNickName) {
-            showInfoObj.showName = msgInfo.sendNickName;
-          }
-        }
-        if (!showInfoObj.headImage) {
-          if (msgInfo.sendUserAvatar) {
-            showInfoObj.headImage = msgInfo.sendUserAvatar;
-          }
-        }
-        if (msgInfo.quoteMsg) {
-          let member2 = this.groupMembersMap.get(msgInfo.quoteMsg.sendId);
-          if (msgInfo.quoteMsg.isTemplate) {
-            showInfoObj.quoteShowName = msgInfo.quoteMsg.sendNickName;
-          } else {
-            showInfoObj.quoteShowName = member2 ? member2.aliasName : "";
-          }
-        }
-      } else {
-        showInfoObj.role = this.friend.role;
-        if (msgInfo.sendId == this.mine.id) {
-          showInfoObj.showName = this.mine.nickName
-          showInfoObj.headImage = this.mine.headImage
-          showInfoObj.chatBubbleIndex = this.mine.chatBubble;
-        } else {
-          showInfoObj.showName = this.chat.showName;
-          showInfoObj.headImage = this.chat.headImage;
-          showInfoObj.chatBubbleIndex = this.friend.chatBubble;
-        }
-        if (msgInfo.quoteMsg) {
-          msgInfo.quoteMsg.sendId == this.mine.id ? showInfoObj.quoteShowName = this.mine.nickName : showInfoObj.quoteShowName = this.chat.showName;
-        }
-      }
+        })
 
-      return showInfoObj;
     },
-		sendTextMessage() {
-			this.editorCtx.getContents({
-				success: (e) => {
-					// 清空编辑框数据
-					this.editorCtx.clear();
-					// 检查是否被封禁
-					if (this.isBanned) {
-						this.showBannedTip();
-						return;
-					}
-					let sendText = "";
-					e.delta.ops.forEach((op) => {
-						if (op.insert.image) {
-							// emo表情
-							sendText += `#${op.attributes.alt};`
-						} else(
-							// 文字
-							sendText += op.insert
-						)
-					})
-					if (!sendText.trim() && this.atUserIds.length == 0) {
-						return uni.showToast({
-							title: "不能发送空白信息",
-							icon: "none"
-						});
-					}
-					let receiptText = this.isReceipt ? "【回执消息】" : "";
-					let atText = this.createAtText();
-					let msgInfo = {
-						content: receiptText + sendText + atText,
-						atUserIds: this.atUserIds,
-						receipt: this.isReceipt,
-						type: 0
-					}
-					// 清空@成员和回执标记
-					this.atUserIds = [];
-					this.isReceipt = false;
-					// 填充对方id
-					this.fillTargetId(msgInfo, this.chat.targetId);
-					this.sendMessageRequest(msgInfo).then((m) => {
-						m.selfSend = true;
-						this.chatStore.insertMessage(m, this.chat);
-						// 会话置顶
-						this.moveChatToTop();
-					}).finally(() => {
-						// 滚动到底部
-						this.scrollToBottom();
-					});
-				}
-			})
-
-		},
     chooseCharacterWord(data) {
       let content = {
         id: data.id,

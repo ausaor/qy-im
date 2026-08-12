@@ -795,51 +795,6 @@ export default {
       }
       return "";
     },
-    showInfo(msgInfo) {
-      let showInfoObj = {
-        showName: "",
-        headImage: "",
-        nickName: "",
-        quoteShowName: '',
-        role: '',
-        chatBubbleIndex: 0,
-      };
-      if (this.$msgType.isNormal(msgInfo.type) || this.$msgType.isAction(msgInfo.type)) {
-        let friend = this.friendsMap.get(msgInfo.sendId);
-        if (friend) {
-          showInfoObj.role = friend.role;
-          if (friend.friendRemark) {
-            showInfoObj.showName = friend.friendRemark;
-          }
-        }
-        let member = this.regionGroupMembersMap.get(msgInfo.sendId);
-        if (msgInfo.quoteMsg) {
-          let member2 = this.regionGroupMembersMap.get(msgInfo.quoteMsg.sendId);
-          showInfoObj.quoteShowName = member2 ? member2.aliasName : msgInfo.quoteMsg.sendNickName;
-        }
-        if (!showInfoObj.showName) {
-          if (member) {
-            showInfoObj.showName = member.aliasName;
-          }
-        }
-        if (member) {
-          showInfoObj.role = member.role;
-          showInfoObj.headImage = member.headImage;
-          showInfoObj.chatBubbleIndex = member.chatBubble;
-        }
-        if (!showInfoObj.showName) {
-          if (msgInfo.sendNickName) {
-            showInfoObj.showName = msgInfo.sendNickName;
-          }
-        }
-        if (!showInfoObj.headImage) {
-          if (msgInfo.sendUserAvatar) {
-            showInfoObj.headImage = msgInfo.sendUserAvatar;
-          }
-        }
-      }
-      return showInfoObj;
-    },
     resetEditor() {
       this.$nextTick(() => {
         this.$refs.chatInputEditor.clear();
