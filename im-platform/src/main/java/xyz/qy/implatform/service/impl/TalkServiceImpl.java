@@ -73,6 +73,7 @@ import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.util.SensitiveUtil;
+import xyz.qy.implatform.vo.CommentCharacterVO;
 import xyz.qy.implatform.vo.PageResultVO;
 import xyz.qy.implatform.vo.TalkCommentVO;
 import xyz.qy.implatform.vo.TalkMessageVO;
@@ -606,6 +607,10 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
         // 动态id
         List<Long> talkIds = records.stream().map(Talk::getId).collect(Collectors.toList());
+        
+        // 动态评论角色数据
+        List<CommentCharacterVO> commentCharacters = commentCharacterService.getCommentCharacters(talkIds, TargetTypeEnum.TALK.getCode());
+        Map<Long, CommentCharacterVO> commentCharacterVOMap = commentCharacters.stream().collect(Collectors.toMap(CommentCharacterVO::getTargetId, commentCharacter -> commentCharacter));
 
         // 动态点赞数据
         List<TalkStar> talkStarList = talkStarService.lambdaQuery().in(TalkStar::getTalkId, talkIds)
@@ -624,9 +629,6 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
 
         List<User> userList = userService.listByIds(userIds);
         Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, userItem -> userItem));
-
-        // 根据动态id分组
-        Map<Long, List<TalkComment>> allTalkCommentGroupMap = allTalkCommentList.stream().collect(Collectors.groupingBy(TalkComment::getTalkId));
 
         // 动态评论数据-未删除
         List<TalkComment> talkCommentList = allTalkCommentList.stream().filter(item -> !item.getDeleted()).collect(Collectors.toList());
@@ -670,14 +672,15 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             talkVO.setCommentUserAvatar(user.getHeadImage());
             talkVO.setCommentUserNickname(user.getNickName());
             Set<Long> characterIds = new HashSet<>();
+            if (commentCharacterVOMap.containsKey(talkVO.getId())) {
+                CommentCharacterVO commentCharacterVO = commentCharacterVOMap.get(talkVO.getId());
+                talkVO.setCommentCharacterAvatarId(commentCharacterVO.getAvatarId());
+                talkVO.setCommentCharacterId(commentCharacterVO.getCharacterId());
+                talkVO.setCommentCharacterName(commentCharacterVO.getCharacterName());
+                talkVO.setCommentCharacterAvatar(commentCharacterVO.getAvatar());
+            }
             if (ObjectUtil.isNotNull(talkVO.getCharacterId())) {
                 characterIds.add(talkVO.getCharacterId());
-                if (obj.getUserId().equals(myUserId)) {
-                    talkVO.setCommentCharacterAvatarId(talkVO.getAvatarId());
-                    talkVO.setCommentCharacterId(talkVO.getCharacterId());
-                    talkVO.setCommentCharacterName(talkVO.getNickName());
-                    talkVO.setCommentCharacterAvatar(talkVO.getAvatar());
-                }
             } else if (ObjectUtil.isNotNull(talkVO.getGroupTemplateId())) {
                 log.info("群聊模板id：{}", talkVO.getGroupTemplateId());
             } else {
@@ -686,15 +689,6 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             }
             if (talkStarMap.containsKey(talkVO.getId())) {
                 talkVO.setTalkStarVOS(talkStarMap.get(talkVO.getId()));
-                // 找到当前用户点赞，并且角色id不为空的数据
-                Optional<TalkStarVO> talkStarVOOptional = talkVO.getTalkStarVOS().stream().filter(item -> item.getUserId().equals(myUserId)
-                        && ObjectUtil.isNotNull(item.getCharacterId())).findFirst();
-                talkStarVOOptional.ifPresent(talkStarVO -> {
-                    talkVO.setCommentCharacterAvatarId(talkStarVO.getAvatarId());
-                    talkVO.setCommentCharacterId(talkStarVO.getCharacterId());
-                    talkVO.setCommentCharacterName(talkStarVO.getNickname());
-                    talkVO.setCommentCharacterAvatar(talkStarVO.getAvatar());
-                });
                 characterIds.addAll(talkVO.getTalkStarVOS().stream().map(TalkStarVO::getCharacterId).collect(Collectors.toSet()));
 
                 // 判断当前用户是否点赞此条动态
@@ -709,17 +703,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
             } else {
                 talkVO.setTalkStarVOS(Collections.emptyList());
             }
-            if (allTalkCommentGroupMap.containsKey(talkVO.getId())) {
-                // 找到当前用户评论，并且角色id不为空的数据
-                Optional<TalkComment> talkCommentOptional = allTalkCommentGroupMap.get(talkVO.getId()).stream().filter(item -> item.getUserId().equals(myUserId)
-                        && !Objects.isNull(item.getCharacterId())).findFirst();
-                talkCommentOptional.ifPresent(talkComment -> {
-                    talkVO.setCommentCharacterAvatarId(talkComment.getAvatarId());
-                    talkVO.setCommentCharacterId(talkComment.getCharacterId());
-                    talkVO.setCommentCharacterName(talkComment.getUserNickname());
-                    talkVO.setCommentCharacterAvatar(talkComment.getUserAvatar());
-                });
-            }
+
             if (talkCommentMap.containsKey(talkVO.getId())) {
                 talkVO.setTalkCommentVOS(talkCommentMap.get(talkVO.getId()));
                 talkVO.getTalkCommentVOS().forEach(item -> {

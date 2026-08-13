@@ -1,6 +1,7 @@
 package xyz.qy.implatform.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import xyz.qy.implatform.entity.CharacterAvatar;
 import xyz.qy.implatform.entity.CommentCharacter;
@@ -12,10 +13,14 @@ import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.ITemplateCharacterService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
+import xyz.qy.implatform.util.BeanUtils;
 import xyz.qy.implatform.vo.CommentCharacterVO;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -133,7 +138,49 @@ public class CommentCharacterServiceImpl extends ServiceImpl<CommentCharacterMap
         }
         commentCharacterVO.setCharacterId(commentCharacter.getCharacterId());
         commentCharacterVO.setAvatarId(commentCharacter.getAvatarId());
+        commentCharacterVO.setUserId(commentCharacter.getUserId());
+        commentCharacterVO.setTargetId(commentCharacter.getTargetId());
+        commentCharacterVO.setTargetType(commentCharacter.getTargetType());
 
         return commentCharacterVO;
+    }
+
+    @Override
+    public List<CommentCharacterVO> getCommentCharacters(List<Long> targetIds, String targetType) {
+        UserSession session = SessionContext.getSession();
+        List<CommentCharacter> commentCharacters = this.lambdaQuery()
+                .eq(CommentCharacter::getUserId, session.getUserId())
+                .in(CommentCharacter::getTargetId, targetIds)
+                .eq(CommentCharacter::getTargetType, targetType)
+                .list();
+        if (CollectionUtils.isEmpty(commentCharacters)) {
+            return Collections.emptyList();
+        }
+
+        List<CommentCharacterVO> commentCharacterVOList = new ArrayList<>();
+        for (CommentCharacter commentCharacter : commentCharacters) {
+            CommentCharacterVO commentCharacterVO = BeanUtils.copyProperties(commentCharacter, CommentCharacterVO.class);
+            commentCharacterVOList.add(commentCharacterVO);
+            if (commentCharacter.getAvatarId() != null) {
+                CharacterAvatar characterAvatar = characterAvatarService.findPublishedCharacterAvatarById(commentCharacter.getAvatarId());
+                if (characterAvatar == null) {
+                    continue;
+                }
+                commentCharacterVO.setAvatar(characterAvatar.getAvatar());
+                if (characterAvatar.getLevel().equals(0)) {
+                    commentCharacterVO.setCharacterName(characterAvatar.getTemplateCharacterName());
+                } else {
+                    commentCharacterVO.setCharacterName(characterAvatar.getName());
+                }
+            } else {
+                TemplateCharacter templateCharacter = characterService.findPublishedById(commentCharacter.getCharacterId());
+                if (templateCharacter == null) {
+                    continue;
+                }
+                commentCharacterVO.setCharacterName(templateCharacter.getName());
+                commentCharacterVO.setAvatar(templateCharacter.getAvatar());
+            }
+        }
+        return commentCharacterVOList;
     }
 }

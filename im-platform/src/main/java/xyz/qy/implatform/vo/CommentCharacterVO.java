@@ -11,4 +11,10 @@ public class CommentCharacterVO {
     private String avatar;
 
     private String characterName;
+
+    private Long userId;
+
+    private Long targetId;
+
+    private String targetType;
 }

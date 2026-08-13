@@ -30,6 +30,14 @@ public enum FeatureCodeEnum {
 
     DYNAMIC_COMMENT("FEATURE_DYNAMIC_COMMENT", "动态评论"),
 
+    SHORT_VIDEO_PUBLISH("FEATURE_SHORT_VIDEO_PUBLISH", "短视频发布"),
+
+    SHORT_VIDEO_LIKE("FEATURE_SHORT_VIDEO_LIKE", "短视频点赞"),
+
+    SHORT_VIDEO_COMMENT("FEATURE_SHORT_VIDEO_COMMENT", "短视频评论"),
+
+    SHORT_VIDEO_COLLECT("FEATURE_SHORT_VIDEO_COLLECT", "短视频收藏"),
+
     MUSIC_PUBLISH("FEATURE_MUSIC_PUBLISH", "音乐发布"),
 
     IMAGE_UPLOAD("FEATURE_IMAGE_UPLOAD", "图片上传"),
@@ -63,4 +71,3 @@ public enum FeatureCodeEnum {
         return null;
     }
 }
-

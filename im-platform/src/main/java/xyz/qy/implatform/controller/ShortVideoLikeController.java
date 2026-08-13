@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.annotation.FeatureControl;
 import xyz.qy.implatform.dto.ShortVideoLikeAddDTO;
 import xyz.qy.implatform.dto.ShortVideoLikeBatchDelDTO;
 import xyz.qy.implatform.dto.ShortVideoLikeDelDTO;
@@ -35,6 +36,7 @@ public class ShortVideoLikeController {
     private IShortVideoLikeService shortVideoLikeService;
 
     @ApiOperation(value = "新增点赞", notes = "新增点赞")
+    @FeatureControl(value = "FEATURE_SHORT_VIDEO_LIKE")
     @PostMapping("/add")
     public Result<ShortVideoLikeVO> add(@Valid @RequestBody ShortVideoLikeAddDTO dto) {
         return ResultUtils.success(shortVideoLikeService.addShortVideoLike(dto));

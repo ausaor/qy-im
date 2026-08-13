@@ -62,8 +62,17 @@ public enum FeatureEnum {
     /**
      * 动态评论
      */
-    FEATURE_DYNAMIC_COMMENT("FEATURE_DYNAMIC_COMMENT", "动态评论");
-    
+    FEATURE_DYNAMIC_COMMENT("FEATURE_DYNAMIC_COMMENT", "动态评论"),
+
+    FEATURE_SHORT_VIDEO_PUBLISH("FEATURE_SHORT_VIDEO_PUBLISH", "短视频发布"),
+
+    FEATURE_SHORT_VIDEO_COMMENT("FEATURE_SHORT_VIDEO_COMMENT", "短视频评论"),
+
+    FEATURE_SHORT_VIDEO_LIKE("FEATURE_SHORT_VIDEO_LIKE", "短视频点赞"),
+
+    FEATURE_SHORT_VIDEO_COLLECT("FEATURE_SHORT_VIDEO_COLLECT", "短视频收藏"),
+
+    ;
     private final String code;
     private final String name;
     

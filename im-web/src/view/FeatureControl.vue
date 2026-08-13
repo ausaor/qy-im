@@ -380,6 +380,30 @@ export default {
           name: '动态评论',
           icon: 'el-icon-chat-dot-square',
           color: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)'
+        },
+        {
+          code: 'FEATURE_SHORT_VIDEO_PUBLISH',
+          name: '短视频发布',
+          icon: 'el-icon-video-camera',
+          color: 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)'
+        },
+        {
+          code: 'FEATURE_SHORT_VIDEO_LIKE',
+          name: '短视频点赞',
+          icon: 'el-icon-star-off',
+          color: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)'
+        },
+        {
+          code: 'FEATURE_SHORT_VIDEO_COMMENT',
+          name: '短视频评论',
+          icon: 'el-icon-chat-dot-square',
+          color: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)'
+        },
+        {
+          code: 'FEATURE_SHORT_VIDEO_COLLECT',
+          name: '短视频收藏',
+          icon: 'el-icon-collection-tag',
+          color: 'linear-gradient(135deg, #c471f5 0%, #fa71cd 100%)'
         }
       ],
       // 功能状态缓存: true=开启, false=关闭

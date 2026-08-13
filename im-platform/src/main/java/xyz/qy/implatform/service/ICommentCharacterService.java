@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.qy.implatform.entity.CommentCharacter;
 import xyz.qy.implatform.vo.CommentCharacterVO;
 
+import java.util.List;
+
 public interface ICommentCharacterService extends IService<CommentCharacter> {
     /**
      * 保存用户评论角色
@@ -42,4 +44,13 @@ public interface ICommentCharacterService extends IService<CommentCharacter> {
      * @return 评论角色
      */
     CommentCharacterVO getCommentCharacter(Long targetId, String targetType);
+
+    /**
+     * 获取用户评论角色
+     *
+     * @param targetIds 目标id
+     * @param targetType 目标类型
+     * @return 评论角色
+     */
+    List<CommentCharacterVO> getCommentCharacters(List<Long> targetIds, String targetType);
 }

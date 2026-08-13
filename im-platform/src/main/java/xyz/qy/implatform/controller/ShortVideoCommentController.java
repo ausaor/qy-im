@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.qy.imclient.annotation.CountLimit;
+import xyz.qy.implatform.annotation.FeatureControl;
 import xyz.qy.implatform.dto.ShortVideoCommentAddDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentDelDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentQueryDTO;
@@ -32,6 +33,7 @@ public class ShortVideoCommentController {
     private IShortVideoCommentService shortVideoCommentService;
 
     @ApiOperation(value = "新增评论", notes = "新增评论")
+    @FeatureControl(value = "FEATURE_SHORT_VIDEO_COMMENT")
     @CountLimit(limitType = "short-video-comment", count = 50)
     @PostMapping("/add")
     public Result<ShortVideoCommentVO> add(@Valid @RequestBody ShortVideoCommentAddDTO dto) {

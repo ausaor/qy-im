@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import xyz.qy.implatform.annotation.FeatureControl;
 import xyz.qy.implatform.dto.ShortVideoFavoriteAddDTO;
 import xyz.qy.implatform.dto.ShortVideoFavoriteBatchDelDTO;
 import xyz.qy.implatform.dto.ShortVideoFavoriteDelDTO;
@@ -35,6 +36,7 @@ public class ShortVideoFavoriteController {
     private IShortVideoFavoriteService shortVideoFavoriteService;
 
     @ApiOperation(value = "新增收藏", notes = "新增收藏")
+    @FeatureControl(value = "FEATURE_SHORT_VIDEO_COLLECT")
     @PostMapping("/add")
     public Result<ShortVideoFavoriteVO> add(@Valid @RequestBody ShortVideoFavoriteAddDTO dto) {
         return ResultUtils.success(shortVideoFavoriteService.addShortVideoFavorite(dto));
