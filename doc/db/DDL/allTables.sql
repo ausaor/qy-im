@@ -130,34 +130,33 @@ create table im_group_member
 (
     id                    bigint auto_increment comment 'id'
         primary key,
-    group_id              bigint                                    not null comment '群id',
-    user_id               bigint                                    not null comment '用户id',
-    alias_name            varchar(255)  default ''                  not null comment '群别名',
-    alias_name_prefix     varchar(10)                               null comment '昵称前缀',
-    alias_name_suffix     varchar(10)                               null comment '昵称后缀',
-    group_role            tinyint(1)    default 3                   not null comment '群角色',
-    nickname              varchar(10)                               null comment '用户昵称',
-    head_image            varchar(1000) default ''                  null comment '用户头像',
-    head_image_def        varchar(1000)                             null comment '自定义头像',
-    is_template           tinyint(1)    default 0                   not null comment '是否模板人物',
-    template_group_id     bigint                                    null comment '群聊模板id',
-    template_character_id bigint        default 0                   not null comment '模板人物id',
-    character_avatar_id   bigint                                    null comment '模板人物头像id',
-    avatar_alias          varchar(50)                               null comment '头像别名',
-    remark                varchar(255)  default ''                  null comment '备注',
-    quit                  tinyint(1)    default 0                   not null comment '是否已退出',
-    quit_time             datetime                                  null comment '退出时间',
-    show_nickname         tinyint(1)    default 0                   not null comment '是否展示群成员昵称（0：否；1：是）',
-    is_banned             smallint(1)   default 0                   not null comment '禁止发言（1：是；0否）',
-    ban_type              varchar(50)                               null comment '被禁止发言类型（admin：管理员禁止；master：群主禁止）',
-    is_dnd                tinyint(1)    default 0                   not null comment '是否勿扰模式',
-    ban_expire_time       datetime                                  null comment '禁止发言失效时间',
-    created_time          datetime      default current_timestamp() null comment '创建时间',
-    switch_time           datetime                                  null comment '模板人物切换时间',
+    group_id              bigint                                  not null comment '群id',
+    user_id               bigint                                  not null comment '用户id',
+    alias_name            varchar(255)  default ''                not null comment '群别名',
+    group_role            tinyint(1)    default 3                 not null comment '群角色',
+    nickname              varchar(10)                             null comment '用户昵称',
+    head_image            varchar(1000) default ''                null comment '用户头像',
+    head_image_def        varchar(1000)                           null comment '自定义头像',
+    is_template           tinyint(1)    default 0                 not null comment '是否模板人物',
+    template_group_id     bigint                                  null comment '群聊模板id',
+    template_character_id bigint        default 0                 not null comment '模板人物id',
+    character_avatar_id   bigint                                  null comment '模板人物头像id',
+    character_name        varchar(20)   default ''                not null comment '角色昵称',
+    avatar_alias          varchar(50)                             null comment '头像别名',
+    remark                varchar(255)  default ''                null comment '备注',
+    quit                  tinyint(1)    default 0                 not null comment '是否已退出',
+    quit_time             datetime                                null comment '退出时间',
+    show_nickname         tinyint(1)    default 0                 not null comment '是否展示群成员昵称（0：否；1：是）',
+    is_banned             smallint      default 0                 not null comment '禁止发言（1：是；0否）',
+    ban_type              varchar(50)                             null comment '被禁止发言类型（admin：管理员禁止；master：群主禁止）',
+    ban_expire_time       datetime                                null comment '禁止发言失效时间',
+    is_dnd                tinyint(1)    default 0                 not null comment '是否勿扰模式',
+    created_time          datetime      default CURRENT_TIMESTAMP null comment '创建时间',
+    switch_time           datetime                                null comment '模板人物切换时间',
     constraint unique_idx_1
         unique (group_id, user_id)
 )
-    comment '群成员表' row_format = DYNAMIC;
+    comment '群成员表';
 
 create index idx_group_id
     on im_group_member (group_id);
@@ -1046,9 +1045,12 @@ create table im_comment_character
     avatar_id    bigint      null comment '头像id',
     create_time  datetime    not null comment '创建时间',
     constraint uidx1
-        unique (target_id, target_type, character_id)
+        unique (target_id, target_type, character_id),
+    constraint uidx2
+        unique (user_id, target_id, target_type)
 )
     comment '评论使用的角色表' row_format = DYNAMIC;
+
 
 create index user_id
     on im_comment_character (user_id);
