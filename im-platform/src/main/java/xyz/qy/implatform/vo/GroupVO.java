@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import java.util.Date;
 
@@ -33,8 +34,12 @@ public class GroupVO {
     private String notice;
 
     @Length(max = 10, message = "用户群昵称长度不能大于10")
+    @NotBlank(message = "用户群昵称不可为空")
     @ApiModelProperty(value = "用户在群显示昵称")
     private String aliasName;
+
+    @ApiModelProperty(value = "角色名称")
+    private String characterName;
 
     @Length(max = 20, message = "群聊显示备注不能大于20")
     @ApiModelProperty(value = "群聊显示备注")

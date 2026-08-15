@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -344,6 +345,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
         groupMember.setAliasName(templateCharacter.getName());
         groupMember.setCharacterName(templateCharacter.getName());
+        groupMember.setAvatarAlias(StringUtils.EMPTY);
         groupMember.setHeadImage(templateCharacter.getAvatar());
         groupMember.setSwitchTime(new Date());
 
@@ -423,6 +425,8 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
             throw new GlobalException(ResultCode.PROGRAM_ERROR, "所选模板角色头像不属于当前模板角色");
         }
 
+        String originalAliasName = groupMember.getAliasName();
+
         groupMember.setCharacterAvatarId(characterAvatar.getId());
         groupMember.setHeadImage(characterAvatar.getAvatar());
         if (characterAvatar.getLevel() != 0) {
@@ -440,7 +444,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         group.setVersion(idGeneratorUtil.nextIdStr());
         groupService.updateById(group);
 
-        String content = String.format("#{%s}切换了角色头像", CommonUtils.getAliasName(groupMember) + ":" + groupMember.getUserId());
+        String content = String.format("#{%s}切换了角色头像", originalAliasName + ":" + groupMember.getUserId());
         messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
                 Collections.emptyList(), content, GroupChangeTypeEnum.TEMPLATE_CHARACTER_CHANGE.getCode());
     }

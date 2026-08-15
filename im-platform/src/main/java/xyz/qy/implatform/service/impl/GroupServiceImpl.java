@@ -219,12 +219,23 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         member.setNickname(vo.getNickName());
         member.setIsDnd(vo.getIsDnd());
         if (GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
-            if (StringUtils.isNotBlank(vo.getAliasName()) && !vo.getAliasName().equals(member.getAliasName())) {
-                hasModify = true;
-            }
             member.setAliasName(StringUtils.isEmpty(vo.getAliasName()) ? session.getNickName() : vo.getAliasName());
             member.setHeadImage(vo.getMemberHeadImage());
             member.setHeadImageDef(vo.getMemberHeadImage());
+        } else {
+            String originalAliasName = member.getCharacterName();
+            if (StringUtils.isNotBlank(originalAliasName)) {
+                String aliasName = StringUtils.defaultString(vo.getAliasName());
+                int aliasNameIndex = 0;
+                for (int i = 0; i < originalAliasName.length(); i++) {
+                    aliasNameIndex = aliasName.indexOf(originalAliasName.charAt(i), aliasNameIndex);
+                    if (aliasNameIndex < 0) {
+                        throw new GlobalException(ResultCode.PROGRAM_ERROR, "昵称只能在原昵称基础上插入文字");
+                    }
+                    aliasNameIndex++;
+                }
+            }
+            member.setAliasName(vo.getAliasName());
         }
         groupMemberService.updateById(member);
         log.info("修改群聊，群聊id:{},群聊名称:{}", group.getId(), group.getName());
@@ -355,7 +366,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         GroupVO vo = BeanUtils.copyProperties(group, GroupVO.class);
         assert vo != null;
         vo.setAliasName(member.getAliasName());
-
+        vo.setCharacterName(member.getCharacterName());
         vo.setRemark(member.getRemark());
         vo.setIsTemplateCharacter(member.getIsTemplate());
         vo.setTemplateCharacterId(member.getTemplateCharacterId());
@@ -459,6 +470,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             GroupMember member = groupMembers.stream().filter(m -> g.getId().equals(m.getGroupId())).findFirst().get();
             assert vo != null;
             vo.setAliasName(member.getAliasName());
+            vo.setCharacterName(member.getCharacterName());
             vo.setRemark(member.getRemark());
             vo.setIsTemplateCharacter(member.getIsTemplate());
             vo.setTemplateCharacterId(member.getTemplateCharacterId());

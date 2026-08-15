@@ -20,8 +20,9 @@
 				<input class="input" maxlength="20"  v-model="group.remark"  :placeholder="group.name"/>
 			</view>
 			<view class="form-item">
-				<view class="label">我在本群的昵称</view>
-				<input class="input" maxlength="20"  v-model="group.aliasName" :disabled="groupType!==0"  :placeholder="groupType===0 ? userStore.userInfo.nickName : ''"/>
+				<view class="label">我的昵称</view>
+				<input class="input" maxlength="20" v-model="group.aliasName" :placeholder="groupType===0 ? userStore.userInfo.nickName : ''"
+               @beforeinput="onAliasNameBeforeInput" @input="onAliasNameInput"/>
 			</view>
       <view v-if="!isEdit && groupType!==0" class="form-item">
         <view class="label">群聊模板</view>
@@ -40,14 +41,6 @@
           <head-image class="template-image" :name="group.templateCharacterName" :url="group.templateCharacterAvatar"
                       :size="50"></head-image>
         </view>
-      </view>
-      <view class="form-item" v-if="groupType!==0">
-        <view class="label">昵称前缀</view>
-        <uni-easyinput v-model="group.aliasNamePrefix" placeholder="输入昵称前缀" maxlength="10"></uni-easyinput>
-      </view>
-      <view class="form-item" v-if="groupType!==0">
-        <view class="label">昵称后缀</view>
-        <uni-easyinput v-model="group.aliasNameSuffix" placeholder="输入昵称前缀" maxlength="10"></uni-easyinput>
       </view>
       <view class="form-item" v-if="groupType!==0">
         <view class="label">备注名</view>
@@ -86,9 +79,9 @@ export default {
 			group: {
         templateGroupId: null,
         templateCharacterId: null,
-        aliasNamePrefix: '',
-        aliasNameSuffix: '',
         nickName: '',
+        aliasName: '',
+        characterName: '',
         showNickName: false,
       },
 			rules: {
@@ -128,11 +121,111 @@ export default {
         }
 			}
 		},
+    // 支持 beforeinput 的端在删除前拦截，避免角色名字符被先删后补。
+    onAliasNameBeforeInput(event) {
+      if (this.groupType === 0) {
+        return;
+      }
+      const input = event.target;
+      if (!input || input.selectionStart === undefined) {
+        return;
+      }
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      let nextValue;
+      if (start !== end) {
+        const insertedText = event.inputType.startsWith('delete') ? '' : (event.data || '');
+        nextValue = input.value.slice(0, start) + insertedText + input.value.slice(end);
+      } else if (event.inputType === 'deleteContentBackward' && start > 0) {
+        nextValue = input.value.slice(0, start - 1) + input.value.slice(end);
+      } else if (event.inputType === 'deleteContentForward' && start < input.value.length) {
+        nextValue = input.value.slice(0, start) + input.value.slice(start + 1);
+      } else {
+        return;
+      }
+      if (!this.isAliasNameValid(nextValue, this.group.characterName)) {
+        event.preventDefault();
+      }
+    },
+    // 不支持 beforeinput 的端在输入后兜底恢复角色名字符。
+    onAliasNameInput(event) {
+      if (this.groupType !== 0) {
+        this.group.aliasName = this.normalizeAliasName(event.detail.value || '');
+      }
+    },
+    // 与服务端 modifyGroup 的原昵称校验保持一致：原字符必须按顺序完整存在。
+    isAliasNameValid(aliasName, originalAliasName) {
+      if (!originalAliasName || !originalAliasName.trim()) {
+        return true;
+      }
+      const value = aliasName || '';
+      let valueIndex = 0;
+      for (let i = 0; i < originalAliasName.length; i += 1) {
+        valueIndex = value.indexOf(originalAliasName[i], valueIndex);
+        if (valueIndex < 0) {
+          return false;
+        }
+        valueIndex += 1;
+      }
+      return true;
+    },
+    normalizeAliasName(value) {
+      const original = this.group.characterName || '';
+      if (!original) {
+        return value;
+      }
+      const rows = original.length + 1;
+      const columns = value.length + 1;
+      const lcs = Array.from({ length: rows }, () => Array(columns).fill(0));
+      for (let i = 1; i < rows; i += 1) {
+        for (let j = 1; j < columns; j += 1) {
+          lcs[i][j] = original[i - 1] === value[j - 1]
+            ? lcs[i - 1][j - 1] + 1
+            : Math.max(lcs[i - 1][j], lcs[i][j - 1]);
+        }
+      }
+
+      const matchedIndexes = new Set();
+      let i = original.length;
+      let j = value.length;
+      while (i > 0 && j > 0) {
+        if (original[i - 1] === value[j - 1]) {
+          matchedIndexes.add(j - 1);
+          i -= 1;
+          j -= 1;
+        } else if (lcs[i - 1][j] >= lcs[i][j - 1]) {
+          i -= 1;
+        } else {
+          j -= 1;
+        }
+      }
+
+      let result = '';
+      let valueIndex = 0;
+      for (let originalIndex = 0; originalIndex < original.length; originalIndex += 1) {
+        while (valueIndex < value.length && !matchedIndexes.has(valueIndex)) {
+          result += value[valueIndex];
+          valueIndex += 1;
+        }
+        if (valueIndex < value.length) {
+          valueIndex += 1;
+        }
+        result += original[originalIndex];
+      }
+      return result + value.slice(valueIndex);
+    },
 		onUnloadImageSuccess(file, res) {
 			this.group.headImage = res.data.originUrl;
 			this.group.headImage = res.data.thumbUrl;
 		},
 		modifyGroup() {
+			if (this.groupType !== 0 && !this.isAliasNameValid(this.group.aliasName, this.group.characterName)) {
+        uni.showToast({
+          title: '昵称只能在原昵称基础上插入文字',
+          icon: 'none'
+        });
+        return;
+      }
 			this.$http({
 				url: "/group/modify",
 				method: "PUT",

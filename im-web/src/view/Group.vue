@@ -175,12 +175,11 @@
 										
 										<!-- 我在本群的昵称 -->
 										<div class="form-item">
-											<label class="form-label">我在本群的昵称：</label>
-											<div class="editable-field" v-if="!editingFields.aliasName || activeGroup.groupType!==0">
+											<label class="form-label">我的昵称：</label>
+											<div class="editable-field" v-if="!editingFields.aliasName">
 												<span class="field-value">{{activeGroup.aliasName || '无'}}</span>
 												<i 
-													class="el-icon-edit edit-icon" 
-													v-if="activeGroup.groupType===0"
+													class="el-icon-edit edit-icon"
 													@click="startEdit('aliasName')"
 												></i>
 											</div>
@@ -190,6 +189,8 @@
 													class="edit-input"
 													placeholder=""
 													maxlength="20"
+													@beforeinput="onAliasNameBeforeInput"
+													@input="onAliasNameInput"
 													@blur="saveEdit('aliasName')"
 													ref="aliasNameInput"
 												>
@@ -623,6 +624,7 @@
           nickName: false,
           notice: false
         },
+        originalCharacterName: '',
         banOperation: "ban",
         banGroupMemberVisible: false,
         banMembers: [],
@@ -733,6 +735,11 @@
         this.myGroupMemberInfo.headImage = data.originUrl;
       },
       onSaveGroup() {
+				if (this.activeGroup.groupType !== 0
+            && !this.isAliasNameValid(this.activeGroup.aliasName, this.activeGroup.characterName)) {
+          this.$message.error('昵称只能在原昵称基础上插入文字');
+          return;
+        }
 				// 保存群组信息
 				let vo = this.activeGroup;
 				vo.memberHeadImage = this.myGroupMemberInfo.headImage;
@@ -747,6 +754,10 @@
 			},
       // 开始编辑字段
       startEdit(field) {
+        if (field === 'aliasName' && this.activeGroup.groupType !== 0) {
+          this.originalCharacterName = this.activeGroup.characterName || '';
+          this.activeGroup.aliasName = this.normalizeAliasName(this.activeGroup.aliasName || '');
+        }
         // 设置对应字段为编辑状态
         this.$set(this.editingFields, field, true);
         
@@ -761,8 +772,108 @@
           }
         });
       },
+      // 删除前拦截会破坏角色名字符顺序的操作，避免出现“先删除、再补回”的闪动。
+      onAliasNameBeforeInput(event) {
+        if (this.activeGroup.groupType === 0) {
+          return;
+        }
+        const input = event.target;
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        let nextValue;
+        if (start !== end) {
+          const insertedText = event.inputType.startsWith('delete') ? '' : (event.data || '');
+          nextValue = input.value.slice(0, start) + insertedText + input.value.slice(end);
+        } else if (event.inputType === 'deleteContentBackward' && start > 0) {
+          nextValue = input.value.slice(0, start - 1) + input.value.slice(end);
+        } else if (event.inputType === 'deleteContentForward' && start < input.value.length) {
+          nextValue = input.value.slice(0, start) + input.value.slice(start + 1);
+        } else {
+          return;
+        }
+        if (!this.containsOriginalCharacterName(nextValue)) {
+          event.preventDefault();
+        }
+      },
+      // 非普通群的昵称只能在角色名字符之间插入文字，不能删除或替换角色名字符
+      onAliasNameInput(event) {
+        if (this.activeGroup.groupType === 0) {
+          return;
+        }
+        // 直接使用输入框当前值，确保删除/替换角色名字符时会立刻将其补回。
+        this.activeGroup.aliasName = this.normalizeAliasName(event.target.value || '');
+      },
+      containsOriginalCharacterName(value) {
+        return this.isAliasNameValid(value, this.originalCharacterName);
+      },
+      // 与服务端 modifyGroup 的原昵称校验保持一致：原字符必须按顺序完整存在。
+      isAliasNameValid(aliasName, originalAliasName) {
+        if (!originalAliasName || !originalAliasName.trim()) {
+          return true;
+        }
+        const value = aliasName || '';
+        let valueIndex = 0;
+        for (let i = 0; i < originalAliasName.length; i += 1) {
+          valueIndex = value.indexOf(originalAliasName[i], valueIndex);
+          if (valueIndex < 0) {
+            return false;
+          }
+          valueIndex += 1;
+        }
+        return true;
+      },
+      normalizeAliasName(value) {
+        const original = this.originalCharacterName;
+        if (!original) {
+          return value;
+        }
+
+        // 用最长公共子序列定位仍保留的原字符；其余输入内容视为插入文字。
+        const rows = original.length + 1;
+        const columns = value.length + 1;
+        const lcs = Array.from({ length: rows }, () => Array(columns).fill(0));
+        for (let i = 1; i < rows; i += 1) {
+          for (let j = 1; j < columns; j += 1) {
+            lcs[i][j] = original[i - 1] === value[j - 1]
+              ? lcs[i - 1][j - 1] + 1
+              : Math.max(lcs[i - 1][j], lcs[i][j - 1]);
+          }
+        }
+
+        const matchedIndexes = new Set();
+        let i = original.length;
+        let j = value.length;
+        while (i > 0 && j > 0) {
+          if (original[i - 1] === value[j - 1]) {
+            matchedIndexes.add(j - 1);
+            i -= 1;
+            j -= 1;
+          } else if (lcs[i - 1][j] >= lcs[i][j - 1]) {
+            i -= 1;
+          } else {
+            j -= 1;
+          }
+        }
+
+        let result = '';
+        let valueIndex = 0;
+        for (let originalIndex = 0; originalIndex < original.length; originalIndex += 1) {
+          while (valueIndex < value.length && !matchedIndexes.has(valueIndex)) {
+            result += value[valueIndex];
+            valueIndex += 1;
+          }
+          if (valueIndex < value.length) {
+            valueIndex += 1;
+          }
+          result += original[originalIndex];
+        }
+        return result + value.slice(valueIndex);
+      },
       // 保存编辑
       saveEdit(field) {
+        if (field === 'aliasName' && this.activeGroup.groupType !== 0) {
+          this.activeGroup.aliasName = this.normalizeAliasName(this.activeGroup.aliasName || '');
+        }
         // 设置对应字段为非编辑状态
         this.$set(this.editingFields, field, false);
         // 保存群组信息
