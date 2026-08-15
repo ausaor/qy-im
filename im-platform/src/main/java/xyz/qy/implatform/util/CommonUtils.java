@@ -122,16 +122,6 @@ public class CommonUtils {
     }
 
     public static String getAliasName(GroupMember groupMember) {
-        if (!groupMember.getIsTemplate()) {
-            return groupMember.getAliasName();
-        }
-        String aliasName = groupMember.getAliasName();
-        if (StringUtils.isNotBlank(groupMember.getAliasNamePrefix())) {
-            aliasName = groupMember.getAliasNamePrefix() + aliasName;
-        }
-        if (StringUtils.isNotBlank(groupMember.getAliasNameSuffix())) {
-            aliasName = aliasName + groupMember.getAliasNameSuffix();
-        }
-        return aliasName;
+        return groupMember.getAliasName();
     }
 }

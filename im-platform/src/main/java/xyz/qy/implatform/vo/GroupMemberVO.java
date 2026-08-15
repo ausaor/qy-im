@@ -21,12 +21,6 @@ public class GroupMemberVO {
     @ApiModelProperty("群内显示名称")
     private String aliasName;
 
-    @ApiModelProperty(value = "昵称前缀")
-    private String aliasNamePrefix;
-
-    @ApiModelProperty(value = "昵称后缀")
-    private String aliasNameSuffix;
-
     @ApiModelProperty("群角色")
     private Integer groupRole;
 
@@ -53,6 +47,9 @@ public class GroupMemberVO {
 
     @ApiModelProperty("模板人物id")
     private Long templateCharacterId;
+
+    @ApiModelProperty("模板人物名称")
+    private String characterName;
 
     @ApiModelProperty("模板人物名称")
     private String templateCharacterName;

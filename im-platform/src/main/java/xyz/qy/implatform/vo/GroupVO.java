@@ -55,12 +55,6 @@ public class GroupVO {
     @ApiModelProperty(value = "模板人物Id")
     private Long templateCharacterId;
 
-    @ApiModelProperty(value = "昵称前缀")
-    private String aliasNamePrefix;
-
-    @ApiModelProperty(value = "昵称后缀")
-    private String aliasNameSuffix;
-
     @ApiModelProperty(value = "用户昵称，用于非普通群聊时展示")
     private String nickName;
 

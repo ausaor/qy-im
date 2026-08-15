@@ -50,19 +50,6 @@ public class GroupMember extends Model<GroupMember> {
     private String aliasName;
 
     /**
-     * 昵称前缀
-     */
-    @TableField("alias_name_prefix")
-    private String aliasNamePrefix;
-
-
-    /**
-     * 昵称后缀
-     */
-    @TableField("alias_name_suffix")
-    private String aliasNameSuffix;
-
-    /**
      * 群角色
      */
     @TableField("group_role")
@@ -109,6 +96,12 @@ public class GroupMember extends Model<GroupMember> {
      */
     @TableField(value = "character_avatar_id", fill = FieldFill.INSERT_UPDATE)
     private Long characterAvatarId;
+
+    /**
+     * 角色名称
+     */
+    @TableField(value = "character_name", fill = FieldFill.INSERT_UPDATE)
+    private String characterName;
 
     /**
      * 头像别名

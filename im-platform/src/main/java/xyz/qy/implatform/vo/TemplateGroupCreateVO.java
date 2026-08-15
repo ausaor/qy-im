@@ -1,6 +1,5 @@
 package xyz.qy.implatform.vo;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -49,12 +48,6 @@ public class TemplateGroupCreateVO {
      * 模板人物名称
      */
     private String templateCharacterName;
-
-    @ApiModelProperty(value = "昵称前缀")
-    private String aliasNamePrefix;
-
-    @ApiModelProperty(value = "昵称后缀")
-    private String aliasNameSuffix;
 
     /**
      * 群聊名称

@@ -234,14 +234,6 @@ public class GroupMessageServiceImpl extends ServiceImpl<GroupMessageMapper, Gro
         GroupMessageVO msgInfo = BeanUtils.copyProperties(msg, GroupMessageVO.class);
         msgInfo.setType(MessageType.RECALL.code());
         String aliasName = member.getAliasName();
-        if (member.getIsTemplate()) {
-            if (StrUtil.isNotBlank(member.getAliasNamePrefix())) {
-                aliasName = member.getAliasNamePrefix() + aliasName;
-            }
-            if (StrUtil.isNotBlank(member.getAliasNameSuffix())) {
-                aliasName = aliasName + member.getAliasNameSuffix();
-            }
-        }
         String content = String.format("#{%s}撤回了一条消息", aliasName + ":" + session.getUserId());
         msgInfo.setContent(content);
         msgInfo.setSendTime(new Date());

@@ -343,6 +343,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         groupMember.setTemplateCharacterId(groupMemberVO.getTemplateCharacterId());
         groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
         groupMember.setAliasName(templateCharacter.getName());
+        groupMember.setCharacterName(templateCharacter.getName());
         groupMember.setHeadImage(templateCharacter.getAvatar());
         groupMember.setSwitchTime(new Date());
 
@@ -426,8 +427,10 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
         groupMember.setHeadImage(characterAvatar.getAvatar());
         if (characterAvatar.getLevel() != 0) {
             groupMember.setAliasName(characterAvatar.getName());
+            groupMember.setCharacterName(characterAvatar.getName());
         } else {
             groupMember.setAliasName(characterAvatar.getTemplateCharacterName());
+            groupMember.setCharacterName(characterAvatar.getTemplateCharacterName());
         }
         groupMember.setAvatarAlias(characterAvatar.getName());
         groupMember.setSwitchTime(new Date());

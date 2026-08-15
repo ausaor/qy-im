@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
@@ -442,6 +443,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 member.setGroupId(group.getId());
                 member.setUserId(user.getId());
                 member.setAliasName(user.getNickName());
+                member.setCharacterName(StringUtils.EMPTY);
                 member.setRemark(group.getName());
                 member.setHeadImage(user.getHeadImage());
                 member.setIsTemplate(false);
@@ -471,6 +473,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 member.setUserId(user.getId());
                 member.setRemark(group.getName());
                 member.setAliasName(templateCharacter.get(0).getName());
+                member.setCharacterName(templateCharacter.get(0).getName());
                 member.setHeadImage(templateCharacter.get(0).getAvatar());
                 member.setTemplateGroupId(templateCharacter.get(0).getTemplateGroupId());
                 member.setTemplateCharacterId(groupRequest.getTemplateCharacterId());
@@ -501,6 +504,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 member.setGroupId(group.getId());
                 member.setUserId(user.getId());
                 member.setAliasName(templateCharacter.getName());
+                member.setCharacterName(templateCharacter.getName());
                 member.setHeadImage(templateCharacter.getAvatar());
                 member.setTemplateGroupId(templateCharacter.getTemplateGroupId());
                 member.setTemplateCharacterId(templateCharacterId);
@@ -544,6 +548,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
                 member.setGroupId(group.getId());
                 member.setUserId(user.getId());
                 member.setAliasName(templateCharacter.getName());
+                member.setCharacterName(templateCharacter.getName());
                 member.setHeadImage(templateCharacter.getAvatar());
                 member.setTemplateGroupId(templateCharacter.getTemplateGroupId());
                 member.setTemplateCharacterId(templateCharacterId);

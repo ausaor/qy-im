@@ -52,6 +52,7 @@ import xyz.qy.implatform.enums.RoleEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.GroupMapper;
 import xyz.qy.implatform.mapper.GroupMessageMapper;
+import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.IFriendService;
 import xyz.qy.implatform.service.IGroupMemberService;
 import xyz.qy.implatform.service.IGroupRequestService;
@@ -111,6 +112,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Resource
     private ITemplateCharacterService templateCharacterService;
+
+    @Resource
+    private ICharacterAvatarService characterAvatarService;
 
     @Resource
     private IMClient imClient;
@@ -210,15 +214,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (!StringUtils.equals(member.getAliasName(), vo.getAliasName())) {
             hasModify = true;
         }
-        if (StringUtils.isNotBlank(vo.getAliasNamePrefix()) && !vo.getAliasNamePrefix().equals(member.getAliasNamePrefix())) {
-            hasModify = true;
-        }
-        if (StringUtils.isNotBlank(vo.getAliasNameSuffix()) && !vo.getAliasNameSuffix().equals(member.getAliasNameSuffix())) {
-            hasModify = true;
-        }
+
         member.setShowNickName(vo.getShowNickName());
-        member.setAliasNamePrefix(vo.getAliasNamePrefix());
-        member.setAliasNameSuffix(vo.getAliasNameSuffix());
         member.setNickname(vo.getNickName());
         member.setIsDnd(vo.getIsDnd());
         if (GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
@@ -363,8 +360,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         vo.setIsTemplateCharacter(member.getIsTemplate());
         vo.setTemplateCharacterId(member.getTemplateCharacterId());
         vo.setQuit(member.getQuit());
-        vo.setAliasNamePrefix(member.getAliasNamePrefix());
-        vo.setAliasNameSuffix(member.getAliasNameSuffix());
         vo.setNickName(member.getNickname());
         vo.setShowNickName(member.getShowNickName());
         vo.setIsDnd(member.getIsDnd());
@@ -464,14 +459,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             GroupMember member = groupMembers.stream().filter(m -> g.getId().equals(m.getGroupId())).findFirst().get();
             assert vo != null;
             vo.setAliasName(member.getAliasName());
-            if (!vo.getGroupType().equals(GroupTypeEnum.COMMON.getCode())) {
-                if (StringUtils.isNotBlank(member.getAliasNamePrefix())) {
-                    vo.setAliasName(member.getAliasNamePrefix() + vo.getAliasName());
-                }
-                if (StringUtils.isNotBlank(member.getAliasNameSuffix())) {
-                    vo.setAliasName(vo.getAliasName() + member.getAliasNameSuffix());
-                }
-            }
             vo.setRemark(member.getRemark());
             vo.setIsTemplateCharacter(member.getIsTemplate());
             vo.setTemplateCharacterId(member.getTemplateCharacterId());
@@ -647,6 +634,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                         groupMember.setGroupId(vo.getGroupId());
                         groupMember.setUserId(f.getFriendId());
                         groupMember.setAliasName(userMap.get(f.getFriendId()).getNickName());
+                        groupMember.setCharacterName(StringUtils.EMPTY);
                         groupMember.setRemark(group.getName());
                         groupMember.setHeadImage(userMap.get(f.getFriendId()).getHeadImage());
                         groupMember.setCreatedTime(new Date());
@@ -670,6 +658,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     throw new GlobalException("数据异常");
                 }
                 groupMember.setAliasName(templateCharacterMap.get(f.getTemplateCharacterId()).getName());
+                groupMember.setCharacterName(templateCharacterMap.get(f.getTemplateCharacterId()).getName());
                 groupMember.setHeadImage(templateCharacterMap.get(f.getTemplateCharacterId()).getAvatar());
                 groupMember.setTemplateCharacterId(f.getTemplateCharacterId());
                 groupMember.setTemplateGroupId(templateCharacterMap.get(f.getTemplateCharacterId()).getTemplateGroupId());
@@ -778,14 +767,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 vo.setCharacterNum(userIdList.size());
                 characterUserMap.put(vo.getTemplateCharacterId(), userIdList);
             }
-            if (!GroupTypeEnum.COMMON.getCode().equals(group.getGroupType())) {
-                if (StringUtils.isNotBlank(vo.getAliasNamePrefix())) {
-                    vo.setAliasName(vo.getAliasNamePrefix() + vo.getAliasName());
-                }
-                if (StringUtils.isNotBlank(vo.getAliasNameSuffix())) {
-                    vo.setAliasName(vo.getAliasName() + vo.getAliasNameSuffix());
-                }
-            }
             vo.setGroupId(String.valueOf(group.getId()));
             if (StringUtils.isNotBlank(m.getNickname())) {
                 vo.setNickName(m.getNickname());
@@ -855,8 +836,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         groupMember.setUserId(user.getId());
         groupMember.setRemark(group.getName());
         groupMember.setAliasName(templateCharacter.getName());
-        groupMember.setAliasNamePrefix(templateGroupCreateVO.getAliasNamePrefix());
-        groupMember.setAliasNameSuffix(templateGroupCreateVO.getAliasNameSuffix());
+        groupMember.setCharacterName(templateCharacter.getName());
         groupMember.setGroupRole(GroupRoleEnum.OWNER.getCode());
         groupMember.setHeadImage(templateCharacter.getAvatar());
         groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
@@ -947,6 +927,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             TemplateCharacter templateCharacter = templateCharacterMap.get(groupMemberVO.getTemplateCharacterId());
             groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
             groupMember.setAliasName(templateCharacter.getName());
+            groupMember.setCharacterName(templateCharacter.getName());
             groupMember.setHeadImage(templateCharacter.getAvatar());
             groupMember.setRemark(group.getName());
             groupMember.setIsTemplate(true);
@@ -1014,6 +995,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     groupMember.setHeadImage(userInfo.getHeadImage());
                 }
                 groupMember.setAliasName(userInfo.getNickName());
+                groupMember.setCharacterName(StringUtils.EMPTY);
             }
         }
 
@@ -1115,6 +1097,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
             TemplateCharacter templateCharacter = templateCharacterMap.get(groupMemberVO.getTemplateCharacterId());
             groupMember.setAliasName(templateCharacter.getName());
+            groupMember.setCharacterName(templateCharacter.getName());
             groupMember.setHeadImage(templateCharacter.getAvatar());
             groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
             groupMember.setRemark(group.getName());
@@ -1191,6 +1174,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
             TemplateCharacter templateCharacter = templateCharacterMap.get(groupMemberVO.getTemplateCharacterId());
             groupMember.setAliasName(templateCharacter.getName());
+            groupMember.setCharacterName(templateCharacter.getName());
             groupMember.setHeadImage(templateCharacter.getAvatar());
             groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
             groupMember.setRemark(group.getName());
@@ -1299,6 +1283,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
             TemplateCharacter templateCharacter = templateCharacterMap.get(groupMemberVO.getTemplateCharacterId());
             groupMember.setAliasName(templateCharacter.getName());
+            groupMember.setCharacterName(templateCharacter.getName());
             groupMember.setHeadImage(templateCharacter.getAvatar());
             groupMember.setTemplateGroupId(templateCharacter.getTemplateGroupId());
             groupMember.setRemark(group.getName());
@@ -1440,6 +1425,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             member.setGroupId(vo.getGroupId());
             member.setUserId(userId);
             member.setAliasName(user.getNickName());
+            member.setCharacterName(StringUtils.EMPTY);
             member.setRemark(group.getName());
             member.setHeadImage(user.getHeadImage());
             member.setIsTemplate(false);
@@ -1473,6 +1459,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             member.setUserId(userId);
             member.setRemark(group.getName());
             member.setAliasName(templateCharacter.get(0).getName());
+            member.setCharacterName(templateCharacter.get(0).getName());
             member.setHeadImage(templateCharacter.get(0).getAvatar());
             member.setTemplateCharacterId(templateCharacterId);
             member.setTemplateGroupId(templateCharacter.get(0).getTemplateGroupId());
@@ -1502,6 +1489,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             member.setGroupId(vo.getGroupId());
             member.setUserId(userId);
             member.setAliasName(templateCharacter.getName());
+            member.setCharacterName(templateCharacter.getName());
             member.setHeadImage(templateCharacter.getAvatar());
             member.setTemplateCharacterId(templateCharacterId);
             member.setTemplateGroupId(templateCharacter.getTemplateGroupId());
@@ -1553,6 +1541,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             member.setGroupId(vo.getGroupId());
             member.setUserId(userId);
             member.setAliasName(templateCharacter.getName());
+            member.setCharacterName(templateCharacter.getName());
             member.setHeadImage(templateCharacter.getAvatar());
             member.setTemplateCharacterId(templateCharacterId);
             member.setTemplateGroupId(templateCharacter.getTemplateGroupId());
