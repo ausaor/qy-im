@@ -1571,7 +1571,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         this.updateById(group);
         GroupVO groupVO = convert(group, member);
         this.sendAddGroupMessage(groupVO, List.of(userId), false);
-        String content = String.format("#{%s}加入了群聊", member.getAliasName() + ":" + member.getUserId());
+        String content = String.format("#{%s}加入了群聊", user.getNickName() + ":" + member.getUserId());
         messageSendUtil.sendTipMessage(group.getId(),
                 session.getUserId(), session.getNickName(), Collections.emptyList(),
                 content, GroupChangeTypeEnum.NEW_USER_JOIN.getCode());

@@ -350,7 +350,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
 
         group.setVersion(idGeneratorUtil.nextIdStr());
         groupService.updateById(group);
-        String content = String.format("#{%s}将群聊角色切换成【%s】", CommonUtils.getAliasName(groupMember) + ":" + groupMember.getUserId(), groupMember.getAliasName());
+        String content = String.format("#{%s}将群聊角色切换成【%s】", session.getNickName() + ":" + groupMember.getUserId(), groupMember.getAliasName());
         messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
                 Collections.emptyList(), content, GroupChangeTypeEnum.TEMPLATE_CHARACTER_CHANGE.getCode());
     }

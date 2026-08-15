@@ -573,7 +573,7 @@ public class GroupRequestServiceImpl extends ServiceImpl<GroupRequestMapper, Gro
             // 发送加群消息
             groupService.sendAddGroupMessage(groupVO, List.of(groupRequest.getUserId()), true);
 
-            String content = String.format("#{%s}加入了群聊", member.getAliasName() + ":" + member.getUserId());
+            String content = String.format("#{%s}加入了群聊", user.getNickName() + ":" + member.getUserId());
             messageSendUtil.sendTipMessage(group.getId(),
                     session.getUserId(), session.getNickName(), Collections.emptyList(),
                     content, GroupChangeTypeEnum.NEW_USER_JOIN.getCode());
