@@ -25,6 +25,7 @@
       >
         <span class="menu-icon iconfont icon-guanzhu" style="color: #FF9F43"></span>
         <span class="menu-label">关注</span>
+        <span v-if="followsNewVideoCount > 0" class="notify-count">{{ followsNewVideoCount }}</span>
       </div>
       <div
         class="menu-item"
@@ -81,10 +82,23 @@ export default {
     activeFriends() {
       return this.friends.filter(item => !item.deleted)
     },
+    follows() {
+      return this.$store.state.followStore.follows
+    },
     friendsNewVideoCount() {
       let count = 0;
       this.activeFriends.forEach(item => {
         const videos = this.$store.state.shortVideoStore.shortVideoMap.get(item.id + '-user')
+        if (videos) {
+          count += videos.length
+        }
+      })
+      return count;
+    },
+    followsNewVideoCount() {
+      let count = 0;
+      this.follows.forEach(item => {
+        const videos = this.$store.state.shortVideoStore.shortVideoMap.get(item.targetId + '-' + item.type)
         if (videos) {
           count += videos.length
         }
