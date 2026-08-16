@@ -59,14 +59,14 @@
     </div>
     </div>
     <div class="footer-wrap">
-      <div class="beian-info">
-        <div class="beian-item">
+      <div class="beian-info" v-if="icpInfo.icpLicense || policeRecordInfo.policeLicense">
+        <div class="beian-item" v-if="policeRecordInfo.policeLicense">
           <img src="https://beian.mps.gov.cn/img/logo01.dd7ff50e.png" alt="公安备案图标" class="beian-icon" />
-          <a href="https://beian.mps.gov.cn/#/query/webSearch?code=45033202000063" rel="noreferrer" target="_blank">桂公网安备45033202000063号</a>
+          <a :href="policeRecordUrl" rel="noreferrer" target="_blank">{{ policeRecordInfo.policeLicense }}</a>
         </div>
-        <div class="beian-divider">|</div>
-        <div class="beian-item">
-          <a href="https://beian.miit.gov.cn/" target="_blank">桂ICP备2026005181号-1</a>
+        <div class="beian-divider" v-if="icpInfo.icpLicense && policeRecordInfo.policeLicense">|</div>
+        <div class="beian-item" v-if="icpInfo.icpLicense">
+          <a href="https://beian.miit.gov.cn/" rel="noreferrer" target="_blank">{{ icpInfo.icpLicense }}</a>
         </div>
       </div>
     </div>
@@ -119,6 +119,8 @@ import BIRDS from "vanta/src/vanta.birds";
       };
 			return {
         websiteName: '青語',
+        icpInfo: {},
+        policeRecordInfo: {},
         codeUrl: '',
         validateBtn: '获取验证码',
         disabled: false,
@@ -171,8 +173,27 @@ import BIRDS from "vanta/src/vanta.birds";
     },
     created() {
       this.getCode();
+      this.getIcpInfo();
+    },
+    computed: {
+      policeRecordUrl() {
+        const policeLicense = this.policeRecordInfo.policeLicense || '';
+        const recordCode = policeLicense.match(/\d+/g);
+        return recordCode
+          ? `https://beian.mps.gov.cn/#/query/webSearch?code=${recordCode.join('')}`
+          : 'https://beian.mps.gov.cn/';
+      }
     },
     methods: {
+      getIcpInfo() {
+        this.$http({
+          url: "/website/getIcpInfo",
+          method: "get"
+        }).then((data) => {
+          this.icpInfo = data.icpInfo || {};
+          this.policeRecordInfo = data.policeRecordInfo || {};
+        });
+      },
       getCode() {
         this.$http({
           url: "captchaImage",

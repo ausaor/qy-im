@@ -30,15 +30,15 @@
     </view>
     
     <!-- 备案信息 -->
-    <view class="footer-wrap">
+    <view class="footer-wrap" v-if="icpInfo.icpLicense || policeRecordInfo.policeLicense">
       <view class="beian-info">
-        <view class="beian-item">
+        <view class="beian-item" v-if="policeRecordInfo.policeLicense">
           <image src="https://beian.mps.gov.cn/img/logo01.dd7ff50e.png" class="beian-icon" mode="aspectFit"></image>
-          <text>桂公网安备45033202000063号</text>
+          <text>{{ policeRecordInfo.policeLicense }}</text>
         </view>
-        <view class="beian-divider">|</view>
-        <view class="beian-item">
-          <text>桂ICP备2026005181号-1</text>
+        <view class="beian-divider" v-if="icpInfo.icpLicense && policeRecordInfo.policeLicense">|</view>
+        <view class="beian-item" v-if="icpInfo.icpLicense">
+          <text>{{ icpInfo.icpLicense }}</text>
         </view>
       </view>
     </view>
@@ -53,6 +53,8 @@ export default {
 	data() {
 		return {
       title: '青語',
+      icpInfo: {},
+      policeRecordInfo: {},
       codeUrl: '',
 			loginForm: {
 				terminal: 1, // APP终端
@@ -85,6 +87,15 @@ export default {
 		}
 	},
 	methods: {
+		getIcpInfo() {
+      this.$http({
+        url: "/website/getIcpInfo",
+        method: "GET"
+      }).then((data) => {
+        this.icpInfo = data.icpInfo || {};
+        this.policeRecordInfo = data.policeRecordInfo || {};
+      })
+    },
 		submit() {
 			this.$http({
 				url: '/login',
@@ -122,6 +133,7 @@ export default {
 
 	onLoad() {
     this.getCode();
+		this.getIcpInfo();
 		this.loginForm.userName = uni.getStorageSync("userName");
 		this.loginForm.password = uni.getStorageSync("password");
     this.report();

@@ -1,7 +1,9 @@
 package xyz.qy.implatform.controller;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import xyz.qy.implatform.result.Result;
 import xyz.qy.implatform.result.ResultUtils;
+import xyz.qy.implatform.service.IDictDataService;
 import xyz.qy.implatform.service.IVisitorService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,10 +21,19 @@ public class WebSiteController {
     @Resource
     private IVisitorService visitorService;
 
+    @Resource
+    private IDictDataService dictDataService;
+
     @ApiOperation(value = "上传访客信息",notes="上传访客信息")
     @PostMapping("/report")
     public Result report() {
         visitorService.report();
         return ResultUtils.success();
+    }
+
+    @ApiOperation(value = "获取网站信息",notes="获取网站信息")
+    @GetMapping("/getIcpInfo")
+    public Result getIcpInfo() {
+        return ResultUtils.success(dictDataService.getIcpInfo());
     }
 }
