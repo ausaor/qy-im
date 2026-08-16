@@ -29,11 +29,11 @@
       <div class="detail-author">
         <head-image
           :url="video.headImage"
-          :name="video.authorName || '?'"
+          :name="video.nickName || '?'"
           :size="48"
           radius="50%"
         ></head-image>
-        <span class="author-name">@{{ video.authorName || '用户' + video.userId }}</span>
+        <span class="author-name">@{{ video.nickName || '用户' + video.userId }}</span>
       </div>
       <div class="detail-item" v-if="video.title">
         <div class="detail-label">标题</div>
@@ -89,7 +89,7 @@
       <template v-else>
         <!-- 作者信息 -->
         <div class="works-author-info">
-          <div class="works-author-name">@{{ video.authorName || '用户' + video.userId }}</div>
+          <div class="works-author-name">@{{ video.nickName || '用户' + video.userId }}</div>
           <div class="works-author-stats">
             <span class="stat-item">粉丝 {{ authorInfo ? authorInfo.fansCount : 0 }}</span>
             <span class="stat-divider">|</span>
