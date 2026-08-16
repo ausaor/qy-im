@@ -8,6 +8,7 @@
         SELECT id,
                user_id,
                object_id,
+               avatar_id,
                type,
                scope,
                title,

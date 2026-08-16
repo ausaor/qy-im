@@ -215,14 +215,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
             return PageResultVO.<List<ShortVideoVO>>builder().data(Collections.emptyList()).total(0).build();
         }
         List<ShortVideoVO> vos = BeanUtils.copyPropertiesList(page.getRecords(), ShortVideoVO.class);
-        List<Long> userIds = vos.stream().map(ShortVideoVO::getUserId).distinct().collect(Collectors.toList());
-        List<User> userList = userService.findUserByIds(userIds);
-        Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, userItem -> userItem));
-        for (ShortVideoVO vo : vos) {
-            vo.setNickName(userMap.get(vo.getUserId()).getNickName());
-            vo.setAuthorName(userMap.get(vo.getUserId()).getNickName());
-            vo.setHeadImage(userMap.get(vo.getUserId()).getHeadImage());
-        }
+        fillShortVideoFields(page.getRecords(), vos);
 
         return PageResultVO.<List<ShortVideoVO>>builder().data(vos).total(page.getTotal()).build();
     }
@@ -350,20 +343,18 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         Map<Long, User> userMap = userList.stream().collect(Collectors.toMap(User::getId, user -> user));
         for (ShortVideoVO vo : vos) {
             User user = userMap.get(vo.getUserId());
+            vo.setAuthorName(user.getNickName());
             if (FollowEnum.USER.getCode().equals(vo.getType()) && ObjectUtil.isNotNull(user)) {
                 vo.setNickName(user.getNickName());
                 vo.setHeadImage(user.getHeadImage());
-                vo.setAuthorName(user.getNickName());
             } else if (FollowEnum.GROUP.getCode().equals(vo.getType()) && ObjectUtil.isNotNull(groupMap.get(vo.getObjectId()))) {
                 Group group = groupMap.get(vo.getObjectId());
                 vo.setNickName(group.getName());
                 vo.setHeadImage(group.getHeadImage());
-                vo.setAuthorName(group.getName());
             } else if (FollowEnum.TEMPLATE.getCode().equals(vo.getType()) && ObjectUtil.isNotNull(templateGroupMap.get(vo.getObjectId()))) {
                 TemplateGroup templateGroup = templateGroupMap.get(vo.getObjectId());
                 vo.setNickName(templateGroup.getGroupName());
                 vo.setHeadImage(templateGroup.getAvatar());
-                vo.setAuthorName(templateGroup.getGroupName());
             } else if (FollowEnum.CHARACTER.getCode().equals(vo.getType()) && ObjectUtil.isNotNull(characterMap.get(vo.getObjectId()))) {
                 if (vo.getAvatarId() != null) {
                     CharacterAvatar characterAvatar = characterAvatarMap.get(vo.getAvatarId());
@@ -371,10 +362,8 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                         vo.setHeadImage(characterAvatar.getAvatar());
                         if (characterAvatar.getLevel() > 0) {
                             vo.setNickName(characterAvatar.getName());
-                            vo.setAuthorName(characterAvatar.getName());
                         } else {
                             vo.setNickName(characterAvatar.getTemplateCharacterName());
-                            vo.setAuthorName(characterAvatar.getTemplateCharacterName());
                         }
                         continue;
                     }
@@ -382,7 +371,6 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                 TemplateCharacter templateCharacter = characterMap.get(vo.getObjectId());
                 vo.setNickName(templateCharacter.getName());
                 vo.setHeadImage(templateCharacter.getAvatar());
-                vo.setAuthorName(templateCharacter.getName());
             }
             vo.setLiked(likedVideoIds.contains(vo.getId()));
             vo.setFavorited(favoritedVideoIds.contains(vo.getId()));

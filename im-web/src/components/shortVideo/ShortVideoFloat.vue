@@ -136,7 +136,7 @@
 
           <!-- 左下角信息区 -->
           <div class="float-video-info-left">
-            <div class="float-author-name">@{{ currentVideo.nickName || currentVideo.authorName || '用户' + currentVideo.userId }}</div>
+            <div class="float-author-name">@{{ currentVideo.nickName || '用户' + currentVideo.userId }}</div>
             <div class="float-publish-date">{{ formatDate(currentVideo.createTime) }}</div>
             <div class="float-video-title">{{ currentVideo.title || '无标题' }}</div>
           </div>

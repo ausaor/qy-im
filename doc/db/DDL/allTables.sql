@@ -876,6 +876,7 @@ create table im_short_video
         primary key,
     user_id        bigint                                 not null comment '作者用户id',
     object_id      bigint                                 not null comment '对象id',
+    avatar_id      bigint                                 null comment '头像id',
     type           varchar(50)                            null comment '分类',
     scope          tinyint      default 0                 null comment '公布范围',
     title          varchar(200)                           null comment '标题',

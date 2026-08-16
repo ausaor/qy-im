@@ -30,7 +30,7 @@
           </view>
 
           <view class="video-info">
-            <text class="author-name">@{{ video.nickName || video.authorName || ('用户' + video.userId) }}</text>
+            <text class="author-name" @click="toViewUser(video.userId)">@{{ video.nickName || ('用户' + video.userId) }}</text>
             <text v-if="video.title" class="video-title">{{ video.title }}</text>
             <text v-if="video.description" class="video-description">{{ video.description }}</text>
           </view>
@@ -339,6 +339,13 @@ export default {
       uni.navigateTo({
         url: `/pages/short-video/short-video-user?targetId=${encodeURIComponent(video.objectId)}&targetType=${encodeURIComponent(video.type)}&videoId=${encodeURIComponent(video.id)}`
       })
+    },
+    toViewUser(userId) {
+      if (userId && userId > 0) {
+        uni.navigateTo({
+          url: "/pages/common/user-info?id=" + userId
+        })
+      }
     },
     avatarText(video) {
       return (video.nickName || video.authorName || '?').slice(0, 1).toUpperCase()
