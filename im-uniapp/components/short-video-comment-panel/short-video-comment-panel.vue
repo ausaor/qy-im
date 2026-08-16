@@ -119,7 +119,7 @@
           <uni-icons type="gear" size="22" color="#777"/>
         </view>
         <template v-else>
-          <head-image class="comment-character-avatar" :id="commentForm.characterId" :url="commentForm.avatar"
+          <head-image class="comment-character-avatar" :url="commentForm.avatar"
                       :name="commentForm.nickName" :size="48" @click="showGroupTemplatesPopup"/>
           <uni-icons type="closeempty" size="20" color="#999" @click="clearCommentCharacter"/>
         </template>
