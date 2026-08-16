@@ -254,4 +254,15 @@ public class CharacterAvatarServiceImpl extends ServiceImpl<CharacterAvatarMappe
         }
         return templateCharacterVOS;
     }
+
+    @Override
+    public boolean checkCharacterAvatar(Long characterId, Long avatarId) {
+        return this.lambdaQuery()
+                .eq(CharacterAvatar::getId, avatarId)
+                .eq(CharacterAvatar::getStatus, ReviewEnum.REVIEWED.getCode())
+                .eq(CharacterAvatar::getDeleted, false)
+                .eq(CharacterAvatar::getTemplateCharacterId, characterId)
+                .last("limit 1")
+                .count() > 0;
+    }
 }

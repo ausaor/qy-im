@@ -39,6 +39,12 @@ public class ShortVideo extends Model<ShortVideo> {
     private Long objectId;
 
     /**
+     * 角色头像id
+     */
+    @TableField("avatar_id")
+    private Long avatarId;
+
+    /**
      * 分类
      */
     @TableField("type")

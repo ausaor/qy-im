@@ -20,6 +20,8 @@ public class ShortVideoVO {
 
     private Long objectId;
 
+    private Long avatarId;
+
     private String objectName;
 
     // 对象头像

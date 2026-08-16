@@ -21,6 +21,7 @@ import xyz.qy.implatform.dto.ShortVideoDelDTO;
 import xyz.qy.implatform.dto.ShortVideoQueryDTO;
 import xyz.qy.implatform.dto.ShortVideoReviewDTO;
 import xyz.qy.implatform.dto.ShortVideoUpdateDTO;
+import xyz.qy.implatform.entity.CharacterAvatar;
 import xyz.qy.implatform.entity.CharacterUser;
 import xyz.qy.implatform.entity.Group;
 import xyz.qy.implatform.entity.ShortVideo;
@@ -40,6 +41,7 @@ import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
 import xyz.qy.implatform.mapper.ShortVideoLikeMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
+import xyz.qy.implatform.service.ICharacterAvatarService;
 import xyz.qy.implatform.service.ICharacterUserService;
 import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.IFollowService;
@@ -101,6 +103,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
     @Resource
     private ITemplateCharacterService templateCharacterService;
+
+    @Resource
+    private ICharacterAvatarService characterAvatarService;
 
     @Resource
     private IGroupService  groupService;
@@ -290,6 +295,8 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
         List<Long> userIds = shortVideos.stream().map(ShortVideo::getUserId).distinct().collect(Collectors.toList());
         List<Long> videoIds = shortVideos.stream().map(ShortVideo::getId).collect(Collectors.toList());
+        List<Long> avatarIds = shortVideos.stream().filter(shortVideo -> shortVideo.getAvatarId() != null)
+                .map(ShortVideo::getAvatarId).distinct().collect(Collectors.toList());
         // shortVideos根据type 进行分组, 获取objectId，得到Map<String, List<Long>>
         Map<String, List<Long>> objectIdMap = shortVideos.stream().collect(Collectors.groupingBy(ShortVideo::getType, Collectors.mapping(ShortVideo::getObjectId, Collectors.toList())));
 
@@ -312,6 +319,16 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
             List<Long> characterIds = objectIdMap.get(FollowEnum.CHARACTER.getCode());
             List<TemplateCharacter> templateCharacters = templateCharacterService.listByIds(characterIds);
             characterMap = templateCharacters.stream().collect(Collectors.toMap(TemplateCharacter::getId, templateCharacter -> templateCharacter));
+        }
+
+        Map<Long, CharacterAvatar> characterAvatarMap = new HashMap<>();
+        if (CollectionUtils.isNotEmpty(avatarIds)) {
+            List<CharacterAvatar> characterAvatars = characterAvatarService.lambdaQuery()
+                    .in(CharacterAvatar::getId, avatarIds)
+                    .eq(CharacterAvatar::getDeleted, false)
+                    .eq(CharacterAvatar::getStatus, ReviewEnum.REVIEWED.getCode())
+                    .list();
+            characterAvatarMap = characterAvatars.stream().collect(Collectors.toMap(CharacterAvatar::getId, characterAvatar -> characterAvatar));
         }
         
         // 批量查询当前用户是否点赞
@@ -348,6 +365,20 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                 vo.setHeadImage(templateGroup.getAvatar());
                 vo.setAuthorName(templateGroup.getGroupName());
             } else if (FollowEnum.CHARACTER.getCode().equals(vo.getType()) && ObjectUtil.isNotNull(characterMap.get(vo.getObjectId()))) {
+                if (vo.getAvatarId() != null) {
+                    CharacterAvatar characterAvatar = characterAvatarMap.get(vo.getAvatarId());
+                    if (ObjectUtil.isNotNull(characterAvatar)) {
+                        vo.setHeadImage(characterAvatar.getAvatar());
+                        if (characterAvatar.getLevel() > 0) {
+                            vo.setNickName(characterAvatar.getName());
+                            vo.setAuthorName(characterAvatar.getName());
+                        } else {
+                            vo.setNickName(characterAvatar.getTemplateCharacterName());
+                            vo.setAuthorName(characterAvatar.getTemplateCharacterName());
+                        }
+                        continue;
+                    }
+                }
                 TemplateCharacter templateCharacter = characterMap.get(vo.getObjectId());
                 vo.setNickName(templateCharacter.getName());
                 vo.setHeadImage(templateCharacter.getAvatar());
@@ -389,6 +420,12 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         Long userId = session.getUserId();
         if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
             checkCharacterUser(dto.getObjectId(), null, userId);
+            if (ObjectUtil.isNotNull(dto.getAvatarId())) {
+                boolean flag = characterAvatarService.checkCharacterAvatar(dto.getObjectId(), dto.getAvatarId());
+                if (!flag) {
+                    throw new GlobalException("角色头像不可用");
+                }
+            }
         } else if (FollowEnum.TEMPLATE.getCode().equals(dto.getType())) {
             checkCharacterUser(null, dto.getObjectId(), userId);
         }
@@ -403,7 +440,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         setObjectId(shortVideo);
         this.save(shortVideo);
         if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
-            commentCharacterService.saveCommentCharacter(userId, shortVideo.getId(), TargetTypeEnum.SHORT_VIDEO.getCode(), dto.getObjectId(), null);
+            commentCharacterService.saveCommentCharacter(userId, shortVideo.getId(), TargetTypeEnum.SHORT_VIDEO.getCode(), dto.getObjectId(), dto.getAvatarId());
         }
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
         vo.setAuthorName(session.getNickName());
@@ -431,6 +468,10 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         }
         if (!shortVideo.getObjectId().equals(dto.getObjectId())) {
             throw new GlobalException("短视频对象id不能修改");
+        }
+        if ((shortVideo.getAvatarId() != null && !shortVideo.getAvatarId().equals(dto.getAvatarId()))
+                || (dto.getAvatarId() != null && !dto.getAvatarId().equals(shortVideo.getAvatarId()))) {
+            throw new GlobalException("短视频角色头像id不能修改");
         }
 
         if (Objects.nonNull(dto.getScope())) {

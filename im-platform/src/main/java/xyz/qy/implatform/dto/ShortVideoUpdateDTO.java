@@ -15,6 +15,8 @@ public class ShortVideoUpdateDTO {
 
     private Long objectId;
 
+    private Long avatarId;
+
     @NotBlank(message = "类型不能为空")
     @ValidEnum(enumClass = FollowEnum.class, property = "code", message = "无效的类型")
     private String type;

@@ -85,4 +85,12 @@ public interface ICharacterAvatarService extends IService<CharacterAvatar> {
      * 查询审核中的人物头像
      */
     List<TemplateCharacterVO> findReviewingCharacterAvatar();
+
+    /**
+     * 校验角色头像
+     * @param characterId 角色id
+     * @param avatarId 头像id
+     * @return 校验结果
+     */
+    boolean checkCharacterAvatar(Long characterId, Long avatarId);
 }

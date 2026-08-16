@@ -59,6 +59,24 @@
           </div>
         </div>
       </el-form-item>
+      <el-form-item label="角色头像" prop="avatarId" v-show="myCharacters.length">
+        <div class="character-selector">
+          <el-select v-model="selectAvatarValue" placeholder="请选择" @change="selectCharacterAvatarChange">
+            <el-option
+                v-for="item in characterAvatars"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              <span style="float: left">{{ item.name }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px"><head-image :name="item.name" :url="item.avatar" :size="30"></head-image></span>
+            </el-option>
+          </el-select>
+          <div v-if="form.type !== 'user'" class="selected-character">
+            <head-image :name="form.avatarName" :url="form.avatarImage" :size="32"/>
+            <el-button class="clear-character" type="text" icon="el-icon-close" @click="clearAvatar"/>
+          </div>
+        </div>
+      </el-form-item>
 
       <el-form-item label="封面图片" prop="coverUrl">
         <ImageUpload
@@ -125,8 +143,11 @@ export default {
         size: 0,
         type: 'user',
         objectId: null,
+        avatarId: null,
         objectName: '',
         avatar: '',
+        avatarName: '',
+        avatarImage: '',
       },
       rules: {
         videoUrl: [
@@ -149,6 +170,7 @@ export default {
         { value: 1, label: '私密' }
       ],
       myCharacters: [],
+      characterAvatars: [],
       selectValue: '',
       selectAvatarValue: '',
       selectAvatars: [],
@@ -259,6 +281,7 @@ export default {
         const params = {
           type: this.form.type || this.type,
           objectId: this.form.objectId,
+          avatarId: this.form.avatarId,
           scope: this.form.scope,
           title: this.form.title,
           coverUrl: this.form.coverUrl,
@@ -310,14 +333,35 @@ export default {
       this.form.avatar = character.characterAvatar;
       this.form.objectId = character.characterId;
       this.form.type = 'character';
+      this.form.avatarId = null;
+      this.form.avatarName = '';
+      this.form.avatarImage = '';
+      this.selectAvatarValue = '';
+      this.characterAvatars = character.characterAvatars;
+    },
+    selectCharacterAvatarChange(value) {
+      let avatar = this.characterAvatars.find(item => item.id === value)
+      this.form.avatarName = avatar.name;
+      this.form.avatarImage = avatar.avatar;
+      this.form.avatarId = avatar.id;
     },
     clearCharacter() {
       this.selectValue = '';
       this.form.objectId = null;
       this.form.objectName = '';
       this.form.avatar = '';
+      this.form.avatarId = null;
+      this.form.avatarName = '';
+      this.form.avatarImage = '';
+      this.selectAvatarValue = '';
       this.form.type = 'user';
     },
+    clearAvatar() {
+      this.form.avatarId = null;
+      this.form.avatarName = '';
+      this.form.avatarImage = '';
+      this.selectAvatarValue = '';
+    }
   }
 }
 </script>
