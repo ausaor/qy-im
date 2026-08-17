@@ -1,8 +1,8 @@
 <template>
   <view class="short-video-page">
     <swiper v-if="videoList.length" class="video-swiper" :class="{ 'comment-open': showCommentPanel }" vertical
-            :current="currentIndex" :duration="300" @change="onVideoChange">
-      <swiper-item v-for="(video, index) in videoList" :key="video.id" class="video-slide">
+            :current="renderCurrentIndex" :duration="300" @change="onVideoChange">
+      <swiper-item v-for="({ video, index }) in renderedVideos" :key="video.id" class="video-slide">
         <view class="video-slide-inner">
           <video :id="videoElementId(index)" class="video-player" :src="video.videoUrl" :poster="video.coverUrl"
                  :autoplay="index === currentIndex" :show-center-play-btn="false" :controls="false" :loop="true"
@@ -102,6 +102,19 @@ export default {
     videoList() {
       return this.shortVideoStore.objectShortVideos || []
     },
+    // 只保留当前视频及相邻视频的节点，避免同时加载完整列表的视频资源。
+    renderedVideos() {
+      const start = Math.max(0, this.currentIndex - 1)
+      const end = Math.min(this.videoList.length, this.currentIndex + 2)
+      return this.videoList.slice(start, end).map((video, offset) => ({
+        video,
+        index: start + offset
+      }))
+    },
+    // Swiper 下标基于局部渲染窗口，currentIndex 保持为完整视频列表下标。
+    renderCurrentIndex() {
+      return this.currentIndex - Math.max(0, this.currentIndex - 1)
+    },
     currentVideo() {
       return this.videoList[this.currentIndex] || {}
     },
@@ -155,7 +168,9 @@ export default {
       })
     },
     onVideoChange(event) {
-      const nextIndex = event.detail.current
+      const renderedVideo = this.renderedVideos[event.detail.current]
+      if (!renderedVideo) return
+      const nextIndex = renderedVideo.index
       if (nextIndex === this.currentIndex) return
       this.currentVideoContext().pause();
       this.currentIndex = nextIndex;

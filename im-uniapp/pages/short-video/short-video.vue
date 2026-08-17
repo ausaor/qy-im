@@ -5,11 +5,11 @@
         class="video-swiper"
         :class="{ 'comment-open': showCommentPanel }"
         vertical
-        :current="currentIndex"
+        :current="renderCurrentIndex"
         :duration="300"
         @change="onVideoChange"
     >
-      <swiper-item v-for="(video, index) in videoList" :key="video.id" class="video-slide">
+      <swiper-item v-for="({ video, index }) in renderedVideos" :key="video.id" class="video-slide">
         <view class="video-slide-inner">
           <video
               :id="videoElementId(index)"
@@ -130,6 +130,19 @@ export default {
     }
   },
   computed: {
+    // 只渲染当前播放项及其前后相邻项，其他视频仅保留数据，不创建 video 节点。
+    renderedVideos() {
+      const start = Math.max(0, this.currentIndex - 1)
+      const end = Math.min(this.videoList.length, this.currentIndex + 2)
+      return this.videoList.slice(start, end).map((video, offset) => ({
+        video,
+        index: start + offset
+      }))
+    },
+    // currentIndex 是完整列表的下标；swiper 的 current 是渲染窗口内的下标。
+    renderCurrentIndex() {
+      return this.currentIndex - Math.max(0, this.currentIndex - 1)
+    },
     hasMore() {
       return this.videoList.length < this.total
     },
@@ -257,7 +270,9 @@ export default {
       })
     },
     onVideoChange(event) {
-      const nextIndex = event.detail.current
+      const renderedVideo = this.renderedVideos[event.detail.current]
+      if (!renderedVideo) return
+      const nextIndex = renderedVideo.index
       if (nextIndex === this.currentIndex) return
       this.currentVideoContext().pause()
       this.currentIndex = nextIndex
