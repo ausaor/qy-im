@@ -47,16 +47,16 @@
               </view>
             </view>
             <view class="action-item" @click="toggleLike(video)">
-              <uni-icons :type="video.liked ? 'heart-filled' : 'heart'" size="32"
+              <uni-icons :type="video.liked ? 'heart-filled' : 'heart'" size="40"
                          :color="video.liked ? '#f23b54' : '#ffffff'"/>
               <text>{{ video.likeCount || 0 }}</text>
             </view>
             <view class="action-item" @click="openComments(video)">
-              <uni-icons type="chatbubble" size="30" color="#ffffff"/>
+              <uni-icons type="chatbubble" size="38" color="#ffffff"/>
               <text>{{ video.commentCount || 0 }}</text>
             </view>
             <view class="action-item" @click="toggleFavorite(video)">
-              <uni-icons :type="video.favorited ? 'star-filled' : 'star'" size="32"
+              <uni-icons :type="video.favorited ? 'star-filled' : 'star'" size="40"
                          :color="video.favorited ? '#ffd23f' : '#ffffff'"/>
               <text>{{ video.favoriteCount || 0 }}</text>
             </view>
@@ -538,19 +538,19 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30rpx;
+  gap: 34rpx;
 }
 
 .avatar-action {
   position: relative;
-  width: 82rpx;
-  height: 96rpx;
+  width: 100rpx;
+  height: 116rpx;
 }
 
 .avatar {
-  width: 76rpx;
-  height: 76rpx;
-  border: 3rpx solid #fff;
+  width: 94rpx;
+  height: 94rpx;
+  border: 4rpx solid #fff;
   border-radius: 50%;
 }
 
@@ -559,39 +559,72 @@ export default {
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 30rpx;
+  font-size: 36rpx;
 }
 
 .follow-mark {
   position: absolute;
   bottom: 0;
-  left: 19rpx;
+  left: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38rpx;
-  height: 38rpx;
-  border: 3rpx solid #fff;
+  width: 42rpx;
+  height: 42rpx;
+  border: 4rpx solid #fff;
   border-radius: 50%;
   background: #f23b54;
   color: #fff;
-  font-size: 32rpx;
-  line-height: 32rpx;
+  font-size: 36rpx;
+  line-height: 36rpx;
 }
 
 .action-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 82rpx;
+  min-width: 100rpx;
+  min-height: 86rpx;
   color: #fff;
-  font-size: 23rpx;
+  font-size: 25rpx;
   font-weight: 500;
   text-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.8);
 }
 
 .action-item text {
-  margin-top: 5rpx;
+  margin-top: 7rpx;
+}
+
+/* rpx 会随屏幕宽度缩放；平板改用 px 上限，避免操作栏随屏幕宽度过度放大。 */
+@media screen and (min-width: 768px) {
+  .video-actions {
+    right: 28px;
+    gap: 20px;
+  }
+
+  .avatar-action {
+    width: 58px;
+    height: 70px;
+  }
+
+  .avatar {
+    width: 54px;
+    height: 54px;
+  }
+
+  .follow-mark {
+    left: 14px;
+    width: 26px;
+    height: 26px;
+    font-size: 22px;
+    line-height: 22px;
+  }
+
+  .action-item {
+    min-width: 60px;
+    min-height: 56px;
+    font-size: 14px;
+  }
 }
 
 .state-view {
