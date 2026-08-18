@@ -262,23 +262,36 @@
                width="650px"
                v-dialogDrag
                :before-close="handleEditTemplateCharacterClose">
-      <div class="template-group-avatar">
-        <head-image class="head-image" :url="curTemplateGroup.avatar" :size="80"></head-image>
-      </div>
-      <div v-if="curTemplateGroup.isOwner" class="upload-avatar">
-        <batch-file-upload class="avatar-uploader"
-                           :action="imageAction"
-                           :showLoading="true"
-                           :maxSize="maxSize"
-                           @success="handleUploadNewCharacterSuccess"
-                           :uploadList="uploadList"
-                           :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
-          <i class="el-icon-plus avatar-uploader-icon"></i>
-        </batch-file-upload>
+      <div class="template-group-top">
+        <div class="template-group-avatar">
+          <head-image class="head-image" :url="curTemplateGroup.avatar" :size="80"></head-image>
+        </div>
+        <div v-if="curTemplateGroup.isOwner" class="upload-avatar">
+          <batch-file-upload class="avatar-uploader"
+                             :action="imageAction"
+                             :showLoading="true"
+                             :maxSize="maxSize"
+                             @success="handleUploadNewCharacterSuccess"
+                             :uploadList="uploadList"
+                             :fileTypes="['image/jpeg', 'image/png', 'image/jpg','image/webp', 'image/gif']">
+            <i class="el-icon-plus avatar-uploader-icon"></i>
+          </batch-file-upload>
+        </div>
+        <div v-if="curTemplateGroup.isOwner" class="character-search">
+          <el-input
+              class="character-search-input"
+              type="text"
+              placeholder="按名称搜索角色"
+              v-model="searchCharacterName"
+              prefix-icon="el-icon-search"
+              clearable
+              size="small"
+          />
+        </div>
       </div>
       <div class="template-character-box">
         <el-scrollbar style="height:380px;">
-          <div class="template-character-item" v-for="(templateCharacter, index) in templateCharacters"
+          <div class="template-character-item" v-for="(templateCharacter, index) in filterTemplateCharacters"
                :key="templateCharacter.id">
             <div class="avatar-box">
               <head-image class="avatar-uploader" :size="36" :url="templateCharacter.avatar"></head-image>
@@ -592,6 +605,7 @@ export default {
     return {
       templateGroups: [],
       templateCharacters: [],
+      searchCharacterName: '',
       characterAvatars: [],
       characterEmos: [],
       showEditTemplateGroupDialog: false,
@@ -722,12 +736,14 @@ export default {
     },
     editTemplateCharacter(templateGroup) {
       this.curTemplateGroup = templateGroup;
+      this.searchCharacterName = '';
       this.queryTemplateCharacter(templateGroup);
       this.showEditTemplateCharacterDialog = true;
     },
     handleEditTemplateCharacterClose() {
       this.curTemplateGroup = {};
       this.templateCharacters = [];
+      this.searchCharacterName = '';
       this.showEditTemplateCharacterDialog = false;
     },
     handleEditCharacterAvatarClose() {
@@ -749,17 +765,18 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
+        const realIndex = this.templateCharacters.indexOf(templateCharacter);
         if (templateCharacter.id !== null && templateCharacter.id !== undefined) {
           this.$http({
             url: `/templateCharacter/delete/${templateCharacter.id}`,
             method: 'delete'
           }).then(() => {
-            this.templateCharacters.splice(index, 1);
+            this.templateCharacters.splice(realIndex, 1);
             this.$message.success("删除成功");
             this.queryMyTemplateGroups();
           });
         } else {
-          this.templateCharacters.splice(index, 1);
+          this.templateCharacters.splice(realIndex, 1);
           this.$message.success("删除成功");
         }
       })
@@ -783,6 +800,7 @@ export default {
       })
     },
     handleUploadNewCharacterSuccess(data) {
+      this.searchCharacterName = '';
       this.templateCharacters.push({avatar: data.originUrl, name: data.name, status: '0'});
     },
     handleUploadNewAvatarSuccess(data) {
@@ -1465,6 +1483,15 @@ export default {
     imageAction() {
       return `/image/upload`;
     },
+    filterTemplateCharacters() {
+      const keyword = this.searchCharacterName.trim();
+      if (!keyword) {
+        return this.templateCharacters;
+      }
+      return this.templateCharacters.filter((templateCharacter) => {
+        return templateCharacter.name && templateCharacter.name.includes(keyword);
+      });
+    },
     audioAction(){
       return `/audio/upload`;
     },
@@ -1696,6 +1723,13 @@ export default {
 
 .edit-template-character {
 
+  .template-group-top {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
   .template-group-avatar {
     /*转为flex弹性盒布局*/
     display: flex;
@@ -1715,6 +1749,17 @@ export default {
     box-sizing: border-box;
     margin-left: 15px;
     text-align: center;
+  }
+
+  .character-search {
+    width: 180px;
+    margin-left: 15px;
+    display: flex;
+    align-items: center;
+
+    .character-search-input {
+      width: 100%;
+    }
   }
 
   .template-character-box {
