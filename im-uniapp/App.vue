@@ -360,6 +360,10 @@ export default {
       if (msg.type == enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
         uni.$emit('group-change-event', msg);
       }
+      if (msg.type == enums.MESSAGE_TYPE.IGNORE_MSG && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
+        uni.$emit('group-change-event', msg);
+        return;
+      }
       if (msg.type == enums.MESSAGE_TYPE.WORD_VOICE && this.mine.autoPlay) {
         uni.$emit('group-audio-event', msg);
       }

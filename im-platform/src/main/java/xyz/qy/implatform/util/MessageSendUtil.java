@@ -93,6 +93,39 @@ public class MessageSendUtil {
         imClient.sendGroupMessage(sendMessage);
     }
 
+    public void sendIgnoreMessage(Long groupId, Long sendId, String sendNickName,
+                               List<Long> recvIds, String content, Integer groupChangeType) {
+        // 消息入库
+        GroupMessage message = new GroupMessage();
+        message.setContent(content);
+        message.setType(MessageType.IGNORE_MSG.code());
+        message.setStatus(MessageStatus.UNSEND.code());
+        message.setSendTime(new Date());
+        message.setSendNickName(sendNickName);
+        message.setGroupId(groupId);
+        message.setSendId(sendId);
+        if (CollUtil.isNotEmpty(recvIds)) {
+            message.setRecvIds(CommaTextUtils.asText(recvIds));
+        }
+
+        // 推送
+        GroupMessageVO msgInfo = BeanUtils.copyProperties(message, GroupMessageVO.class);
+        IMGroupMessage<GroupMessageVO> sendMessage = new IMGroupMessage<>();
+        sendMessage.setSender(new IMUserInfo(sendId, IMTerminalType.WEB.code()));
+        if (CollUtil.isEmpty(recvIds)) {
+            // 为空表示向全体发送
+            List<Long> userIds = groupMemberService.findUserIdsByGroupId(groupId);
+            sendMessage.setRecvIds(userIds);
+        } else {
+            sendMessage.setRecvIds(recvIds);
+        }
+        msgInfo.setGroupChangeType(groupChangeType);
+        sendMessage.setData(msgInfo);
+        sendMessage.setSendToSelf(false);
+        sendMessage.setSendResult(false);
+        imClient.sendGroupMessage(sendMessage);
+    }
+
     public void sendRegionGroupTipMsg(Long regionGroupId, Long sendId, String sendNickName,
                                List<Long> recvIds, String content, Integer groupChangeType) {
         // 消息入库

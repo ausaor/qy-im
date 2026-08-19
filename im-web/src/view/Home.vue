@@ -584,7 +584,6 @@
         }
       },
       handleGroupMessage(msg) {
-        console.log("群聊消息......", msg)
         // 消息加载标志
         if (msg.type === this.$enums.MESSAGE_TYPE.LOADING) {
           console.log("群聊记录加载......", JSON.parse(msg.content))
@@ -615,7 +614,6 @@
         }
         // 消息免打扰
         if (msg.type === this.$enums.MESSAGE_TYPE.GROUP_DND) {
-          console.log("群聊免打扰......", JSON.parse(msg.content))
           this.$store.commit("setGroupDnd", { groupId: msg.groupId, isDnd: JSON.parse(msg.content) });
           return;
         }
@@ -623,6 +621,10 @@
         // 群聊有变更
         if (msg.type === this.$enums.MESSAGE_TYPE.TIP_TEXT && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
           this.eventGroupChange(msg);
+        }
+        if (msg.type === this.$enums.MESSAGE_TYPE.IGNORE_MSG && msg.groupChangeType && [1,2,3,5].includes(msg.groupChangeType)) {
+          this.eventGroupChange(msg);
+          return;
         }
         if (msg.type === this.$enums.MESSAGE_TYPE.WORD_VOICE && this.mine.autoPlay) {
           this.eventGroupPlayAudio(msg);

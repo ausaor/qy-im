@@ -30,6 +30,7 @@ public enum MessageType {
     RECEIPT(12, "消息已读回执"),
     TIP_TIME(20,"时间提示"),
     TIP_TEXT(21,"文字提示"),
+    IGNORE_MSG(22,"忽略消息"),
     LOADING(30,"加载中标记"),
     ACT_RT_VOICE(40,"语音通话"),
     ACT_RT_VIDEO(41,"视频通话"),

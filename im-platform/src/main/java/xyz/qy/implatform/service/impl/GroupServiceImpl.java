@@ -241,7 +241,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         log.info("修改群聊，群聊id:{},群聊名称:{}", group.getId(), group.getName());
 
         if (hasModify) {
-            messageSendUtil.sendTipMessage(group.getId(), session.getUserId(), session.getNickName(),
+            messageSendUtil.sendIgnoreMessage(group.getId(), session.getUserId(), session.getNickName(),
                     null, "群数据有更新", GroupChangeTypeEnum.GROUP_MEMBER_CHANGE.getCode());
         }
 
