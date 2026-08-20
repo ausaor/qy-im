@@ -21,8 +21,9 @@
 				<view class="chat-msg-bottom">
 					<view v-if="msgInfo.type == $enums.MESSAGE_TYPE.TEXT">
 						<long-press-menu :items="menuItems" @select="onSelectMenu">
-							 <rich-text class="chat-msg-text" :style="currentBubbleStyle" :nodes="nodesText" @itemclick="onLinkClick" style="pointer-events: auto;"></rich-text>
+							 <rich-text class="chat-msg-text" :class="{ 'chat-msg-text-collapsed': showTextMore && !isTextExpanded }" :style="currentBubbleStyle" :nodes="nodesText" @itemclick="onLinkClick" style="pointer-events: auto;"></rich-text>
 						</long-press-menu>
+						<view v-if="showTextMore" class="chat-msg-text-more" @click.stop="toggleTextMessage">{{ isTextExpanded ? '收起' : '显示更多' }}</view>
 					</view>
           <view v-if="msgInfo.type == $enums.MESSAGE_TYPE.WORD_VOICE" class="chat-msg-word-voice">
             <long-press-menu :items="menuItems" @select="onSelectMenu">
@@ -227,6 +228,8 @@ export default {
       audioPlayStateQuote: 'STOP',
       innerAudioContextQuote: null,
       audioContextQuote: null,
+			isTextExpanded: false,
+			showTextMore: false,
 			menu: {
 				show: false,
 				style: ""
@@ -405,7 +408,34 @@ export default {
       return result;
     }
 	},
+	watch: {
+		'msgInfo.content': {
+			immediate: true,
+			handler() {
+				this.isTextExpanded = false;
+				this.showTextMore = false;
+				this.$nextTick(() => this.checkTextOverflow());
+			}
+		}
+	},
 	methods: {
+		checkTextOverflow() {
+			if (this.msgInfo.type !== this.$enums.MESSAGE_TYPE.TEXT) {
+				return;
+			}
+
+			uni.createSelectorQuery().in(this).select('.chat-msg-text').boundingClientRect((rect) => {
+				if (!rect) {
+					return;
+				}
+				const rpxToPx = uni.getSystemInfoSync().windowWidth / 750;
+				const tenLinesHeight = (10 * 1.6 * 30 + 32) * rpxToPx;
+				this.showTextMore = rect.height > tenLinesHeight + 1;
+			}).exec();
+		},
+		toggleTextMessage() {
+			this.isTextExpanded = !this.isTextExpanded;
+		},
 		onSendFail() {
 			uni.showToast({
 				title: "该文件已发送失败，目前不支持自动重新发送，建议手动重新发送",
@@ -736,11 +766,25 @@ export default {
           box-sizing: border-box;
           overflow-wrap: anywhere;
 
+          &.chat-msg-text-collapsed {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 10;
+            overflow: hidden;
+          }
+
           .at-user {
             text-decoration: none; /* 去掉下划线 */
             color: #3498db; /* 自定义颜色（示例：蓝色） */
           }
 				}
+
+        .chat-msg-text-more {
+          margin-top: 8rpx;
+          color: #409eff;
+          font-size: $im-font-size-smaller;
+          text-align: right;
+        }
 
         .chat-msg-word-voice {
 

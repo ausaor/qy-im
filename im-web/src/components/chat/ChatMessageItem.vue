@@ -28,8 +28,13 @@
 				</div>
 				<div class="chat-msg-bottom" @contextmenu.prevent="showRightMenu($event)">
           <div ref="chatMsgBox">
-            <span ref="textChatMsg" class="chat-msg-text" v-if="msgInfo.type==$enums.MESSAGE_TYPE.TEXT"
-                  v-html="htmlText"></span>
+            <div v-if="msgInfo.type==$enums.MESSAGE_TYPE.TEXT" class="chat-msg-text-wrapper">
+              <span ref="textChatMsg" class="chat-msg-text" :class="{'is-collapsed': textOverflow && !textExpanded}"
+                    v-html="htmlText"></span>
+              <button v-if="textOverflow" type="button" class="chat-msg-text-toggle" @click.stop="toggleTextExpanded">
+                {{textExpanded ? '收起' : '显示更多'}}
+              </button>
+            </div>
             <div class="chat-msg-image" v-if="msgInfo.type==$enums.MESSAGE_TYPE.IMAGE">
               <div class="img-load-box" v-loading="loading" element-loading-text="上传中.."
                    element-loading-background="rgba(0, 0, 0, 0.4)">
@@ -229,10 +234,12 @@ export default {
       },
 		},
 		data() {
-			return {
-				audioPlayState: 'STOP',
+		return {
+			audioPlayState: 'STOP',
         isPlaying: false,
         audio: null,
+        textExpanded: false,
+        textOverflow: false,
 				rightMenu: {
 					show: false,
 					pos: {
@@ -265,14 +272,40 @@ export default {
       if (this.$refs.textChatMsg) {
         this.$refs.textChatMsg.removeEventListener('click', this.handleAtClick);
       }
+      window.removeEventListener('resize', this.updateTextOverflow);
     },
     mounted() {
       // 添加事件监听器处理@用户名的点击
       if (this.$refs.textChatMsg) {
         this.$refs.textChatMsg.addEventListener('click', this.handleAtClick);
       }
+      this.updateTextOverflow();
+      window.addEventListener('resize', this.updateTextOverflow);
+    },
+		watch: {
+      htmlText() {
+        this.textExpanded = false;
+        this.textOverflow = false;
+        this.$nextTick(this.updateTextOverflow);
+      }
     },
 		methods: {
+      toggleTextExpanded() {
+        this.textExpanded = !this.textExpanded;
+      },
+      updateTextOverflow() {
+        const textElement = this.$refs.textChatMsg;
+        if (!textElement) {
+          this.textOverflow = false;
+          return;
+        }
+
+        const style = window.getComputedStyle(textElement);
+        const lineHeight = parseFloat(style.lineHeight);
+        const verticalPadding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+        const maxHeight = lineHeight * 10 + verticalPadding;
+        this.textOverflow = textElement.scrollHeight > maxHeight + 1;
+      },
       onSendFail() {
 				this.$message.error("该文件已发送失败，目前不支持自动重新发送，建议手动重新发送")
 			},
@@ -690,9 +723,18 @@ export default {
           display: inline-block;
           padding-right: 300px;
 
+					.chat-msg-text-wrapper {
+            display: inline-block;
+            max-width: 100%;
+            text-align: left;
+            vertical-align: top;
+
 					.chat-msg-text {
-            display: inline-flex;
+            display: block;
             position: relative;
+            box-sizing: border-box;
+            width: fit-content;
+            max-width: 100%;
             line-height: 26px;
             padding: 6px 10px;
             border-radius: 10px;
@@ -704,9 +746,30 @@ export default {
             background: v-bind("bubbleStyle.background");
             color: v-bind("bubbleStyle.color");
 
+            &.is-collapsed {
+              display: -webkit-box;
+              -webkit-box-orient: vertical;
+              -webkit-line-clamp: 10;
+              overflow: hidden;
+            }
+
             .at-user {
               cursor: pointer;
             }
+					}
+
+            .chat-msg-text-toggle {
+              display: block;
+              margin-top: 4px;
+              padding: 0;
+              border: 0;
+              background: transparent;
+              color: #409eff;
+              font-size: 13px;
+              line-height: 20px;
+              cursor: pointer;
+            }
+
 					}
 
 					.chat-msg-image {
@@ -1219,6 +1282,10 @@ export default {
                 cursor: pointer;
               }
 						}
+
+            .chat-msg-text-wrapper {
+              text-align: right;
+            }
 
             .chat-msg-word-voice {
               margin-left: 10px;
