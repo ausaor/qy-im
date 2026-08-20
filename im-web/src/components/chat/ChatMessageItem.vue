@@ -1010,6 +1010,8 @@ export default {
               background: #eee;
               padding: 5px;
               display: inline-flex;
+              max-width: 100%;
+              box-sizing: border-box;
               align-items: center;
               border-radius: 8px;
               font-size: 12px;
@@ -1018,10 +1020,24 @@ export default {
               .send-user {
                 margin-right: 10px;
                 font-weight: 600;
+                flex-shrink: 0;
+                white-space: nowrap;
               }
 
               .quote-content {
                 position: relative;
+                flex: 1;
+                min-width: 0;
+                max-width: 500px;
+                overflow: hidden;
+                white-space: nowrap;
+
+                > span {
+                  display: block;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                }
 
                 .quote-image {
                   min-width: 40px;

@@ -106,7 +106,8 @@
           <view class="quote-message" v-if="msgInfo.quoteMsg">
             <long-press-menu :items="quoteMsgMenuItems" @select="scrollToMessage(msgInfo.quoteMsg.id)">
               <view class="chat-quote-message" @click.stop="scrollToMessage(msgInfo.quoteMsg.id)">
-                <view class="send-user">{{quoteShowName}}:</view>
+                <view class="send-user">{{quoteShowName}}</view>
+                <text class="quote-colon">:</text>
                 <view class="quote-content">
                   <view v-if="msgInfo.quoteMsg.type == $enums.MESSAGE_TYPE.TEXT">
                     <rich-text class="quote-text" :nodes="nodesTextQuote"></rich-text>
@@ -709,6 +710,8 @@ export default {
 
 			.chat-msg-bottom {
 				display: inline-block;
+				max-width: 100%;
+				box-sizing: border-box;
 				padding-right: 80rpx;
 				margin-top: 5rpx;
 
@@ -729,7 +732,9 @@ export default {
 					word-break: break-all;
 					white-space: pre-line;
           display: inline-flex;
-          overflow: visible;
+          max-width: 100%;
+          box-sizing: border-box;
+          overflow-wrap: anywhere;
 
           .at-user {
             text-decoration: none; /* 去掉下划线 */
@@ -921,6 +926,8 @@ export default {
             background: #eee;
             padding: 5rpx 10rpx;
             display: inline-flex;
+            max-width: 100%;
+            box-sizing: border-box;
             align-items: center;
             border-radius: 10rpx;
             font-size: 20rpx;
@@ -928,21 +935,34 @@ export default {
             margin-top: 8rpx;
 
             .send-user {
-              margin-right: 20rpx;
               font-weight: 600;
-              overflow-wrap: break-word;
-              max-width: 80rpx;
+              flex: none;
+              white-space: nowrap;
+            }
+
+            .quote-colon {
+              flex: none;
+              margin-right: 10rpx;
             }
 
             .quote-content {
+              flex: 1;
+              min-width: 0;
+              overflow: hidden;
+
+              > view {
+                min-width: 0;
+                overflow: hidden;
+              }
 
               .quote-text {
                 position: relative;
                 line-height: 1.6;
                 text-align: left;
                 display: block;
-                word-break: break-all;
-                white-space: pre-line;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
               }
 
               .quote-image {
