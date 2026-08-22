@@ -891,6 +891,7 @@ create table im_short_video
     like_count     int          default 0                 null comment '点赞数',
     favorite_count int          default 0                 null comment '收藏数',
     comment_count  int          default 0                 null comment '评论数',
+    address        varchar(20)  default ''                not null comment '地址',
     status         tinyint      default 0                 null comment '状态：0-审核中；1-已发布；2-不通过',
     review_user_id bigint                                 null comment '审核人id',
     reason         varchar(200) default ''                not null comment '审核不通过原因',
