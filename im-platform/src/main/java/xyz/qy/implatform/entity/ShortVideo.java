@@ -129,6 +129,12 @@ public class ShortVideo extends Model<ShortVideo> {
     private Integer commentCount;
 
     /**
+     * 地址
+     */
+    @TableField("address")
+    private String address;
+
+    /**
      * 状态
      */
     @TableField("status")

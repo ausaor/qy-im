@@ -474,6 +474,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             targetVO.setUserName(user.getUserName());
             targetVO.setNickName(user.getNickName());
             targetVO.setHeadImage(user.getHeadImage());
+            targetVO.setAddress(user.getProvince());
         } else if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
             TemplateCharacter character = templateCharacterService.getById(dto.getTargetId());
             if (character != null) {

@@ -9,7 +9,10 @@
         <view v-else class="avatar avatar-placeholder">{{ avatarInitial }}</view>
 
         <view class="profile-info">
-          <text class="nickname">{{ targetInfo.nickName || targetInfo.userName || '未知用户' }}</text>
+          <view class="nickname-row">
+            <text class="nickname">{{ targetInfo.nickName || targetInfo.userName || '未知用户' }}</text>
+            <text v-if="targetInfo.address" class="ip-address">IP属地：{{ targetInfo.address }}</text>
+          </view>
           <view class="statistics">
             <view class="stat-item">
               <text class="stat-count">{{ formatCount(targetInfo.shortVideoLikedCount) }}</text>
@@ -254,13 +257,28 @@ export default {
   padding-left: 24rpx;
 }
 
+.nickname-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
 .nickname {
-  display: block;
+  min-width: 0;
+  flex: 1;
   overflow: hidden;
   color: #202733;
   font-size: 38rpx;
   font-weight: 600;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ip-address {
+  flex: none;
+  margin-left: 14rpx;
+  color: #7d8793;
+  font-size: 23rpx;
   white-space: nowrap;
 }
 

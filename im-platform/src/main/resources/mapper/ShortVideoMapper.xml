@@ -23,6 +23,7 @@
                like_count,
                favorite_count,
                comment_count,
+               address,
                status,
                create_time,
                update_time,

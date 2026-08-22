@@ -89,7 +89,10 @@
       <template v-else>
         <!-- 作者信息 -->
         <div class="works-author-info">
-          <div class="works-author-name">@{{ video.nickName || '用户' + video.userId }}</div>
+          <div class="works-author-name">
+            @{{ video.nickName || '用户' + video.userId }}
+            <span v-if="authorInfo && authorInfo.address" class="works-author-address">IP属地：{{ authorInfo.address }}</span>
+          </div>
           <div class="works-author-stats">
             <span class="stat-item">粉丝 {{ authorInfo ? authorInfo.fansCount : 0 }}</span>
             <span class="stat-divider">|</span>
@@ -652,6 +655,13 @@ export default {
       font-weight: 600;
       color: #333;
       margin-bottom: 8px;
+
+      .works-author-address {
+        margin-left: 8px;
+        font-size: 13px;
+        font-weight: normal;
+        color: #999;
+      }
     }
 
     .works-author-stats {

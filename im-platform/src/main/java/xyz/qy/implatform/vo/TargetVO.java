@@ -31,4 +31,7 @@ public class TargetVO {
 
     @ApiModelProperty(value = "短视频获赞数")
     private Integer shortVideoLikedCount;
+
+    @ApiModelProperty(value = "地址")
+    private String address;
 }

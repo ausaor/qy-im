@@ -36,9 +36,12 @@
 
           <!-- 左下角信息区 -->
           <div class="video-info-left">
-            <div class="author-name">@{{ currentVideo.nickName || '用户' + currentVideo.userId }}</div>
+            <div class="author-name">
+              @{{ currentVideo.nickName || '用户' + currentVideo.userId }}
+            </div>
+            <div class="address" v-if="currentVideo.address">{{ currentVideo.address }}</div>
             <div class="publish-date">{{ formatDate(currentVideo.createTime) }}</div>
-            <div class="video-title">{{ currentVideo.title || '无标题' }}</div>
+            <div class="video-title">{{ currentVideo.title || '' }}</div>
           </div>
 
           <!-- 右侧操作区 -->
@@ -548,6 +551,12 @@ export default {
     font-size: 15px;
     font-weight: 600;
     margin-bottom: 4px;
+  }
+
+  .address {
+    font-size: 12px;
+    color: #ccc;
+    margin-bottom: 6px;
   }
 
   .publish-date {

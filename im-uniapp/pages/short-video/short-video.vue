@@ -31,8 +31,11 @@
 
           <view class="video-info">
             <text class="author-name" @click="toViewUser(video.userId)">@{{ video.nickName || ('用户' + video.userId) }}</text>
+            <view v-if="video.createTime || video.address" class="video-meta">
+              <text v-if="video.createTime">{{ formatCreateDate(video.createTime) }}</text>
+              <text v-if="video.address">{{ video.address }}</text>
+            </view>
             <text v-if="video.title" class="video-title">{{ video.title }}</text>
-            <text v-if="video.description" class="video-description">{{ video.description }}</text>
           </view>
 
           <view class="video-actions" @click.stop>
@@ -184,6 +187,9 @@ export default {
     this.currentVideoContext().pause()
   },
   methods: {
+    formatCreateDate(createTime) {
+      return String(createTime).slice(0, 10)
+    },
     videoElementId(index) {
       return `short-video-${index}`
     },
@@ -522,6 +528,15 @@ export default {
   margin-bottom: 16rpx;
   font-size: 32rpx;
   font-weight: 600;
+}
+
+.video-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-bottom: 4rpx;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 22rpx;
 }
 
 .video-title,

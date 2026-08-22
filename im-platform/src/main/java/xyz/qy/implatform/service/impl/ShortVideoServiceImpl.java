@@ -421,7 +421,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         } else if (FollowEnum.TEMPLATE.getCode().equals(dto.getType())) {
             checkCharacterUser(null, dto.getObjectId(), userId);
         }
-
+        User user = userService.getById(userId);
         ShortVideo shortVideo = BeanUtils.copyProperties(dto, ShortVideo.class);
         shortVideo.setTitle(SensitiveUtil.filter(dto.getTitle()));
         shortVideo.setUserId(session.getUserId());
@@ -429,6 +429,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         shortVideo.setUpdateTime(new Date());
         shortVideo.setDeleted(false);
         shortVideo.setStatus(ReviewEnum.REVIEWING.getCode());
+        shortVideo.setAddress(user.getProvince());
         setObjectId(shortVideo);
         this.save(shortVideo);
         if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
@@ -451,6 +452,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         ShortVideo shortVideo = this.getById(dto.getId());
         checkExists(shortVideo);
         checkOwner(shortVideo);
+
         if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
             checkCharacterUser(dto.getObjectId(), null, userId);
         } else if (FollowEnum.TEMPLATE.getCode().equals(dto.getType())) {
@@ -466,6 +468,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
                 || (dto.getAvatarId() != null && !dto.getAvatarId().equals(shortVideo.getAvatarId()))) {
             throw new GlobalException("短视频角色头像id不能修改");
         }
+        User user = userService.getById(userId);
 
         if (Objects.nonNull(dto.getScope())) {
             shortVideo.setScope(dto.getScope());
@@ -497,6 +500,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         shortVideo.setTitle(SensitiveUtil.filter(shortVideo.getTitle()));
         shortVideo.setStatus(ReviewEnum.REVIEWING.getCode());
         shortVideo.setUpdateTime(new Date());
+        shortVideo.setAddress(user.getProvince());
         this.updateById(shortVideo);
         sendShortVideoMailEventPublisher.sendMailAsync("【短视频审核】修改短视频待审核", session.getNickName(), session.getUserName());
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);

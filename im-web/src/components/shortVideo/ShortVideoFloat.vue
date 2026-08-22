@@ -137,8 +137,9 @@
           <!-- 左下角信息区 -->
           <div class="float-video-info-left">
             <div class="float-author-name">@{{ currentVideo.nickName || '用户' + currentVideo.userId }}</div>
+            <div v-if="currentVideo.address" class="float-address">{{currentVideo.address}}</div>
             <div class="float-publish-date">{{ formatDate(currentVideo.createTime) }}</div>
-            <div class="float-video-title">{{ currentVideo.title || '无标题' }}</div>
+            <div class="float-video-title">{{ currentVideo.title || '' }}</div>
           </div>
 
           <!-- 右下角操作区：头像、点赞、评论、收藏 -->
@@ -1025,6 +1026,12 @@ export default {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 3px;
+  }
+
+  .float-address {
+    font-size: 11px;
+    color: #ccc;
+    margin-bottom: 4px;
   }
 
   .float-publish-date {

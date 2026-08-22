@@ -73,4 +73,6 @@ public class ShortVideoVO {
     private Boolean liked = Boolean.FALSE;
 
     private Boolean favorited = Boolean.FALSE;
+
+    private String address;
 }
