@@ -103,10 +103,14 @@
 
             <view class="star-user">
               <uni-icons v-if="item.talkStarVOS && item.talkStarVOS.length > 0" type="hand-up-filled" size="20" :color="'#666'"/>
-              <text v-for="(star, user_index) in item.talkStarVOS" :key="user_index">
+              <text v-for="(star, user_index) in getDisplayStars(item)" :key="user_index">
                 <text @click.stop="showUserInfo(star.userId)">{{ star.nickname }}</text>
-                {{user_index < item.talkStarVOS.length - 1 ? '、' : ''}}
+                {{user_index < getDisplayStars(item).length - 1 ? '、' : ''}}
               </text>
+              <text v-if="shouldCollapseLikes(item)" class="like-summary" @tap.stop="expandLikes(item.id)">
+                等{{ item.talkStarVOS.length }}人觉得很赞
+              </text>
+              <text v-if="shouldShowLikeCollapse(item)" class="like-collapse" @tap.stop="collapseLikes(item.id)">收起</text>
             </view>
 
             <view class="comments" v-if="item.talkCommentVOS.length">
@@ -260,6 +264,7 @@ export default {
       isFocus: false, // 编辑器是否焦点
       isReadOnly: false, // 编辑器是否只读
       commentDisplayCounts: {}, // 记录每个动态显示的评论数量
+      expandedLikeTalks: {}, // 记录已展开点赞列表的动态
       wordAudioContext: null,
       playingVoice: null,
       voicePlayState: 'STOP', // 'PLAYING', 'PAUSE', 'STOP'
@@ -273,6 +278,22 @@ export default {
   methods: {
     formatCreateTime(createTime) {
       return createTime ? createTime.substring(0, 16) : '';
+    },
+    getDisplayStars(talk) {
+      const stars = talk.talkStarVOS || [];
+      return this.expandedLikeTalks[talk.id] || stars.length <= 10 ? stars : stars.slice(0, 5);
+    },
+    shouldCollapseLikes(talk) {
+      return talk.talkStarVOS && talk.talkStarVOS.length > 10 && !this.expandedLikeTalks[talk.id];
+    },
+    shouldShowLikeCollapse(talk) {
+      return talk.talkStarVOS && talk.talkStarVOS.length > 10 && this.expandedLikeTalks[talk.id];
+    },
+    expandLikes(talkId) {
+      this.$set(this.expandedLikeTalks, talkId, true);
+    },
+    collapseLikes(talkId) {
+      this.$set(this.expandedLikeTalks, talkId, false);
     },
     handleScroll: throttle(function(e) {
       //console.log('自定义节流函数:', e.detail.scrollTop);
@@ -1509,7 +1530,17 @@ export default {
   margin-top: 10rpx;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   width: 100%;
+}
+
+.like-summary,
+.like-collapse {
+  color: #576b95;
+}
+
+.like-collapse {
+  margin-left: 12rpx;
 }
 
 .like-comment {

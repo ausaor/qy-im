@@ -87,10 +87,16 @@
               <svg class="icon svg-icon" aria-hidden="true">
                 <use xlink:href="#icon-dianzan1"></use>
               </svg>
-              <span class="star-user" v-for="(star, user_index) in item.talkStarVOS" :key="user_index"
+              <span class="star-user" v-for="(star, user_index) in getVisibleStars(item)" :key="user_index"
                     @click="showUserInfo($event, star.userId)">
                 {{ star.nickname }}
-                <span v-if="user_index < item.talkStarVOS.length - 1">，</span>
+                <span v-if="user_index < getVisibleStars(item).length - 1">，</span>
+              </span>
+              <span v-if="shouldCollapseLikes(item)" class="like-summary" @click="expandLikes(item.id)">
+                等{{ item.talkStarVOS.length }}人觉得很赞
+              </span>
+              <span v-if="shouldShowLikeCollapse(item)" class="like-collapse" @click="collapseLikes(item.id)">
+                收起
               </span>
             </div>
             <div class="commentBox">
@@ -314,6 +320,7 @@ export default {
       videoUrl: '',
       posterUrl: '',
       visibleCommentsCount: {},
+      expandedLikeTalks: {},
       audio: null,
       audioSrc: '',
       playCommentId: null,
@@ -329,6 +336,22 @@ export default {
   methods: {
     formatCreateTime(createTime) {
       return createTime ? createTime.substring(0, 16) : '';
+    },
+    getVisibleStars(talk) {
+      const stars = talk.talkStarVOS || []
+      return this.expandedLikeTalks[talk.id] || stars.length <= 10 ? stars : stars.slice(0, 5)
+    },
+    shouldCollapseLikes(talk) {
+      return talk.talkStarVOS && talk.talkStarVOS.length > 10 && !this.expandedLikeTalks[talk.id]
+    },
+    shouldShowLikeCollapse(talk) {
+      return talk.talkStarVOS && talk.talkStarVOS.length > 10 && this.expandedLikeTalks[talk.id]
+    },
+    expandLikes(talkId) {
+      this.$set(this.expandedLikeTalks, talkId, true)
+    },
+    collapseLikes(talkId) {
+      this.$set(this.expandedLikeTalks, talkId, false)
     },
     getVisibleComments(talk) {
       const count = this.visibleCommentsCount[talk.id] || 5
@@ -1094,6 +1117,7 @@ export default {
             display: flex;
             align-items: center;
             justify-content: left;
+            flex-wrap: wrap;
 
             .icon {
               margin-right: 5px;
@@ -1108,6 +1132,19 @@ export default {
 
             .star-user {
               cursor: pointer;
+            }
+
+            .like-summary,
+            .like-collapse {
+              cursor: pointer;
+
+              &:hover {
+                text-decoration: underline;
+              }
+            }
+
+            .like-collapse {
+              margin-left: 6px;
             }
 
             span {
