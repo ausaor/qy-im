@@ -42,7 +42,7 @@
             </div>
             <span class="time">
               <a>
-                <i class="el-icon-time"></i> {{ item.createTime }}
+                <i class="el-icon-time"></i> {{ formatCreateTime(item.createTime) }}
               </a>
             </span>
             <div class="operate" ref="operate">
@@ -327,6 +327,9 @@ export default {
   },
   computed: {},
   methods: {
+    formatCreateTime(createTime) {
+      return createTime ? createTime.substring(0, 16) : '';
+    },
     getVisibleComments(talk) {
       const count = this.visibleCommentsCount[talk.id] || 5
       return talk.talkCommentVOS.slice(0, count)

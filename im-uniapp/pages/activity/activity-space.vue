@@ -77,14 +77,17 @@
                 </view>
               </view>
             </view>
-            <text class="time">{{item.createTime}}</text>
+            <view class="time-author">
+              <text class="time">{{formatCreateTime(item.createTime)}}</text>
+              <text v-if="item.characterId || item.groupTemplateId" class="author-name cursor-pointer" @click.stop="showUserInfo(item.userId)">By：{{item.authorName}}</text>
+            </view>
           </view>
 
           <view class="interaction">
             <view style="display: flex; align-items: center; justify-content: space-between;">
               <view class="location">
-                <uni-icons  type="location" size="20"/>
-                <text>{{item.address}}</text>
+                <uni-icons  type="location" size="16"/>
+                <text class="location-text">{{item.address}}</text>
               </view>
               <view class="like-comment">
                 <view class="action-btn cursor-pointer" @click="likeAction(item)">
@@ -268,6 +271,9 @@ export default {
     };
   },
   methods: {
+    formatCreateTime(createTime) {
+      return createTime ? createTime.substring(0, 16) : '';
+    },
     handleScroll: throttle(function(e) {
       //console.log('自定义节流函数:', e.detail.scrollTop);
       const scrollTop = e.detail.scrollTop;
@@ -1262,9 +1268,19 @@ export default {
   font-weight: 500;
 }
 
-.time {
-  display: block;
+.time-author {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 12rpx;
+}
+
+.time {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.author-name {
   font-size: 24rpx;
   color: #999999;
 }
@@ -1483,6 +1499,10 @@ export default {
 .location {
   display: flex;
   align-items: center;
+}
+
+.location-text {
+  font-size: 22rpx;
 }
 
 .star-user {
