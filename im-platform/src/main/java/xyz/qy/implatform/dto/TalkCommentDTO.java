@@ -3,7 +3,10 @@ package xyz.qy.implatform.dto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
+import xyz.qy.implatform.enums.CommentTypeEnum;
+import xyz.qy.implatform.enums.ValidEnum;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -18,7 +21,7 @@ public class TalkCommentDTO {
     private Long talkId;
 
     @ApiModelProperty(value = "评论内容")
-    @NotNull(message = "评论内容不能为空")
+    @NotBlank(message = "评论内容不能为空")
     @Length(min = 1, max = 1000, message = "评论内容长度不能超过1000")
     private String content;
 
@@ -39,5 +42,6 @@ public class TalkCommentDTO {
 
     @ApiModelProperty(value = "评论类型 0:文字 1:图片 5:语音台词")
     @NotNull(message = "评论类型不能为空")
+    @ValidEnum(enumClass = CommentTypeEnum.class, property = "code", message = "评论类型异常")
     private Integer type;
 }

@@ -3,6 +3,8 @@ package xyz.qy.implatform.dto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
+import xyz.qy.implatform.enums.CommentTypeEnum;
+import xyz.qy.implatform.enums.ValidEnum;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -33,5 +35,6 @@ public class ShortVideoCommentAddDTO {
 
     @ApiModelProperty(value = "评论类型 0:文字 1:图片 5:语音台词")
     @NotNull(message = "评论类型不能为空")
+    @ValidEnum(enumClass = CommentTypeEnum.class, property = "code", message = "评论类型参数错误")
     private Integer type;
 }

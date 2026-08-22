@@ -13,11 +13,14 @@ import xyz.qy.imcommon.model.IMUserInfo;
 import xyz.qy.implatform.dto.TalkCommentDTO;
 import xyz.qy.implatform.dto.UserDataAuthDTO;
 import xyz.qy.implatform.entity.CharacterAvatar;
+import xyz.qy.implatform.entity.CharacterWord;
 import xyz.qy.implatform.entity.Talk;
 import xyz.qy.implatform.entity.TalkComment;
 import xyz.qy.implatform.entity.TalkNotify;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.CommentTypeEnum;
+import xyz.qy.implatform.enums.ReviewEnum;
 import xyz.qy.implatform.enums.TalkCategoryEnum;
 import xyz.qy.implatform.enums.NotifyActionTypeEnum;
 import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
@@ -25,6 +28,7 @@ import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkCommentMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
+import xyz.qy.implatform.service.ICharacterWordService;
 import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.ITalkCommentService;
 import xyz.qy.implatform.service.ITalkNotifyService;
@@ -34,6 +38,7 @@ import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.MsgTypeUtil;
 import xyz.qy.implatform.util.SensitiveUtil;
 import xyz.qy.implatform.vo.TalkCommentVO;
 import xyz.qy.implatform.vo.TalkMessageVO;
@@ -74,6 +79,9 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
     @Resource
     private ICommentCharacterService commentCharacterService;
 
+    @Resource
+    private ICharacterWordService characterWordService;
+
     @Transactional
     @Lock(prefix = "im:talk:comment", key = "#talkCommentDTO.getTalkId()")
     @Override
@@ -106,16 +114,43 @@ public class TalkCommentServiceImpl extends ServiceImpl<TalkCommentMapper, TalkC
             throw new GlobalException("您无权限操作");
         }
 
+        TemplateCharacter templateCharacter = null;
+        if (ObjectUtil.isNotNull(talkCommentDTO.getCharacterId())) {
+            templateCharacter = templateCharacterService.getById(talkCommentDTO.getCharacterId());
+        }
         TalkComment talkComment = new TalkComment();
+        if (CommentTypeEnum.WORD_VOICE.getCode().equals(talkCommentDTO.getType())) {
+            if (ObjectUtil.isNull(talkCommentDTO.getCharacterId())) {
+                throw new GlobalException("请角色id异常");
+            }
+            Long wordId = MsgTypeUtil.getWordIdFromContent(talkCommentDTO.getContent());
+            CharacterWord characterWord = characterWordService.getById(wordId);
+            if (Objects.isNull(characterWord) || characterWord.getDeleted() || !characterWord.getStatus().equals(ReviewEnum.REVIEWED.getCode())) {
+                throw new GlobalException("角色台词不存在");
+            }
+            if (characterWord.getCharacterId() != -1L && !characterWord.getCharacterId().equals(talkCommentDTO.getCharacterId())) {
+                throw new GlobalException("角色台词不匹配");
+            }
+            if (!templateCharacter.getTemplateGroupId().equals(characterWord.getTemplateGroupId())) {
+                throw new GlobalException("角色和台词不属于同一个群聊模板");
+            }
+
+            talkComment.setContent(MsgTypeUtil.formatContent(characterWord));
+        } else {
+            if (CommentTypeEnum.TEXT.getCode().equals(talkCommentDTO.getType())
+                && talkCommentDTO.getContent().length() > 50) {
+                throw new GlobalException("评论内容长度不能超过50");
+            }
+            talkComment.setContent(SensitiveUtil.filter(talkCommentDTO.getContent()));
+        }
+
         talkComment.setTalkId(talkId);
         talkComment.setUserId(myUserId);
         talkComment.setCreateBy(myUserId);
-        talkComment.setContent(SensitiveUtil.filter(talkCommentDTO.getContent()));
         talkComment.setType(talkCommentDTO.getType());
         talkComment.setIp(user.getIpAddress());
         talkComment.setIpAddress(user.getProvince());
         if (ObjectUtil.isNotNull(talkCommentDTO.getCharacterId())) {
-            TemplateCharacter templateCharacter = templateCharacterService.getById(talkCommentDTO.getCharacterId());
             if (Objects.isNull(templateCharacter)) {
                 throw new GlobalException("当前角色不存在");
             }

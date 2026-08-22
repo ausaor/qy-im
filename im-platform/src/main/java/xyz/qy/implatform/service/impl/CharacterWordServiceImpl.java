@@ -108,6 +108,17 @@ public class CharacterWordServiceImpl extends ServiceImpl<CharacterWordMapper, C
         if (dto.getWords().size() > 50) {
             throw new GlobalException("单个角色语音台词数量不能超过50");
         }
+        for (CharacterWordDTO wordDTO : dto.getWords()) {
+            if (StringUtils.isBlank(wordDTO.getWord())) {
+                throw new GlobalException("台词不能为空");
+            }
+            if (StringUtils.isBlank(wordDTO.getVoice())) {
+                throw new GlobalException("语音不能为空");
+            }
+            if (wordDTO.getWord().length() > 100) {
+                throw new GlobalException("台词长度不能超过100");
+            }
+        }
 
         // 判断群聊模板是否存在
         TemplateGroup templateGroup = templateGroupService.getById(dto.getTemplateGroupId());

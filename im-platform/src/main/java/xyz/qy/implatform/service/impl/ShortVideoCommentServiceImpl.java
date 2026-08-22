@@ -16,11 +16,13 @@ import xyz.qy.implatform.dto.ShortVideoCommentAddDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentDelDTO;
 import xyz.qy.implatform.dto.ShortVideoCommentQueryDTO;
 import xyz.qy.implatform.entity.CharacterAvatar;
+import xyz.qy.implatform.entity.CharacterWord;
 import xyz.qy.implatform.entity.ShortVideo;
 import xyz.qy.implatform.entity.ShortVideoComment;
 import xyz.qy.implatform.entity.ShortVideoNotify;
 import xyz.qy.implatform.entity.TemplateCharacter;
 import xyz.qy.implatform.entity.User;
+import xyz.qy.implatform.enums.CommentTypeEnum;
 import xyz.qy.implatform.enums.NotifyActionTypeEnum;
 import xyz.qy.implatform.enums.RecordTypeEnum;
 import xyz.qy.implatform.enums.ReviewEnum;
@@ -30,6 +32,7 @@ import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoCommentMapper;
 import xyz.qy.implatform.mapper.ShortVideoMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
+import xyz.qy.implatform.service.ICharacterWordService;
 import xyz.qy.implatform.service.ICommentCharacterService;
 import xyz.qy.implatform.service.IShortVideoCommentService;
 import xyz.qy.implatform.service.IShortVideoNotifyService;
@@ -39,6 +42,7 @@ import xyz.qy.implatform.service.IUserService;
 import xyz.qy.implatform.session.SessionContext;
 import xyz.qy.implatform.session.UserSession;
 import xyz.qy.implatform.util.BeanUtils;
+import xyz.qy.implatform.util.MsgTypeUtil;
 import xyz.qy.implatform.util.PageUtils;
 import xyz.qy.implatform.util.RedisCache;
 import xyz.qy.implatform.util.SensitiveUtil;
@@ -81,6 +85,9 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
 
     @Resource
     private ICharacterAvatarService characterAvatarService;
+
+    @Resource
+    private ICharacterWordService characterWordService;
 
     @Resource
     private IShortVideoNotifyService shortVideoNotifyService;
@@ -165,8 +172,9 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
 
         ShortVideoComment comment = BeanUtils.copyProperties(dto, ShortVideoComment.class);
 
+        TemplateCharacter templateCharacter = null;
         if (ObjectUtil.isNotNull(dto.getCharacterId())) {
-            TemplateCharacter templateCharacter = characterService.getById(dto.getCharacterId());
+            templateCharacter = characterService.getById(dto.getCharacterId());
             if (Objects.isNull(templateCharacter)) {
                 throw new GlobalException("当前角色不存在");
             }
@@ -205,7 +213,30 @@ public class ShortVideoCommentServiceImpl extends ServiceImpl<ShortVideoCommentM
             comment.setReplyToUserCharacterId(parentComment.getCharacterId());
             comment.setReplyToUserAvatar(parentComment.getUserAvatar());
         }
-        comment.setContent(SensitiveUtil.filter(comment.getContent()));
+        if (CommentTypeEnum.WORD_VOICE.getCode().equals(dto.getType())) {
+            if (ObjectUtil.isNull(dto.getCharacterId())) {
+                throw new GlobalException("请角色id异常");
+            }
+            Long wordId = MsgTypeUtil.getWordIdFromContent(dto.getContent());
+            CharacterWord characterWord = characterWordService.getById(wordId);
+            if (Objects.isNull(characterWord) || characterWord.getDeleted() || !characterWord.getStatus().equals(ReviewEnum.REVIEWED.getCode())) {
+                throw new GlobalException("角色台词不存在");
+            }
+            if (characterWord.getCharacterId() != -1L && !characterWord.getCharacterId().equals(dto.getCharacterId())) {
+                throw new GlobalException("角色台词不匹配");
+            }
+            if (!templateCharacter.getTemplateGroupId().equals(characterWord.getTemplateGroupId())) {
+                throw new GlobalException("角色和台词不属于同一个群聊模板");
+            }
+
+            comment.setContent(MsgTypeUtil.formatContent(characterWord));
+        } else {
+            if (CommentTypeEnum.TEXT.getCode().equals(dto.getType())
+                    && dto.getContent().length() > 50) {
+                throw new GlobalException("评论内容长度不能超过50");
+            }
+            comment.setContent(SensitiveUtil.filter(dto.getContent()));
+        }
         comment.setUserId(userId);
         comment.setLikeCount(0);
         comment.setIp(user.getIpAddress());
