@@ -24,6 +24,7 @@
             <span class="comment-nickname">{{ item.userNickname }}</span>
             <span v-if="isVideoAuthor(item.userId)" class="comment-author">作者</span>
             <span class="comment-time">{{ formatTime(item.createTime) }}</span>
+            <span v-if="item.ipAddress" class="comment-ip">· {{ item.ipAddress }}</span>
             <span v-if="item.isOwner" class="comment-delete" @click="handleDelete(item)">删除</span>
           </div>
           <!-- 回复目标 -->
@@ -79,6 +80,7 @@
                     <span class="comment-nickname">{{ child.userNickname }}</span>
                     <span v-if="isVideoAuthor(child.userId)" class="comment-author">作者</span>
                     <span class="comment-time">{{ formatTime(child.createTime) }}</span>
+                    <span v-if="child.ipAddress" class="comment-ip">· {{ child.ipAddress }}</span>
                     <span v-if="child.isOwner" class="comment-delete" @click="handleDelete(child)">删除</span>
                   </div>
                   <div v-if="child.replyToUserId" class="comment-reply-to">
@@ -578,6 +580,11 @@ export default {
   }
 
   .comment-time {
+    font-size: 11px;
+    color: #ccc;
+  }
+
+  .comment-ip {
     font-size: 11px;
     color: #ccc;
   }

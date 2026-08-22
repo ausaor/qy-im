@@ -32,6 +32,7 @@
               <text class="comment-name">{{ comment.userNickname || '用户' }}</text>
               <text v-if="isVideoAuthor(comment.userId)" class="comment-author">作者</text>
               <text class="comment-time">{{ formatCommentTime(comment.createTime) }}</text>
+              <text v-if="comment.ipAddress" class="comment-time">· {{ comment.ipAddress }}</text>
             </view>
             <view v-if="comment.replyToUserId" class="reply-to">回复 @{{ comment.replyToUserNickname || '用户' }}</view>
             <view class="comment-content" @click="replyComment(comment)">
@@ -69,6 +70,7 @@
                 <text class="comment-name">{{ child.userNickname || '用户' }}</text>
                 <text v-if="isVideoAuthor(child.userId)" class="comment-author">作者</text>
                 <text class="comment-time">{{ formatCommentTime(child.createTime) }}</text>
+                <text v-if="child.ipAddress" class="comment-time">· {{ child.ipAddress }}</text>
               </view>
               <view v-if="child.replyToUserId" class="reply-to">回复 @{{ child.replyToUserNickname || '用户' }}</view>
               <view class="comment-content" @click="replyComment(child)">
