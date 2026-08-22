@@ -103,14 +103,16 @@
               <div class="commentItem" v-for="(comment, comment_index) in getVisibleComments(item)"
                    :key="comment_index">
                 <div class="comment-content">
-                  <head-image class="comment-avatar" :url="comment.userAvatar" :id="comment.userId" :name="comment.userNickname" :size="24"/>
-                  <span class="username" :class="{'character-name': comment.characterId !== null}" @click="showUserInfo($event, comment.userId)">
-                      {{ comment.userNickname }}
+                  <span class="comment-meta">
+                    <head-image class="comment-avatar" :url="comment.userAvatar" :id="comment.userId" :name="comment.userNickname" :size="24"/>
+                    <span class="username" :class="{'character-name': comment.characterId !== null}" @click="showUserInfo($event, comment.userId)">
+                        {{ comment.userNickname }}
+                    </span>
+                    <span class="reply-label" v-if="comment.replyCommentId">回复</span>
+                    <head-image v-if="comment.replyCommentId" class="comment-avatar" :url="comment.replyUserAvatar" :id="comment.replyUserId" :name="comment.replyUserNickname" :size="24"/>
+                    <span class="username" :class="{'character-name': comment.replyUserCharacterId !== null}" v-if="comment.replyCommentId" @click="showUserInfo($event, comment.replyUserId)">{{ comment.replyUserNickname }}</span>
+                    <span>：</span>
                   </span>
-                  <span style="margin-left: 5px; margin-right: 5px;" v-if="comment.replyCommentId">回复</span>
-                  <head-image v-if="comment.replyCommentId" class="comment-avatar" :url="comment.replyUserAvatar" :id="comment.replyUserId" :name="comment.replyUserNickname" :size="24"/>
-                  <span class="username" :class="{'character-name': comment.replyUserCharacterId !== null}" v-if="comment.replyCommentId" @click="showUserInfo($event, comment.replyUserId)">{{ comment.replyUserNickname }}</span>
-                  <span>：</span>
                   <span v-if="comment.type === $enums.MESSAGE_TYPE.TEXT" class="content point" v-html="$emo.transform(comment.content)"
                         @click="handleShowCommentBox(comment, item.id, index)">
                   </span>
@@ -1167,6 +1169,17 @@ export default {
                 display: flex;
                 align-items: flex-end;
 
+                .comment-meta {
+                  display: inline-flex;
+                  align-items: flex-end;
+                  flex: 0 0 auto;
+                  white-space: nowrap;
+                }
+
+                .reply-label {
+                  margin: 0 5px;
+                }
+
                 .nick-name {
                   color: #f56c6c;
                 }
@@ -1186,6 +1199,9 @@ export default {
 
               .content {
                 cursor: pointer;
+                flex: 1 1 auto;
+                min-width: 0;
+                overflow-wrap: anywhere;
 
                 img {
                   max-width: 180px;
@@ -1197,8 +1213,8 @@ export default {
               .del-btn {
                 color: #d42e07;
                 font-size: 12px;
-                position: absolute;
-                right: 5px;
+                flex: 0 0 auto;
+                margin-left: 8px;
               }
             }
 
