@@ -37,6 +37,7 @@ import xyz.qy.implatform.enums.SectionEnum;
 import xyz.qy.implatform.enums.ShortVideoNotifyMsgTypeEnum;
 import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.enums.ViewScopeEnum;
+import xyz.qy.implatform.event.publisher.SendShortVideoMailEventPublisher;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.ShortVideoFavoriteMapper;
 import xyz.qy.implatform.mapper.ShortVideoLikeMapper;
@@ -121,6 +122,9 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
 
     @Resource
     private IMClient imClient;
+
+    @Resource
+    private SendShortVideoMailEventPublisher sendShortVideoMailEventPublisher;
 
     @Override
     public List<ShortVideoVO> myShortVideos(ShortVideoQueryDTO dto) {
@@ -430,6 +434,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         if (FollowEnum.CHARACTER.getCode().equals(dto.getType())) {
             commentCharacterService.saveCommentCharacter(userId, shortVideo.getId(), TargetTypeEnum.SHORT_VIDEO.getCode(), dto.getObjectId(), dto.getAvatarId());
         }
+        sendShortVideoMailEventPublisher.sendMailAsync("【短视频审核】新增短视频待审核", session.getNickName(), session.getUserName());
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
         vo.setAuthorName(session.getNickName());
         vo.setNickName(session.getNickName());
@@ -493,6 +498,7 @@ public class ShortVideoServiceImpl extends ServiceImpl<ShortVideoMapper, ShortVi
         shortVideo.setStatus(ReviewEnum.REVIEWING.getCode());
         shortVideo.setUpdateTime(new Date());
         this.updateById(shortVideo);
+        sendShortVideoMailEventPublisher.sendMailAsync("【短视频审核】修改短视频待审核", session.getNickName(), session.getUserName());
         ShortVideoVO vo = BeanUtils.copyProperties(shortVideo, ShortVideoVO.class);
         vo.setIsOwner(Boolean.TRUE);
         return vo;

@@ -232,6 +232,7 @@ export default {
       }).then((data) => {
         this.form.id = data.id
         this.form.objectId = data.objectId
+        this.form.avatarId = data.avatarId
         this.form.objectName = data.objectName || ''
         this.form.avatar = data.avatar || ''
         this.form.type = data.type

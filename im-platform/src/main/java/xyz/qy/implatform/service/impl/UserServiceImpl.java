@@ -876,4 +876,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         sendMessage.setSendResult(false);
         imClient.sendSystemMessage(sendMessage);
     }
+
+    @Override
+    public String[] getAdminEmail() {
+        List<User> list = this.lambdaQuery()
+                .in(User::getRole, Arrays.asList(RoleEnum.ADMIN.getCode(), RoleEnum.SUPER_ADMIN.getCode()))
+                .eq(User::getIsDeleted, false)
+                .eq(User::getIsDisable, false)
+                .select(User::getEmail)
+                .list();
+        return list.stream().map(User::getEmail).toArray(String[]::new);
+    }
 }

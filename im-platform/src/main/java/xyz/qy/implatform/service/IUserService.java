@@ -90,4 +90,6 @@ public interface IUserService extends IService<User> {
     void getEmailCode(String emailCategory);
 
     void deleteAccount();
+
+    String[] getAdminEmail();
 }

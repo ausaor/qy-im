@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${subject}">动态审核提醒</title>
+</head>
+<body style="margin: 0; padding: 24px; background-color: #f5f7fa; color: #303133; font-family: Arial, 'Microsoft YaHei', sans-serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden;">
+                <tr><td style="padding: 24px 32px; background-color: #409eff; color: #ffffff;"><h2 style="margin: 0; font-size: 20px;" th:text="${subject}">动态审核提醒</h2></td></tr>
+                <tr>
+                    <td style="padding: 28px 32px; line-height: 1.8;">
+                        <p style="margin-top: 0;">管理员您好：</p>
+                        <p>有一条动态需要审核，请及时前往管理后台处理。</p>
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="8" border="0" style="background-color: #f5f7fa; border-radius: 4px;">
+                            <tr><td width="100" style="color: #909399;">发布用户</td><td th:text="${userName}">userName</td></tr>
+                            <tr><td style="color: #909399;">用户昵称</td><td th:text="${nickName}">nickName</td></tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr><td style="padding: 16px 32px; color: #909399; font-size: 12px; border-top: 1px solid #ebeef5;">此邮件由青语系统自动发送，请勿直接回复。</td></tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

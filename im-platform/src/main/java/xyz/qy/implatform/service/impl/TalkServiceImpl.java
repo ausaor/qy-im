@@ -49,6 +49,7 @@ import xyz.qy.implatform.enums.NotifyActionTypeEnum;
 import xyz.qy.implatform.enums.TalkNotifyMsgTypeEnum;
 import xyz.qy.implatform.enums.TargetTypeEnum;
 import xyz.qy.implatform.enums.ViewScopeEnum;
+import xyz.qy.implatform.event.publisher.SendTalkMailEventPublisher;
 import xyz.qy.implatform.exception.GlobalException;
 import xyz.qy.implatform.mapper.TalkMapper;
 import xyz.qy.implatform.service.ICharacterAvatarService;
@@ -153,6 +154,9 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
     @Resource
     private ICommentCharacterService commentCharacterService;
 
+    @Resource
+    private SendTalkMailEventPublisher sendTalkMailEventPublisher;
+
     @Transactional
     @Override
     public void addTalk(TalkAddDTO talkAddDTO) {
@@ -190,6 +194,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         if (talk.getCharacterId() != null) {
             commentCharacterService.saveCommentCharacter(user.getId(), talk.getId(), TargetTypeEnum.TALK.getCode(), talk.getCharacterId(), talk.getAvatarId());
         }
+        sendTalkMailEventPublisher.sendMailAsync("【动态审核】新增动态待审核", session.getNickName(), session.getUserName());
     }
 
     @Transactional
@@ -245,6 +250,7 @@ public class TalkServiceImpl extends ServiceImpl<TalkMapper, Talk> implements IT
         }
         talk.setContent(SensitiveUtil.filter(talk.getContent()));
         this.baseMapper.updateById(talk);
+        sendTalkMailEventPublisher.sendMailAsync("【动态审核】修改动态待审核", session.getNickName(), session.getUserName());
     }
 
     private void checkCategory(String category, Long groupId, String regionCode, Long characterId, Long groupTemplateId) {

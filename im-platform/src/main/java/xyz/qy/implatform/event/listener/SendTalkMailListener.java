@@ -1,7 +1,6 @@
 package xyz.qy.implatform.event.listener;
 
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -10,22 +9,17 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import xyz.qy.implatform.event.EmailEvent;
+import xyz.qy.implatform.event.TalkEvent;
+import xyz.qy.implatform.service.IUserService;
 
 import javax.annotation.Resource;
 import javax.mail.internet.MimeMessage;
 
-/**
- * 发送邮件
- *
- * @author Polaris
- * @since 202409-08
- */
 @Slf4j
 @Component
-public class SendMailListener implements ApplicationListener<EmailEvent> {
+public class SendTalkMailListener implements ApplicationListener<TalkEvent> {
     /**
-     * 邮箱号
+     * 发件邮箱
      */
     @Value("${spring.mail.username}")
     private String email;
@@ -36,38 +30,36 @@ public class SendMailListener implements ApplicationListener<EmailEvent> {
     @Resource
     private TemplateEngine templateEngine;
 
-    //@EventListener(EmailEvent.class)
+    @Resource
+    private IUserService userService;
+
+    @Override
     @Async("threadPoolTaskExecutor")
-    public void onApplicationEvent(@NotNull EmailEvent event) {
+    public void onApplicationEvent(TalkEvent event) {
         try {
-            log.info("SendMailListener event:{}", event);
-            
-            // 创建 MIME 消息
+            String[] adminEmails = userService.getAdminEmail();
+            if (adminEmails == null || adminEmails.length == 0) {
+                log.info("当前没有管理员邮箱，不发送邮件");
+                return;
+            }
+
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            
-            // 设置发件人
             helper.setFrom(email);
-            // 设置收件人
-            helper.setTo(event.getReceiver());
-            // 设置主题
+            helper.setTo(adminEmails);
             helper.setSubject(event.getSubject());
-            
-            // 使用 Thymeleaf 模板引擎处理 HTML 模板
+
             Context context = new Context();
-            context.setVariable("code", event.getCode());
-            context.setVariable("senderName", "聼夏");
-            context.setVariable("senderEmail", email);
-            String htmlContent = templateEngine.process("emailCaptcha", context);
-            
-            // 设置 HTML 内容
+            context.setVariable("subject", event.getSubject());
+            context.setVariable("nickName", event.getNickName());
+            context.setVariable("userName", event.getUserName());
+            String htmlContent = templateEngine.process("talkReview", context);
             helper.setText(htmlContent, true);
-            
-            // 发送邮件
+
             javaMailSender.send(message);
-            log.info("邮箱验证码发送成功:{}", event.getReceiver());
+            log.info("动态审核邮件发送成功: userName={}, receiver={}", event.getUserName(), email);
         } catch (Exception e) {
-            log.error("发送邮件失败:{}", event.getReceiver(), e);
+            log.error("动态审核邮件发送失败: userName={}, receiver={}", event.getUserName(), email, e);
         }
     }
 }
